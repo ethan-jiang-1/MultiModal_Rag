@@ -17,8 +17,7 @@ if __name__ == '__main__':
     gpt_version = '1'
 
     dataset = st.selectbox('Select a dataset',
-                           ['Product documents - Texas Instruments', 'Product documents - Chipanalog',
-                            'Book - Analog integrated circuit design', 'Annual financial reports'])
+                           ['test'])
                             # 'Ablation - Origin TI', 'Ablation - without HCA TI', 'Ablation - fix chunk TI'])
     max_tokens = st.selectbox('knowledge length', ['short', 'long'])
     if max_tokens == 'short':
@@ -51,7 +50,7 @@ if __name__ == '__main__':
         if gpt_version == '2':
             model_name = "gpt-3.5-turbo-1106"
         elif gpt_version == '1':
-            model_name = 'gpt-4-1106-preview'
+            model_name = 'gpt-4o'
 
         query = user_input
         st.session_state.selected_faq = None

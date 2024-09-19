@@ -69,7 +69,9 @@ def list_md_files(directory: str):
 
 
 def md2sections(file_name: str):
-    name = os.path.splitext(file_name)[0]
+    # name = os.path.splitext(file_name)[0]
+    name = os.path.basename(file_name)
+    print(name)
     directory = os.path.join('sections')
     file_path = os.path.join('mds', file_name)
 
@@ -81,3 +83,6 @@ def md2sections(file_name: str):
 
 
 # md2sections('markdown file from pdf2md')
+
+if __name__ == "__main__":
+    md2sections('s1_md_final/1. 座椅STO间隙 P1.pptx.step1.md')

@@ -4,15 +4,17 @@ import openai
 from openai import OpenAI
 
 load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
-api_base = os.getenv("OPENAI_API_BASE")
-client = OpenAI(
+endpoint = os.environ["AZURE_OPENAI_ENDPOINT"]
+api_key = os.environ["AZURE_OPENAI_API_KEY"]
+
+client = openai.AzureOpenAI(
+    azure_endpoint=endpoint,
     api_key=api_key,
-    base_url=api_base
+    api_version="2024-02-15-preview"
 )
 
 
-def send_messages(user_input, knowledge, role=None, model="gpt-3.5-turbo-1106"):
+def send_messages(user_input, knowledge, role=None, model="gpt-4o"):
     if not role:
         role = """Role: You are an intelligent customer service agent, please answer questions from a professional perspective.
 Note:
@@ -46,6 +48,10 @@ Note:
     return result.choices[0].message.content
 
 
-def get_embedding(text, model="text-embedding-ada-002"):
+def get_embedding(text, deployment='text-embedding-3-small'):
     text = text.replace("\n", " ")
-    return client.embeddings.create(input = [text], model=model).data[0].embedding
+    embeddings = client.embeddings.create(
+        model=deployment,
+        input=text
+    )
+    return embeddings.data[0].embedding

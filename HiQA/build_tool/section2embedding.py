@@ -1,21 +1,20 @@
-import openai
+import sys
+sys.path.append("./")
 from dotenv import load_dotenv
 import os
 import tiktoken
 import pandas as pd
 
 # note that this is in version openai==0.28, if you update to >=1.0.0, you need to create OpenAI() object.
-from openai.embeddings_utils import get_embedding
+from api_warpper import get_embedding
 
-embedding_model = "text-embedding-ada-002"
+embedding_model = "text-embedding-3-small"
 embedding_encoding = "cl100k_base"  # this the encoding for text-embedding-ada-002
 # set openai
-os.environ["OPENAI_API_KEY"] = "yPKz6gw9KNVZd6oBFQ2AoZvosF3TvX6C3XJbADgahZYj3wZNHNuhRMoDG9pzpN98"
-os.environ["OPENAI_API_BASE"] = "https://ai.api.moblin.net/api/openai/v1"
 
-openai.api_key = os.environ.get('OPENAI_API_KEY')
-openai.api_base = os.environ.get('OPENAI_API_BASE')
 OPENAI_EMBEDDING_MAXTOKENS=8000
+
+
 def split_and_embed(section, encoding):
     # Get the title from the first line
     lines = section.split("\n")
@@ -90,19 +89,19 @@ def section_to_embed(file_name: str):
             # print('\n-------TABLE FOUND--------\n content:\n'+section+'\n metadata:\n'+metadata_content+'\n--------------------------\n')
 
             actual_section = section.replace('---table begin---', '').replace('---table end---', '')
-            new_df_entries.append({'section': actual_section, 'n_tokens': len(encoding.encode(metadata_content)), 'embedding': get_embedding(metadata_content, engine=embedding_model)})
+            new_df_entries.append({'section': actual_section, 'n_tokens': len(encoding.encode(metadata_content)), 'embedding': get_embedding(metadata_content, deployment=embedding_model)})
 
         else:
             if n_tokens < OPENAI_EMBEDDING_MAXTOKENS:
-                new_df_entries.append({'section': section, 'n_tokens': n_tokens, 'embedding': get_embedding(section, engine=embedding_model)})
+                new_df_entries.append({'section': section, 'n_tokens': n_tokens, 'embedding': get_embedding(section, deployment=embedding_model)})
             else:
                 for new_section in split_and_embed(section, encoding):
-                    new_df_entries.append({'section': new_section, 'n_tokens': len(encoding.encode(new_section)), 'embedding': get_embedding(new_section, engine=embedding_model)})
+                    new_df_entries.append({'section': new_section, 'n_tokens': len(encoding.encode(new_section)), 'embedding': get_embedding(new_section, deployment=embedding_model)})
 
     df_new = pd.DataFrame(new_df_entries)
 
-    embd_path = os.path.join('embedded', file_name)
+    embd_path = os.path.join('embeddings', file_name)
     df_new.to_csv(embd_path, index=False, encoding='utf-8')
 
 
-# section_to_embed('csv file from md2csv')
+section_to_embed('1. 座椅STO间隙 P1.pptx.step1.md.csv')

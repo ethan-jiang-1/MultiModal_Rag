@@ -1,7 +1,7 @@
 import os
 import random
 import tempfile
-
+import sys
 import chromadb
 import tiktoken
 import jieba
@@ -11,7 +11,7 @@ from whoosh.index import create_in
 from PIL import Image
 from utils.filter import filter_product_names, filter_knowledge, critic_keywords
 import time
-from chromadb.config import Settings
+from chromadb.config import Settings, DEFAULT_TENANT, DEFAULT_DATABASE
 from whoosh.qparser import OrGroup
 import openai
 
@@ -122,7 +122,6 @@ def retrieve_knowledge(question, question_embd, max_token, dataset, begin, only_
     global encoding
 
     if not init_state:
-        init()
         init_state = True
 
     collection = collections[dataset]
@@ -144,7 +143,7 @@ def retrieve_knowledge(question, question_embd, max_token, dataset, begin, only_
         )
     else:
         results = collection.query(
-            query_embeddings=question_embd,
+            question_embd,
             n_results=50
         )
 
@@ -205,6 +204,7 @@ def search_images_from_response(user_input, response, dataset, lang='CN', k=1000
         directory = 'datasets/2_Analog_Book/'
     if dataset == 'Product documents - Texas Instruments':
         directory = 'datasets/4_Texas Instruments/'
+
 
     # product_in_query = filter_product_names(user_input, default_products)
     # product_in_response = filter_product_names(response, default_products)
@@ -328,7 +328,7 @@ def remove_repeated_substrings(s):
 
 def create_and_load_collection(client, base_name, dataset_path):
     # 生成唯一的集合名称
-    collection_name = base_name + str(random.randint(0, 10000))
+    collection_name = base_name+ str(random.randint(0, 10000))
 
     # 创建集合
     collection = client.create_collection(name=collection_name)
@@ -372,13 +372,14 @@ def init():
     'or'.join(jieba.cut("pre load"))
 
     # load whoosh dictionary
-    ix_chipanalog = open_dir('datasets/1_Chipanalog/indexes')
-    ix_book = open_dir('datasets/2_Analog_Book/indexes')
-    ix_ti = open_dir('datasets/4_Texas Instruments/indexes')
+    # ix_chipanalog = open_dir('datasets/1_Chipanalog/indexes')
+    # ix_book = open_dir('datasets/2_Analog_Book/indexes')
+    # ix_ti = open_dir('datasets/4_Texas Instruments/indexes')
 
-    ixs = {'Product documents - Chipanalog': ix_chipanalog,
-           'Book - Analog integrated circuit design': ix_book,
-           'Product documents - Texas Instruments': ix_ti}
+    # ixs = {'Product documents - Chipanalog': ix_chipanalog,
+    #        'Book - Analog integrated circuit design': ix_book,
+    #        'Product documents - Texas Instruments': ix_ti}
+    
 
     embedding_encoding = "cl100k_base"
     encoding = tiktoken.get_encoding(embedding_encoding)
@@ -387,34 +388,8 @@ def init():
     chroma_client.reset()
 
     collections = {}
-    collections['Product documents - Chipanalog'] = create_and_load_collection(chroma_client, "chipanalog", 'datasets/1_Chipanalog/embeddings')
-    collections['Book - Analog integrated circuit design'] = create_and_load_collection(chroma_client, "analog_book", 'datasets/2_Analog_Book/embeddings')
-    collections['Annual financial reports'] = create_and_load_collection(chroma_client, "financial", 'datasets/3_Annual financial reports/embeddings')
-    collections['Product documents - Texas Instruments'] = create_and_load_collection(chroma_client, "texas", 'datasets/4_Texas Instruments/embeddings')
-    # collections['Ablation - Origin TI'] = create_and_load_collection(chroma_client, "texas_ori", 'datasets/4_1_TI_origin/embeddings')
-    # collections['Ablation - without HCA TI'] = create_and_load_collection(chroma_client, "texas_wo_hca", 'datasets/4_2_TI_without_HCA/embeddings')
-    # collections['Ablation - fix chunk TI'] = create_and_load_collection(chroma_client, "texas_chunk", 'datasets/4_3_TI_chunk/embeddings')
-    enemy_collection = chroma_client.create_collection(name='chipanalog_enemy')
+    collections['test'] = create_and_load_collection(chroma_client, "test", 'datasets/test/embeddings')
 
-    enemy_embds = []
-    enemy_docs = []
-    enemy_metas = []
-    enemy_ids = []
-    enemy_id = 0
-    filepath = os.path.join('datasets/1_Chipanalog/竞品处理', '竞品.csv')
-    df = pd.read_csv(filepath)
-    for index, row in df.iterrows():
-        section = row['section']
-        n_tokens = row['n_tokens']
-        embedding = [float(value) for value in row['embedding'][1:-1].split(',')]
-        enemy_embds.append(embedding)
-        enemy_docs.append(section)
-        enemy_ids.append('id' + str(enemy_id))
-        enemy_metas.append({'n_tokens': n_tokens, 'filename': '竞品', 'title': section.split('\n')[0]})
-        enemy_id += 1
-    print('enemy doc size:', len(enemy_docs))
-
-    enemy_collection.add(embeddings=enemy_embds, documents=enemy_docs, metadatas=enemy_metas, ids=enemy_ids)
     print('load data successful')
 
 
