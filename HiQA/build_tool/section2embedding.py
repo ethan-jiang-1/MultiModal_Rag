@@ -6,7 +6,7 @@ import tiktoken
 import pandas as pd
 
 # note that this is in version openai==0.28, if you update to >=1.0.0, you need to create OpenAI() object.
-from api_warpper import get_embedding
+from example.api_warpper import get_embedding
 
 embedding_model = "text-embedding-3-small"
 embedding_encoding = "cl100k_base"  # this the encoding for text-embedding-ada-002
@@ -37,13 +37,12 @@ def split_and_embed(section, encoding):
 
     return new_sections
 
-def section_to_embed(file_name: str):
+def section_to_embed(file_path, output_folder):
 
-    directory = os.path.join('sections', file_name)
-    name = os.path.splitext(file_name)[0]
+    name = os.path.basename(file_path).split(".csv")[0]
 
     # embed_path = os.path.join(BASE_DIR, 'file_system', kb_name, 'embedded')
-    df = pd.read_csv(directory, encoding='utf-8')
+    df = pd.read_csv(file_path, encoding='utf-8')
     encoding = tiktoken.get_encoding(embedding_encoding)
 
     new_df_entries = []
@@ -100,8 +99,8 @@ def section_to_embed(file_name: str):
 
     df_new = pd.DataFrame(new_df_entries)
 
-    embd_path = os.path.join('embeddings', file_name)
+    embd_path = os.path.join(output_folder, name.replace('.md', '.csv'))
     df_new.to_csv(embd_path, index=False, encoding='utf-8')
 
 
-section_to_embed('1. 座椅STO间隙 P1.pptx.step1.md.csv')
+# section_to_embed('1. 座椅STO间隙 P1.pptx.step1.md.csv')

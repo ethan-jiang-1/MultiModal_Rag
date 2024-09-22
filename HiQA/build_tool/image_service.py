@@ -1,6 +1,7 @@
 import fitz
 from PIL import Image
-
+import sys
+sys.path.append("./")
 # from service.keyword_setting import load_keywords
 from utils import *
 import jieba
@@ -30,7 +31,7 @@ def load_pdf(kb_name, filename, dpi=300, skip_page_front=0, skip_page_back=1, sk
     :return:
     """
 
-    directory = os.path.join(r'C:\Users\cxy\PycharmProjects\HiQA\datasets', kb_name)
+    directory = os.path.join(r'E:\MultiModal_Rag\HiQA\datasets', kb_name)
     file_path = os.path.join(directory, 'pdfs', filename)
     doc = fitz.open(file_path)
 
@@ -167,7 +168,7 @@ def build_index(kb_name, lang='CN'):
         schema = Schema(file_name=ID(stored=True), content=TEXT(stored=True))
 
     # directory = os.path.join('datasets', kb_name)
-    directory = os.path.join(r'C:\Users\cxy\PycharmProjects\HiQA\datasets', kb_name)
+    directory = os.path.join(r'E:\MultiModal_Rag\HiQA\datasets', kb_name)
     index_path = os.path.join(directory, 'indexes')
 
     # Create an index in a directory
@@ -210,10 +211,10 @@ def build_index(kb_name, lang='CN'):
 
 
 # Basic usage, convert all pdfs in a path and build index.
-# import tqdm
-# for file in tqdm.tqdm(os.listdir('../datasets/4_Texas Instruments/pdfs')):
-#     load_pdf('4_Texas Instruments', file)
-# build_index('4_Texas Instruments')
+import tqdm
+for file in tqdm.tqdm(os.listdir('datasets/test/pdfs')):
+    load_pdf('test', file)
+build_index('test')
 #
 # writer.commit()
 

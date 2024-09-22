@@ -2,6 +2,7 @@ import os
 import random
 import tempfile
 import sys
+import rich
 import chromadb
 import tiktoken
 import jieba
@@ -162,6 +163,7 @@ def retrieve_knowledge(question, question_embd, max_token, dataset, begin, only_
     if verbose:
         print('after retrieve', time.time() - begin)
     result_list = reset_by_lucene(question, results, threshold=0.5, lucene_weight=0.5)
+    
     if verbose:
         print('after rank by lucene', time.time() - begin)
 
@@ -204,6 +206,8 @@ def search_images_from_response(user_input, response, dataset, lang='CN', k=1000
         directory = 'datasets/2_Analog_Book/'
     if dataset == 'Product documents - Texas Instruments':
         directory = 'datasets/4_Texas Instruments/'
+    if dataset == 'test':
+        directory = '/datasets/test'
 
 
     # product_in_query = filter_product_names(user_input, default_products)
@@ -372,13 +376,9 @@ def init():
     'or'.join(jieba.cut("pre load"))
 
     # load whoosh dictionary
-    # ix_chipanalog = open_dir('datasets/1_Chipanalog/indexes')
-    # ix_book = open_dir('datasets/2_Analog_Book/indexes')
-    # ix_ti = open_dir('datasets/4_Texas Instruments/indexes')
+    ix_test = open_dir('datasets/test/indexes')
 
-    # ixs = {'Product documents - Chipanalog': ix_chipanalog,
-    #        'Book - Analog integrated circuit design': ix_book,
-    #        'Product documents - Texas Instruments': ix_ti}
+    ixs = {'Test': ix_test}
     
 
     embedding_encoding = "cl100k_base"

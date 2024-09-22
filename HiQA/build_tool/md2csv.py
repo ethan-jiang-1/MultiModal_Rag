@@ -68,21 +68,14 @@ def list_md_files(directory: str):
     return md_files
 
 
-def md2sections(file_name: str):
+def md2sections(file_path, output_directory):
     # name = os.path.splitext(file_name)[0]
-    name = os.path.basename(file_name)
-    print(name)
-    directory = os.path.join('sections')
-    file_path = os.path.join('mds', file_name)
+    name = os.path.basename(file_path).split(".csv")[0]
 
     with open(file_path, 'r', encoding='utf-8') as f:
         file_content = f.read()
         title, sections = parse_markdown(file_content)
         df = pd.DataFrame(sections, columns=['section'])
-        df.to_csv(directory + "/" + name + '.csv', index=False, encoding='utf-8')
+        df.to_csv(output_directory + "/" + name + '.csv', index=False, encoding='utf-8')
 
 
-# md2sections('markdown file from pdf2md')
-
-if __name__ == "__main__":
-    md2sections('s1_md_final/1. 座椅STO间隙 P1.pptx.step1.md')

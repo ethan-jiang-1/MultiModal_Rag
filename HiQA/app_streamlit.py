@@ -3,14 +3,12 @@ from utils.tokenizer import ChineseTokenizer
 from service.knowledge_client import *
 from utils.openai_proxy import client
 from dotenv import load_dotenv
+import re
 
 load_dotenv()
 
 # ------------ Streamlit App ------------
 # init page
-st.set_page_config(page_title="HiQA System")
-
-st.header("HiQA System")
 
 if __name__ == '__main__':
 
@@ -56,6 +54,7 @@ if __name__ == '__main__':
         st.session_state.selected_faq = None
         st.markdown("----")
         res_box = st.empty()
+        source_box = st.empty()
         image_placeholder = st.empty()
         print('begin...')
         user_input = query
@@ -64,6 +63,13 @@ if __name__ == '__main__':
             # response = get_response_from_openai(user_input, begin)
             response = ''
             knowledge = get_knowledge(user_input, max_tokens, dataset, begin, only_vec=only_vec, verbose=True)
+            pattern = r"(?<=\[Source File\]\s)[^\[]+(?=\s\[Source File\])"
+
+            matches = re.findall(pattern, knowledge)
+            file_names = [match.split(".step")[0] for match in matches]
+            file_name = ", ".join(file_names)
+            source_box.markdown(f"Source File: {file_name}")
+
             print('\nknowledge:\n' + knowledge + '\n\n')
 
             if gpt_version == "1" or gpt_version == "2":
@@ -94,9 +100,7 @@ if __name__ == '__main__':
 
             st.markdown("----")
             print('after gpt, ' + str(time.time() - begin))
-            if show_images and (dataset == 'Product documents - Chipanalog' or
-                                dataset == 'Book - Analog integrated circuit design' or
-                                dataset == 'Product documents - Texas Instruments'):
+            if show_images and (dataset == 'test'):
                 # images = search_images_from_response(response)
                 try:
                     images = search_images_from_response(user_input, response, dataset)
