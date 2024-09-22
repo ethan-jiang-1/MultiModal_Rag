@@ -1,5 +1,6 @@
 import json
 import re
+import time
 from openai import AzureOpenAI
 from dotenv import load_dotenv
 import sys
@@ -15,7 +16,7 @@ def get_pdfs_in_directory(directory):
     pdf_files = [f for f in os.listdir(directory) if f.endswith('.pdf')]
     return pdf_files
 
-def pdf2md(base_path,pdf_path,md_name):
+def pdf2_0md(base_path,pdf_path,md_name):
     p2t = Pix2Text.from_config(enable_formula=False)
     doc = p2t.recognize_pdf(pdf_path)
     od=base_path+'/mds/s0_md_unstructured/'
@@ -78,20 +79,29 @@ def get_all_content(text_file,md_file):
         text=res['content']
         return text
 
+def pdf2md(directory_path,step_0_dir,step_1_dir):
+    #direcory_path:pdf目录
+    #step_0_dir：step_0目录
+    #step_1_dir:step_1目录
 
-
-directory_path = 'raw'
-#获取所有.pdf文件
-pdfs=get_pdfs_in_directory(directory_path)
-#初步处理pdf2md
-#base_path = os.getcwd()
-#for fname in pdfs:
-    #pdf2md(base_path,base_path+'/'+directory_path+'/'+fname,fname+'.step0.md')
-    #print(fname+'.step0.md已生成')
+    #获取所有.pdf文件
+    pdfs=get_pdfs_in_directory(directory_path)
+    #初步处理pdf2md
+    base_path = os.getcwd()
+    for fname in pdfs:
+        pdf2_0md(base_path,base_path+'/'+directory_path+'/'+fname,fname+'.step0.md')
+        print(fname+'.step0.md已生成')
 #得到最终pdf2md文件，在mds/s1_md_final/下
-for fname in pdfs:
-    print(fname)
+    for fname in pdfs:
+        print(fname)
     #获取更新后的md
-    content=get_all_content('raw/'+fname,'mds/s0_md_unstructured/'+fname+'.step0.md')
-    with open('mds/s1_md_final/'+fname+'.step1.md','w',encoding='utf-8') as file:
-        file.write(content)
+        content=get_all_content(directory_path+'/'+fname,step_0_dir+'/'+fname+'.step0.md')
+        with open(step_1_dir+'/'+fname+'.step1.md','w',encoding='utf-8') as file:
+            file.write(content)
+
+
+if __name__ == '__main__':
+    start = time.time()
+    pdf2md('raw','mds/s0_md_unstructured','mds/s1_md_final')
+    elapse_time = time.time() - start
+    print('转换运行时间：'+ str(elapse_time))
