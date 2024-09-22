@@ -23,6 +23,7 @@ from utils.openai_proxy import get_embedding
 from utils.tokenizer import ChineseAnalyzer
 
 import requests
+from rank_bm25 import BM25Okapi
 settings = Settings(allow_reset=True)
 
 ixs = None
@@ -43,33 +44,69 @@ def get_knowledge(question, max_token, dataset, begin=None, only_vec=False, verb
         print('knowledge length', len(knowledge))
     return knowledge
 
-def reset_by_jina(question, results):
+def reset_by_jina(question, results, jina_weight=0.8, bm25_weight=0.5):
+    # 提取输入的各类信息
     url = "http://region-42.seetacloud.com:29664/rerank/"
     ids = results['ids'][0]
+    distances = results['distances'][0]
     metas = results['metadatas'][0]
     documents = results['documents'][0]
 
+    # 归一化 distances 列表
+    min_distance = min(distances)
+    max_distance = max(distances)
+    try:
+        normalized_distances = [(distance - min_distance) / (max_distance - min_distance) for distance in distances]
+    except ZeroDivisionError:
+        normalized_distances = [1.0] * len(ids)  # 如果出现除0情况，直接给所有距离归一化为1
+
+    # 调用Jina服务进行重新排序
     data = {
         'query': question,
-        'documents': [doc for doc in documents],
-        'count': 5,
+        'documents': documents,  # 发送文档列表进行排序
+        'count': len(documents),  # 获取所有文档的重新排序结果
     }
     response = requests.post(url, json=data)
-    result = response.json()
+    jina_results = response.json()  # 假设返回的是一个按分数排序的元组列表 [(score, document)]
+
+    # 准备文件名和BM25计算
+    filenames = [meta['filename'] for meta in metas]  # 提取所有文件名
+    tokenized_filenames = [list(jieba.cut(filename)) for filename in filenames]  # 对文件名进行分词
+    bm25 = BM25Okapi(tokenized_filenames)  # 构建BM25模型
+
+    # 对查询进行分词
+    query_tokens = list(jieba.cut(question))
+    bm25_scores = bm25.get_scores(query_tokens)  # 获取BM25分数
+
+    # Jina返回结果已经按分数排序，使用文档重排原始的 ids 和 metas
     result_list = []
-    for i, res in enumerate(result):
-        idx = documents.index(res)
-        result_list.append([ids[idx], metas[idx], res])
+    for jina_score, doc in zip(jina_results['scores'], jina_results['documents']):
+        idx = documents.index(doc)  # 找到文档在原始 documents 列表中的索引
+        # 基于距离、BM25 和 Jina评分加权
+        base_score = 1 - normalized_distances[idx]  # 距离越小，得分越高
+        jina_score_weighted = jina_score * jina_weight  # Jina的评分乘以权重
+        bm25_score_weighted = bm25_scores[idx] * bm25_weight  # BM25的分数乘以权重
+        final_score = base_score + jina_score_weighted + bm25_score_weighted
+        result_list.append([ids[idx], final_score, metas[idx], documents[idx]])
+
+    # 按照得分从高到低排序
+    result_list = sorted(result_list, key=lambda x: x[1], reverse=True)
+
+    # 返回格式化后的结果
+    return format_result_list(result_list)
+
+
+def format_result_list(result_list):
+    """格式化输出知识段落"""
     string_list = []
     for res in result_list:
         knowledge = "*** New Knowledge Paragraph ***\n" \
-                    f"[Source File] {res[1]['filename']} [Source File]\n" \
-                    f"[Knowledge Title] {res[1]['title']} [Knowledge Title]\n" \
-                    f"[Knowledge Content] {res[2].replace('[desc]', '').replace('---table begin---', 'The following is table:').replace('---table end---', '')} [Knowledge Content]"
-
+                    f"[Source File] {res[2]['filename']} [Source File]\n" \
+                    f"[Knowledge Title] {res[2]['title']} [Knowledge Title]\n" \
+                    f"[Knowledge Content] {res[3].replace('[desc]', '').replace('---table begin---', 'The following is table:').replace('---table end---', '')} [Knowledge Content]"
         string_list.append(knowledge)
-
     return string_list
+
 
 
 def reset_by_lucene(question, results, threshold, lucene_weight):
