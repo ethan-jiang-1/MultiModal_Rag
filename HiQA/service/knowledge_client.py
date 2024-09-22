@@ -22,6 +22,7 @@ import os
 from utils.openai_proxy import get_embedding
 from utils.tokenizer import ChineseAnalyzer
 
+import requests
 settings = Settings(allow_reset=True)
 
 ixs = None
@@ -41,6 +42,34 @@ def get_knowledge(question, max_token, dataset, begin=None, only_vec=False, verb
     if verbose:
         print('knowledge length', len(knowledge))
     return knowledge
+
+def reset_by_jina(question, results):
+    url = "http://region-42.seetacloud.com:29664/rerank/"
+    ids = results['ids'][0]
+    metas = results['metadatas'][0]
+    documents = results['documents'][0]
+
+    data = {
+        'query': question,
+        'documents': [doc for doc in documents],
+        'count': 5,
+    }
+    response = requests.post(url, json=data)
+    result = response.json()
+    result_list = []
+    for i, res in enumerate(result):
+        idx = documents.index(res)
+        result_list.append([ids[idx], metas[idx], res])
+    string_list = []
+    for res in result_list:
+        knowledge = "*** New Knowledge Paragraph ***\n" \
+                    f"[Source File] {res[1]['filename']} [Source File]\n" \
+                    f"[Knowledge Title] {res[1]['title']} [Knowledge Title]\n" \
+                    f"[Knowledge Content] {res[2].replace('[desc]', '').replace('---table begin---', 'The following is table:').replace('---table end---', '')} [Knowledge Content]"
+
+        string_list.append(knowledge)
+
+    return string_list
 
 
 def reset_by_lucene(question, results, threshold, lucene_weight):
@@ -162,7 +191,8 @@ def retrieve_knowledge(question, question_embd, max_token, dataset, begin, only_
 
     if verbose:
         print('after retrieve', time.time() - begin)
-    result_list = reset_by_lucene(question, results, threshold=0.5, lucene_weight=0.5)
+    # result_list = reset_by_lucene(question, results, threshold=0.5, lucene_weight=0.5)
+    result_list = reset_by_jina(question, results)
     
     if verbose:
         print('after rank by lucene', time.time() - begin)

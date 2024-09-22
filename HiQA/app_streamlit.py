@@ -66,7 +66,7 @@ if __name__ == '__main__':
             pattern = r"(?<=\[Source File\]\s)[^\[]+(?=\s\[Source File\])"
 
             matches = re.findall(pattern, knowledge)
-            file_names = [match.split(".step")[0] for match in matches]
+            file_names = [match.split(".step")[0] for match in list(set(matches))]
             file_name = ", ".join(file_names)
             source_box.markdown(f"Source File: {file_name}")
 
