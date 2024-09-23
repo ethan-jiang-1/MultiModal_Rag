@@ -14,9 +14,8 @@ if __name__ == '__main__':
 
     gpt_version = '1'
 
-    dataset = st.selectbox('Select a dataset',
-                           ['test'])
-                            # 'Ablation - Origin TI', 'Ablation - without HCA TI', 'Ablation - fix chunk TI'])
+    dataset ='test'
+
     max_tokens = st.selectbox('knowledge length', ['short', 'long'])
     if max_tokens == 'short':
         max_tokens = 2000
@@ -105,11 +104,12 @@ if __name__ == '__main__':
                 try:
                     images = search_images_from_response(user_input, response, dataset)
                     print('after img, ' + str(time.time() - begin))
-                    for img, title, score, file_name, content in images[:1]:
+                    for image_full_path, title, score, file_name, content in images[:1]:
                         file_name = '_'.join(file_name.split('_')[:-3])
+                        
                         if title != 'Title not found':
-                            image_placeholder.image(img, caption="Source - " + file_name + ",\t" + title)
+                            image_placeholder.image(image_full_path, caption="Source - " + file_name + ",\t" + title)
                         else:
-                            image_placeholder.image(img, caption="Source - " + file_name)
+                            image_placeholder.image(image_full_path, caption="Source - " + file_name)
                 except Exception as e:
                     pass

@@ -274,19 +274,26 @@ def search_images_from_response(user_input, response, dataset, lang='CN', k=1000
     if dataset == 'Product documents - Texas Instruments':
         directory = 'datasets/4_Texas Instruments/'
     if dataset == 'test':
-        directory = '/datasets/test'
+        directory = '/datasets/test/'
 
-
-    # product_in_query = filter_product_names(user_input, default_products)
-    # product_in_response = filter_product_names(response, default_products)
-    # # print('product_in_query', product_in_query)
-    # # print('product_in_response', product_in_response)
-    # if not product_in_query and not product_in_response:
-    #     query = user_input + ' ' + response[:min(300, len(response))]
-    # if product_in_response:
-    #     query = user_input + ' ' + response
-    # if product_in_query:
-    #     query = user_input
+    default_products = ['AIGC时代的人力资源管理进化(徐刚)', 
+                        '业绩案例、上汽内外饰DRE外包框架服务合同', 
+                        '业绩案例、上汽内外饰部CAD外包框架服务合同', 
+                        '业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）', 
+                        '业绩案例、比亚迪ST2H项目低压线束设计技术服务合同（电子电器）', 
+                        '业绩案例、比亚迪车架总成技术服务合同', 
+                        '业绩案例、比亚迪铝大梁式车架及副车架设计外包中标通知书', 
+                        '业绩案例、比亚迪驻场线束设计技术服务合同（电子电器）']
+    product_in_query = filter_product_names(user_input, default_products)
+    product_in_response = filter_product_names(response, default_products)
+    # print('product_in_query', product_in_query)
+    # print('product_in_response', product_in_response)
+    if not product_in_query and not product_in_response:
+        query = user_input + ' ' + response[:min(300, len(response))]
+    if product_in_response:
+        query = user_input + ' ' + response
+    if product_in_query:
+        query = user_input
 
     query = user_input
     # Tokenize the query string and join tokens with OR operator
@@ -312,58 +319,58 @@ def search_images_from_response(user_input, response, dataset, lang='CN', k=1000
             # print('content:', result[1])
             image_name = result[0]  # name
             base_name = image_name.split('_img')[0]
-            image_full_path = directory + 'images/' + base_name + '/' + image_name + '.png'
-            img = Image.open(image_full_path)
+            image_full_path = os.path.join("E:/MultiModal_Rag/HiQA/datasets/test", 'images', base_name, image_name + '.png')
+            image_full_path = os.path.abspath(image_full_path)
+
             try:
                 image_title = result[1].split('\n')[0].split(':')[1]
             except IndexError:
                 image_title = 'Title not found'
 
             image_title = remove_repeated_substrings(image_title)
-            images.append((img, image_title, result[2], image_name, result[1]))
+            images.append((image_full_path, image_title, result[2], image_name, result[1]))
             # print('--------- image----------')
             # print(result[0], result[1])
 
-        # print('after search:', len(images))
         # do filter image, re-rank all images
-        # images_ret = []
-        # images_remain = []
-        # for image in images:
-            # print('title:', image[1])
-            # print('name:', image[3])
-            # print('content:', image[4])
-            # img_desc = image[1] + ' ' + image[3] + ' ' + image[4]
-            # add = False
-            # for product in product_in_query:
-            #     if product in img_desc:
-            #         images_ret.append(image)
-            #         add = True
-            #         break
-            # if not add:
-            #     images_remain.append(image)
+        images_ret = []
+        images_remain = []
+        for image in images:
+            print('title:', image[1])
+            print('name:', image[3])
+            print('content:', image[4])
+            img_desc = image[1] + ' ' + image[3] + ' ' + image[4]
+            add = False
+            for product in product_in_query:
+                if product in img_desc:
+                    images_ret.append(image)
+                    add = True
+                    break
+            if not add:
+                images_remain.append(image)
 
-        # print('after input filter:', len(images_ret))
-        # print('after input filter remain: ', len(images_remain))
+        print('after input filter:', len(images_ret))
+        print('after input filter remain: ', len(images_remain))
 
-        # images_rrmain = []
-        # for image in images_remain:
-        #     img_desc = image[1] + ' ' + image[3] + ' ' + image[4]
-        #     add = False
-        #     for product in product_in_response:
-        #         if product in img_desc:
-        #             images_ret.append(image)
-        #             add = True
-        #             break
-        #     if not add:
-        #         images_rrmain.append(image)
-        # print('after output filter:', len(images_ret))
-        # print('after input filter remain: ', len(images_rrmain))
+        images_rrmain = []
+        for image in images_remain:
+            img_desc = image[1] + ' ' + image[3] + ' ' + image[4]
+            add = False
+            for product in product_in_response:
+                if product in img_desc:
+                    images_ret.append(image)
+                    add = True
+                    break
+            if not add:
+                images_rrmain.append(image)
+        print('after output filter:', len(images_ret))
+        print('after input filter remain: ', len(images_rrmain))
 
-        # images_ret.extend(images_rrmain)
-        # print('final return: ', len(images_ret))
-        # return images_ret
+        images_ret.extend(images_rrmain)
+        print('final return: ', len(images_ret))
+        return images_ret
 
-        return images
+        # return images
 
 
 def remove_repeated_substrings(s):
@@ -445,7 +452,7 @@ def init():
     # load whoosh dictionary
     ix_test = open_dir('datasets/test/indexes')
 
-    ixs = {'Test': ix_test}
+    ixs = {'test': ix_test}
     
 
     embedding_encoding = "cl100k_base"

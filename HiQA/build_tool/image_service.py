@@ -13,6 +13,7 @@ import shutil
 from build_tool.img_tools import *
 # from app import BASE_DIR
 from utils.filter import *
+from build_tool.vl_description import generate_image_description
 
 
 ix = None
@@ -81,11 +82,16 @@ def load_pdf(kb_name, filename, dpi=300, skip_page_front=0, skip_page_back=1, sk
                         cropped.save(image_name)
                     except:
                         continue
-                    # # Handle text extraction around the image
-                    text_content = get_text_around_image(blocks[skip_block:], i, lang)
-                    title = get_title_of_image(blocks[skip_block:], i, lang)
+                    # Handle text extraction around the image
+                    # text_content = get_text_around_image(blocks[skip_block:], i, lang)
+                    text_content = generate_image_description(image_name)
+                    # title = get_title_of_image(blocks[skip_block:], i, lang)
+                    title = base_name
                     # print(text_content[:30])
                     # print(title)
+
+
+                    # Save the description to a .txt file
                     with open(f'{file_name}.txt', 'w', encoding='utf-8') as text_file:
                         text_file.write(title + '\n' + text_content.replace('\n', ' ')+ f'\nbase name:{base_name}')
 
@@ -150,8 +156,10 @@ def load_pdf(kb_name, filename, dpi=300, skip_page_front=0, skip_page_back=1, sk
                 cropped_img.save(image_name)
 
                 # search title and text
-                text_content = get_svg_text_around_image(svg_blocks, block_id, lang)
-                title = get_svg_title_around_image(svg_blocks, block_id, lang)
+                # text_content = get_svg_text_around_image(svg_blocks, block_id, lang)
+                text_content = generate_image_description(image_name)
+                # title = get_svg_title_around_image(svg_blocks, block_id, lang)
+                title = base_name
                 with open(f'{file_name}.txt', 'w', encoding='utf-8') as text_file:
                     text_file.write(title + '\n' + text_content.replace('\n', ' ') + f'\nbase name:{base_name}')
         except Exception as e:
@@ -206,36 +214,12 @@ def build_index(kb_name, lang='CN'):
             # print(content)
             # print("==========")
 
-    # writer.commit()
+    writer.commit()
     # return ix
 
 
 # Basic usage, convert all pdfs in a path and build index.
-import tqdm
-for file in tqdm.tqdm(os.listdir('datasets/test/pdfs')):
-    load_pdf('test', file)
+# import tqdm
+# for file in tqdm.tqdm(os.listdir('datasets/test/pdfs')):
+#     load_pdf('test', file)
 build_index('test')
-#
-# writer.commit()
-
-# Examples of how to search
-# from whoosh.index import open_dir
-# search_ix = open_dir('indexes')
-# query = "IF-428x接收端阈值"
-# results = search(search_ix, query, lang='CN', k=10)
-# for result in results:
-#     print(result)
-#
-# Examples of how to show image.
-# from PIL import Image
-# for result in results:
-#     image_name = result[0]
-#     base_name = image_name.split('_img')[0]
-#     img = Image.open('images/' + base_name + '/' + image_name + '.png')
-#     image_title = result[1].split('\n')[0].split(':')[1]
-#     img.show(title=image_title)
-
-# Examples of using API.
-# query = "CA-IF428x是什么"
-# response = "川土微为您提供的答案是：CA-IF428x 是一款符合家庭总线标准的全集成收发机，其电源和数据共用一对双绞线。CA-IF428x 支持超过 200kbps的数据传输，包含动态电缆匹配电阻，可调的接收端阈值及滞回，可调的发射端摆率等特性以改善复杂应用时的信号完整性等。"
-# print(search_images_from_response('test_kb', query, response))
