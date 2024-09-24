@@ -57,14 +57,22 @@ def _test_all():
 
     for user_input in user_inputs:
         user_input = user_input.strip()
-        ret_dict = do_core_query(user_input)
-        pprint(ret_dict)
 
-        user_input = user_input.replace("/", "_")
-        qa_path = os.path.join(dir_work, user_input + ".txt")
-        with open(qa_path, "w+") as f:
-            output = pformat(ret_dict)
-            f.write(output)
+        try:
+            ret_dict = do_core_query(user_input)
+            pprint(ret_dict)
+        except Exception as ex:
+            logging.exception(ex)
+            ret_dict = {"exception": str(ex)}
+
+        try:
+            user_input = user_input.replace("/", "_")
+            qa_path = os.path.join(dir_work, user_input + ".txt")
+            with open(qa_path, "w+") as f:
+                output = pformat(ret_dict)
+                f.write(output)
+        except Exception as ex:
+            logging.exception(ex)
 
 if __name__ == "__main__":
     _test_all()

@@ -114,6 +114,15 @@ def _call_generator(user_input, knowledge):
     
     return resp, chat_messages
 
+def _remove_ext(match):
+    match_noext = os.path.basename(match)
+    exts = [".csv", ".step1", ".pdf", ".docx", ".xlsx", ".md"]
+    for i in range(len(exts)):
+        for ext in exts:
+            if match_noext.endswith(ext):
+                match_noext = match_noext.replace(ext, "")
+    return match_noext
+
 def _locate_matched_raw_files(matches):
     from pathlib import Path
     dir_root = _get_root_dir()
@@ -125,9 +134,8 @@ def _locate_matched_raw_files(matches):
     for match in matches:
         match = match.strip()
         if len(match) > 0:
-            match_noext = match.replace(".csv", "").replace(".step1", "").replace(".pdf", "")
-            stem_only = str(Path(match_noext).stem)
-            fname_only = stem_only.strip().strip("\u3000")
+            match_noext = _remove_ext(match)
+            fname_only = match_noext.strip().strip("\u3000")
 
             for name in lst_names:
                 if name.find(fname_only) != -1:
