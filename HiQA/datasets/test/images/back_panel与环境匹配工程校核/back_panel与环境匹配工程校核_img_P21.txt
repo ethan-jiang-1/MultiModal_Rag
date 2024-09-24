@@ -1,0 +1,3 @@
+back_panel与环境匹配工程校核
+椅背板下端转角处，翻边处理。示意图
+base_name:back_panel与环境匹配工程校核
