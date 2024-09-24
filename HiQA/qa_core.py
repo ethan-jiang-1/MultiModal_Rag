@@ -158,8 +158,20 @@ def _check_soruce_matches(knowledge, response):
 
 def _check_source_citation(citations):
     matches = []
+
+    
     if isinstance(citations, str):
-        citations = citations.split("[Source File]")
+        new_citations = []
+        names = citations.split("[Source File]")
+        for name in names:
+            name = name.strip()
+            if len(name) > 0:
+                nns = name.split(",")
+                for nn in nns:
+                    nn = nn.strip()
+                    if len(nn) > 0:
+                        new_citations.append(nn)
+        citations = new_citations
 
     if isinstance(citations, list):
         for citation in citations:
