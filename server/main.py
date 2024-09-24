@@ -8,7 +8,6 @@ from multiprocessing import Manager
 from contextlib import asynccontextmanager
 from HiQA.qa_core import do_core_query, _get_root_dir
 
-
 # app.add_middleware(
 #     CORSMiddleware,
 #     allow_origins=["*"],  # 允许所有域名
@@ -33,7 +32,7 @@ async def lifespan(app: FastAPI):
 # 创建带有生命周期管理的 FastAPI 应用实例
 app = FastAPI(lifespan=lifespan)
 
-static_file_base = os.path.join(_get_root_dir(), "HiQA/datasets/test")
+static_file_base = os.path.join(_get_root_dir(), "HiQA/datasets")
 app.mount("/multimodalrag/static", StaticFiles(directory=static_file_base), name="static")
 
 @app.get("/multimodalrag/")
@@ -56,16 +55,16 @@ async def check_status(task_id: str, request: Request):
     return request.app.state.tasks.get(task_id, "Task not found")
 
 
-def update_task_status(task_id: str, status: str, progress: int, message: str):
-    app.state.tasks[task_id] = {
-        "status": status,
-        "progress": progress,
-        "message": message,
-    }
+# def update_task_status(task_id: str, status: str, progress: int, message: str):
+#     app.state.tasks[task_id] = {
+#         "status": status,
+#         "progress": progress,
+#         "message": message,
+#     }
 
 
 def _fix_result(rslt: dict) -> dict:
-    image_path_base = os.path.normpath(os.path.join(_get_root_dir(), "HiQA/datasets/test"))
+    image_path_base = os.path.normpath(os.path.join(_get_root_dir(), "HiQA/datasets"))
 
     def _fix_path(raw_path: str) -> str:
         norm_path = os.path.normpath(raw_path)
@@ -113,6 +112,7 @@ def start_background_task(question: str, tasks, background_tasks: BackgroundTask
     tasks[task_id] = {
         "status": "pending",
         "progress": 0,
+        "message": "查询中..."
     }  # 初始化任务状态为 pending
     # 使用 BackgroundTasks 启动后台任务
     background_tasks.add_task(call_do_query, question, tasks, task_id)
@@ -125,7 +125,6 @@ def open_result_file(file_path: str) -> str:
 
 
 if __name__ == "__main__":
-    from pprint import pprint
     import sys
     import json
 
