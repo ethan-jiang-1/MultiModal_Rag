@@ -1,5 +1,5 @@
 from dotenv import load_dotenv, find_dotenv
-import os, sys, logging
+import os, sys, logging, json
 from pprint import pformat
 
 load_dotenv()
@@ -71,7 +71,7 @@ def _call_retrival(user_input):
 
 # modification two: new instruction, beside the response, also answer which piece of knowleddge is relavent 
 
-role = """Role: You are a helpful assistant, you will answer questions as a professional support agent.\n" Note:
+role = """Role: You are a helpful assistant, you will answer questions as a professional support agent.  please responds only in JSON format. The response's answer should be in the "answer" field of the JSON, and the relevant segment's source information should be included in the "citation" field of the JSON \n" Note:
 1. When users ask questions, I will provide you with some information, please refer to the information and your own knowledge to answer.
 2. Each data Paragraph begins with "*** New Knowledge Paragraph ***", the next line [Source File] xxx [Source File] indicates the source of the file, The next line [Knowledge Title] xxx [Knowledge Title] indicates the title of this section, and the next line [Knowledge Content] xxx [Knowledge Content] is the knowledge content you are referring to.
 3. Your answers should be accurate and reasonable, but not summary.
@@ -80,7 +80,8 @@ role = """Role: You are a helpful assistant, you will answer questions as a prof
 6. If you are asked to answer a multiple choice question (single choice or multiple choice), analyze each choice first. After analyzing the choices, write the answer.
 7. If you use the table in your answer, please output the table in markdown's table format. The format of the table must strictly use markdown's format.
 8. If some data is not directly given, try to calculate through the given data first, show the calculation process, and then answer the question after the calculation step is complete.
-9. Please focus on answering the user's question, do not answer with irrelevant information."""
+9. Please focus on answering the user's question, do not answer with irrelevant information. 
+10. The answer needs to be found in different "*** New Knowledge Paragraph ***" information segments. If the information is found in a specific segment, include the [Source File] of that segment in the "citation" part of the JSON response."""
 
 
 def _call_generator(user_input, knowledge):
@@ -103,9 +104,9 @@ def _call_generator(user_input, knowledge):
         resp = client.chat.completions.create(
                 model=model_name,
                 # model='gpt-4-32k',
-            # max_tokens=4000,
+                # max_tokens=4000,
                 messages=chat_messages,
-                stream=False
+                stream=False,
         )
     except Exception as e:
         logging.exception(str(e))
@@ -124,7 +125,21 @@ def _check_soruce_matches(knowledge, response):
         logging.exception(str(e))
     return matches
 
-def _find_images(user_input, response_content, dataset):
+def _check_source_citation(citations):
+    import re
+    pattern = r"(?<=\[Source File\]\s)[^\[]+(?=\s\[Source File\])"
+
+    matches = []
+    if isinstance(citations, list):
+        for citation in citations:
+            matches_i = citation.replace("[Source File]", "").strip()
+            if len(matches_i) > 0:
+                matches.append(matches_i)
+    else:
+        matches = re.findall(pattern, citation)
+    return matches
+
+def _find_images_plain_content(user_input, response_content, dataset):
     from service.knowledge_client import search_images_from_response
 
     lst_image_n_title = []
@@ -177,16 +192,39 @@ def do_core_query(user_input):
     response_content = response.message.content
     logging.info(f"##response_content:\n {response_content}")
 
-    lst_source_matches = _check_soruce_matches(knowledge, response)
-    logging.info(f"##source_matches:\n {lst_source_matches}") 
+    response_json = None
+    try:
+        response_content = response_content.replace("```json\n", "")
+        response_content = response_content.replace("\n```", "")
+        response_json = json.loads(response_content)
+    except json.JSONDecodeError as ex:
+        logging.exception(str(e))
+        logging.warning(f"####response is not json:\n {response_content}")
 
-    lst_image_n_title_turple = _find_images(user_input, response_content, dataset)
-    logging.info(f"##image_n_title_turple: {lst_image_n_title_turple}")
+    lst_source_matches = []
+    if response_json is not None and "answer" in response_json and "citation" in response_json:
+        response_content = response_json.get("answer")
+
+        image_content = str(response_json.get("citation"))
+        lst_image_n_title = _find_images_plain_content(user_input, image_content, dataset)
+        logging.info(f"##image_n_title_turple: {lst_image_n_title}") 
+
+        citation = response_json["citation"]
+        lst_source_matches = _check_source_citation(citation)
+        logging.info(f"##source_matches:\n {lst_source_matches}")        
+    else:
+        image_content = response_content
+
+        lst_image_n_title = _find_images_plain_content(user_input, image_content, dataset)
+        logging.info(f"##image_n_title_turple: {lst_image_n_title}")
+
+        lst_source_matches = _check_soruce_matches(knowledge, response)
+        logging.info(f"##source_matches:\n {lst_source_matches}") 
 
     #ret_dict["response"] = response 
     ret_dict["response_content"] = response_content
     ret_dict["lst_source_matches"] = lst_source_matches
-    ret_dict["lst_image_n_title_turple"] = lst_image_n_title_turple
+    ret_dict["lst_image_n_title"] = lst_image_n_title
 
     pretty_str = pformat(ret_dict)
     logging.info(f"##ret_dict:\n {pretty_str}")
@@ -199,7 +237,8 @@ def do_core_query(user_input):
 if __name__ == "__main__":
     from pprint import pprint
     #user_input = "前后座椅H点参考距离是多少？"
-    user_input = "Ai在人力资源领域前景趋势"
+    #user_input = "Ai在人力资源领域前景趋势"
+    user_input = "有哪些比亚迪的项目"
 
     ret_dict = do_core_query(user_input)
     pprint(ret_dict)
