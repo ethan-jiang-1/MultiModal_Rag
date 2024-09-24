@@ -135,8 +135,10 @@ def _check_source_citation(citations):
             matches_i = citation.replace("[Source File]", "").strip()
             if len(matches_i) > 0:
                 matches.append(matches_i)
+    elif isinstance(citations, str):
+        matches = re.findall(pattern, citations)
     else:
-        matches = re.findall(pattern, citation)
+        matches = re.findall(pattern, str(citations))
     return matches
 
 def _find_images_plain_content(user_input, response_content, dataset):
@@ -158,6 +160,30 @@ def _find_images_plain_content(user_input, response_content, dataset):
     except Exception as e:
         logging.exception(str(e))
     return lst_image_n_title
+
+def _get_final_json(response_json, user_input, dataset):
+    response_answer = response_json.get("answer")
+
+    image_content = str(response_json.get("citation"))
+    lst_image_n_title = _find_images_plain_content(user_input, image_content, dataset)
+    logging.info(f"##image_n_title_turple: {lst_image_n_title}") 
+
+    citation = response_json["citation"]
+    lst_source_matches = _check_source_citation(citation)
+    logging.info(f"##source_matches:\n {lst_source_matches}")    
+    return response_answer, lst_image_n_title, lst_source_matches
+
+
+def _get_final_plain(response_content, user_input, dataset):
+    image_content = str(response_content)
+    response_answer = response_content
+
+    lst_image_n_title = _find_images_plain_content(user_input, image_content, dataset)
+    logging.info(f"##image_n_title_turple: {lst_image_n_title}")
+
+    lst_source_matches = _check_soruce_matches(knowledge, response)
+    logging.info(f"##source_matches:\n {lst_source_matches}")  
+    return response_answer, lst_image_n_title, lst_source_matches   
 
 
 def do_core_query(user_input):
@@ -201,28 +227,14 @@ def do_core_query(user_input):
         logging.exception(str(e))
         logging.warning(f"####response is not json:\n {response_content}")
 
-    lst_source_matches = []
     if response_json is not None and "answer" in response_json and "citation" in response_json:
-        response_content = response_json.get("answer")
-
-        image_content = str(response_json.get("citation"))
-        lst_image_n_title = _find_images_plain_content(user_input, image_content, dataset)
-        logging.info(f"##image_n_title_turple: {lst_image_n_title}") 
-
-        citation = response_json["citation"]
-        lst_source_matches = _check_source_citation(citation)
-        logging.info(f"##source_matches:\n {lst_source_matches}")        
+        response_answer, lst_image_n_title, lst_source_matches = _get_final_json(response_json, user_input, dataset)      
     else:
-        image_content = response_content
-
-        lst_image_n_title = _find_images_plain_content(user_input, image_content, dataset)
-        logging.info(f"##image_n_title_turple: {lst_image_n_title}")
-
-        lst_source_matches = _check_soruce_matches(knowledge, response)
-        logging.info(f"##source_matches:\n {lst_source_matches}") 
+        response_answer, lst_image_n_title, lst_source_matches = _get_final_plain(response_content, user_input, dataset)      
 
     #ret_dict["response"] = response 
-    ret_dict["response_content"] = response_content
+    ret_dict["user_input"] = user_input
+    ret_dict["response_answer"] = response_answer
     ret_dict["lst_source_matches"] = lst_source_matches
     ret_dict["lst_image_n_title"] = lst_image_n_title
 
