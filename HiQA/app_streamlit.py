@@ -106,7 +106,7 @@ if __name__ == '__main__':
                     print('after img, ' + str(time.time() - begin))
                     for image_full_path, title, score, file_name, content in images[:1]:
                         file_name = '_'.join(file_name.split('_')[:-3])
-                        
+                        print(image_full_path)
                         if title != 'Title not found':
                             image_placeholder.image(image_full_path, caption="Source - " + file_name + ",\t" + title)
                         else:

@@ -1,3 +1,3 @@
-座椅STO间隙_P10
+座椅STO间隙
 这张图片展示了座椅的不同位置和部件。上图左显示了座椅在“设计位置”（Design Position）时的状态，上图右显示了座椅在“全躺平”（Full Recline）时的状态。下图显示了座椅在“折叠平”（Fold Flat）时的状态，并且在座椅的某个部件上标注了“C19.3a”。
-base name:座椅STO间隙_P10
+base name:座椅STO间隙
