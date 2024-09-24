@@ -107,6 +107,7 @@ def _call_generator(user_input, knowledge):
                 # max_tokens=4000,
                 messages=chat_messages,
                 stream=False,
+                temperature=0.1 
         )
     except Exception as e:
         logging.exception(str(e))
@@ -124,9 +125,9 @@ def _locate_matched_raw_files(matches):
     for match in matches:
         match = match.strip()
         if len(match) > 0:
-            fname_only = str(Path(match).stem)
-            fname_only = fname_only.split(".")[0]
-            fname_only = fname_only.strip().strip("\u3000")
+            match_noext = match.replace(".csv", "").replace(".step1", "").replace(".pdf", "")
+            stem_only = str(Path(match_noext).stem)
+            fname_only = stem_only.strip().strip("\u3000")
 
             for name in lst_names:
                 if name.find(fname_only) != -1:
@@ -280,8 +281,9 @@ if __name__ == "__main__":
     user_inputs = []
     #user_inputs.append("前后座椅H点参考距离是多少？")
     #user_inputs.append("Ai在人力资源领域前景趋势")
-    #user_inputs.append("有哪些比亚迪的项目")
-    user_inputs.append("N-R17圆角的设计目标值是多少？/圆角目标值")
+    user_inputs.append("有哪些比亚迪的项目")
+    #user_inputs.append("N-R17圆角的设计目标值是多少？/圆角目标值")
+    #user_inputs.append("靠背STO间隙要求是什么？")
 
     for user_input in user_inputs:
         try:

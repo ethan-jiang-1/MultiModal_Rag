@@ -63,7 +63,7 @@ def _test_all():
         user_input = user_input.replace("/", "_")
         qa_path = os.path.join(dir_work, user_input + ".txt")
         with open(qa_path, "w+") as f:
-            output = pformat(ret_dict, indent=4)
+            output = pformat(ret_dict)
             f.write(output)
 
 if __name__ == "__main__":
