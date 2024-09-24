@@ -182,13 +182,13 @@ def _check_source_citation(citations):
     matches = _locate_matched_raw_files(matches)
     return matches
 
-def _find_images_json_content(user_input, response_content, dataset):
+def _find_images_json_content(user_input, response_content, dataset, source_match):
     from HiQA.service.knowledge_client import search_images_from_response
 
     lst_image_n_title = []
     image_path_base = os.path.join(_get_root_dir(), "HiQA/datasets/test")
     try:
-        images = search_images_from_response(user_input, response_content, dataset, image_path_base=image_path_base)
+        images = search_images_from_response(user_input, response_content, dataset, image_path_base=image_path_base, source_match=source_match)
         for image_full_path, title, score, file_name, content in images[:1]:
             file_name = '_'.join(file_name.split('_')[:-3])
             
@@ -230,8 +230,8 @@ def _get_final_json(response_json, user_input, dataset):
     logging.info(f"##source_matches:\n {lst_source_matches}")    
 
     if len(lst_source_matches) == 1:
-        image_content = str(response_json.get("anwser")) + " " + str(response_json.get("citation"))
-        lst_image_n_title = _find_images_json_content(user_input, image_content, dataset)
+        image_content = str(response_json.get("answer"))
+        lst_image_n_title = _find_images_json_content(user_input, image_content, dataset, lst_source_matches[0])
     else:
         lst_image_n_title = []
     logging.info(f"##image_n_title_turple: {lst_image_n_title}") 
