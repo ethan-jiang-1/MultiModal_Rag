@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from uuid import uuid4
 from multiprocessing import Manager
 from contextlib import asynccontextmanager
-# from HiQA.qa_core import do_core_query, _get_root_dir
+from HiQA.qa_core import do_core_query, _get_root_dir
 
 
 # app.add_middleware(
@@ -33,7 +33,8 @@ async def lifespan(app: FastAPI):
 # 创建带有生命周期管理的 FastAPI 应用实例
 app = FastAPI(lifespan=lifespan)
 
-app.mount("/multimodalrag/static", StaticFiles(directory="HiQA/datasets/test"), name="static")
+static_file_base = os.path.join(_get_root_dir(), "HiQA/datasets/test")
+app.mount("/multimodalrag/static", StaticFiles(directory=static_file_base), name="static")
 
 @app.get("/multimodalrag/")
 def make_report():
@@ -71,8 +72,16 @@ def _fix_result(rslt: dict) -> dict:
         return os.path.relpath(norm_path, image_path_base).replace('\\', '/')
     
     ret = copy.deepcopy(rslt)
-    for item in ret.get("lst_image_n_title_turple", []):
+    for item in ret.get("lst_image_n_title", []):
         item["src"] = _fix_path(item["image"])
+
+    temp = []
+    for url in ret.get("lst_source_matches", []):
+        temp.append({
+            "src": _fix_path(url),
+            "filename": os.path.basename(url)
+        })
+    ret["lst_source_matches"] = temp
     
     return ret
 
@@ -87,6 +96,7 @@ def call_do_query(question: str, tasks, task_id: str):
             tasks[task_id] = {
                 "status": "completed",
                 "progress": 100,
+                "question": question,
                 "content": rslt,
             }
             return tasks[task_id]
