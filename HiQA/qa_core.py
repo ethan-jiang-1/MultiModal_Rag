@@ -182,6 +182,26 @@ def _check_source_citation(citations):
     matches = _locate_matched_raw_files(matches)
     return matches
 
+def _find_images_json_content(user_input, response_content, dataset):
+    from HiQA.service.knowledge_client import search_images_from_response
+
+    lst_image_n_title = []
+    image_path_base = os.path.join(_get_root_dir(), "HiQA/datasets/test")
+    try:
+        images = search_images_from_response(user_input, response_content, dataset, image_path_base=image_path_base)
+        for image_full_path, title, score, file_name, content in images[:1]:
+            file_name = '_'.join(file_name.split('_')[:-3])
+            
+            if title != 'Title not found':
+                image_title = title
+            else:
+                image_title = ""
+            lst_image_n_title.append({"image":image_full_path, 
+                                      "title":image_title})
+    except Exception as e:
+        logging.exception(str(e))
+    return lst_image_n_title
+
 def _find_images_plain_content(user_input, response_content, dataset):
     from HiQA.service.knowledge_client import search_images_from_response
 
@@ -205,13 +225,18 @@ def _find_images_plain_content(user_input, response_content, dataset):
 def _get_final_json(response_json, user_input, dataset):
     response_answer = response_json.get("answer")
 
-    image_content = str(response_json.get("citation"))
-    lst_image_n_title = _find_images_plain_content(user_input, image_content, dataset)
-    logging.info(f"##image_n_title_turple: {lst_image_n_title}") 
-
     citation = response_json["citation"]
     lst_source_matches = _check_source_citation(citation)
     logging.info(f"##source_matches:\n {lst_source_matches}")    
+
+    if len(lst_source_matches) == 1:
+        image_content = str(response_json.get("anwser")) + " " + str(response_json.get("citation"))
+        lst_image_n_title = _find_images_json_content(user_input, image_content, dataset)
+    else:
+        lst_image_n_title = []
+    logging.info(f"##image_n_title_turple: {lst_image_n_title}") 
+
+
     return response_answer, lst_image_n_title, lst_source_matches
 
 
@@ -219,11 +244,12 @@ def _get_final_plain(response_content, user_input, dataset, knowledge):
     image_content = str(response_content)
     response_answer = response_content
 
+    lst_source_matches = _check_soruce_matches(knowledge, response_content)
+    logging.info(f"##source_matches:\n {lst_source_matches}")  
+
     lst_image_n_title = _find_images_plain_content(user_input, image_content, dataset)
     logging.info(f"##image_n_title_turple: {lst_image_n_title}")
 
-    lst_source_matches = _check_soruce_matches(knowledge, response_content)
-    logging.info(f"##source_matches:\n {lst_source_matches}")  
     return response_answer, lst_image_n_title, lst_source_matches   
 
 _hiqa_inited = False
