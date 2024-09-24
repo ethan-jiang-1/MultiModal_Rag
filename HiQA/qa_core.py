@@ -113,6 +113,27 @@ def _call_generator(user_input, knowledge):
     
     return resp, chat_messages
 
+def _locate_matched_raw_files(matches):
+    from pathlib import Path
+    dir_root = _get_root_dir()
+    dir_raw = os.path.join(dir_root, "HiQA/datasets/test/raw")
+    lst_names = os.listdir(dir_raw)
+    lst_names = sorted(lst_names, reverse=True)
+
+    matches_path = []
+    for match in matches:
+        match = match.strip()
+        if len(match) > 0:
+            fname_only = str(Path(match).stem)
+            fname_only = fname_only.split(".")[0]
+            fname_only = fname_only.strip().strip("\u3000")
+
+            for name in lst_names:
+                if name.find(fname_only) != -1:
+                    fpath = os.path.join(dir_raw, name)
+                    matches_path.append(fpath)
+    return matches_path
+
 # modification three,  pick up the information from response for which chunk is picked
 def _check_soruce_matches(knowledge, response):
     import re
@@ -123,6 +144,7 @@ def _check_soruce_matches(knowledge, response):
         matches = re.findall(pattern, knowledge)
     except Exception as e:
         logging.exception(str(e))
+    matches = _locate_matched_raw_files(matches)
     return matches
 
 def _check_source_citation(citations):
@@ -139,6 +161,7 @@ def _check_source_citation(citations):
         matches = re.findall(pattern, citations)
     else:
         matches = re.findall(pattern, str(citations))
+    matches = _locate_matched_raw_files(matches)
     return matches
 
 def _find_images_plain_content(user_input, response_content, dataset):
