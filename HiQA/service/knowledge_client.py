@@ -264,7 +264,7 @@ def has_key_words(item, product_in_query):
     return False
 
 
-def search_images_from_response(user_input, response, dataset, lang='CN', k=1000):
+def search_images_from_response(user_input, response, dataset, lang='CN', k=1000, image_path_base="E:/MultiModal_Rag/HiQA/datasets/test"):
     global ixs
     ix = ixs[dataset]
     if dataset == 'Product documents - Chipanalog':
@@ -319,7 +319,7 @@ def search_images_from_response(user_input, response, dataset, lang='CN', k=1000
             # print('content:', result[1])
             image_name = result[0]  # name
             base_name = image_name.split('_img')[0]
-            image_full_path = os.path.join("E:/MultiModal_Rag/HiQA/datasets/test", 'images', base_name, image_name + '.png')
+            image_full_path = os.path.join(image_path_base, 'images', base_name, image_name + '.png')
             image_full_path = os.path.abspath(image_full_path)
 
             try:

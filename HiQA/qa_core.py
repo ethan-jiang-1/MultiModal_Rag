@@ -69,6 +69,8 @@ def _call_retrival(user_input):
 
     return knowledge
 
+# modification two: new instruction, beside the response, also answer which piece of knowleddge is relavent 
+
 role = """Role: You are a helpful assistant, you will answer questions as a professional support agent.\n" Note:
 1. When users ask questions, I will provide you with some information, please refer to the information and your own knowledge to answer.
 2. Each data Paragraph begins with "*** New Knowledge Paragraph ***", the next line [Source File] xxx [Source File] indicates the source of the file, The next line [Knowledge Title] xxx [Knowledge Title] indicates the title of this section, and the next line [Knowledge Content] xxx [Knowledge Content] is the knowledge content you are referring to.
@@ -110,6 +112,7 @@ def _call_generator(user_input, knowledge):
     
     return resp, chat_messages
 
+# modification three,  pick up the information from response for which chunk is picked
 def _check_soruce_matches(knowledge, response):
     import re
     pattern = r"(?<=\[Source File\]\s)[^\[]+(?=\s\[Source File\])"
@@ -124,20 +127,22 @@ def _check_soruce_matches(knowledge, response):
 def _find_images(user_input, response_content, dataset):
     from service.knowledge_client import search_images_from_response
 
-    image_n_title_turple = []
+    lst_image_n_title = []
+    image_path_base = os.path.join(_get_root_dir(), "HiQA/datasets/test")
     try:
-        images = search_images_from_response(user_input, response_content, dataset)
+        images = search_images_from_response(user_input, response_content, dataset, image_path_base=image_path_base)
         for image_full_path, title, score, file_name, content in images[:1]:
             file_name = '_'.join(file_name.split('_')[:-3])
             
             if title != 'Title not found':
-                image_title = "Source - " + file_name + ",\t" + title
+                image_title = title
             else:
-                image_title = "Source - " + file_name
-            image_n_title_turple.append((image_full_path, image_title))
+                image_title = ""
+            lst_image_n_title.append({"image":image_full_path, 
+                                      "title":image_title})
     except Exception as e:
         logging.exception(str(e))
-    return image_n_title_turple
+    return lst_image_n_title
 
 
 def do_core_query(user_input):
@@ -156,6 +161,9 @@ def do_core_query(user_input):
          ret_dict["error"] = "knowledge is None"
          logging.error(f"##ret_dict: {ret_dict}")
          return ret_dict
+
+    #modification one: hack knowledge - to hook knowledge number in chunks
+    #knowledge = _hack_knowledge(knowledge)
 
     resp, chat_messages = _call_generator(user_input, knowledge)   
     if resp is None:
