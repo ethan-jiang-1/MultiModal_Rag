@@ -148,9 +148,6 @@ def _check_soruce_matches(knowledge, response):
     return matches
 
 def _check_source_citation(citations):
-    import re
-    pattern = r"(?<=\[Source File\]\s)[^\[]+(?=\s\[Source File\])"
-
     matches = []
     if isinstance(citations, list):
         for citation in citations:
@@ -158,9 +155,9 @@ def _check_source_citation(citations):
             if len(matches_i) > 0:
                 matches.append(matches_i)
     elif isinstance(citations, str):
-        matches = re.findall(pattern, citations)
+        matches = [citations.replace("[Source File]", "").strip()]
     else:
-        matches = re.findall(pattern, str(citations))
+        matches = [citations.replace("[Source File]", "").strip()]
     matches = _locate_matched_raw_files(matches)
     return matches
 
@@ -268,6 +265,7 @@ def do_core_query(user_input):
     ret_dict["lst_source_matches"] = lst_source_matches
     ret_dict["lst_image_n_title"] = lst_image_n_title
     ret_dict["llm_response_content"] = response_content
+    ret_dict["llm_response_json"] = response_json
 
     pretty_str = pformat(ret_dict)
     logging.info(f"##ret_dict:\n {pretty_str}")
@@ -280,9 +278,10 @@ def do_core_query(user_input):
 if __name__ == "__main__":
     from pprint import pprint
     user_inputs = []
-    user_inputs.append("前后座椅H点参考距离是多少？")
-    user_inputs.append("Ai在人力资源领域前景趋势")
-    user_inputs.append("有哪些比亚迪的项目")
+    #user_inputs.append("前后座椅H点参考距离是多少？")
+    #user_inputs.append("Ai在人力资源领域前景趋势")
+    #user_inputs.append("有哪些比亚迪的项目")
+    user_inputs.append("N-R17圆角的设计目标值是多少？/圆角目标值")
 
     for user_input in user_inputs:
         try:
