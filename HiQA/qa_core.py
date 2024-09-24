@@ -14,7 +14,7 @@ def _add_lib_paths():
     dir_hiqa = os.path.join(dir_root, "HiQA")
     new_paths.append(dir_root)
     new_paths.append(dir_hiqa)
-    new_paths.append(os.path.dirname(__file__))
+    #new_paths.append(os.path.dirname(__file__))
     for new_path in new_paths:
         if new_path not in sys.path:
             print(f"add sys_path: {new_path}")
@@ -116,7 +116,7 @@ def _call_generator(user_input, knowledge):
 def _locate_matched_raw_files(matches):
     from pathlib import Path
     dir_root = _get_root_dir()
-    dir_raw = os.path.join(dir_root, "HiQA/datasets/test/raw")
+    dir_raw = os.path.join(dir_root, "HiQA/datasets/raw")
     lst_names = os.listdir(dir_raw)
     lst_names = sorted(lst_names, reverse=True)
 
@@ -165,7 +165,7 @@ def _check_source_citation(citations):
     return matches
 
 def _find_images_plain_content(user_input, response_content, dataset):
-    from service.knowledge_client import search_images_from_response
+    from HiQA.service.knowledge_client import search_images_from_response
 
     lst_image_n_title = []
     image_path_base = os.path.join(_get_root_dir(), "HiQA/datasets/test")
@@ -197,27 +197,34 @@ def _get_final_json(response_json, user_input, dataset):
     return response_answer, lst_image_n_title, lst_source_matches
 
 
-def _get_final_plain(response_content, user_input, dataset):
+def _get_final_plain(response_content, user_input, dataset, knowledge):
     image_content = str(response_content)
     response_answer = response_content
 
     lst_image_n_title = _find_images_plain_content(user_input, image_content, dataset)
     logging.info(f"##image_n_title_turple: {lst_image_n_title}")
 
-    lst_source_matches = _check_soruce_matches(knowledge, response)
+    lst_source_matches = _check_soruce_matches(knowledge, response_content)
     logging.info(f"##source_matches:\n {lst_source_matches}")  
     return response_answer, lst_image_n_title, lst_source_matches   
+
+_hiqa_inited = False
+def _init_hiqa():
+    global _hiqa_inited
+    if not _hiqa_inited:
+        from HiQA.service.knowledge_client import init_state
+        logging.info(f"##init_state: {init_state}")
+        _hiqa_inited = True
 
 
 def do_core_query(user_input):
     ret_dict = {}
 
+    _init_hiqa()
+
     dataset ='test'
     logging.info("\n\n\n*********\n")
     logging.info(f"##do_core_query: {user_input}")
-
-    from HiQA.service.knowledge_client import init_state
-    logging.info(f"##init_state: {init_state}")
 
     knowledge = _call_retrival(user_input)
     logging.info(f"##knowledge:\n {knowledge}")
@@ -247,19 +254,20 @@ def do_core_query(user_input):
         response_content = response_content.replace("\n```", "")
         response_json = json.loads(response_content)
     except json.JSONDecodeError as ex:
-        logging.exception(str(e))
+        logging.exception(str(ex))
         logging.warning(f"####response is not json:\n {response_content}")
 
     if response_json is not None and "answer" in response_json and "citation" in response_json:
         response_answer, lst_image_n_title, lst_source_matches = _get_final_json(response_json, user_input, dataset)      
     else:
-        response_answer, lst_image_n_title, lst_source_matches = _get_final_plain(response_content, user_input, dataset)      
+        response_answer, lst_image_n_title, lst_source_matches = _get_final_plain(response_content, user_input, dataset, knowledge)      
 
     #ret_dict["response"] = response 
     ret_dict["user_input"] = user_input
     ret_dict["response_answer"] = response_answer
     ret_dict["lst_source_matches"] = lst_source_matches
     ret_dict["lst_image_n_title"] = lst_image_n_title
+    ret_dict["llm_response_content"] = response_content
 
     pretty_str = pformat(ret_dict)
     logging.info(f"##ret_dict:\n {pretty_str}")
@@ -271,10 +279,14 @@ def do_core_query(user_input):
 
 if __name__ == "__main__":
     from pprint import pprint
-    #user_input = "前后座椅H点参考距离是多少？"
-    #user_input = "Ai在人力资源领域前景趋势"
-    user_input = "有哪些比亚迪的项目"
+    user_inputs = []
+    user_inputs.append("前后座椅H点参考距离是多少？")
+    user_inputs.append("Ai在人力资源领域前景趋势")
+    user_inputs.append("有哪些比亚迪的项目")
 
-    ret_dict = do_core_query(user_input)
-    pprint(ret_dict)
-
+    for user_input in user_inputs:
+        try:
+            ret_dict = do_core_query(user_input)
+            pprint(ret_dict)
+        except Exception as ex:
+            logging.exception(ex)

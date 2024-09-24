@@ -117,3 +117,5 @@ docker-compose.yml
 *.swo
 *.iml
 
+_work/
+_work
