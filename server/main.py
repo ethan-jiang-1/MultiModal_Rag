@@ -7,6 +7,8 @@ from uuid import uuid4
 from multiprocessing import Manager
 from contextlib import asynccontextmanager
 from HiQA.qa_core import do_core_query, _get_root_dir
+import subprocess
+import asyncio
 
 # app.add_middleware(
 #     CORSMiddleware,
@@ -38,6 +40,30 @@ app.mount("/multimodalrag/static", StaticFiles(directory=static_file_base), name
 @app.get("/multimodalrag/")
 def make_report():
     return "hello from MultiModal-Rag"
+
+
+@app.get("/multimodalrag/update_and_reload/")
+async def update_and_reload():
+    try:
+        # 执行shell指令，调用git pull
+        result = subprocess.run(
+            ["git", "pull"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+
+        # 打印执行结果
+        message = result.stdout.decode()
+        error = result.stderr.decode()
+        print("stdout:", message)
+        print("stderr:", error)
+        await asyncio.sleep(3)
+
+        return "Update and reload successfully"
+    except Exception as e:
+        print("Failed to update and reload:", e)
+        # logger.error(f"Failed to update and reload: {e}")
+        return '''Failed to update and reload
+            {e}
+        '''
 
 
 class RequestRag(BaseModel):
