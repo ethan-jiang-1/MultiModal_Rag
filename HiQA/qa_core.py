@@ -1,5 +1,5 @@
 from dotenv import load_dotenv, find_dotenv
-import os, sys, logging, json
+import os, sys, logging, json, random
 from pprint import pformat
 
 load_dotenv()
@@ -56,16 +56,21 @@ def _ensure_working_dir():
 _ensure_working_dir()
 
 def _call_retrival(user_input):
-    from HiQA.service.knowledge_client import get_knowledge
     import time 
+    knowleddge = None 
+    try:
+        from HiQA.service.knowledge_client import get_knowledge
 
-    only_vec = False
-    max_tokens = 8000
-    dataset = 'test'
+        only_vec = False
+        max_tokens = 8000
+        dataset = 'test'
 
-    begin = time.time()
-    knowledge = get_knowledge(user_input, max_tokens, dataset, begin, only_vec=only_vec, verbose=True)
-    #knowledge = _hack_knowledge(knowledge)
+        begin = time.time()
+        knowledge = get_knowledge(user_input, max_tokens, dataset, begin, only_vec=only_vec, verbose=True)
+        #knowledge = _hack_knowledge(knowledge)
+    except Exception as ex:
+        logging.exception(str(ex))
+        logging.error(f"CR: exception occured {ex}")
 
     return knowledge
 
@@ -111,6 +116,7 @@ def _call_generator(user_input, knowledge):
         )
     except Exception as e:
         logging.exception(str(e))
+        logging.error(f"CG: exception occured: {e}")
     
     return resp, chat_messages
 
@@ -266,28 +272,38 @@ def do_core_query(user_input):
 
     _init_hiqa()
 
+    req_id = random.randint(10000, 99999)
+
     dataset ='test'
-    logging.info("\n\n\n*********\n")
+    logging.info(f"\n\n\n***** REQ{req_id} started ****")
     logging.info(f"##do_core_query: {user_input}")
+    ret_dict["req_id"] = req_id
 
     knowledge = _call_retrival(user_input)
     logging.info(f"##knowledge:\n {knowledge}")
     if knowledge is None: 
          ret_dict["error"] = "knowledge is None"
-         logging.error(f"##ret_dict: {ret_dict}")
+         logging.error(f"##ret_dict(e0): {ret_dict}")
          return ret_dict
 
     #modification one: hack knowledge - to hook knowledge number in chunks
     #knowledge = _hack_knowledge(knowledge)
 
     resp, chat_messages = _call_generator(user_input, knowledge)   
-    if resp is None:
+    if resp is None or not hasattr(resp, "choices"):
         ret_dict["error"] = "response is None"
-        logging.error(f"##ret_dict: {ret_dict}")
+        ret_dict["resp"] = resp
+        logging.error(f"##ret_dict(e1): {ret_dict}")
         return ret_dict 
 
     response = resp.choices[0]
     logging.info(f"##response:\n {response}")
+    if not hasattr(response, "message"): 
+        ret_dict["error"] = "response is invalid"
+        ret_dict["resp"] = resp
+        ret_dict["response"] = response
+        logging.error(f"##ret_dict(e2): {ret_dict}")
+        return ret_dict         
 
     response_content = response.message.content
     logging.info(f"##response_content:\n {response_content}")
@@ -301,10 +317,14 @@ def do_core_query(user_input):
         logging.exception(str(ex))
         logging.warning(f"####response is not json:\n {response_content}")
 
-    if response_json is not None and "answer" in response_json and "citation" in response_json:
-        response_answer, lst_image_n_title, lst_source_matches = _get_final_json(response_json, user_input, dataset)      
-    else:
-        response_answer, lst_image_n_title, lst_source_matches = _get_final_plain(response_content, user_input, dataset, knowledge)      
+    try:
+        if response_json is not None and "answer" in response_json and "citation" in response_json:
+            response_answer, lst_image_n_title, lst_source_matches = _get_final_json(response_json, user_input, dataset)      
+        else:
+            response_answer, lst_image_n_title, lst_source_matches = _get_final_plain(response_content, user_input, dataset, knowledge)
+    except Exception as ex: 
+        logging.exception(str(ex))
+        raise ex      
 
     #ret_dict["response"] = response 
     ret_dict["user_input"] = user_input
@@ -315,7 +335,8 @@ def do_core_query(user_input):
     ret_dict["llm_response_json"] = response_json
 
     pretty_str = pformat(ret_dict)
-    logging.info(f"##ret_dict:\n {pretty_str}")
+    logging.info(f"##ret_dict: \n {pretty_str}")
+    logging.info(f"\n**** REQ{req_id}:ended ****\n\n")
     logging.info("")
 
     return ret_dict
