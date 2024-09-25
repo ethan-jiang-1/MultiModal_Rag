@@ -57,7 +57,10 @@ async def update_and_reload():
         print("stderr:", error)
         await asyncio.sleep(3)
 
-        return "Update and reload successfully"
+        return f'''Update and reload successfully
+            stdout: {message}
+            stderr: {error}
+        '''
     except Exception as e:
         print("Failed to update and reload:", e)
         # logger.error(f"Failed to update and reload: {e}")
