@@ -59,10 +59,14 @@ if __name__ == "__main__":
     #user_inputs.append("前后座椅H点参考距离是多少？")
     #user_inputs.append("Ai在人力资源领域前景趋势")
     #user_inputs.append("有哪些比亚迪的项目")
-    user_inputs.append("N-R17圆角的设计目标值是多少？/圆角目标值")
+    #user_inputs.append("N-R17圆角的设计目标值是多少？/圆角目标值")
     #user_inputs.append("靠背STO间隙要求是什么？")
     #user_inputs.append("主管的培训课程涉及什么")
     #user_inputs.append("有哪些关于电子电器的项目")
+
+    #user_inputs.append("你好")
+    #user_inputs.append("我什么都不知道，你能帮助我什么")
+    user_inputs.append("帮助我写一首唐诗吧")
 
     for user_input in user_inputs:
         try:
