@@ -39,7 +39,7 @@ app.mount("/multimodalrag/static", StaticFiles(directory=static_file_base), name
 
 @app.get("/multimodalrag/")
 def make_report():
-    return "hello from MultiModal-Rag"
+    return "hello from MultiModal-Rag 2"
 
 
 @app.get("/multimodalrag/update_and_reload/")
