@@ -278,11 +278,15 @@ def do_core_query(user_input):
     logging.info(f"\n\n\n***** REQ{req_id} started ****")
     logging.info(f"##do_core_query: {user_input}")
     ret_dict["req_id"] = req_id
+    ret_dict["user_input"] = user_input
+    ret_dict["response_answer"] = ""
+    ret_dict["lst_source_matches"] = []
+    ret_dict["lst_image_n_title"] = []
 
     knowledge = _call_retrival(user_input)
     logging.info(f"##knowledge:\n {knowledge}")
     if knowledge is None: 
-         ret_dict["error"] = "knowledge is None"
+         ret_dict["response_answer"] = "ERROR: retrival knowledge is None"
          logging.error(f"##ret_dict(e0): {ret_dict}")
          return ret_dict
 
@@ -291,17 +295,17 @@ def do_core_query(user_input):
 
     resp, chat_messages = _call_generator(user_input, knowledge)   
     if resp is None or not hasattr(resp, "choices"):
-        ret_dict["error"] = "response is None"
-        ret_dict["resp"] = resp
+        ret_dict["response_answer"] = "ERROR: llm response is None"
+        ret_dict["debug_resp"] = resp
         logging.error(f"##ret_dict(e1): {ret_dict}")
         return ret_dict 
 
     response = resp.choices[0]
     logging.info(f"##response:\n {response}")
     if not hasattr(response, "message"): 
-        ret_dict["error"] = "response is invalid"
-        ret_dict["resp"] = resp
-        ret_dict["response"] = response
+        ret_dict["response_answer"] = "ERROR: llm response is invalid"
+        ret_dict["debug_resp"] = resp
+        ret_dict["debug_response"] = response
         logging.error(f"##ret_dict(e2): {ret_dict}")
         return ret_dict         
 
@@ -324,7 +328,8 @@ def do_core_query(user_input):
             response_answer, lst_image_n_title, lst_source_matches = _get_final_plain(response_content, user_input, dataset, knowledge)
     except Exception as ex: 
         logging.exception(str(ex))
-        raise ex      
+        ret_dict["response_answer"] = "ERROR: failed to process image or source" 
+        ret_dict["debug_ex"] = str(ex) 
 
     #ret_dict["response"] = response 
     ret_dict["user_input"] = user_input
