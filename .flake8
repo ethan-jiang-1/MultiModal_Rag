@@ -1,0 +1,15 @@
+[flake8]
+# 忽略的警告代码
+ignore = E226, W503, E241, F541, E502, E303 F403, E123, E111, E225, E231, E302,E41, E402, W291, W293, E266, E265, E305, E126, E128, E121, E122, W292, E261, E501, W504, E114, E117, E116, W391
+
+# 指定最大行长度
+max-line-length = 256
+
+# 指定要排除的目录 
+exclude = 
+    .git,
+    __pycache__,
+    venv,
+    example,
+    mds,
+    raw,

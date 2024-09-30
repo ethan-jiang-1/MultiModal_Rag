@@ -2,43 +2,50 @@ import os
 import random
 import tempfile
 import sys
-import rich
+#import rich
 import chromadb
 import tiktoken
 import jieba
 import pandas as pd
+import logging
+
+import time
+from chromadb.config import Settings # , DEFAULT_TENANT, DEFAULT_DATABASE
 from whoosh.index import open_dir
 from whoosh.index import create_in
-from PIL import Image
-from utils.filter import filter_product_names, filter_knowledge, critic_keywords
-import time
-from chromadb.config import Settings, DEFAULT_TENANT, DEFAULT_DATABASE
 from whoosh.qparser import OrGroup
-import openai
-
 from whoosh.fields import Schema, TEXT, ID
 from whoosh.qparser import QueryParser
-import os
-from utils.openai_proxy import get_embedding
-from utils.tokenizer import ChineseAnalyzer
 
 import requests
 from rank_bm25 import BM25Okapi
-settings = Settings(allow_reset=True)
 
-ixs = None
-collections = None
-enemy_collection = None
-init_state = False
-encoding = None
+if "./" not in sys.path:
+    sys.path.append("./")
 
+from HiQA.utils.filter import filter_product_names, filter_knowledge # , critic_keywords
+from HiQA.utils.openai_proxy import get_embedding
+from HiQA.utils.tokenizer import ChineseAnalyzer
+from HiQA.utils.util_logging import get_logger_progress, setup_logger_handlers
+from HiQA.utils.util_file import get_root_dir
+
+logger_prg = get_logger_progress()
+
+g_settings = Settings(allow_reset=True)
+
+g_ixs = None
+g_collections = None
+g_encoding = None
 
 def get_knowledge(question, max_token, dataset, begin=None, only_vec=False, verbose=False):
     if not begin:
         begin = time.time()
+    logger_prg.info("step2.1: 25%: 召回相关知识#嵌入向量准备")
     question_embd = get_embedding(question)
     if verbose:
         print('after embedding', time.time() - begin)
+
+    logger_prg.info("step2.2: 30%: 召回相关知识#召回内容片段")
     knowledge = retrieve_knowledge(question, question_embd, max_token, dataset, begin, only_vec=only_vec, verbose=verbose)
     if verbose:
         print('knowledge length', len(knowledge))
@@ -69,6 +76,9 @@ def reset_by_jina(question, results, jina_weight=0.8, bm25_weight=0.5):
     response = requests.post(url, json=data)
     jina_results = response.json()  # 假设返回的是一个按分数排序的元组列表 [(score, document)]
 
+    jina_results_scores = [item[0] for item in jina_results]
+    jina_results_documents = [item[1] for item in jina_results]
+
     # 准备文件名和BM25计算
     filenames = [meta['filename'] for meta in metas]  # 提取所有文件名
     tokenized_filenames = [list(jieba.cut(filename)) for filename in filenames]  # 对文件名进行分词
@@ -80,7 +90,8 @@ def reset_by_jina(question, results, jina_weight=0.8, bm25_weight=0.5):
 
     # Jina返回结果已经按分数排序，使用文档重排原始的 ids 和 metas
     result_list = []
-    for jina_score, doc in zip(jina_results['scores'], jina_results['documents']):
+    #for jina_score, doc in zip(jina_results['scores'], jina_results['documents']):
+    for jina_score, doc in zip(jina_results_scores, jina_results_documents):
         idx = documents.index(doc)  # 找到文档在原始 documents 列表中的索引
         # 基于距离、BM25 和 Jina评分加权
         base_score = 1 - normalized_distances[idx]  # 距离越小，得分越高
@@ -164,6 +175,7 @@ def reset_by_lucene(question, results, threshold, lucene_weight):
                 normalized_scores = [score / max_score for score in scores]
                 id_to_score = {hit["id"]: normalized_scores[i] for i, hit in enumerate(query_results)}
     except Exception as e:
+        logging.exception(e)
         pass
     for i, res in enumerate(result_list):
         if res[0] in id_to_score:
@@ -183,36 +195,41 @@ def reset_by_lucene(question, results, threshold, lucene_weight):
     return string_list
 
 
-def retrieve_knowledge(question, question_embd, max_token, dataset, begin, only_vec=False, verbose=False):
-    global init_state
-    global collections
-    global encoding
-
-    if not init_state:
-        init_state = True
-
-    collection = collections[dataset]
+def _do_query_based_on_question_and_dataset(question, collection, question_embd, dataset):
     question = question.upper() # .replace('3741X', '3741').replace('3641X', '3641').replace('3742X', '3741').replace('3642X', '3641')
-    if question.__contains__('经销商') or question.__contains__('销售') or question.__contains__('营销'):
-        results = collection.query(
-            query_embeddings=question_embd,
-            n_results=50,
-            where_document={"$contains": "经销商"}
-        )
-    elif dataset == 'Product documents - Chipanalog' and (question.__contains__('竞品') or question.__contains__('替代') or question.__contains__('代替') \
-            or question.__contains__('竞对') or question.__contains__('竞争') or question.__contains__('对手') \
-            or question.__contains__('功能一样') or question.__contains__('功能相同') or question.__contains__(
-        '功能相似') \
-            or question.__contains__('替换')):
-        results = enemy_collection.query(
-            query_embeddings=question_embd,
-            n_results=50,
-        )
-    else:
-        results = collection.query(
-            question_embd,
-            n_results=50
-        )
+    # if question.__contains__('经销商') or question.__contains__('销售') or question.__contains__('营销'):
+    #     results = collection.query(
+    #         query_embeddings=question_embd,
+    #         n_results=50,
+    #         where_document={"$contains": "经销商"}
+    #     )
+    # elif dataset == 'Product documents - Chipanalog' and (question.__contains__('竞品') or question.__contains__('替代') or question.__contains__('代替') \
+    #         or question.__contains__('竞对') or question.__contains__('竞争') or question.__contains__('对手') \
+    #         or question.__contains__('功能一样') or question.__contains__('功能相同') or question.__contains__(
+    #     '功能相似') \
+    #         or question.__contains__('替换')):
+    #     results = enemy_collection.query(
+    #         query_embeddings=question_embd,
+    #         n_results=50,
+    #     )
+    # else:
+    results = collection.query(
+        question_embd,
+        n_results=50
+    )
+    return results
+
+def retrieve_knowledge(question, question_embd, max_token, dataset, begin, only_vec=False, verbose=False):
+    global g_init_state
+    global g_collections
+    global g_encoding
+
+    if g_collections is None:
+        raise ValueError("KC is not inited")
+
+    collection = g_collections[dataset]
+
+    results = _do_query_based_on_question_and_dataset(question, collection, question_embd, dataset)
 
     if only_vec:
         result_list = [doc for doc in results['documents'][0]]
@@ -229,11 +246,14 @@ def retrieve_knowledge(question, question_embd, max_token, dataset, begin, only_
     if verbose:
         print('after retrieve', time.time() - begin)
     # result_list = reset_by_lucene(question, results, threshold=0.5, lucene_weight=0.5)
+
+    logger_prg.info("step2.3: 35%: 召回相关知识#按内容相关性重排序")
     result_list = reset_by_jina(question, results)
     
     if verbose:
         print('after rank by lucene', time.time() - begin)
 
+    logger_prg.info("step2.4: 40%: 召回相关知识#过滤知识片段")
     returned_values = filter_knowledge(question, result_list)
 
     if verbose:
@@ -243,13 +263,13 @@ def retrieve_knowledge(question, question_embd, max_token, dataset, begin, only_
     all_text = returned_values
 
     # reduce length to max_token
-    tokens = encoding.encode(all_text)
+    tokens = g_encoding.encode(all_text)
     truncated_text = all_text
 
     max_token = int(max_token)
     while len(tokens) > max_token:
         truncated_text = truncated_text[:-200]
-        tokens = encoding.encode(truncated_text)
+        tokens = g_encoding.encode(truncated_text)
     if verbose:
         print('after truncate', time.time() - begin)
     return truncated_text
@@ -264,33 +284,44 @@ def has_key_words(item, product_in_query):
     return False
 
 
-def search_images_from_response(user_input, response, dataset, lang='CN', k=1000, 
-                                image_path_base="E:/MultiModal_Rag/HiQA/datasets/test",
+def _get_images_foldernames(kb_name):
+    dir_root = get_root_dir()
+    dir_images = os.path.join(dir_root,f'datasets/{kb_name}/images')
+    if not os.path.isdir(dir_images):
+        return []
+
+    # 获取目录下的所有文件和子目录名
+    entries = os.listdir(dir_images)
+
+    # 过滤出子目录，并对其进行排序
+    subdirectories = sorted([d for d in entries if os.path.isdir(os.path.join(dir_images, d))])
+    return subdirectories
+
+
+def search_images_from_response(user_input, response, kb_name, lang='CN', k=1000, 
+                                image_path_base=None,
                                 source_match=None):
-    global ixs
+    global g_ixs
     if source_match is None:
         return []
 
+    dir_root = get_root_dir()
+    if kb_name == 'test':
+        directory = os.path.join(dir_root,f'datasets/{kb_name}/')
+        if not os.path.isdir(directory):
+            raise ValueError(f"dataset: {directory} not exist")
+    else:
+        logging.waring(f"what? is dataset {kb_name}?")
+        raise ValueError(f"dataset {kb_name} not supported yet")
+
+    if image_path_base is None:
+        image_path_base = os.path.join(dir_root, f"datasets/{kb_name}")
+
     source_match_name = os.path.basename(source_match)
 
-    ix = ixs[dataset]
-    if dataset == 'Product documents - Chipanalog':
-        directory = 'datasets/1_Chipanalog/'
-    if dataset == 'Product documents - Chipanalog':
-        directory = 'datasets/2_Analog_Book/'
-    if dataset == 'Product documents - Texas Instruments':
-        directory = 'datasets/4_Texas Instruments/'
-    if dataset == 'test':
-        directory = '/datasets/test/'
+    ix = g_ixs[kb_name]
+    default_products = _get_images_foldernames(kb_name)
 
-    default_products = ['AIGC时代的人力资源管理进化(徐刚)', 
-                        '业绩案例、上汽内外饰DRE外包框架服务合同', 
-                        '业绩案例、上汽内外饰部CAD外包框架服务合同', 
-                        '业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）', 
-                        '业绩案例、比亚迪ST2H项目低压线束设计技术服务合同（电子电器）', 
-                        '业绩案例、比亚迪车架总成技术服务合同', 
-                        '业绩案例、比亚迪铝大梁式车架及副车架设计外包中标通知书', 
-                        '业绩案例、比亚迪驻场线束设计技术服务合同（电子电器）']
     product_in_query = filter_product_names(user_input, default_products)
     product_in_response = filter_product_names(response, default_products)
     # print('product_in_query', product_in_query)
@@ -433,52 +464,68 @@ def create_and_load_collection(client, base_name, dataset_path):
     for filename in os.listdir(dataset_path):
         if filename.endswith('.csv'):
             filepath = os.path.join(dataset_path, filename)
-            df = pd.read_csv(filepath)
-            for _, row in df.iterrows():
-                section = row['section']
-                n_tokens = row['n_tokens']
-                embedding = [float(value) for value in row['embedding'][1:-1].split(',')]
-                embds.append(embedding)
-                docs.append(section)
-                ids.append('id' + str(id))
-                metas.append({'n_tokens': n_tokens, 'filename': filename, 'title': section.split('\n')[0]})
-                id += 1
+            if os.path.getsize(filepath) <= 2:
+                logging.warning(f"{filepath} is empty")
+                continue
+            try:
+                df = pd.read_csv(filepath)
+                for _, row in df.iterrows():
+                    section = row['section']
+                    n_tokens = row['n_tokens']
+                    embedding = [float(value) for value in row['embedding'][1:-1].split(',')]
+                    embds.append(embedding)
+                    docs.append(section)
+                    ids.append('id' + str(id))
+                    metas.append({'n_tokens': n_tokens, 'filename': filename, 'title': section.split('\n')[0]})
+                    id += 1
+            except Exception as ex:
+                logging.exception(f"{ex} @{filepath}")
+
     collection.add(embeddings=embds, documents=docs, metadatas=metas, ids=ids)
     return collection
 
 
-def init():
-    global encoding
-    global ixs
-    global collections
-    global init_state
-    global enemy_collection
+def init_kc(kb_name):
+    global g_encoding
+    global g_ixs
+    global g_collections
+    global g_settings
+    #global enemy_collection
 
-    if init_state:
-        return
+    if g_collections is not None and kb_name in g_collections:
+        return True
 
-    print('init project')
-    'or'.join(jieba.cut("pre load"))
+    try:
+        setup_logger_handlers()
+        logging.info(f'init project, kb_name:{kb_name}')
 
-    # load whoosh dictionary
-    ix_test = open_dir('datasets/test/indexes')
+        'or'.join(jieba.cut("pre load"))
 
-    ixs = {'test': ix_test}
-    
+        dir_root = get_root_dir()
 
-    embedding_encoding = "cl100k_base"
-    encoding = tiktoken.get_encoding(embedding_encoding)
+        # load whoosh dictionary
+        ix_test = open_dir(os.path.join(dir_root, f'datasets/{kb_name}/indexes'))
 
-    chroma_client = chromadb.Client(settings=settings)
-    chroma_client.reset()
+        g_ixs = {}
+        g_ixs[kb_name] = ix_test
 
-    collections = {}
-    collections['test'] = create_and_load_collection(chroma_client, "test", 'datasets/test/embeddings')
+        embedding_encoding = "cl100k_base"
+        g_encoding = tiktoken.get_encoding(embedding_encoding)
 
-    print('load data successful')
+        chroma_client = chromadb.Client(settings=g_settings)
+        chroma_client.reset()
 
+        g_collections = {}
+        g_collections[kb_name] = create_and_load_collection(chroma_client, kb_name, os.path.join(dir_root, f'datasets/{kb_name}/embeddings'))
 
-if not init_state:
-    init()
-    init_state = True
+        logging.info(f'load kb_name:{kb_name} successful')
+
+        return True
+
+    except Exception as ex:
+        logging.exception(ex)
+        return False
+
+if __name__ == "__main__":
+    init_kc("test")
 

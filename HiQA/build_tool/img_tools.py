@@ -2,11 +2,13 @@ import xml.etree.ElementTree as ET
 from whoosh.analysis import Tokenizer, Token
 import jieba
 
+
 def get_adjacent_lines(blocks, block_index):
     """
     Returns two lists: the lines of text before and after the block at block_index.
     Each list contains lines in order from closest to furthest from the block.
     """
+
     def is_same_line(origin1, origin2):
         # Adjust this threshold if needed
         THRESHOLD = 10
@@ -49,7 +51,7 @@ def get_adjacent_lines(blocks, block_index):
     return lines_before, lines_after
 
 
-def get_text_around_image(blocks, image_index,  lang='CN', word_count=50):
+def get_text_around_image(blocks, image_index, lang='CN', word_count=50):
     before_lines, after_lines = get_adjacent_lines(blocks, image_index)
 
     # print(before_lines)
@@ -117,7 +119,7 @@ def transform_to_array(trans):
         if item[0] == '.':
             arr.append(float('0' + item))
         elif item[0] == '-':
-            arr.append(float('-0'+item[1:]))
+            arr.append(float('-0' + item[1:]))
         else:
             arr.append(float(item))
     return arr
@@ -140,7 +142,7 @@ def parse_page_svg(svg, page_id):
     main_g = root.find('{http://www.w3.org/2000/svg}g')
 
     page_size = f'H{width}V{height}'
-    gs = main_g.findall('{http://www.w3.org/2000/svg}g')
+    gs = main_g.findall('{http://www.w3.org/2000/svg}g')  # noqa
 
     block_id = 0
     img_clips = []
@@ -177,35 +179,46 @@ def parse_page_svg(svg, page_id):
         if clip_path and '#clip_' in clip_path:
             clip_id = clip_path.split("#")[1].replace(')', '')
             if clip_id in clips:
-                path = clips[clip_id].find('.//{http://www.w3.org/2000/svg}path')
+                path = clips[clip_id].find(
+                    './/{http://www.w3.org/2000/svg}path')
                 transform = path.get('transform')
                 if not transform:
                     continue
                 transform = transform.replace('matrix(', '').replace(')', '')
                 d = path.get('d')
                 trans_height = int(float(transform.split(',')[5]))
-                if not (page_size in d or (transform and trans_height == height)):
+                if not (page_size in d or
+                        (transform and trans_height == height)):
                     # print(page_size in d)
                     # print(transform and trans_height == height)
                     # print(f"From Transform: {transform}, D: {d}", page_size, trans_height, height)
                     # print(f"From Transform: {transform}, D: {d} in page {page_id}")
-                    img_clips.append((transform.split(','), d, page_id, block_id))
+                    img_clips.append(
+                        (transform.split(','), d, page_id, block_id))
                     blocks.append(f'image_{block_id}')
                     block_id += 1
                 else:
                     for sub_g in g.findall('.//{http://www.w3.org/2000/svg}g'):
                         sub_clip_path = sub_g.get('clip-path')
                         if sub_clip_path and '#clip_' in sub_clip_path:
-                            sub_clip_id = sub_clip_path.split("#")[1].replace(')', '')
+                            sub_clip_id = sub_clip_path.split("#")[1].replace(
+                                ')', '')
                             if sub_clip_id in clips:
-                                sub_path = clips[sub_clip_id].find('.//{http://www.w3.org/2000/svg}path')
+                                sub_path = clips[sub_clip_id].find(
+                                    './/{http://www.w3.org/2000/svg}path')
                                 sub_d = sub_path.get('d')
                                 sub_transform = sub_path.get('transform')
-                                sub_transform = sub_transform.replace('matrix(', '').replace(')', '')
-                                subtrans_height = int(float(sub_transform.split(',')[5]))
-                                if not (page_size in sub_d or (sub_transform and subtrans_height == height)):
+                                sub_transform = sub_transform.replace(
+                                    'matrix(', '').replace(')', '')
+                                subtrans_height = int(
+                                    float(sub_transform.split(',')[5]))
+                                if not (page_size in sub_d or
+                                        (sub_transform
+                                         and subtrans_height == height)):
                                     # print(f"From sub Transform: |{sub_transform}|, D: {sub_d} in page {page_id}")
-                                    img_clips.append((sub_transform.split(','), sub_d, page_id, block_id))
+                                    img_clips.append(
+                                        (sub_transform.split(','), sub_d,
+                                         page_id, block_id))
                                     blocks.append(f'image_{block_id}')
                                     block_id += 1
                                     break
@@ -230,7 +243,7 @@ def get_svg_text_around_image(blocks, block_id, lang='CN', word_count=50):
     counter = word_count
 
     # Process lines after the image
-    for line in blocks[block_id+1:]:
+    for line in blocks[block_id + 1:]:
         text_content += line + '\n'
         if lang == 'CN':
             counter -= len(line)
@@ -254,7 +267,7 @@ def get_svg_title_around_image(blocks, block_id, lang='CN'):
             break
 
     # Search for a title in the lines after the image
-    for line in blocks[block_id+1:]:
+    for line in blocks[block_id + 1:]:
         if lang == 'CN' and '图 ' in line:
             return f"title: {line}"
         elif lang == 'CN' and '图' in line:
@@ -265,12 +278,22 @@ def get_svg_title_around_image(blocks, block_id, lang='CN'):
     return title if title else "title: Not Found"
 
 
-
 class ChineseTokenizer(Tokenizer):
-    def __call__(self, value, positions=False, chars=False,
-                 keeporiginal=False, removestops=True,
-                 start_pos=0, start_char=0, mode='', **kwargs):
-        t = Token(positions, chars, removestops=removestops, mode=mode,
+
+    def __call__(self,
+                 value,
+                 positions=False,
+                 chars=False,
+                 keeporiginal=False,
+                 removestops=True,
+                 start_pos=0,
+                 start_char=0,
+                 mode='',
+                 **kwargs):
+        t = Token(positions,
+                  chars,
+                  removestops=removestops,
+                  mode=mode,
                   **kwargs)
         seglist = jieba.cut(value, cut_all=True)
         for w in seglist:
@@ -287,5 +310,3 @@ class ChineseTokenizer(Tokenizer):
 
 def ChineseAnalyzer():
     return ChineseTokenizer()
-
-

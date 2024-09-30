@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import os.path
+import logging
 
 
 def parse_markdown(file_content):
@@ -18,7 +19,8 @@ def parse_markdown(file_content):
 
             # Save the current section if not empty
             if current_section:
-                if len(current_section) == 1 and current_section[0].startswith("[desc]"):
+                if len(current_section) == 1 and current_section[0].startswith(
+                        "[desc]"):
                     current_section.clear()
                 else:
                     sections.append("\n".join(current_section))
@@ -26,12 +28,15 @@ def parse_markdown(file_content):
 
             # Determine hierarchy level
             hierarchy_info = line[2:].split(".")
-            level = len(hierarchy_info) - 1  # Level is determined by the number of dot-separated numbers
+            level = len(
+                hierarchy_info
+            ) - 1  # Level is determined by the number of dot-separated numbers
             # Update hierarchy based on current level
             if level <= len(hierarchy):
                 hierarchy = hierarchy[:level - 1]
             hierarchy.append(hierarchy_info[-1].strip())
-            desc = "[desc] " + doc_title + " __ " + " __ ".join(hierarchy) + " [desc]"
+            desc = "[desc] " + doc_title + " __ " + " __ ".join(
+                hierarchy) + " [desc]"
             current_section.append(desc)
         else:
             if line == '...':
@@ -76,6 +81,8 @@ def md2sections(file_path, output_directory):
         file_content = f.read()
         title, sections = parse_markdown(file_content)
         df = pd.DataFrame(sections, columns=['section'])
-        df.to_csv(output_directory + "/" + name + '.csv', index=False, encoding='utf-8')
-
-
+        sec_csv = output_directory + "/" + name + '.csv'
+        df.to_csv(sec_csv,
+                  index=False,
+                  encoding='utf-8')
+        logging.info(f"sec_csv: {sec_csv} saved.")

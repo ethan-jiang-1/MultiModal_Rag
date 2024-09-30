@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 import openai
-from openai import OpenAI
+#from openai import OpenAI
 
 load_dotenv()
 endpoint = os.environ["AZURE_OPENAI_ENDPOINT"]

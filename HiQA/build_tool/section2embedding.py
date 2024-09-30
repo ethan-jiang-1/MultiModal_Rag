@@ -1,9 +1,11 @@
 import sys
+
 sys.path.append("./")
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 import os
 import tiktoken
 import pandas as pd
+import logging
 
 # note that this is in version openai==0.28, if you update to >=1.0.0, you need to create OpenAI() object.
 from example.api_warpper import get_embedding
@@ -12,7 +14,7 @@ embedding_model = "text-embedding-3-small"
 embedding_encoding = "cl100k_base"  # this the encoding for text-embedding-ada-002
 # set openai
 
-OPENAI_EMBEDDING_MAXTOKENS=8000
+OPENAI_EMBEDDING_MAXTOKENS = 8000
 
 
 def split_and_embed(section, encoding):
@@ -37,6 +39,7 @@ def split_and_embed(section, encoding):
 
     return new_sections
 
+
 def section_to_embed(file_path, output_folder):
 
     name = os.path.basename(file_path).split(".csv")[0]
@@ -55,23 +58,33 @@ def section_to_embed(file_path, output_folder):
         if '---table begin---' in section:
             # Get the content before and after the table as well as the table's title, column names, and row names
             table_start_idx = section.find('---table begin---')
-            table_end_idx = section.find('---table end---') + len('---table end---')
+            table_end_idx = section.find('---table end---') + len(
+                '---table end---')
 
             # Get the metadata before the table
             pre_table_content = section[:table_start_idx]
 
             # Get the table title
             table_title_start = table_start_idx + len('---table begin---')
-            table_title_line = section[table_title_start:section.find('\n', table_title_start+1)].replace('Table title:', '').replace('Table tile:', '').strip()
+            table_title_line = section[table_title_start:section.
+                                       find('\n', table_title_start +
+                                            1)].replace('Table title:',
+                                                        '').replace(
+                                                            'Table tile:',
+                                                            '').strip()
 
             # print('title:', table_title_line)
             # Extract the table content and split into lines
-            table_content = section[table_start_idx + len('---table begin---'):table_end_idx].split('\n')[1:-1]
+            table_content = section[table_start_idx +
+                                    len('---table begin---'
+                                        ):table_end_idx].split('\n')[1:-1]
             # print(table_content)
             # Get the table headers (column names)
             try:
-                table_headers = table_content[1].strip().split('|')[1:-1] # Exclude the first and last empty items
+                table_headers = table_content[1].strip().split('|')[
+                    1:-1]  # Exclude the first and last empty items
             except IndexError as e:
+                logging.exception(e)
                 # print(section.find('---table begin---'), section.find('---table end---'))
                 # print(section + '\n----sec---\n')
                 continue
@@ -84,23 +97,48 @@ def section_to_embed(file_path, output_folder):
                 if row_content[0] == '|':
                     table_row_names.append(row_content.split('|')[1].strip())
             # Embed metadata content
-            metadata_content = '\n'.join([pre_table_content, table_title_line] + table_headers + table_row_names)
+            metadata_content = '\n'.join(
+                [pre_table_content, table_title_line] + table_headers +
+                table_row_names)
             # print('\n-------TABLE FOUND--------\n content:\n'+section+'\n metadata:\n'+metadata_content+'\n--------------------------\n')
 
-            actual_section = section.replace('---table begin---', '').replace('---table end---', '')
-            new_df_entries.append({'section': actual_section, 'n_tokens': len(encoding.encode(metadata_content)), 'embedding': get_embedding(metadata_content, deployment=embedding_model)})
+            actual_section = section.replace('---table begin---', '').replace(
+                '---table end---', '')
+            new_df_entries.append({
+                'section':
+                actual_section,
+                'n_tokens':
+                len(encoding.encode(metadata_content)),
+                'embedding':
+                get_embedding(metadata_content, deployment=embedding_model)
+            })
 
         else:
             if n_tokens < OPENAI_EMBEDDING_MAXTOKENS:
-                new_df_entries.append({'section': section, 'n_tokens': n_tokens, 'embedding': get_embedding(section, deployment=embedding_model)})
+                new_df_entries.append({
+                    'section':
+                    section,
+                    'n_tokens':
+                    n_tokens,
+                    'embedding':
+                    get_embedding(section, deployment=embedding_model)
+                })
             else:
                 for new_section in split_and_embed(section, encoding):
-                    new_df_entries.append({'section': new_section, 'n_tokens': len(encoding.encode(new_section)), 'embedding': get_embedding(new_section, deployment=embedding_model)})
+                    new_df_entries.append({
+                        'section':
+                        new_section,
+                        'n_tokens':
+                        len(encoding.encode(new_section)),
+                        'embedding':
+                        get_embedding(new_section, deployment=embedding_model)
+                    })
 
     df_new = pd.DataFrame(new_df_entries)
 
     embd_path = os.path.join(output_folder, name.replace('.md', '.csv'))
     df_new.to_csv(embd_path, index=False, encoding='utf-8')
+    logging.info(f"embd_csv: {embd_path} saved")
 
 
 # section_to_embed('1. 座椅STO间隙 P1.pptx.step1.md.csv')

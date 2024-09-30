@@ -64,7 +64,7 @@ chroma_client = chromadb.Client(settings=settings)
 chroma_client.reset()
 
 collections = {}
-collections['test'] = create_and_load_collection(chroma_client, "test", 'HiQA/datasets/test/embeddings')
+collections['test'] = create_and_load_collection(chroma_client, "test", 'datasets/test/embeddings')
 question_embd = get_embedding('靠背STO间隙要求是什么？')
 results = collections['test'].query(question_embd)
 print(results)

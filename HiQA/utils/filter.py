@@ -1,8 +1,8 @@
 # Define a function to filter product names from a user's query
 import re
 import os
-import re
-import csv
+#import re
+#import csv
 
 ###
 critic_keywords = list(
@@ -90,8 +90,8 @@ critic_keywords = list(
 
 critic_keywords.extend(['卓胜微', '南亚新材', '唯捷创芯', '广东生益', '思瑞浦', '浙江华正', '艾为', '金安国记'])
 critic_keywords.extend(['adc12dj5200', 'adc12qj1600', 'ads131b', 'ads9815', 'afe7906', 'afe7951', 'afe882',
-                         'amc131', 'awrl1432', 'dac532', 'iwrl6432', 'ldc3114', 'lmg3422', 'opt3004',
-                         'pga305', 'tps272', 'tps281', 'tps8804'])
+                        'amc131', 'awrl1432', 'dac532', 'iwrl6432', 'ldc3114', 'lmg3422', 'opt3004',
+                        'pga305', 'tps272', 'tps281', 'tps8804'])
 
 enemy_products = ['8100', '6801']
 critic_keywords.extend(enemy_products)

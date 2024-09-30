@@ -1,82 +1,91 @@
-from dotenv import load_dotenv, find_dotenv
-import os, sys, logging, json, random
+from dotenv import load_dotenv 
+import os
+import sys
+import logging
+import json
+import random
 from pprint import pformat
+import rich
+import json_repair
 
 load_dotenv()
 
-def _get_root_dir():
-    root_dir = os.path.abspath(os.path.dirname(find_dotenv()))  
-    return root_dir
+if "./" not in sys.path:
+    sys.path.append("./")
 
-def _add_lib_paths():
-    new_paths = []
-    dir_root = _get_root_dir()
-    dir_hiqa = os.path.join(dir_root, "HiQA")
-    new_paths.append(dir_root)
-    new_paths.append(dir_hiqa)
-    #new_paths.append(os.path.dirname(__file__))
-    for new_path in new_paths:
-        if new_path not in sys.path:
-            print(f"add sys_path: {new_path}")
-            sys.path.append(new_path)
 
-_add_lib_paths()
+from HiQA.utils.util_logging import setup_logger_handlers, get_logger_progress
+from HiQA.utils.util_file import get_root_dir
 
-logging.basicConfig(level=logging.DEBUG)
-
-def _setup_logger_handlers():
-    from logging.handlers import TimedRotatingFileHandler
-
-    # hook logging to output the log to stdout as well
-    logger = logging.getLogger()
-    stdout_handler = logging.StreamHandler(sys.stdout)
-    stdout_handler.setLevel(logging.DEBUG)  # 为handler设置级别
-    formatter = logging.Formatter('%(asctime)s - PID:%(process)d - %(levelname)s - %(message)s')
-    stdout_handler.setFormatter(formatter)
-    logger.addHandler(stdout_handler)
-
-    log_dir = os.path.abspath(os.path.dirname(find_dotenv()))
-    log_file = os.path.join(log_dir, "mmr.log")
-
-    srs_handler = TimedRotatingFileHandler(log_file, when="midnight", interval=1, backupCount=30)
-    srs_handler.suffix = "%Y-%m-%d.log"
-    formatter = logging.Formatter('%(asctime)s - PID:%(process)d - %(levelname)s - %(message)s')
-    srs_handler.setFormatter(formatter)
-    srs_handler.setLevel(logging.DEBUG)  # 为handler设置级别
-    logger.addHandler(srs_handler)
-
-_setup_logger_handlers()
+setup_logger_handlers()
+logger_prg = get_logger_progress()
 
 def _ensure_working_dir():
-    dir_root = _get_root_dir()
+    dir_root = get_root_dir()
     dir_hiqa = os.path.join(dir_root, "HiQA")
     os.chdir(dir_hiqa)
     return dir_hiqa
    
 _ensure_working_dir()
 
-def _call_retrival(user_input):
+g_gpt_model = "gpt-4o"
+def get_gpt_model():
+    global g_gpt_model
+    return g_gpt_model
+
+def set_gpt_model(model_name):
+    global g_gpt_model
+    if model_name in ["gpt-4o", "gpt-4o-mini"]:
+        g_gpt_model = model_name
+    return g_gpt_model
+
+def is_valid_json(response_json_string):
+    try:
+        json.loads(response_json_string)
+        return True
+    except ValueError:
+        return False
+
+
+def is_fixable_json(response_json_string):
+    try:
+        ret = json_loads_repair(response_json_string)
+        return ret
+    except Exception as ex:
+        logging.exception(str(ex))
+    return None
+
+
+def json_loads_repair(response_json_string):
+    if is_valid_json(response_json_string):
+        return json.loads(response_json_string)
+    else:
+        logging.warning(f"try to repair json: {response_json_string}")
+        ret = json_repair.repair_json(response_json_string, return_objects=True)
+        return ret
+
+def _call_retrival(user_input, kb_name):
     import time 
-    knowleddge = None 
+    knowledge = None 
     try:
         from HiQA.service.knowledge_client import get_knowledge
 
         only_vec = False
         max_tokens = 8000
-        dataset = 'test'
 
         begin = time.time()
-        knowledge = get_knowledge(user_input, max_tokens, dataset, begin, only_vec=only_vec, verbose=True)
+        knowledge = get_knowledge(user_input, max_tokens, kb_name, begin, only_vec=only_vec, verbose=True)
         #knowledge = _hack_knowledge(knowledge)
     except Exception as ex:
         logging.exception(str(ex))
         logging.error(f"CR: exception occured {ex}")
+        raise ex
 
     return knowledge
 
 # modification two: new instruction, beside the response, also answer which piece of knowleddge is relavent 
 
-role = """Role: You are a helpful assistant, you will answer questions as a professional support agent.  please responds only in JSON format. The response's answer should be in the "answer" field of the JSON, and the relevant segment's source information should be included in the "citation" field of the JSON \n" Note:
+SYSTEM_PROMPT = """Role: You are a helpful assistant, you will answer questions as a professional support agent.  please responds only in JSON format. The response's answer should be in the "answer" field of the JSON, and the relevant segment's source information should be included in the "citation" field of the JSON \n" Note:
 1. When users ask questions, I will provide you with some information, please refer to the information and your own knowledge to answer.
 2. Each data Paragraph begins with "*** New Knowledge Paragraph ***", the next line [Source File] xxx [Source File] indicates the source of the file, The next line [Knowledge Title] xxx [Knowledge Title] indicates the title of this section, and the next line [Knowledge Content] xxx [Knowledge Content] is the knowledge content you are referring to.
 3. Your answers should be accurate and reasonable, but not summary.
@@ -88,31 +97,35 @@ role = """Role: You are a helpful assistant, you will answer questions as a prof
 9. Please focus on answering the user's question, do not answer with irrelevant information. 
 10. The answer needs to be found in different "*** New Knowledge Paragraph ***" information segments. If the information is found in a specific segment, include the [Source File] of that segment in the "citation" part of the JSON response."""
 
+USER_PROMPT = """
+According to the given knowledge, answer this question: {user_input}
+The given knowledge is:
+{knowledge}"""
+
 
 def _call_generator(user_input, knowledge):
-    from utils.openai_proxy import client
+    from HiQA.utils.openai_proxy import client
 
     resp = None
     chat_messages = None 
 
     try:
-        model_name = 'gpt-4o'
-        #model_name = "gpt-4o-mini"
-        report = []
+        model_name = get_gpt_model()
+        # report = []
         # Looping over the response
         chat_messages=[
             {"role": "system",
-                "content": role},
+             "content": SYSTEM_PROMPT},
             {"role": "user",
-                "content": f"According to the given knowledge, answer this question: {user_input}\nThe given knowledge is: \n{knowledge}"}
+             "content": USER_PROMPT.format(user_input=user_input, knowledge=knowledge)}
         ]
         resp = client.chat.completions.create(
                 model=model_name,
-                # model='gpt-4-32k',
                 # max_tokens=4000,
                 messages=chat_messages,
                 stream=False,
-                temperature=0.1 
+                temperature=0.1,
+                top_p=0.95 
         )
     except Exception as e:
         logging.exception(str(e))
@@ -129,10 +142,10 @@ def _remove_ext(match):
                 match_noext = match_noext.replace(ext, "")
     return match_noext
 
-def _locate_matched_raw_files(matches):
-    from pathlib import Path
-    dir_root = _get_root_dir()
-    dir_raw = os.path.join(dir_root, "HiQA/datasets/raw")
+def _locate_matched_src_doc_files(matches, kb_name):
+    #from pathlib import Path
+    dir_root = get_root_dir()
+    dir_raw = os.path.join(dir_root, f"datasets/{kb_name}/src_docs")
     lst_names = os.listdir(dir_raw)
     lst_names = sorted(lst_names, reverse=True)
 
@@ -150,7 +163,7 @@ def _locate_matched_raw_files(matches):
     return matches_path
 
 # modification three,  pick up the information from response for which chunk is picked
-def _check_soruce_matches(knowledge, response):
+def _check_soruce_matches(knowledge, response, kb_name):
     import re
     pattern = r"(?<=\[Source File\]\s)[^\[]+(?=\s\[Source File\])"
 
@@ -159,10 +172,10 @@ def _check_soruce_matches(knowledge, response):
         matches = re.findall(pattern, knowledge)
     except Exception as e:
         logging.exception(str(e))
-    matches = _locate_matched_raw_files(matches)
+    matches = _locate_matched_src_doc_files(matches, kb_name)
     return matches
 
-def _check_source_citation(citations):
+def _check_source_citation(citations, kb_name):
     matches = []
 
     
@@ -185,16 +198,17 @@ def _check_source_citation(citations):
             if len(matches_i) > 0:
                 matches.append(matches_i)
 
-    matches = _locate_matched_raw_files(matches)
+    matches = _locate_matched_src_doc_files(matches, kb_name)
     return matches
 
-def _find_images_json_content(user_input, response_content, dataset, source_match):
+def _find_images_json_content(user_input, response_content, kb_name, source_match):
     from HiQA.service.knowledge_client import search_images_from_response
 
     lst_image_n_title = []
-    image_path_base = os.path.join(_get_root_dir(), "HiQA/datasets/test")
+    kb_name = "test"
+    image_path_base = os.path.join(get_root_dir(), f"datasets/{kb_name}")
     try:
-        images = search_images_from_response(user_input, response_content, dataset, image_path_base=image_path_base, source_match=source_match)
+        images = search_images_from_response(user_input, response_content, kb_name, image_path_base=image_path_base, source_match=source_match)
         for image_full_path, title, score, file_name, content in images[:1]:
             file_name = '_'.join(file_name.split('_')[:-3])
             
@@ -208,13 +222,13 @@ def _find_images_json_content(user_input, response_content, dataset, source_matc
         logging.exception(str(e))
     return lst_image_n_title
 
-def _find_images_plain_content(user_input, response_content, dataset):
+def _find_images_plain_content(user_input, response_content, kb_name):
     from HiQA.service.knowledge_client import search_images_from_response
 
     lst_image_n_title = []
-    image_path_base = os.path.join(_get_root_dir(), "HiQA/datasets/test")
+    image_path_base = os.path.join(get_root_dir(), f"datasets/{kb_name}")
     try:
-        images = search_images_from_response(user_input, response_content, dataset, image_path_base=image_path_base)
+        images = search_images_from_response(user_input, response_content, kb_name, image_path_base=image_path_base)
         for image_full_path, title, score, file_name, content in images[:1]:
             file_name = '_'.join(file_name.split('_')[:-3])
             
@@ -228,16 +242,16 @@ def _find_images_plain_content(user_input, response_content, dataset):
         logging.exception(str(e))
     return lst_image_n_title
 
-def _get_final_json(response_json, user_input, dataset):
+def _get_final_json(response_json, user_input, kb_name):
     response_answer = response_json.get("answer")
 
     citation = response_json["citation"]
-    lst_source_matches = _check_source_citation(citation)
+    lst_source_matches = _check_source_citation(citation, kb_name)
     logging.info(f"##source_matches:\n {lst_source_matches}")    
 
     if len(lst_source_matches) == 1:
         image_content = str(response_json.get("answer"))
-        lst_image_n_title = _find_images_json_content(user_input, image_content, dataset, lst_source_matches[0])
+        lst_image_n_title = _find_images_json_content(user_input, image_content, kb_name, lst_source_matches[0])
     else:
         lst_image_n_title = []
     logging.info(f"##image_n_title_turple: {lst_image_n_title}") 
@@ -246,44 +260,46 @@ def _get_final_json(response_json, user_input, dataset):
     return response_answer, lst_image_n_title, lst_source_matches
 
 
-def _get_final_plain(response_content, user_input, dataset, knowledge):
+def _get_final_plain(response_content, user_input, kb_name, knowledge):
     image_content = str(response_content)
     response_answer = response_content
 
     lst_source_matches = _check_soruce_matches(knowledge, response_content)
     logging.info(f"##source_matches:\n {lst_source_matches}")  
 
-    lst_image_n_title = _find_images_plain_content(user_input, image_content, dataset)
+    lst_image_n_title = _find_images_plain_content(user_input, image_content, kb_name)
     logging.info(f"##image_n_title_turple: {lst_image_n_title}")
 
     return response_answer, lst_image_n_title, lst_source_matches   
 
 _hiqa_inited = False
-def _init_hiqa():
+def _init_hiqa(kb_name):
     global _hiqa_inited
     if not _hiqa_inited:
-        from HiQA.service.knowledge_client import init_state
-        logging.info(f"##init_state: {init_state}")
+        from HiQA.service.knowledge_client import init_kc
+        ret = init_kc(kb_name)
+        logging.info(f"##init_kc: {ret}")
         _hiqa_inited = True
 
 
-def do_core_query(user_input):
+def do_core_query(user_input, kb_name='test'):
     ret_dict = {}
 
-    _init_hiqa()
+    logger_prg.info("step1.0: 10%: 初始化HiQA ")
+    _init_hiqa(kb_name)
 
     req_id = random.randint(10000, 99999)
 
-    dataset ='test'
     logging.info(f"\n\n\n***** REQ{req_id} started ****")
-    logging.info(f"##do_core_query: {user_input}")
+    logging.info(f"##do_core_query: {user_input} on {kb_name}")
     ret_dict["req_id"] = req_id
     ret_dict["user_input"] = user_input
     ret_dict["response_answer"] = ""
     ret_dict["lst_source_matches"] = []
     ret_dict["lst_image_n_title"] = []
 
-    knowledge = _call_retrival(user_input)
+    logger_prg.info("step2.0: 20%: 召回相关知识")
+    knowledge = _call_retrival(user_input, kb_name)
     logging.info(f"##knowledge:\n {knowledge}")
     if knowledge is None: 
          ret_dict["response_answer"] = "ERROR: retrival knowledge is None"
@@ -293,6 +309,7 @@ def do_core_query(user_input):
     #modification one: hack knowledge - to hook knowledge number in chunks
     #knowledge = _hack_knowledge(knowledge)
 
+    logger_prg.info("step3.0: 50%: 组织回答#综合知识")
     resp, chat_messages = _call_generator(user_input, knowledge)   
     if resp is None or not hasattr(resp, "choices"):
         ret_dict["response_answer"] = "ERROR: llm response is None"
@@ -309,23 +326,26 @@ def do_core_query(user_input):
         logging.error(f"##ret_dict(e2): {ret_dict}")
         return ret_dict         
 
+    logger_prg.info("step4.0: 80%: 组织回答#解析回答")
     response_content = response.message.content
     logging.info(f"##response_content:\n {response_content}")
 
     response_json = None
     try:
-        response_content = response_content.replace("```json\n", "")
-        response_content = response_content.replace("\n```", "")
-        response_json = json.loads(response_content)
-    except json.JSONDecodeError as ex:
+        # response_content = response_content.replace("```json\n", "")
+        # response_content = response_content.replace("\n```", "")
+        # response_json = json.loads(response_content)
+        response_json = json_loads_repair(response_content)
+    except Exception as ex:
         logging.exception(str(ex))
         logging.warning(f"####response is not json:\n {response_content}")
 
+    logger_prg.info("step5.0: 90%: 组织回答#信息源头")
     try:
         if response_json is not None and "answer" in response_json and "citation" in response_json:
-            response_answer, lst_image_n_title, lst_source_matches = _get_final_json(response_json, user_input, dataset)      
+            response_answer, lst_image_n_title, lst_source_matches = _get_final_json(response_json, user_input, kb_name)      
         else:
-            response_answer, lst_image_n_title, lst_source_matches = _get_final_plain(response_content, user_input, dataset, knowledge)
+            response_answer, lst_image_n_title, lst_source_matches = _get_final_plain(response_content, user_input, kb_name, knowledge)
     except Exception as ex: 
         logging.exception(str(ex))
         ret_dict["response_answer"] = "ERROR: failed to process image or source" 
@@ -344,12 +364,13 @@ def do_core_query(user_input):
     logging.info(f"\n**** REQ{req_id}:ended ****\n\n")
     logging.info("")
 
+    logger_prg.info("step6.0: 95%: 回答生成")
     return ret_dict
 
 
 
 if __name__ == "__main__":
-    from pprint import pprint
+    #from pprint import pprint
     user_inputs = []
     #user_inputs.append("前后座椅H点参考距离是多少？")
     #user_inputs.append("Ai在人力资源领域前景趋势")
@@ -360,7 +381,7 @@ if __name__ == "__main__":
 
     for user_input in user_inputs:
         try:
-            ret_dict = do_core_query(user_input)
-            pprint(ret_dict)
+            ret_dict = do_core_query(user_input, kb_name="test")
+            rich.print(ret_dict)
         except Exception as ex:
             logging.exception(ex)
