@@ -81,8 +81,10 @@ def md2sections(file_path, output_directory):
         file_content = f.read()
         title, sections = parse_markdown(file_content)
         df = pd.DataFrame(sections, columns=['section'])
-        sec_csv = output_directory + "/" + name + '.csv'
-        df.to_csv(sec_csv,
+        csv_sections = output_directory + "/" + name + '.csv'
+        df.to_csv(csv_sections,
                   index=False,
                   encoding='utf-8')
-        logging.info(f"sec_csv: {sec_csv} saved.")
+        logging.info(f"sec_csv: {csv_sections} saved. csv_columns: {df.columns}")
+    return csv_sections
+

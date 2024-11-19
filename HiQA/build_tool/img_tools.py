@@ -1,7 +1,11 @@
-import xml.etree.ElementTree as ET
-from whoosh.analysis import Tokenizer, Token
-import jieba
+import sys 
+sys.path.append("./")
 
+import xml.etree.ElementTree as ET
+#from whoosh.analysis import Tokenizer, Token
+#import jieba
+
+from HiQA.utils.tokenizer import ChineseTokenizer  # noqa (we have picked object? do not remove)
 
 def get_adjacent_lines(blocks, block_index):
     """
@@ -276,37 +280,3 @@ def get_svg_title_around_image(blocks, block_id, lang='CN'):
             return f"title: {line}"
 
     return title if title else "title: Not Found"
-
-
-class ChineseTokenizer(Tokenizer):
-
-    def __call__(self,
-                 value,
-                 positions=False,
-                 chars=False,
-                 keeporiginal=False,
-                 removestops=True,
-                 start_pos=0,
-                 start_char=0,
-                 mode='',
-                 **kwargs):
-        t = Token(positions,
-                  chars,
-                  removestops=removestops,
-                  mode=mode,
-                  **kwargs)
-        seglist = jieba.cut(value, cut_all=True)
-        for w in seglist:
-            t.original = t.text = w
-            t.boost = 1.0
-            if positions:
-                t.pos = start_pos + value.find(w)
-            if chars:
-                t.startchar = start_char + value.find(w)
-            if chars and positions:
-                t.endchar = start_char + value.find(w) + len(w)
-            yield t
-
-
-def ChineseAnalyzer():
-    return ChineseTokenizer()

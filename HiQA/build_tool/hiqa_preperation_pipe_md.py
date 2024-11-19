@@ -59,7 +59,7 @@ def md2section(kb_name):
         md_files = glob.glob(folder)
         md_files = sorted(md_files)
         if len(md_files) == 0:
-            raise ValueError("no md_files")
+            raise ValueError(f"no md_files @{md_folder}")
         for ndx, md_file in enumerate(md_files):
             logging.info(f"转换{ndx}: {md_file}...")            
             md2csv.md2sections(md_file, section_folder)
@@ -79,7 +79,7 @@ def section2embbeding(kb_name):
         sec_files = glob.glob(folder)
         sec_files = sorted(sec_files)
         if len(sec_files) == 0:
-            raise ValueError("no sec_files")
+            raise ValueError(f"no sec_files @{sec_folder}")
         for ndx, sec_file in enumerate(sec_files):
             logging.info(f"转换{ndx}: {sec_file}...")
             section_to_embed(sec_file, emb_folder)

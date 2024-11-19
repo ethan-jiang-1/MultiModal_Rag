@@ -1,18 +1,17 @@
 import sys
 
 sys.path.append("./")
+
 #from dotenv import load_dotenv
 import os
-import tiktoken
+#import tiktoken
 import pandas as pd
 import logging
 
 # note that this is in version openai==0.28, if you update to >=1.0.0, you need to create OpenAI() object.
-from example.api_warpper import get_embedding
-
-embedding_model = "text-embedding-3-small"
-embedding_encoding = "cl100k_base"  # this the encoding for text-embedding-ada-002
-# set openai
+from example.api_warpper import get_text_embedding
+from HiQA.utils.tokenizer import get_token_encoding
+from HiQA.utils.openai_proxy import EMBEDDING_MODEL
 
 OPENAI_EMBEDDING_MAXTOKENS = 8000
 
@@ -46,7 +45,7 @@ def section_to_embed(file_path, output_folder):
 
     # embed_path = os.path.join(BASE_DIR, 'file_system', kb_name, 'embedded')
     df = pd.read_csv(file_path, encoding='utf-8')
-    encoding = tiktoken.get_encoding(embedding_encoding)
+    encoding = get_token_encoding()
 
     new_df_entries = []
 
@@ -110,7 +109,7 @@ def section_to_embed(file_path, output_folder):
                 'n_tokens':
                 len(encoding.encode(metadata_content)),
                 'embedding':
-                get_embedding(metadata_content, deployment=embedding_model)
+                get_text_embedding(metadata_content, deployment=EMBEDDING_MODEL)
             })
 
         else:
@@ -121,7 +120,7 @@ def section_to_embed(file_path, output_folder):
                     'n_tokens':
                     n_tokens,
                     'embedding':
-                    get_embedding(section, deployment=embedding_model)
+                    get_text_embedding(section, deployment=EMBEDDING_MODEL)
                 })
             else:
                 for new_section in split_and_embed(section, encoding):
@@ -131,14 +130,15 @@ def section_to_embed(file_path, output_folder):
                         'n_tokens':
                         len(encoding.encode(new_section)),
                         'embedding':
-                        get_embedding(new_section, deployment=embedding_model)
+                        get_text_embedding(new_section, deployment=EMBEDDING_MODEL)
                     })
 
     df_new = pd.DataFrame(new_df_entries)
 
-    embd_path = os.path.join(output_folder, name.replace('.md', '.csv'))
-    df_new.to_csv(embd_path, index=False, encoding='utf-8')
-    logging.info(f"embd_csv: {embd_path} saved")
+    csv_embd_path = os.path.join(output_folder, name.replace('.md', '.csv'))
+    df_new.to_csv(csv_embd_path, index=False, encoding='utf-8')
+    logging.info(f"embd_csv: {csv_embd_path} saved, csv_columns: {df_new.columns}")
+    return csv_embd_path
 
 
 # section_to_embed('1. 座椅STO间隙 P1.pptx.step1.md.csv')

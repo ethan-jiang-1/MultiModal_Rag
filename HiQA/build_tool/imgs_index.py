@@ -10,15 +10,10 @@ if "./" not in sys.path:
 
 from whoosh.index import create_in  # , open_dir
 from whoosh.fields import Schema, ID, TEXT
-#from whoosh.qparser import QueryParser
 import os
 import shutil
-#import re
-#import tqdm
 
-from HiQA.build_tool.img_tools import ChineseAnalyzer
-#from HiQA.build_tool.img_tools import parse_page_svg
-#from HiQA.build_tool.vl_description import generate_image_description
+from HiQA.utils.tokenizer import ChineseAnalyzer
 
 ix = None
 writer = None

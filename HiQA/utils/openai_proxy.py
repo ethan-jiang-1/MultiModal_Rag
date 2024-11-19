@@ -4,6 +4,9 @@ import openai
 #from openai import OpenAI
 
 load_dotenv()
+
+EMBEDDING_MODEL = "text-embedding-3-small"
+
 endpoint = os.environ["AZURE_OPENAI_ENDPOINT"]
 api_key = os.environ["AZURE_OPENAI_API_KEY"]
 
@@ -12,7 +15,6 @@ client = openai.AzureOpenAI(
     api_key=api_key,
     api_version="2024-02-15-preview"
 )
-
 
 def send_messages(user_input, knowledge, role=None, model="gpt-4o"):
     if not role:
@@ -47,8 +49,7 @@ Note:
 
     return result.choices[0].message.content
 
-
-def get_embedding(text, deployment='text-embedding-3-small'):
+def get_text_embedding(text, deployment=EMBEDDING_MODEL):
     text = text.replace("\n", " ")
     embeddings = client.embeddings.create(
         model=deployment,

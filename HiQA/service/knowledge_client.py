@@ -2,12 +2,12 @@ import os
 import random
 import tempfile
 import sys
-#import rich
 import chromadb
-import tiktoken
+#import tiktoken
 import jieba
 import pandas as pd
 import logging
+import rich
 
 import time
 from chromadb.config import Settings # , DEFAULT_TENANT, DEFAULT_DATABASE
@@ -24,8 +24,8 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from HiQA.utils.filter import filter_product_names, filter_knowledge # , critic_keywords
-from HiQA.utils.openai_proxy import get_embedding
-from HiQA.utils.tokenizer import ChineseAnalyzer
+from HiQA.utils.openai_proxy import get_text_embedding
+from HiQA.utils.tokenizer import ChineseAnalyzer, get_token_encoding
 from HiQA.utils.util_logging import get_logger_progress, setup_logger_handlers
 from HiQA.utils.util_file import get_root_dir
 
@@ -35,13 +35,12 @@ g_settings = Settings(allow_reset=True)
 
 g_ixs = None
 g_collections = None
-g_encoding = None
 
 def get_knowledge(question, max_token, dataset, begin=None, only_vec=False, verbose=False):
     if not begin:
         begin = time.time()
     logger_prg.info("step2.1: 25%: 召回相关知识#嵌入向量准备")
-    question_embd = get_embedding(question)
+    question_embd = get_text_embedding(question)
     if verbose:
         print('after embedding', time.time() - begin)
 
@@ -222,7 +221,6 @@ def _do_query_based_on_question_and_dataset(question, collection, question_embd,
 def retrieve_knowledge(question, question_embd, max_token, dataset, begin, only_vec=False, verbose=False):
     global g_init_state
     global g_collections
-    global g_encoding
 
     if g_collections is None:
         raise ValueError("KC is not inited")
@@ -235,8 +233,9 @@ def retrieve_knowledge(question, question_embd, max_token, dataset, begin, only_
         result_list = [doc for doc in results['documents'][0]]
         string_list = []
         for res in result_list:
+            know_chunk_piece = res.replace('[desc]', '').replace('---table begin---', 'The following is table:').replace('---table end---', '')
             knowledge = "*** New Knowledge Paragraph ***\n" \
-                        f"[Knowledge Content] {res.replace('[desc]', '').replace('---table begin---', 'The following is table:').replace('---table end---', '')} [Knowledge Content]"
+                        f"[Knowledge Content] {know_chunk_piece} [Knowledge Content]"
 
             string_list.append(knowledge)
 
@@ -244,34 +243,36 @@ def retrieve_knowledge(question, question_embd, max_token, dataset, begin, only_
         return '\n\n'.join(string_list)
 
     if verbose:
-        print('after retrieve', time.time() - begin)
+        logging.info(f'ck1: after retrieve {time.time() - begin}')
+    
     # result_list = reset_by_lucene(question, results, threshold=0.5, lucene_weight=0.5)
 
     logger_prg.info("step2.3: 35%: 召回相关知识#按内容相关性重排序")
     result_list = reset_by_jina(question, results)
     
     if verbose:
-        print('after rank by lucene', time.time() - begin)
+        logging.info(f'ck2: after rank by reset_by_jina {time.time() - begin}')
 
     logger_prg.info("step2.4: 40%: 召回相关知识#过滤知识片段")
     returned_values = filter_knowledge(question, result_list)
 
     if verbose:
-        print('after filter', time.time() - begin)
+        logging.info(f'ck3: after filter: {time.time() - begin}')
     # for text in results['documents'][0]:
     #     all_text += text.replace('[desc]', '') + '\n'
     all_text = returned_values
 
+    tk_encoding = get_token_encoding()
     # reduce length to max_token
-    tokens = g_encoding.encode(all_text)
+    tokens = tk_encoding.encode(all_text)
     truncated_text = all_text
 
     max_token = int(max_token)
     while len(tokens) > max_token:
         truncated_text = truncated_text[:-200]
-        tokens = g_encoding.encode(truncated_text)
+        tokens = tk_encoding.encode(truncated_text)
     if verbose:
-        print('after truncate', time.time() - begin)
+        logging.info(f'ck4: after truncate : {time.time() - begin}')
     return truncated_text
 
 
@@ -452,7 +453,7 @@ def create_and_load_collection(client, base_name, dataset_path):
 
     # 创建集合
     collection = client.create_collection(name=collection_name)
-    print(f'Collection {collection_name} created')
+    logging.info(f'CALC: Collection {collection_name} created')
 
     # 加载数据
     embds = []
@@ -476,17 +477,19 @@ def create_and_load_collection(client, base_name, dataset_path):
                     embds.append(embedding)
                     docs.append(section)
                     ids.append('id' + str(id))
+
                     metas.append({'n_tokens': n_tokens, 'filename': filename, 'title': section.split('\n')[0]})
                     id += 1
             except Exception as ex:
                 logging.exception(f"{ex} @{filepath}")
 
+    logging.info(f'CALC: Collection {collection_name} filled into chromadb from scratch (load from csv)')
+    logging.info(f"CALC: num_embedding: {len(embds)} num_docs: {len(docs)} num_metas: {len(metas)} ids: {len(ids)}")
     collection.add(embeddings=embds, documents=docs, metadatas=metas, ids=ids)
     return collection
 
 
 def init_kc(kb_name):
-    global g_encoding
     global g_ixs
     global g_collections
     global g_settings
@@ -497,28 +500,27 @@ def init_kc(kb_name):
 
     try:
         setup_logger_handlers()
-        logging.info(f'init project, kb_name:{kb_name}')
+        logging.info(f'IKC: init project, kb_name:{kb_name}...')
 
         'or'.join(jieba.cut("pre load"))
+        logging.info(f"'IKC: load jieba")
 
         dir_root = get_root_dir()
 
-        # load whoosh dictionary
+        # load whoosh dictionary for image search
         ix_test = open_dir(os.path.join(dir_root, f'datasets/{kb_name}/indexes'))
-
         g_ixs = {}
         g_ixs[kb_name] = ix_test
+        logging.info(f"'IKC: load whoosh index for images")
 
-        embedding_encoding = "cl100k_base"
-        g_encoding = tiktoken.get_encoding(embedding_encoding)
-
+        rich.print(g_settings)
         chroma_client = chromadb.Client(settings=g_settings)
         chroma_client.reset()
+        logging.info("'IKC: load chromadb for text")
 
         g_collections = {}
         g_collections[kb_name] = create_and_load_collection(chroma_client, kb_name, os.path.join(dir_root, f'datasets/{kb_name}/embeddings'))
-
-        logging.info(f'load kb_name:{kb_name} successful')
+        logging.info(f'IKC: load kb_name:{kb_name} successful')
 
         return True
 

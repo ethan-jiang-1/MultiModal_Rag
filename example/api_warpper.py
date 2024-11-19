@@ -2,9 +2,12 @@ import os
 import openai
 from dotenv import load_dotenv
 import json
+import sys
 load_dotenv()
 
+sys.path.append("./")
 
+from HiQA.utils.openai_proxy import EMBEDDING_MODEL
 endpoint = os.environ["AZURE_OPENAI_ENDPOINT"]
 api_key = os.environ["AZURE_OPENAI_API_KEY"]
 
@@ -24,7 +27,7 @@ def get_completion(prompt, model="gpt-4o"):
     return response.choices[0].message.content
 
 
-def get_embedding(text, deployment='text-embedding-3-small'):
+def get_text_embedding(text, deployment=EMBEDDING_MODEL):
     embeddings = client.embeddings.create(
     model=deployment,
     input=text
