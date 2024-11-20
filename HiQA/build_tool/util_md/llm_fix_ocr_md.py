@@ -1,4 +1,4 @@
-import json
+#import json
 #import re
 #import time
 from openai import AzureOpenAI
@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import sys
 import os
 import logging
+import json_repair
 #import shutil
 #import re
 
@@ -15,7 +16,8 @@ load_dotenv()
 
 from HiQA.utils.util_file import get_root_dir
 from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.util_md.llm_prompt_ocr import USER_PROMPT_MD_SELF_CORRECT, SYSTEM_PROMPT_MD_SELF_CORRECT
+from HiQA.build_tool.util_md.llm_fix_ocr_prompt import USER_PROMPT_MD_SELF_CORRECT, SYSTEM_PROMPT_MD_SELF_CORRECT
+from HiQA.utils.util_llm_diag import save_llm_diag_messages, set_question_num
 
 def _get_gpt_messages(prompt):
     messages=[
@@ -30,20 +32,31 @@ def _get_gpt_messages(prompt):
     ]
     return messages
 
-def fix_ocr_self_correct_markdown(md_text):
+def fix_ocr_self_correct_markdown(md_text, question_num=99):
     client = AzureOpenAI(api_key=os.getenv("OPENAI_API_KEY"),
                          azure_endpoint=os.getenv("OPENAI_BASE_URL"),
                          api_version="2024-02-15-preview")
     try:
         logging.info("start to correct markdown")
         prompt = USER_PROMPT_MD_SELF_CORRECT.replace("{markdown}", md_text)
+
+        model = "gpt-4o"
+        temperature = 0.1
+        top_p = 0.9
+        messages=_get_gpt_messages(prompt)
+
         response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=_get_gpt_messages(prompt),
-            temperature=0.1)
+            model=model,
+            messages=messages,
+            temperature=temperature,
+            top_p=top_p)
         content = response.choices[0].message.content
-        res = json.loads(content.replace("```", "").replace("json", ""))
-        text = res['content']
+        resp = json_repair.repair_json(content, ensure_ascii=True, return_objects=True)
+
+        set_question_num(question_num)
+        save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="ocr_fix") 
+
+        text = resp['content']
         return text
     except Exception as ex: 
         logging.exception(ex)

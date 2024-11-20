@@ -4,7 +4,7 @@ import sys
 import logging
 import rich
 import random
-import json
+#import json
 
 load_dotenv()
 
@@ -12,8 +12,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.pdf2md.pdf2md import fix_ocr_self_correct_markdown
-
+from HiQA.build_tool.ctn2md.ctn2md_base import save_md_info, SEP_FNAME_EXT
 
 def _get_llamaparse():
     from llama_parse import LlamaParse
@@ -88,71 +87,54 @@ def _dump_by_documents(out_dir, documents):
         md_full_content += doc.text
     return md_full_content, {}
 
-
-def fix_ocr_content(fname_output_md, out_dir):
-    md_fixed_fname = os.path.basename(fname_output_md).replace(".md", "_fixed.md")
-    fname_output_fixed_md = os.path.join(out_dir, md_fixed_fname)
-
-    with open(fname_output_md, "r", encoding="utf8") as f:
-        md_text = f.read()
-
-    md_text_fixed = fix_ocr_self_correct_markdown(md_text)
-    with open(fname_output_fixed_md, "w+") as f:
-        f.write(md_text_fixed)
-
-    return fname_output_fixed_md
-
 def convert_doc_to_md_by_llamaparse(doc_pathname, out_dir):
     parser = _get_llamaparse()
     #logging.info(parser)
 
     basename = os.path.basename(doc_pathname)
     ext_name = basename.split(".")[-1]
-    fname_md_name = basename.replace(f".{ext_name}", f"___{ext_name}.md")
-    fname_output_md = os.path.join(out_dir, fname_md_name)
+    fname_s0_md_name = basename.replace(f".{ext_name}", f"{SEP_FNAME_EXT}{ext_name}_s0.md")
+    fname_output_s0_md = os.path.join(out_dir, fname_s0_md_name)
 
     documents = parser.load_data(doc_pathname)
+    if documents is None or len(documents) == 0:
+        raise ValueError(f"document is empty for {doc_pathname}")
+
     json_result = parser.get_json_result(doc_pathname) # noqa
+    if json_result is None or len(json_result) == 0:
+        raise ValueError(f"json_result is empty for {doc_pathname}")
+
     images = parser.get_images(json_result, out_dir)  # noqa
     #tables = parser.get_xlsx(json_result, out_dir)  # noqa
 
-    with open(fname_output_md, "w+") as f: 
+    with open(fname_output_s0_md, "w+") as f: 
         if isinstance(json_result, list) and len(json_result) > 0:
             md_text, md_info = _dump_by_json_result(out_dir, json_result)
         else:
             md_text, md_info = _dump_by_documents(out_dir, documents)
         f.write(md_text)
-    
-    fname_output_fixed_md = fix_ocr_content(fname_output_md, out_dir)
 
     logging.info(f"original doc: {doc_pathname}")
-    logging.info(f"orginal md:   {fname_output_md}")
-    logging.info(f"ocr fixed md: {fname_output_fixed_md}")
+    logging.info(f"fname_output_s0_md: {fname_output_s0_md}")
 
-    md_info["fname_orginal_md"] = os.path.basename(fname_output_md)
-    md_info["fname_fixed_md"] = os.path.basename(fname_output_fixed_md)
-    md_info["out_dir"] = out_dir
-    fname_info_json = os.path.join(out_dir, "info.json")
-    json_str = json.dumps(md_info, indent=4, ensure_ascii=False)
-    with open(fname_info_json, 'w+', encoding='utf8') as f:
-        f.write(json_str) 
-
-    return fname_output_fixed_md, md_info
-
+    if isinstance(md_info, dict):
+        md_info["fname_output_s0_md"] = os.path.basename(fname_output_s0_md)
+        md_info_path = save_md_info(out_dir, md_info)
+    return md_info_path, md_info
 
 if __name__ == "__main__":
-    #doc_pathname = "datasrc/test/raw_docs/AIGC时代的人力资源管理进化(徐刚).pdf"
+    doc_pathname = "datasrc/test/raw_docs/AIGC时代的人力资源管理进化(徐刚).pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
     #doc_pathname = "datasrc/test/raw_docs/1. 座椅STO间隙 P1.pptx"
     #doc_pathname = "datasrc/test/raw_docs/管理者角色定位与认知课程大纲.docx"
     #doc_pathname = "datasrc/test/raw_docs/考勤修改统一规则.xlsx"
-    doc_pathname = "datasrc/test/raw_docs/5. back panel 与环境匹配工程校核_P2.pptx"
+    #doc_pathname = "datasrc/test/raw_docs/5. back panel 与环境匹配工程校核_P2.pptx"
 
-    out_dir = f"_work/tmp_{random.randint(10,99)}"
+    out_dir = f"_work/cnt2md_{random.randint(10,99)}"
     print(f"out_dir: {out_dir}")
 
     setup_logger_handlers()
     os.makedirs(out_dir, exist_ok=True)
-    fname_output_fixed_md, md_info = convert_doc_to_md_by_llamaparse(doc_pathname, out_dir)
-    print(fname_output_fixed_md)
+    md_info_path, md_info = convert_doc_to_md_by_llamaparse(doc_pathname, out_dir)
+    print(md_info_path)
     rich.print(md_info)

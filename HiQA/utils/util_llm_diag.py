@@ -43,7 +43,7 @@ def set_question_num(quetion_num):
 def save_llm_diag_messages(messages, response, model="gpt4-o", top_p=0.8, temperature=0.2, max_tokens=None, prefix=None, is_json_response=True):
     try:
         question_num = int(os.environ.get(ENV_QUESION_NUM, "99"))
-        output_dir = os.path.join(_get_root_dir(), f"_work/question{question_num}")
+        output_dir = os.path.join(_get_root_dir(), f"_work/llm_dialogs")
         os.makedirs(output_dir, exist_ok=True)
 
         llmfname = os.path.join(output_dir, f"llm_{prefix}_q{question_num}.txt")
