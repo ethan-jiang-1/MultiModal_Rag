@@ -13,6 +13,46 @@ import tqdm
 
 from HiQA.build_tool.img_tools import parse_page_svg
 from HiQA.build_tool.vl_description import generate_image_description
+from HiQA.utils.util_file import get_root_dir
+from HiQA.utils.util_logging import setup_logger_handlers
+
+
+def _save_crop_image_and_description(cropped_img, pathname_no_ext):
+    image_pathname = pathname_no_ext + '.png'
+    # print(image_name)
+    try:
+        cropped_img.save(image_pathname)
+    except Exception as e:
+        logging.exception(e)
+        return None
+    
+    if not os.path.isfile(image_pathname):
+        return None
+    
+    try:
+        title = os.path.basename(pathname_no_ext).split("_img")[0]
+        # Handle text extraction around the image
+        # text_content = get_text_around_image(blocks[skip_block:], i, lang)
+        instruction = f"这是一张在'{title}'文件中的图片， 请简单描述一下这张图片。" 
+        text_content = generate_image_description(image_pathname, instruction=instruction)
+        # title = get_title_of_image(blocks[skip_block:], i, lang)
+    except Exception as e:
+        logging.exception(e)
+        return None
+
+    # print(text_content[:30])
+    # print(title)
+
+    # Save the description to a .txt file
+    desc_pathname = f'{pathname_no_ext}.txt'
+    with open(desc_pathname, 'w',
+              encoding='utf-8') as text_file:
+        line3desc = title + '\n' + \
+                    text_content.replace('\n', ' ') + \
+                    f'\nbase name:{title}'
+        text_file.write(line3desc)
+
+    return desc_pathname
 
 
 def load_imgs_from_pdf(kb_name,
@@ -33,7 +73,7 @@ def load_imgs_from_pdf(kb_name,
     :return:
     """
 
-    directory = os.path.join(r'./HiQA/datasets', kb_name)
+    directory = os.path.join(r'./datasets', kb_name)
     file_path = os.path.join(directory, 'src_docs', filename)
     doc = fitz.open(file_path)
 
@@ -50,10 +90,10 @@ def load_imgs_from_pdf(kb_name,
     skip_block = int(skip_block)
 
     base_name = filename.split('.pdf')[0]
-    path_name = os.path.join(directory, 'images', base_name)
-    if os.path.exists(path_name):
-        shutil.rmtree(path_name)
-    os.mkdir(path_name)
+    img_root_dir = os.path.join(directory, 'images', base_name)
+    if os.path.exists(img_root_dir):
+        shutil.rmtree(img_root_dir)
+    os.mkdir(img_root_dir)
 
     for page in pages[int(skip_page_front
                           ):-int(skip_page_back)]:  # skip final page
@@ -65,7 +105,7 @@ def load_imgs_from_pdf(kb_name,
         page_im = Image.frombytes("RGB", (page_pix.width, page_pix.height),
                                   page_pix.samples)
 
-        saved = []  # need to remove if inner a svg image
+        saved_path_no_exts = []  # need to remove if inner a svg image
         for i, block in enumerate(blocks[int(skip_block):]
                                   ):  # head and tail of pages should be ignore
             if 'image' in block:
@@ -76,33 +116,15 @@ def load_imgs_from_pdf(kb_name,
                 # if (bbox[2] - bbox[0])*scale - LOGO_WIDTH <= 10 and (bbox[3] - bbox[1])*scale - LOGO_HEIGHT <= 10:
                 #     continue
                 # Scale the bbox coordinates
-                cropped = page_im.crop([int(i * scale) for i in bbox])
+                cropped_img = page_im.crop([int(i * scale) for i in bbox])
                 number = block['number']
 
-                file_name = path_name + f'/{base_name}_imgbmp_{page.number}_{number}'
-                image_name = file_name + '.png'
-                # print(image_name)
-                try:
-                    cropped.save(image_name)
-                except Exception as e:
-                    logging.exception(e)
+                pathname_no_ext = img_root_dir + f'/{base_name}_imgbmp_{page.number}_{number}'
+
+                if _save_crop_image_and_description(cropped_img, pathname_no_ext) is None:
                     continue
-                # Handle text extraction around the image
-                # text_content = get_text_around_image(blocks[skip_block:], i, lang)
-                text_content = generate_image_description(image_name)
-                # title = get_title_of_image(blocks[skip_block:], i, lang)
-                title = base_name
-                # print(text_content[:30])
-                # print(title)
 
-                # Save the description to a .txt file
-                with open(f'{file_name}.txt', 'w',
-                          encoding='utf-8') as text_file:
-                    text_file.write(title + '\n' +
-                                    text_content.replace('\n', ' ') +
-                                    f'\nbase name:{base_name}')
-
-                saved.append((file_name, [int(i * scale) for i in bbox]))
+                saved_path_no_exts.append((pathname_no_ext, [int(i * scale) for i in bbox]))
             # except:
             #     pass
 
@@ -146,7 +168,7 @@ def load_imgs_from_pdf(kb_name,
                 # 3. 截取并保存图像
 
                 # check images in saved, if in or similar, delete it from file system
-                for i, (file_name, bbox) in enumerate(saved):
+                for i, (file_name, bbox) in enumerate(saved_path_no_exts):
                     if (abs(bbox[0] - x1) < 10\
                             and abs(bbox[1] - y1) < 10\
                             and abs(bbox[2] - x2) < 10\
@@ -154,30 +176,20 @@ def load_imgs_from_pdf(kb_name,
                             (bbox[0]>x1-10 and bbox[1]>y1-10 and bbox[2]<x2+10 and bbox[3]<y2+10):
                         os.remove(file_name + '.png')
                         os.remove(file_name + '.txt')
-                        saved.pop(i)
+                        saved_path_no_exts.pop(i)
                         break
 
                 cropped_img = page_im.crop(
                     (int(x1), int(y1), int(x2), int(y2)))
-                file_name = path_name + f'/{base_name}_imgsvg_{page.number}_{block_id}'
-                image_name = file_name + '.png'
-                cropped_img.save(image_name)
+                
+                pathname_no_ext = img_root_dir + f'/{base_name}_imgsvg_{page.number}_{block_id}'
+                _save_crop_image_and_description(cropped_img, pathname_no_ext)
 
-                # search title and text
-                # text_content = get_svg_text_around_image(svg_blocks, block_id, lang)
-                text_content = generate_image_description(image_name)
-                # title = get_svg_title_around_image(svg_blocks, block_id, lang)
-                title = base_name
-                with open(f'{file_name}.txt', 'w',
-                          encoding='utf-8') as text_file:
-                    text_file.write(title + '\n' +
-                                    text_content.replace('\n', ' ') +
-                                    f'\nbase name:{base_name}')
         except Exception as e:
             # some page dont have svg image
             logging.exception(e)
             pass
-    return path_name
+    return img_root_dir
 
 
 # Basic usage, convert all pdfs in a path and build index.
@@ -191,15 +203,24 @@ def rebuild_img_index_from_pdf(kb_name, reforced=False):
     if reforced:
         for filename in os.listdir(f'./datasrc/{kb_name}/raw_docs'):
             if filename.endswith('.pdf'):
-                shutil.copy(f'./datasrc/{kb_name}/raw_docs/{filename}', f'./datasets/{kb_name}/src_docs/{filename}')
+                src_path = f'./datasrc/{kb_name}/raw_docs/{filename}'
+                dst_path = f'./datasets/{kb_name}/src_docs/{filename}'
+                shutil.copy(src_path, dst_path)
     
-        for pdf_filename in tqdm.tqdm(os.listdir(f'./datasets/{kb_name}/src_docs')):
+        file_names = os.listdir(f'./datasets/{kb_name}/src_docs')
+        file_names = sorted(file_names)
+        for pdf_filename in tqdm.tqdm(file_names):
             if pdf_filename.find("业绩案例") != -1:  # TODO: we have hard time to extract image from scanned file
                 continue
-            load_imgs_from_pdf('test', pdf_filename)
+            load_imgs_from_pdf(kb_name, pdf_filename)
 
     build_imgs_index(kb_name)
 
 if __name__ == "__main__":
-    kb_name = "test"
-    rebuild_img_index_from_pdf(kb_name, reforced=False)
+    dir_root = get_root_dir()
+    os.chdir(dir_root)
+    setup_logger_handlers()
+
+    #kb_name = "test"
+    kb_name = "exam"
+    rebuild_img_index_from_pdf(kb_name, reforced=True)

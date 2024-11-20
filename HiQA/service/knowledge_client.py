@@ -285,7 +285,7 @@ def has_key_words(item, product_in_query):
     return False
 
 
-def _get_images_foldernames(kb_name):
+def _get_images_foldernames_as_products(kb_name):
     dir_root = get_root_dir()
     dir_images = os.path.join(dir_root,f'datasets/{kb_name}/images')
     if not os.path.isdir(dir_images):
@@ -298,31 +298,8 @@ def _get_images_foldernames(kb_name):
     subdirectories = sorted([d for d in entries if os.path.isdir(os.path.join(dir_images, d))])
     return subdirectories
 
-
-def search_images_from_response(user_input, response, kb_name, lang='CN', k=1000, 
-                                image_path_base=None,
-                                source_match=None):
-    global g_ixs
-    if source_match is None:
-        return []
-
-    dir_root = get_root_dir()
-    if kb_name == 'test':
-        directory = os.path.join(dir_root,f'datasets/{kb_name}/')
-        if not os.path.isdir(directory):
-            raise ValueError(f"dataset: {directory} not exist")
-    else:
-        logging.waring(f"what? is dataset {kb_name}?")
-        raise ValueError(f"dataset {kb_name} not supported yet")
-
-    if image_path_base is None:
-        image_path_base = os.path.join(dir_root, f"datasets/{kb_name}")
-
-    source_match_name = os.path.basename(source_match)
-
-    ix = g_ixs[kb_name]
-    default_products = _get_images_foldernames(kb_name)
-
+def _find_suitable_querys_for_image(user_input, response, kb_name, lang='CN'):
+    default_products = _get_images_foldernames_as_products(kb_name)
     product_in_query = filter_product_names(user_input, default_products)
     product_in_response = filter_product_names(response, default_products)
     # print('product_in_query', product_in_query)
@@ -340,83 +317,117 @@ def search_images_from_response(user_input, response, kb_name, lang='CN', k=1000
         query_tokens = jieba.cut(query, cut_all=True)
     else:
         query_tokens = query.split()
+    return query_tokens, product_in_query,  product_in_response
 
-    or_query = " OR ".join(query_tokens)
+def _keep_matched_suitable_image_descs(results_fts, source_match_name, image_path_base):
+    results_list = [(hit['file_name'], hit['content'], hit.score) for hit in results_fts]
+    # keywords_result = [item for item in results_list if item[2] > 10 and has_key_words(item, product_in_query)]
+    # if len(keywords_result) > 0:
+    #     results_list = keywords_result
 
-    parser = QueryParser("content", ix.schema)
-    myquery = parser.parse(or_query)
+    image_descs = []
+    for result in results_list:
+        # print('content:', result[1])
+        image_name = result[0]  # name
+        base_name = image_name.split('_img')[0] # _imgbmp or _imgsvg ,  see load_imgs_from_pdf
 
-    with ix.searcher() as searcher:
-        results = searcher.search(myquery, limit=k)
+        if source_match_name.find(base_name) == -1:
+            continue
 
-        results_list = [(hit['file_name'], hit['content'], hit.score) for hit in results]
-        # keywords_result = [item for item in results_list if item[2] > 10 and has_key_words(item, product_in_query)]
-        # if len(keywords_result) > 0:
-        #     results_list = keywords_result
-        images = []
-        for result in results_list:
-            # print('content:', result[1])
-            image_name = result[0]  # name
-            base_name = image_name.split('_img')[0]
+        image_full_path = os.path.join(image_path_base, 'images', base_name, image_name + '.png')
+        image_full_path = os.path.abspath(image_full_path)
 
-            if source_match_name.find(base_name) == -1:
-                continue
-
-            image_full_path = os.path.join(image_path_base, 'images', base_name, image_name + '.png')
-            image_full_path = os.path.abspath(image_full_path)
-
+        try:
+            image_title = result[1].split('\n')[0].split(':')[1]  # line3desc
+        except IndexError:
             try:
-                image_title = result[1].split('\n')[0].split(':')[1]
+                image_title = result[1].split('\n')[0].split(':')[0]
             except IndexError:
                 image_title = 'Title not found'
 
-            image_title = remove_repeated_substrings(image_title)
-            images.append((image_full_path, image_title, result[2], image_name, result[1]))
-            # print('--------- image----------')
-            # print(result[0], result[1])
+        image_title = _remove_repeated_substrings(image_title)
+        #                    0:full_path      1:title      2:score   3:img_name  4:content
+        image_descs.append((image_full_path, image_title, result[2], image_name, result[1]))
+    return image_descs
 
-        # do filter image, re-rank all images
-        images_ret = []
-        images_remain = []
-        for image in images:
-            print('title:', image[1])
-            print('name:', image[3])
-            print('content:', image[4])
-            img_desc = image[1] + ' ' + image[3] + ' ' + image[4]
-            add = False
-            for product in product_in_query:
-                if product in img_desc:
-                    images_ret.append(image)
-                    add = True
-                    break
-            if not add:
-                images_remain.append(image)
+def _rerank_image_descs(images_descs, product_in_query, product_in_response):
+    # do filter image, re-rank all images, appear in query first, then reamin
+    images_descs_reranked = []
+    images_remain = []
+    for image in images_descs:
+        print('title:', image[1])
+        print('name:', image[3])
+        print('content:', image[4])
+        img_desc = image[1] + ' ' + image[3] + ' ' + image[4]
+        add = False
+        for product in product_in_query:
+            if product in img_desc:
+                images_descs_reranked.append(image)
+                add = True
+                break
+        if not add:
+            images_remain.append(image)
 
-        print('after input filter:', len(images_ret))
-        print('after input filter remain: ', len(images_remain))
+    print('after input filter:', len(images_descs_reranked))
+    print('after input filter remain: ', len(images_remain))
 
-        images_rrmain = []
-        for image in images_remain:
-            img_desc = image[1] + ' ' + image[3] + ' ' + image[4]
-            add = False
-            for product in product_in_response:
-                if product in img_desc:
-                    images_ret.append(image)
-                    add = True
-                    break
-            if not add:
-                images_rrmain.append(image)
-        print('after output filter:', len(images_ret))
-        print('after input filter remain: ', len(images_rrmain))
+    images_rrmain = []
+    for image in images_remain:
+        img_desc = image[1] + ' ' + image[3] + ' ' + image[4]
+        add = False
+        for product in product_in_response:
+            if product in img_desc:
+                images_descs_reranked.append(image)
+                add = True
+                break
+        if not add:
+            images_rrmain.append(image)
+    
+    print('after output filter:', len(images_descs_reranked))
+    print('after input filter remain: ', len(images_rrmain))
 
-        images_ret.extend(images_rrmain)
-        print('final return: ', len(images_ret))
-        return images_ret
+    images_descs_reranked.extend(images_rrmain)
+    print('final return: ', len(images_descs_reranked))
+    return images_descs_reranked
 
+
+
+def search_images_from_response(user_input, response, kb_name, lang='CN', k=1000, 
+                                image_path_base=None,
+                                source_match=None):
+    global g_ixs
+    if source_match is None:
+        return []
+
+    dir_root = get_root_dir()
+    directory = os.path.join(dir_root,f'datasets/{kb_name}/')
+    if not os.path.isdir(directory):
+        raise ValueError(f"dataset: {directory} not exist")
+
+    if image_path_base is None:
+        image_path_base = os.path.join(dir_root, f"datasets/{kb_name}")
+
+    source_match_name = os.path.basename(source_match)  # source_match is citation name 
+
+    query_tokens, product_in_query,  product_in_response = _find_suitable_querys_for_image(user_input, response, kb_name, lang=lang)
+
+    ix = g_ixs[kb_name] # whoosh is a FTS local engine 
+    or_query = " OR ".join(query_tokens)
+    parser = QueryParser("content", ix.schema)
+    query_whoosh = parser.parse(or_query)
+
+    with ix.searcher() as searcher:
+        results_fts = searcher.search(query_whoosh, limit=k)
+
+        image_descs = _keep_matched_suitable_image_descs(results_fts, source_match_name, image_path_base)
+
+        images_descs_reranked = _rerank_image_descs(image_descs, product_in_query, product_in_response)
+
+        return images_descs_reranked
         # return images
 
 
-def remove_repeated_substrings(s):
+def _remove_repeated_substrings(s):
     def longest_repeated_substring(text):
         n = len(text)
         table = [[0] * n for _ in range(n)]
@@ -447,12 +458,12 @@ def remove_repeated_substrings(s):
     return s
 
 
-def create_and_load_collection(client, base_name, dataset_path):
+def create_and_load_collection(chromadb_client, base_name, dataset_path):
     # 生成唯一的集合名称
     collection_name = base_name+ str(random.randint(0, 10000))
 
     # 创建集合
-    collection = client.create_collection(name=collection_name)
+    collection = chromadb_client.create_collection(name=collection_name)
     logging.info(f'CALC: Collection {collection_name} created')
 
     # 加载数据
