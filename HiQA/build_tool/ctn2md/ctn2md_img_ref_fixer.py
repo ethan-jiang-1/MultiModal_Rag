@@ -3,8 +3,10 @@ import os
 import sys
 import logging
 import rich
+import re
 #import random
 #import json
+import json_repair
 
 load_dotenv()
 
@@ -12,48 +14,206 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.ctn2md.ctn2md_base import save_md_info
+from HiQA.build_tool.ctn2md.ctn2md_base import save_md_info, load_md_info
+from HiQA.build_tool.util_md.llm_fix_vl_instruction import get_vllm_instruction
+from HiQA.build_tool.vl_description import generate_image_description
+from PIL import Image
 
-def fix_img_content_by_mm(fname_output_s1_md, out_dir, md_info):
-    fname_s2_md_name = os.path.basename(fname_output_s1_md).replace("_s1.md", "_s2.md")
-    fname_output_s2_md = os.path.join(out_dir, fname_s2_md_name)
+# 常量定义
+MIN_WIDTH = 256   # 图像最小宽度（像素）
+MIN_HEIGHT = 256  # 图像最小高度（像素）
 
-    with open(fname_output_s1_md, "r", encoding="utf8") as f:
+def extract_doc_title(fname_org_doc):
+    """
+    提取文档标题，只去掉最后的后缀名和最后的 `.`。
+    
+    :param fname_org_doc: 原始文档路径
+    :return: 文档标题（去掉后缀名和最后的 `.`）
+    """
+    # 获取文件名部分（不包括路径）
+    file_name = os.path.basename(fname_org_doc)
+    
+    # 找到最后一个点的位置，确保只去掉最后的后缀
+    last_dot_index = file_name.rfind('.')
+    
+    # 如果找到了点，去掉后缀和最后的点
+    if last_dot_index != -1:
+        return file_name[:last_dot_index]
+    else:
+        # 如果没有点，直接返回文件名
+        return file_name
+
+g_page2inst = {}
+
+def get_page_instruction(doc_title, page_content):
+    global g_page2inst
+    key = f"{doc_title}##{page_content}"
+    if key in g_page2inst:
+        return g_page2inst[key]
+
+    instruction = get_vllm_instruction(doc_title, page_content)
+    g_page2inst[key] = instruction
+    return instruction
+
+def analyze_image_content(md_page_file, fname_org_doc, image_path):
+    """
+    模拟多模态处理函数，分析图像的内容是否有意义。
+    
+    :param md_page_file: 当前页的 MD 文件路径
+    :param fname_org_doc: 原始文档路径
+    :param image_path: 图像的路径
+    :return: (图像简洁说明, 新的图像路径) 或 (None, None) 如果图像无意义
+    """
+    # 1. 提取文档标题 (doc_title)
+    # 从 fname_org_doc 中去除目录和最后的扩展名
+    doc_title = extract_doc_title(fname_org_doc)
+
+    # 2. 读取当前页的 Markdown 内容 (md_page)
+    try:
+        with open(md_page_file, 'r', encoding='utf-8') as md_file:
+            page_content = md_file.read()
+    except Exception as e:
+        logging.exception(f"无法读取 Markdown 文件 {md_page_file}，错误: {e}")
+        return None, None
+
+    # 3. 多模态分析逻辑
+    try:
+        instruction = get_page_instruction(doc_title, page_content)
+        resp = generate_image_description(image_path, instruction=instruction)
+        resp_json = json_repair.repair_json(resp, return_objects=True, ensure_ascii=True)
+        rich.print(resp_json)
+        figure_name = resp_json.get("FigureName")
+        relevance = resp_json.get("Relevance")
+        if relevance is not None:
+            if relevance.find("NotFit") != -1 or relevance.find("PartialFit") != -1:
+                return None, None 
+        if figure_name is not None:
+            if figure_name == "None":
+                return None, None 
+    except Exception as e:
+        logging.exception(e)
+        return None, None
+
+    # 4. 返回处理后的描述和新路径
+    description = figure_name
+    new_image_path = image_path
+    return description, new_image_path
+
+def process_image_reference(out_dir, image_file, md_info):
+    """
+    检查图像的合理性，并返回描述和新图像路径。
+    :param out_dir: 工作目录
+    :param image_file: 图像文件名
+    :param md_info: 上下文信息字典
+    :return: (简洁说明, 新的图像文件名) 或 (None, None) 表示不合适的图像
+    """
+    image_path = os.path.join(out_dir, image_file)
+
+    # 1. 图像是否存在
+    if not os.path.exists(image_path):
+        return None, None
+
+    # 2. 检查图像尺寸
+    try:
+        with Image.open(image_path) as img:
+            width, height = img.size
+            if width < MIN_WIDTH or height < MIN_HEIGHT:
+                return None, None  # 图像太小
+    except Exception as e:
+        print(f"无法读取图像 {image_path}，错误: {e}")
+        return None, None
+
+    # 3. 获取页号和对应的 MD 文件名
+    page_match = re.search(r'_p(\d+)_', image_file)
+    if not page_match:
+        return None, None  # 未找到页号
+    page_number = page_match.group(1)
+    md_page_file = next(
+        (fname for fname in md_info["fnames_pages"] if f'_p{page_number}' in fname),
+        None
+    )
+    if not md_page_file:
+        return None, None  # 未找到对应的 MD 文件
+
+    # 4. 调用多模态处理逻辑
+    description, new_image_path = analyze_image_content(
+        md_page_file=os.path.join(out_dir, md_page_file),
+        fname_org_doc=md_info["fname_org_doc"],
+        image_path=image_path
+    )
+    if description and new_image_path:
+        return description, new_image_path
+    else:
+        return None, None  # 图像被判断为无意义
+
+
+def filter_markdown_images(md_src_str, out_dir, md_info):
+    """
+    处理 Markdown 中的图像引用，生成新的 Markdown 字符串。
+    
+    :param md_src_str: 原始 Markdown 字符串
+    :param out_dir: 工作目录
+    :return: 处理后的 Markdown 字符串
+    """
+    # 正则匹配 Markdown 图片引用语法 ![alt](image)
+    image_pattern = r'!\[.*?\]\(([^)]+)\)'
+    
+    def replace_image_reference(match):
+        # 原始图像引用
+        image_file = match.group(1)
+        
+        # 调用外部处理函数
+        description, new_image_file = process_image_reference(out_dir, image_file, md_info)
+        
+        if description and new_image_file:
+            # 替换为新的 Markdown 图片引用
+            if "figures" not in md_info:
+                md_info["figures"] = {}
+            md_info["figures"][new_image_file] = description
+            return f"![{description}]({new_image_file})"
+        else:
+            # 返回空字符串表示移除不合适的图像引用
+            return ""
+    
+    # 使用 re.sub 替换所有匹配的图像引用
+    md_dst_str = re.sub(image_pattern, replace_image_reference, md_src_str)
+    rich.print(md_dst_str)
+    return md_dst_str
+
+
+def fix_img_content_by_lvlm(md_info_path):
+    out_dir = os.path.dirname(md_info_path)
+    md_info = load_md_info(md_info_path)
+    if md_info is None:
+        return None 
+
+    fname_output_s1_md = md_info.get("fname_output_s1_md", None)
+    if fname_output_s1_md is None:
+        return None 
+
+    pname_s1 = os.path.join(out_dir, fname_output_s1_md)
+    with open(pname_s1, "r", encoding="utf8") as f:
         md_text = f.read()
         rich.print(md_text)
 
-    # md_text_fixed = fix_ocr_self_correct_markdown(md_text)
-    # with open(fname_output_s1_md, "w+") as f:
-    #     f.write(md_text_fixed)
+    md_text_new = filter_markdown_images(md_text, out_dir, md_info)
+
+    fname_s2_md_name = os.path.basename(fname_output_s1_md).replace("_s1.md", "_s2.md")
+    fname_output_s2_md = os.path.join(out_dir, fname_s2_md_name)
+    with open(fname_output_s2_md, "w+") as f:
+        f.write(md_text_new)
 
     logging.info(f"fname_s2_md_name: {fname_s2_md_name}")
     if isinstance(md_info, dict):
-        md_info["fname_s2_md_name"] = os.path.basename(fname_s2_md_name)
+        md_info["fname_output_s2_md"] = os.path.basename(fname_output_s2_md)
         save_md_info(out_dir, md_info)
-    return fname_output_s2_md    
+    return fname_output_s2_md, md_info    
 
-
-# def full_process_doc2md(doc_pathname, out_dir):
-#     fname_output_s0_md, md_info = convert_doc_to_md_by_llamaparse(doc_pathname, out_dir)
-#     fname_output_s1_md = fix_ocr_content_by_gpt(fname_output_s0_md, out_dir, md_info)
-#     fname_output_s2_md = fix_img_content_by_mm(fname_output_s1_md, out_dir, md_info)
-
-#     save_md_info(out_dir, md_info)
 
 if __name__ == "__main__":
     setup_logger_handlers()
-    #doc_pathname = "datasrc/test/raw_docs/AIGC时代的人力资源管理进化(徐刚).pdf"
-    #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
-    #doc_pathname = "datasrc/test/raw_docs/1. 座椅STO间隙 P1.pptx"
-    #doc_pathname = "datasrc/test/raw_docs/管理者角色定位与认知课程大纲.docx"
-    #doc_pathname = "datasrc/test/raw_docs/考勤修改统一规则.xlsx"
-    # doc_pathname = "datasrc/test/raw_docs/5. back panel 与环境匹配工程校核_P2.pptx"
 
-    # out_dir = f"_work/lp_doc2md_{random.randint(10,99)}"
-    # print(f"out_dir: {out_dir}")
-
-    # setup_logger_handlers()
-    # os.makedirs(out_dir, exist_ok=True)
-    # fname_output_fixed_md, md_info = convert_doc_to_md_by_llamaparse(doc_pathname, out_dir)
-    # print(fname_output_fixed_md)
-    # rich.print(md_info)
+    md_info_path = "_work/ctn2md_exam/info.json"
+    md_info_path, md_info = fix_img_content_by_lvlm(md_info_path)
+    print(md_info_path)
+    rich.print(md_info)
