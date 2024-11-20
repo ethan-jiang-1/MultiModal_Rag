@@ -34,7 +34,7 @@ def do_content2md_convert(ctn_pathname, out_dir):
         logging.error(f"DCC: failed {ctn_pathname} @fix_img_content_by_lvlm")
         return None, None 
 
-    fname_output_s2_md = md_info.get_info("fname_output_s2_md")
+    fname_output_s2_md = md_info.get("fname_output_s2_md")
     fname_output_md = fname_output_s2_md.replace("_s2.md", ".md")
 
     src_path = os.path.join(out_dir, fname_output_s2_md)
@@ -44,7 +44,7 @@ def do_content2md_convert(ctn_pathname, out_dir):
     shutil.copy(src_path, final_md_path)
 
     md_info["fname_final_md"] = os.path.basename(final_md_path)
-    save_md_info(md_info)
+    save_md_info(out_dir, md_info)
 
     return final_md_path
 
