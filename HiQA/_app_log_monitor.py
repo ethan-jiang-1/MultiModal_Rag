@@ -4,6 +4,7 @@ import re
 import sys
 #import gradio as gr
 import rich 
+import json_repair
 
 if "./" not in sys.path:
     sys.path.append("./")
@@ -15,6 +16,7 @@ class ProgressLogger:
     _logger = logging.getLogger(_LOGGER_NAME_PRG)
     _logger_hooked = False
     _progress_history = []  # 记录所有进度信息
+    _progress_status = {}
 
     @classmethod
     def _setup_handler(cls):
@@ -24,8 +26,11 @@ class ProgressLogger:
         class ProgressHandler(logging.Handler):
             def emit(self, record):
                 log_entry = self.format(record)
-                # 解析日志条目并更新进度
-                cls._parse_and_store_progress(log_entry)
+                
+                if log_entry.find("```json") != -1:
+                    cls._parse_and_store_status(log_entry)
+                elif log_entry.find("step") != -1:
+                    cls._parse_and_store_progress(log_entry)
 
         # 检查是否已经设置了处理器，避免重复添加
         if not cls._logger_hooked:
@@ -58,6 +63,16 @@ class ProgressLogger:
             logging.warning(f"failed to parse: {log_entry}")
     
     @classmethod
+    def _parse_and_store_status(cls, log_entry):
+        if log_entry.find("```json") == -1:
+            return 
+        names = log_entry.split("```json")
+        if len(names) == 2:
+            dict_name = names[0]
+            dict_json = json_repair.repair_json(names[1], ensure_ascii=True, return_objects=True)
+            cls._progress_status[dict_name] = dict_json
+
+    @classmethod
     def log_progress(cls, message):
         """使用自定义格式记录进度"""
         # 确保处理器已经设置
@@ -69,11 +84,16 @@ class ProgressLogger:
     def get_progress_history(cls):
         """返回所有进度历史记录"""
         return cls._progress_history.copy()
+
+    @classmethod
+    def get_progress_status(cls):
+        return cls._progress_status
     
     @classmethod
     def clear_progress_history(cls):
         """清除进度历史记录"""
         cls._progress_history.clear()
+        cls._progress_status.clear()
 
 
 if __name__ == "__main__":

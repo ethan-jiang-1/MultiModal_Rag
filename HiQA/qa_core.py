@@ -139,7 +139,7 @@ def _locate_matched_src_doc_names(source_filenames_from_citation, kb_name):
     lst_names = os.listdir(dir_raw)
     lst_names = sorted(lst_names, reverse=True)
 
-    lst_matched_names = []
+    lst_matched_fullpathnames = []
     for source_filename in source_filenames_from_citation:
         source_filename = source_filename.strip()
         if len(source_filename) > 0:
@@ -149,46 +149,69 @@ def _locate_matched_src_doc_names(source_filenames_from_citation, kb_name):
             for name in lst_names:
                 if name.find(fname_only) != -1:
                     fpath = os.path.join(dir_raw, name)
-                    lst_matched_names.append(fpath)
-    return lst_matched_names
+                    lst_matched_fullpathnames.append(fpath)
+    return lst_matched_fullpathnames
 
-# modification three,  pick up the information from response for which chunk is picked
-def _check_soruce_matches(knowledge, response, kb_name):
-    import re
-    pattern = r"(?<=\[Source File\]\s)[^\[]+(?=\s\[Source File\])"
+# TODO；ethan_images - new structure 
+def _locate_matched_image_names(image_filenames_from_citation, kb_name):
+    #from pathlib import Path
+    dir_root = get_root_dir()
+    dir_raw = os.path.join(dir_root, f"datasets/{kb_name}/images")
+    
+    lst_names = os.listdir(dir_raw)
+    lst_names = sorted(lst_names, reverse=True)
 
-    matches = []
-    try:
-        matches = re.findall(pattern, knowledge)
-    except Exception as e:
-        logging.exception(str(e))
-    matches = _locate_matched_src_doc_names(matches, kb_name)
-    return matches
+    lst_matched_fullpathnames = []
+    for source_filename in image_filenames_from_citation:
+        source_filename = source_filename.strip()
+        if len(source_filename) > 0:
+            match_noext = _remove_known_source_ext(source_filename)
+            fname_only = match_noext.strip().strip("\u3000")
 
-def _find_source_matches_from_citation(citations, kb_name):
+            for name in lst_names:
+                if name.find(fname_only) != -1:
+                    fpath = os.path.join(dir_raw, name)
+                    lst_matched_fullpathnames.append(fpath)
+    return lst_matched_fullpathnames
+
+def _find_source_matches_from_citation_sources(citations_sources, kb_name):
     source_filenames_from_citation = []
 
-    if isinstance(citations, str):
-        new_citations = []
-        names = citations.split("[Source File]")
-        for name in names:
-            name = name.strip()
-            if len(name) > 0:
-                nns = name.split(",")
-                for nn in nns:
-                    nn = nn.strip()
-                    if len(nn) > 0:
-                        new_citations.append(nn)
-        citations = new_citations
+    if isinstance(citations_sources, list):
+        for citation in citations_sources:
+            src_path = citation.replace("[Source File]", "").strip()
+            if len(src_path) > 0:
+                source_filenames_from_citation.append(src_path)
 
-    if isinstance(citations, list):
-        for citation in citations:
-            matches_i = citation.replace("[Source File]", "").strip()
-            if len(matches_i) > 0:
-                source_filenames_from_citation.append(matches_i)
+    source_matched_fullpathnames = _locate_matched_src_doc_names(source_filenames_from_citation, kb_name)
+    return source_matched_fullpathnames
 
-    source_matches = _locate_matched_src_doc_names(source_filenames_from_citation, kb_name)
-    return source_matches
+def _decode_markdown_image_path(encoded_string):
+    from urllib.parse import unquote
+
+    # 原始字符串
+    #encoded_string = "![前后座椅H点距离参考图](img%5C6%20%E5%89%8D%E5%90%8E%E6%8E%92%E5%BA%A7%E6%A4%85H%E7%82%B9%E8%B7%9D%E7%A6%BB%E8%A6%81%E6%B1%82%20P10.png)"
+
+    # 提取文件路径部分
+    start = encoded_string.find("(") + 1
+    end = encoded_string.find(")")
+    encoded_path = encoded_string[start:end]
+
+    # 解码文件路径
+    decoded_path = unquote(encoded_path)
+    return decoded_path
+
+def _find_image_matches_from_citation_images(citations_images, kb_name):
+    image_filenames_from_citation = []
+
+    if isinstance(citations_images, list):
+        for citation in citations_images:
+            image_path = _decode_markdown_image_path(citation)
+            if len(image_path) > 0:
+                image_filenames_from_citation.append(image_path)
+
+    images_matched_fullpathnames = _locate_matched_image_names(image_filenames_from_citation, kb_name)
+    return images_matched_fullpathnames
 
 def _find_images_json_content(user_input, response_content, kb_name, source_match):
     from HiQA.service.knowledge_client import search_images_from_response
@@ -212,9 +235,17 @@ def _find_images_json_content(user_input, response_content, kb_name, source_matc
 def _get_composited_response_based_on_initial_response_json(response_json, user_input, kb_name):
     response_answer = response_json.get("answer")
 
-    citation = response_json["citation"]
-    lst_source_matches = _find_source_matches_from_citation(citation, kb_name)
-    logging.info(f"##source_matches:\n {lst_source_matches}")    
+    lst_source_matches = []
+    citation_sources = response_json.get("citation_sources", None)
+    if isinstance(citation_sources, list):
+        lst_source_matches = _find_source_matches_from_citation_sources(citation_sources, kb_name)
+        logging.info(f"##source_matches:\n {lst_source_matches}")
+
+    lst_image_matches = []
+    citation_images = response_json.get("citation_images", None)    
+    if isinstance(citation_images, list):
+        lst_image_matches = _find_image_matches_from_citation_images(citation_images, kb_name)
+        logging.info(f"##image_matches:\n {lst_image_matches}")
 
     lst_image_n_title = []
     logger_prg.info("step5.1: 92%: 组织回答#信息源头IMG")
@@ -289,9 +320,6 @@ def do_core_query(user_input, kb_name='test'):
 
     response_json = None
     try:
-        # response_content = response_content.replace("```json\n", "")
-        # response_content = response_content.replace("\n```", "")
-        # response_json = json.loads(response_content)
         response_json = json_loads_repair(response_content)
     except Exception as ex:
         logging.exception(str(ex))
@@ -300,7 +328,10 @@ def do_core_query(user_input, kb_name='test'):
     logger_prg.info("step5.0: 90%: 组织回答#信息源头")
     try:
         response_answer, lst_image_n_title, lst_source_matches = "", [], []
-        if response_json is not None and "answer" in response_json and "citation" in response_json:
+        if response_json is not None \
+           and "answer" in response_json \
+           and "citation_sources" in response_json \
+           and "citation_images" in response_json:
             response_answer, lst_image_n_title, lst_source_matches = _get_composited_response_based_on_initial_response_json(response_json, user_input, kb_name)      
     except Exception as ex: 
         logging.exception(str(ex))
@@ -312,7 +343,7 @@ def do_core_query(user_input, kb_name='test'):
     ret_dict["response_answer"] = response_answer
     ret_dict["lst_source_matches"] = lst_source_matches
     ret_dict["lst_image_n_title"] = lst_image_n_title
-    ret_dict["llm_response_content"] = response_content
+    #ret_dict["llm_response_content"] = response_content
     ret_dict["llm_response_json"] = response_json
 
     pretty_str = pformat(ret_dict)
@@ -320,7 +351,9 @@ def do_core_query(user_input, kb_name='test'):
     logging.info(f"\n**** REQ{req_id}:ended ****\n\n")
     logging.info("")
 
+    ret_dict_json_str = json.dumps(ret_dict, ensure_ascii=True, indent=4)
     logger_prg.info("step6.0: 95%: 回答生成")
+    logger_prg.info(f"ret_dict: ```json\n {ret_dict_json_str}\n")
     return ret_dict
 
 

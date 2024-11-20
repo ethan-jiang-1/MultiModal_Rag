@@ -4,6 +4,9 @@ import gradio as gr
 import threading
 import os
 import html
+import logging 
+import re
+import urllib.parse
 
 if "./" not in sys.path:
     sys.path.append("./")
@@ -16,6 +19,96 @@ from HiQA._app_log_monitor import ProgressLogger
 from HiQA.utils.util_logging import setup_logger_handlers
 from HiQA.qa_core import get_gpt_model
 from HiQA.utils.util_git import get_git_version
+
+
+def _process_markdown_images(markdown_str):
+    """
+    处理 Markdown 中的图片引用，解码 URL 编码的图片路径。
+    
+    :param markdown_str: 输入的 Markdown 字符串
+    :return: 处理后的 Markdown 字符串
+    """
+    # 正则表达式匹配 Markdown 图片引用语法 ![alt text](image_url)
+    image_pattern = r'!\[([^\]]*)\]\(([^)]+)\)'
+
+    def decode_image_url(match):
+        # 获取图片的 alt 文本和 URL
+        alt_text = match.group(1)
+        image_url = match.group(2)
+        
+        # 解码 URL 编码的部分
+        decoded_url = urllib.parse.unquote(image_url)
+        
+        # 返回解码后的图片引用
+        return f"![{alt_text}]({decoded_url})"
+    
+    # 使用 re.sub 替换匹配的图片引用为解码后的形式
+    processed_markdown = re.sub(image_pattern, decode_image_url, markdown_str)
+    return processed_markdown
+
+
+def _dict_to_markdown_inner(data, indent=0):
+    """
+    Convert a dictionary to a Markdown formatted string.
+    
+    :param data: Dictionary to convert.
+    :param indent: Initial indentation level.
+    :return: String in Markdown format.
+    """
+    markdown_text = ''
+    for key, value in data.items():
+        # Adjust Markdown heading level based on indentation
+        if indent == 0:
+            markdown_text += f'\n## {str(key)}\n\n'
+        elif indent == 1:
+            markdown_text += f'\n### {str(key)}\n\n'
+        elif indent == 2:
+            markdown_text += f'\n#### {str(key)}\n\n'        
+        elif indent == 3:
+            markdown_text += f'\n##### {str(key)}\n\n'
+        else:
+            markdown_text += '\n' + '    ' * (indent - 1) + f'**{str(key)}**: \n\n'
+
+        # Handle different types of values
+        if isinstance(value, dict):
+            if value:  # Only recurse if dictionary is not empty
+                markdown_text += _dict_to_markdown_inner(value, indent + 1)
+        elif isinstance(value, list):
+            # Add a blank line before the list for better spacing
+            markdown_text += '\n'
+            if value:  # Only add list items if list is not empty
+                for item in value:
+                    if isinstance(item, dict):
+                        # Recursively handle nested dictionaries within lists
+                        markdown_text += '    ' * indent + '- ' + _dict_to_markdown_inner(item, indent + 1) + '\n\n'
+                    else:
+                        # Use code block for any item with length > 64 for better readability
+                        #if len(str(item)) > 64:
+                        #    markdown_text += '    ' * indent + f'- ```{str(item)}```\n\n'
+                        #else:
+                        #    # Standard list item with appropriate indentation
+                        markdown_text += '    ' * indent + f'- {str(item)}\n\n'  # Extra newline for separation
+        else:
+            # Append short values inline, long values on the next line as a code block
+            if len(str(value)) < 64:
+                markdown_text = markdown_text.rstrip() + f' : {str(value)}\n\n'  # Ensure a blank line after
+            else:
+                markdown_text += f'```\n{str(value)}\n```\n\n'  # Code block for long text
+
+    markdown_str = markdown_text.strip()
+    return _process_markdown_images(markdown_str)
+
+def _dict_info_to_markdown(extra_data):
+    int_md = "" 
+    try:
+        if isinstance(extra_data, dict):
+            int_md = _dict_to_markdown_inner(extra_data)
+        elif extra_data is not None:
+            int_md = str(extra_data) 
+    except Exception as ex: # noqa
+        logging.exception(str(ex))
+    return int_md
+
 
 # 根据用户输入生成最终回答、文件和图片的组合情况
 def parse_final_result(result_dic):
@@ -59,9 +152,21 @@ def on_clear():
     )
 
 # 帮助按钮的切换显示功能
+g_count = 0
 def toggle_help_content(is_help_visible):
+    global g_count
     new_visibility = not is_help_visible  # 切换可见状态
-    help_content = f"{QUESTION_LIST}" if new_visibility else ""
+    help_content = ""
+    if new_visibility:
+        help_content = f"{QUESTION_LIST}"
+        if g_count % 2 == 0:
+            status = ProgressLogger.get_progress_status()
+            if len(status.keys()) != 0:
+                extra_info = _dict_info_to_markdown(status)
+                help_content += "\n\n" + extra_info
+        g_count += 1
+    
+    help_content = help_content if new_visibility else ""
     return gr.update(value=help_content, visible=new_visibility), new_visibility
 
 # 模拟提交功能，使用 parse_final_result 函数
