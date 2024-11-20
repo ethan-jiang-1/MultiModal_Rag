@@ -1,0 +1,118 @@
+from dotenv import load_dotenv
+#import os
+import sys
+#import logging
+#import rich
+#import random
+#import json
+
+load_dotenv()
+
+if "./" not in sys.path:
+    sys.path.append("./")
+
+#from HiQA.utils.util_logging import setup_logger_handlers
+#from HiQA.build_tool.ctn2md.ctn2md_base import save_md_info, SEP_FNAME_EXT
+
+def analyze_scan_info(json_result0_pages):
+    """
+    分析 JSON 结果，返回支持判断文档质量的详细数据。
+
+    :param json_result_pages: 按页组织的 JSON 解析结果
+    :return: 包含支持判断信息的字典
+    """
+
+    result = {
+        "total_pages": len(json_result0_pages),  # 文档总页数
+        "structured_pages": 0,           # 良好的结构化页面数量
+        "scanned_pages": 0,              # 扫描页面数量
+        "pages": []                      # 每页的详细分析结果
+    }
+
+    for page in json_result0_pages:
+        # 提取页面级信息
+        width = page.get("width", 0)
+        height = page.get("height", 0)
+        items = page.get("items", [])
+        images = page.get("images", [])
+        
+        # 页面总面积
+        page_area = width * height
+
+        # 初始化页面统计
+        text_blocks = 0
+        heading_blocks = 0
+        total_text_area = 0
+        total_image_area = 0
+
+        # 遍历 items
+        for item in items:
+            item_type = item.get("type", "").lower()
+            bbox = item.get("bBox", None) or item.get("BBox", {})
+            item_width = bbox.get("w", 0)
+            item_height = bbox.get("h", 0)
+
+            # 累计文本块的面积
+            if item_type in {"text", "heading"}:
+                text_blocks += 1
+                if item_type == "heading":
+                    heading_blocks += 1
+                total_text_area += item_width * item_height
+
+        # 遍历 images
+        for image in images:
+            img_width = image.get("width", 0)
+            img_height = image.get("height", 0)
+            total_image_area += img_width * img_height
+
+        # 判断页面是否是结构化页面或扫描页面
+        is_structured = (
+            text_blocks > 0
+            # and heading_blocks > 0
+            and total_text_area > 0.5 * page_area
+        )
+        is_scanned = total_image_area >= 0.8 * page_area
+
+        # 累计全局计数
+        if is_structured:
+            result["structured_pages"] += 1
+        if is_scanned:
+            result["scanned_pages"] += 1
+
+        # 保存当前页的详细数据
+        result["pages"].append({
+            "page_number": page.get("page", 0),
+            "width": width,
+            "height": height,
+            "text_blocks": text_blocks,
+            "heading_blocks": heading_blocks,
+            "total_text_area": total_text_area,
+            "total_image_area": total_image_area,
+            "page_area": page_area,
+            "is_structured": is_structured,
+            "is_scanned": is_scanned
+        })
+
+    return result
+
+def should_llm_ocr_fix(md_info):
+    scan_info = md_info.get("scan_info", None)
+    if scan_info is None:
+        return False 
+    
+    total_pages = scan_info.get("toal_pages", 1)
+    # TODO: ethan_llm_ocr_fix  need to support llm_ocr_fix multiple pages (>=5) or too many tokens 
+    # as llm fix only can support limited output tokens
+    if total_pages >= 5:
+        return False 
+
+    scanned_pages = scan_info.get("scanned_pages", 0) 
+    if scanned_pages == 0:
+        return False 
+
+    structured_pages = scan_info.get("structured_pages", 0)  # 良好的结构化页面数量
+    if structured_pages > scanned_pages:
+        return False
+
+    return True
+

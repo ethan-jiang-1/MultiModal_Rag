@@ -14,6 +14,7 @@ if "./" not in sys.path:
 from HiQA.utils.util_logging import setup_logger_handlers
 from HiQA.build_tool.util_md.llm_fix_ocr_md import fix_ocr_self_correct_markdown
 from HiQA.build_tool.ctn2md.ctn2md_base import save_md_info, load_md_info
+from HiQA.build_tool.ctn2md.ctn2md_llamaparse_scan_info import should_llm_ocr_fix
 
 
 def fix_ocr_content_by_gpt(md_info_path):
@@ -26,15 +27,19 @@ def fix_ocr_content_by_gpt(md_info_path):
     if fname_output_s0_md is None:
         return None, None 
 
-    fname_s1_md_name = os.path.basename(fname_output_s0_md).replace("_s0.md", "_s1.md")
-    fname_output_s1_md = os.path.join(out_dir, fname_s1_md_name)
-
     pname_s0 = os.path.join(out_dir, fname_output_s0_md)
-
     with open(pname_s0, "r", encoding="utf8") as f:
         md_text = f.read()
 
-    md_text_fixed = fix_ocr_self_correct_markdown(md_text)
+    fname_s1_md_name = os.path.basename(fname_output_s0_md).replace("_s0.md", "_s1.md")
+    fname_output_s1_md = os.path.join(out_dir, fname_s1_md_name)
+
+    if should_llm_ocr_fix(md_info):
+        md_text_fixed = fix_ocr_self_correct_markdown(md_text)
+    else:
+        logging.warning("skip llm ocr fix as it is well structured md")
+        md_text_fixed = md_text
+
     with open(fname_output_s1_md, "w+") as f:
         f.write(md_text_fixed)
 
@@ -46,7 +51,7 @@ def fix_ocr_content_by_gpt(md_info_path):
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    md_info_path = "_work/ctn2md_exam/info.json"
+    md_info_path = "_work/ctn2md_exam5/info.json"
     md_info_path, md_info = fix_ocr_content_by_gpt(md_info_path)
     print(md_info_path)
     rich.print(md_info)
