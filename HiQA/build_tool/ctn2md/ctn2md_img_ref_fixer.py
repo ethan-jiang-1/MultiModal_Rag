@@ -24,6 +24,8 @@ MIN_WIDTH = 198   # 图像最小宽度（像素）
 MIN_HEIGHT = 198  # 图像最小高度（像素）
 MIN_AREA = 128 * 128 # 图像最小面积（像素）
 
+FEATURE_PIC_DESP_IN_MD = True
+
 def extract_doc_title(fname_org_doc):
     """
     提取文档标题，只去掉最后的后缀名和最后的 `.`。
@@ -85,6 +87,7 @@ def analyze_image_content(md_page_file, fname_org_doc, image_path):
         rich.print(resp_json)
         figure_name = resp_json.get("FigureName")
         relevance_score = resp_json.get("RelevanceScore")
+        picture_discription = resp_json.get("PictureDescription")
         if relevance_score is not None:
             relevance_score = float(relevance_score)
             if relevance_score < 5.0: 
@@ -93,15 +96,13 @@ def analyze_image_content(md_page_file, fname_org_doc, image_path):
         if figure_name is not None:
             if figure_name == "None":
                 logging.warning(f"AIC: figure_name: {figure_name}")
-                return None, None 
+                return None, None
     except Exception as e:
         logging.error(f"AIC: 处理多模态异常，错误: {e}")
         logging.exception(e)
         return None, None
 
-    # 4. 返回处理后的描述和新路径
-    description = figure_name
-    return description, relevance_score
+    return relevance_score, (figure_name, picture_discription)
 
 def process_image_reference(out_dir, image_file, md_info):
     """
@@ -149,13 +150,13 @@ def process_image_reference(out_dir, image_file, md_info):
         return None, None  # 未找到对应的 MD 文件
 
     # 4. 调用多模态处理逻辑
-    description, new_image_path = analyze_image_content(
+    relevance_score, figure_name_n_picture_discription = analyze_image_content(
         md_page_file=os.path.join(out_dir, md_page_file),
         fname_org_doc=md_info["fname_org_doc"],
         image_path=image_path
     )
-    if description and new_image_path:
-        return description, new_image_path
+    if relevance_score and figure_name_n_picture_discription:
+        return relevance_score, figure_name_n_picture_discription
     else:
         logging.warning(f"PIR: 无意义{os.path.basename(image_path)}")
         return None, None  # 图像被判断为无意义
@@ -169,22 +170,34 @@ def filter_markdown_images(md_src_str, out_dir, md_info):
     :param out_dir: 工作目录
     :return: 处理后的 Markdown 字符串
     """
-    # 正则匹配 Markdown 图片引用语法 ![alt](image)
-    image_pattern = r'!\[.*?\]\(([^)]+)\)'
+    # 正则匹配 Markdown 图片引用语法 ![alt](image)\n
+    #image_pattern = r'!\[.*?\]\(([^)]+)\)'
+    #image_pattern = r'!\[.*?\]\(([^)]+)\)\n'
+    image_pattern = r'!\[.*?\]\(([^)]+)\)(\r?\n)?'
     
     def replace_image_reference(match):
         # 原始图像引用
         image_file = match.group(1)
         
         # 调用外部处理函数
-        description, relevance_score = process_image_reference(out_dir, image_file, md_info)
+        relevance_score, figure_name_n_picture_discription= process_image_reference(out_dir, image_file, md_info)
         
-        if description and relevance_score:
+        if relevance_score and figure_name_n_picture_discription:
             # 替换为新的 Markdown 图片引用
             if "figures" not in md_info:
                 md_info["figures"] = {}
-            md_info["figures"][image_file] = (description, relevance_score)
-            return f"![{description}]({image_file})"
+            figure_name, picture_discription = figure_name_n_picture_discription
+            md_info["figures"][image_file] = (relevance_score, figure_name, picture_discription)
+            image_txt_path = os.path.join(out_dir, extract_doc_title(image_file) + ".txt")
+            with open(image_txt_path, "w+", encoding="utf8") as f:
+                f.write(picture_discription)
+            
+            if FEATURE_PIC_DESP_IN_MD:
+                pic_desp = picture_discription.replace('"', '\"')
+                md_pic = f"![{figure_name}]({image_file} \"{pic_desp}\")\n"
+            else:
+                md_pic = f"![{figure_name}]({image_file})\n"
+            return md_pic
         else:
             # 返回空字符串表示移除不合适的图像引用
             return ""
