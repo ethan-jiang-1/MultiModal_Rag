@@ -14,7 +14,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.ctn2md.ctn2md_base import save_md_info, load_md_info
+from HiQA.build_tool.ctn2md.md_info_base import save_md_info, load_md_info
 from HiQA.build_tool.util_md.llm_fix_vl_instruction import get_vllm_instruction
 from HiQA.build_tool.vl_description import generate_image_description
 from PIL import Image

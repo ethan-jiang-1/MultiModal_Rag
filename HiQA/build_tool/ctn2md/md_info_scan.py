@@ -12,7 +12,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 #from HiQA.utils.util_logging import setup_logger_handlers
-#from HiQA.build_tool.ctn2md.ctn2md_base import save_md_info, SEP_FNAME_EXT
+#from HiQA.build_tool.ctn2md.md_info_base import save_md_info, SEP_FNAME_EXT
 
 def analyze_scan_info(json_result0_pages):
     """
@@ -95,24 +95,33 @@ def analyze_scan_info(json_result0_pages):
 
     return result
 
-def should_llm_ocr_fix(md_info):
+OFM_BY_SKIP = "ofm_skip"
+OFM_BY_CONTENT = "ofm_content"
+OFM_BY_PAGE = "ofm_page"
+
+def get_llm_ocr_fix_method(md_info):
     scan_info = md_info.get("scan_info", None)
     if scan_info is None:
-        return False 
-    
+        return OFM_BY_SKIP
+ 
     total_pages = scan_info.get("toal_pages", 1)
+    scanned_pages = scan_info.get("scanned_pages", 0) 
+    structured_pages = scan_info.get("structured_pages", 0)  # 良好的结构化页面数量
+
+    if structured_pages == total_pages:
+        return OFM_BY_SKIP
+
+    if scanned_pages == 0:
+        return OFM_BY_SKIP 
+
     # TODO: ethan_llm_ocr_fix  need to support llm_ocr_fix multiple pages (>=5) or too many tokens 
     # as llm fix only can support limited output tokens
     if total_pages >= 5:
-        return False 
-
-    scanned_pages = scan_info.get("scanned_pages", 0) 
-    if scanned_pages == 0:
-        return False 
-
-    structured_pages = scan_info.get("structured_pages", 0)  # 良好的结构化页面数量
-    if structured_pages > scanned_pages:
-        return False
-
-    return True
+        if structured_pages / total_pages > 0.8:
+            return OFM_BY_SKIP
+        return OFM_BY_PAGE 
+    else:
+        if structured_pages > scanned_pages:
+            return OFM_BY_SKIP
+        return OFM_BY_CONTENT
 

@@ -12,8 +12,8 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.ctn2md.ctn2md_base import save_md_info, SEP_FNAME_EXT
-from HiQA.build_tool.ctn2md.ctn2md_llamaparse_scan_info import analyze_scan_info
+from HiQA.build_tool.ctn2md.md_info_base import save_md_info, SEP_FNAME_EXT
+from HiQA.build_tool.ctn2md.md_info_scan import analyze_scan_info
 
 def _get_llamaparse():
     from llama_parse import LlamaParse

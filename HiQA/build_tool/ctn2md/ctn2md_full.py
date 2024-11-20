@@ -13,7 +13,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.ctn2md.ctn2md_base import save_md_info, load_md_info, find_md_info_path
+from HiQA.build_tool.ctn2md.md_info_base import save_md_info, load_md_info, find_md_info_path
 from HiQA.build_tool.ctn2md.ctn2md_llamaparse_converter import convert_doc_to_md_by_llamaparse
 from HiQA.build_tool.ctn2md.ctn2md_ocr_fixer import fix_ocr_content_by_gpt
 from HiQA.build_tool.ctn2md.ctn2md_img_ref_fixer import fix_img_content_by_lvlm
