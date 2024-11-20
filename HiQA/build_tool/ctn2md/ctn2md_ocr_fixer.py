@@ -20,11 +20,11 @@ def fix_ocr_content_by_gpt(md_info_path):
     out_dir = os.path.dirname(md_info_path)
     md_info = load_md_info(md_info_path)
     if md_info is None:
-        return None 
+        return None, None 
 
     fname_output_s0_md = md_info.get("fname_output_s0_md", None)
     if fname_output_s0_md is None:
-        return None 
+        return None, None 
 
     fname_s1_md_name = os.path.basename(fname_output_s0_md).replace("_s0.md", "_s1.md")
     fname_output_s1_md = os.path.join(out_dir, fname_s1_md_name)

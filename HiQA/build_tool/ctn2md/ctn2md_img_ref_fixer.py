@@ -84,10 +84,11 @@ def analyze_image_content(md_page_file, fname_org_doc, image_path):
         resp_json = json_repair.repair_json(resp, return_objects=True, ensure_ascii=True)
         rich.print(resp_json)
         figure_name = resp_json.get("FigureName")
-        relevance = resp_json.get("Relevance")
-        if relevance is not None:
-            if relevance.find("NotFit") != -1 or relevance.find("PartialFit") != -1:
-                logging.warning(f"AIC: relevance: {relevance}")
+        relevance_score = resp_json.get("RelevanceScore")
+        if relevance_score is not None:
+            relevance_score = float(relevance_score)
+            if relevance_score < 5.0: 
+                logging.warning(f"AIC: relevance_score: {relevance_score}")
                 return None, None 
         if figure_name is not None:
             if figure_name == "None":
@@ -100,8 +101,7 @@ def analyze_image_content(md_page_file, fname_org_doc, image_path):
 
     # 4. 返回处理后的描述和新路径
     description = figure_name
-    new_image_path = image_path
-    return description, new_image_path
+    return description, relevance_score
 
 def process_image_reference(out_dir, image_file, md_info):
     """
@@ -177,15 +177,14 @@ def filter_markdown_images(md_src_str, out_dir, md_info):
         image_file = match.group(1)
         
         # 调用外部处理函数
-        description, new_image_file = process_image_reference(out_dir, image_file, md_info)
+        description, relevance_score = process_image_reference(out_dir, image_file, md_info)
         
-        if description and new_image_file:
-            new_image_basename = os.path.basename(new_image_file)
+        if description and relevance_score:
             # 替换为新的 Markdown 图片引用
             if "figures" not in md_info:
                 md_info["figures"] = {}
-            md_info["figures"][new_image_basename] = description
-            return f"![{description}]({new_image_basename})"
+            md_info["figures"][image_file] = (description, relevance_score)
+            return f"![{description}]({image_file})"
         else:
             # 返回空字符串表示移除不合适的图像引用
             return ""
@@ -200,11 +199,11 @@ def fix_img_content_by_lvlm(md_info_path):
     out_dir = os.path.dirname(md_info_path)
     md_info = load_md_info(md_info_path)
     if md_info is None:
-        return None 
+        return None, None 
 
     fname_output_s1_md = md_info.get("fname_output_s1_md", None)
     if fname_output_s1_md is None:
-        return None 
+        return None, None 
 
     pname_s1 = os.path.join(out_dir, fname_output_s1_md)
     with open(pname_s1, "r", encoding="utf8") as f:
@@ -228,7 +227,7 @@ def fix_img_content_by_lvlm(md_info_path):
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    md_info_path = "_work/ctn2md_exam/info.json"
+    md_info_path = "_work/cnt2md_exam2/info.json"
     md_info_path, md_info = fix_img_content_by_lvlm(md_info_path)
     print(md_info_path)
     rich.print(md_info)

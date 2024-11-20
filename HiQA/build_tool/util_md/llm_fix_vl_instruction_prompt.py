@@ -49,7 +49,7 @@ TEXT_PROMPT_INST_VLLM_IMG = """
 2. 输出以下格式的结果(JSON格式）：
 {
   "FigureName": "<图像名称（如相关）或 'None'>",
-  "Relevance": "<Fit(如果高契合)/PartialFit(如果部分契合)/NotFit(如果无关)>",
+  "RelevanceScore": <反映图像内容和页面上下文契合的度量，用10分制，2分以下无关，5分左右有些相关，8分以上强烈相关>,
   "Explanation": "<简要说明判断依据。>"
 }
 
