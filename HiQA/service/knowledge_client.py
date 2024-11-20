@@ -36,21 +36,25 @@ g_settings = Settings(allow_reset=True)
 g_ixs = None
 g_collections = None
 
-def get_knowledge(question, max_token, dataset, begin=None, only_vec=False, verbose=False):
-    if not begin:
-        begin = time.time()
+DEFAULT_KLG_MAX_TOKENS = 8000
+DEFAULT_KLG_MAX_ITEMS = 5
+DEFAULT_KLG_MIN_ITEMS = 3
+DEFAULT_FTS_K = 20
+
+def get_knowledge(question, kb_name, max_token=DEFAULT_KLG_MAX_TOKENS, max_item=DEFAULT_KLG_MAX_ITEMS, only_vec=False, verbose=False):
+    begin = time.time()
     logger_prg.info("step2.1: 25%: 召回相关知识#嵌入向量准备")
     question_embd = get_text_embedding(question)
     if verbose:
         print('after embedding', time.time() - begin)
 
     logger_prg.info("step2.2: 30%: 召回相关知识#召回内容片段")
-    knowledge = retrieve_knowledge(question, question_embd, max_token, dataset, begin, only_vec=only_vec, verbose=verbose)
+    knowledge = retrieve_knowledge(question, question_embd, kb_name, max_token=max_token, max_item=max_item, only_vec=only_vec, verbose=verbose)
     if verbose:
         print('knowledge length', len(knowledge))
     return knowledge
 
-def reset_by_jina(question, results, jina_weight=0.8, bm25_weight=0.5):
+def reset_by_jina(question, results, threshold=0.0, jina_weight=0.8, bm25_weight=0.5):
     # 提取输入的各类信息
     url = "http://region-42.seetacloud.com:29664/rerank/"
     ids = results['ids'][0]
@@ -102,6 +106,9 @@ def reset_by_jina(question, results, jina_weight=0.8, bm25_weight=0.5):
     # 按照得分从高到低排序
     result_list = sorted(result_list, key=lambda x: x[1], reverse=True)
 
+    if isinstance(threshold, float) and threshold >= 0.0:
+        result_list = [item for item in result_list if item[1] >= threshold]
+
     # 返回格式化后的结果
     return format_result_list(result_list)
 
@@ -119,7 +126,7 @@ def format_result_list(result_list):
 
 
 
-def reset_by_lucene(question, results, threshold, lucene_weight):
+def reset_by_lucene(question, results, threshold=0.5, lucene_weight=0.5):
     # ids每一项是个字符串，格式例如：'id0'
     # distances每一项是个浮点数，表示embedding的距离
     # metas每一项是个字典，格式例如：
@@ -218,16 +225,21 @@ def _do_query_based_on_question_and_dataset(question, collection, question_embd,
     )
     return results
 
-def retrieve_knowledge(question, question_embd, max_token, dataset, begin, only_vec=False, verbose=False):
+def retrieve_knowledge(question, question_embd, kb_name, max_token=DEFAULT_KLG_MAX_TOKENS, max_item=DEFAULT_KLG_MAX_ITEMS,  only_vec=False, verbose=False):
     global g_init_state
     global g_collections
 
     if g_collections is None:
         raise ValueError("KC is not inited")
 
-    collection = g_collections[dataset]
+    if kb_name not in g_collections:
+        raise ValueError(f"KC {kb_name} not inited")
 
-    results = _do_query_based_on_question_and_dataset(question, collection, question_embd, dataset)
+    begin = time.time()
+
+    collection = g_collections[kb_name]
+
+    results = _do_query_based_on_question_and_dataset(question, collection, question_embd, kb_name)
 
     if only_vec:
         result_list = [doc for doc in results['documents'][0]]
@@ -245,10 +257,12 @@ def retrieve_knowledge(question, question_embd, max_token, dataset, begin, only_
     if verbose:
         logging.info(f'ck1: after retrieve {time.time() - begin}')
     
-    # result_list = reset_by_lucene(question, results, threshold=0.5, lucene_weight=0.5)
-
     logger_prg.info("step2.3: 35%: 召回相关知识#按内容相关性重排序")
-    result_list = reset_by_jina(question, results)
+    # result_list = reset_by_lucene(question, results, threshold=0.5, lucene_weight=0.5)
+    result_list = reset_by_jina(question, results, threshold=0.0)
+
+    if isinstance(max_item, int) and max_item > DEFAULT_KLG_MIN_ITEMS:
+        result_list = result_list[:max_item]
     
     if verbose:
         logging.info(f'ck2: after rank by reset_by_jina {time.time() - begin}')
@@ -392,11 +406,11 @@ def _rerank_image_descs(images_descs, product_in_query, product_in_response):
 
 
 
-def search_images_from_response(user_input, response, kb_name, lang='CN', k=1000, 
-                                image_path_base=None,
-                                source_match=None):
+def search_images_from_response(user_input, response, kb_name, source_match,
+                                lang='CN', 
+                                k=DEFAULT_FTS_K):
     global g_ixs
-    if source_match is None:
+    if not isinstance(source_match, str) or len(source_match) == 0:
         return []
 
     dir_root = get_root_dir()
@@ -404,8 +418,7 @@ def search_images_from_response(user_input, response, kb_name, lang='CN', k=1000
     if not os.path.isdir(directory):
         raise ValueError(f"dataset: {directory} not exist")
 
-    if image_path_base is None:
-        image_path_base = os.path.join(dir_root, f"datasets/{kb_name}")
+    image_path_base = os.path.join(dir_root, f"datasets/{kb_name}")
 
     source_match_name = os.path.basename(source_match)  # source_match is citation name 
 
@@ -540,5 +553,7 @@ def init_kc(kb_name):
         return False
 
 if __name__ == "__main__":
-    init_kc("test")
+    #kb_name = "text"
+    kb_name = "exam"
+    init_kc(kb_name)
 

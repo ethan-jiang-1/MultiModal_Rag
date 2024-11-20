@@ -16,6 +16,7 @@ if "./" not in sys.path:
 
 from HiQA.utils.util_logging import setup_logger_handlers, get_logger_progress
 from HiQA.utils.util_file import get_root_dir
+from HiQA.utils.util_llm_diag import save_llm_diag_messages
 
 setup_logger_handlers()
 logger_prg = get_logger_progress()
@@ -65,17 +66,18 @@ def json_loads_repair(response_json_string):
         return ret
 
 def _call_retrival(user_input, kb_name):
-    import time 
+    #import time 
     knowledge = None 
     try:
-        from HiQA.service.knowledge_client import get_knowledge
+        from HiQA.service.knowledge_client import get_knowledge, DEFAULT_KLG_MAX_TOKENS
 
         only_vec = False
-        max_tokens = 8000
+        max_token = DEFAULT_KLG_MAX_TOKENS
 
-        begin = time.time()
-        knowledge = get_knowledge(user_input, max_tokens, kb_name, begin, only_vec=only_vec, verbose=True)
+        knowledge = get_knowledge(user_input, kb_name, max_token=max_token, only_vec=only_vec, verbose=True)
+
         #knowledge = _hack_knowledge(knowledge)
+        rich.print(knowledge)
     except Exception as ex:
         logging.exception(str(ex))
         logging.error(f"CR: exception occured {ex}")
@@ -83,28 +85,10 @@ def _call_retrival(user_input, kb_name):
 
     return knowledge
 
-# modification two: new instruction, beside the response, also answer which piece of knowleddge is relavent 
-
-SYSTEM_PROMPT = """Role: You are a helpful assistant, you will answer questions as a professional support agent.  please responds only in JSON format. The response's answer should be in the "answer" field of the JSON, and the relevant segment's source information should be included in the "citation" field of the JSON \n" Note:
-1. When users ask questions, I will provide you with some information, please refer to the information and your own knowledge to answer.
-2. Each data Paragraph begins with "*** New Knowledge Paragraph ***", the next line [Source File] xxx [Source File] indicates the source of the file, The next line [Knowledge Title] xxx [Knowledge Title] indicates the title of this section, and the next line [Knowledge Content] xxx [Knowledge Content] is the knowledge content you are referring to.
-3. Your answers should be accurate and reasonable, but not summary.
-4. If your own knowledge and given information cannot answer the user's question, do not answer and tell the user "对不起，解答您的问题的答案不在我的知识库中，我无法回答您。"
-5. There are redundant parts in the reference materials provided by us. Please ignore the materials that are not relevant to the question.
-6. If you are asked to answer a multiple choice question (single choice or multiple choice), analyze each choice first. After analyzing the choices, write the answer.
-7. If you use the table in your answer, please output the table in markdown's table format. The format of the table must strictly use markdown's format.
-8. If some data is not directly given, try to calculate through the given data first, show the calculation process, and then answer the question after the calculation step is complete.
-9. Please focus on answering the user's question, do not answer with irrelevant information. 
-10. The answer needs to be found in different "*** New Knowledge Paragraph ***" information segments. If the information is found in a specific segment, include the [Source File] of that segment in the "citation" part of the JSON response."""
-
-USER_PROMPT = """
-According to the given knowledge, answer this question: {user_input}
-The given knowledge is:
-{knowledge}"""
-
 
 def _call_generator(user_input, knowledge):
     from HiQA.utils.openai_proxy import client
+    from HiQA.qa_core_prompt import SYSTEM_PROMPT, USER_PROMPT
 
     resp = None
     chat_messages = None 
@@ -113,27 +97,32 @@ def _call_generator(user_input, knowledge):
         model_name = get_gpt_model()
         # report = []
         # Looping over the response
+        system_prompt = SYSTEM_PROMPT
+        user_prompt = USER_PROMPT.replace("{user_input}", user_input).replace("{knowledge}", knowledge)
+        temperature=0.1
+        top_p=0.9
         chat_messages=[
             {"role": "system",
-             "content": SYSTEM_PROMPT},
+             "content": system_prompt},
             {"role": "user",
-             "content": USER_PROMPT.format(user_input=user_input, knowledge=knowledge)}
+             "content": user_prompt}
         ]
         resp = client.chat.completions.create(
                 model=model_name,
                 # max_tokens=4000,
                 messages=chat_messages,
                 stream=False,
-                temperature=0.1,
-                top_p=0.95 
+                temperature=temperature,
+                top_p=top_p
         )
+        save_llm_diag_messages(chat_messages, resp, model=model_name, temperature=temperature, top_p=top_p, prefix="qacore")
     except Exception as e:
         logging.exception(str(e))
         logging.error(f"CG: exception occured: {e}")
     
     return resp, chat_messages
 
-def _remove_ext(match):
+def _remove_known_source_ext(match):
     match_noext = os.path.basename(match)
     exts = [".csv", ".step1", ".pdf", ".docx", ".xlsx", ".md"]
     for i in range(len(exts)):
@@ -142,25 +131,26 @@ def _remove_ext(match):
                 match_noext = match_noext.replace(ext, "")
     return match_noext
 
-def _locate_matched_src_doc_files(matches, kb_name):
+def _locate_matched_src_doc_names(source_filenames_from_citation, kb_name):
     #from pathlib import Path
     dir_root = get_root_dir()
     dir_raw = os.path.join(dir_root, f"datasets/{kb_name}/src_docs")
+    
     lst_names = os.listdir(dir_raw)
     lst_names = sorted(lst_names, reverse=True)
 
-    matches_path = []
-    for match in matches:
-        match = match.strip()
-        if len(match) > 0:
-            match_noext = _remove_ext(match)
+    lst_matched_names = []
+    for source_filename in source_filenames_from_citation:
+        source_filename = source_filename.strip()
+        if len(source_filename) > 0:
+            match_noext = _remove_known_source_ext(source_filename)
             fname_only = match_noext.strip().strip("\u3000")
 
             for name in lst_names:
                 if name.find(fname_only) != -1:
                     fpath = os.path.join(dir_raw, name)
-                    matches_path.append(fpath)
-    return matches_path
+                    lst_matched_names.append(fpath)
+    return lst_matched_names
 
 # modification three,  pick up the information from response for which chunk is picked
 def _check_soruce_matches(knowledge, response, kb_name):
@@ -172,13 +162,12 @@ def _check_soruce_matches(knowledge, response, kb_name):
         matches = re.findall(pattern, knowledge)
     except Exception as e:
         logging.exception(str(e))
-    matches = _locate_matched_src_doc_files(matches, kb_name)
+    matches = _locate_matched_src_doc_names(matches, kb_name)
     return matches
 
-def _check_source_citation(citations, kb_name):
-    matches = []
+def _find_source_matches_from_citation(citations, kb_name):
+    source_filenames_from_citation = []
 
-    
     if isinstance(citations, str):
         new_citations = []
         names = citations.split("[Source File]")
@@ -196,20 +185,18 @@ def _check_source_citation(citations, kb_name):
         for citation in citations:
             matches_i = citation.replace("[Source File]", "").strip()
             if len(matches_i) > 0:
-                matches.append(matches_i)
+                source_filenames_from_citation.append(matches_i)
 
-    matches = _locate_matched_src_doc_files(matches, kb_name)
-    return matches
+    source_matches = _locate_matched_src_doc_names(source_filenames_from_citation, kb_name)
+    return source_matches
 
 def _find_images_json_content(user_input, response_content, kb_name, source_match):
     from HiQA.service.knowledge_client import search_images_from_response
 
     lst_image_n_title = []
-    kb_name = "test"
-    image_path_base = os.path.join(get_root_dir(), f"datasets/{kb_name}")
     try:
-        images = search_images_from_response(user_input, response_content, kb_name, image_path_base=image_path_base, source_match=source_match)
-        for image_full_path, title, score, file_name, content in images[:1]:
+        images_descs = search_images_from_response(user_input, response_content, kb_name, source_match)
+        for image_full_path, title, score, file_name, content in images_descs[:1]:
             file_name = '_'.join(file_name.split('_')[:-3])
             
             if title != 'Title not found':
@@ -217,60 +204,30 @@ def _find_images_json_content(user_input, response_content, kb_name, source_matc
             else:
                 image_title = ""
             lst_image_n_title.append({"image":image_full_path, 
-                                      "title":image_title})
+                                    "title":image_title})
     except Exception as e:
         logging.exception(str(e))
     return lst_image_n_title
 
-def _find_images_plain_content(user_input, response_content, kb_name):
-    from HiQA.service.knowledge_client import search_images_from_response
-
-    lst_image_n_title = []
-    image_path_base = os.path.join(get_root_dir(), f"datasets/{kb_name}")
-    try:
-        images = search_images_from_response(user_input, response_content, kb_name, image_path_base=image_path_base)
-        for image_full_path, title, score, file_name, content in images[:1]:
-            file_name = '_'.join(file_name.split('_')[:-3])
-            
-            if title != 'Title not found':
-                image_title = title
-            else:
-                image_title = ""
-            lst_image_n_title.append({"image":image_full_path, 
-                                      "title":image_title})
-    except Exception as e:
-        logging.exception(str(e))
-    return lst_image_n_title
-
-def _get_final_json(response_json, user_input, kb_name):
+def _get_composited_response_based_on_initial_response_json(response_json, user_input, kb_name):
     response_answer = response_json.get("answer")
 
     citation = response_json["citation"]
-    lst_source_matches = _check_source_citation(citation, kb_name)
+    lst_source_matches = _find_source_matches_from_citation(citation, kb_name)
     logging.info(f"##source_matches:\n {lst_source_matches}")    
 
-    if len(lst_source_matches) == 1:
+    lst_image_n_title = []
+    logger_prg.info("step5.1: 92%: 组织回答#信息源头IMG")
+    for source_match in lst_source_matches:
         image_content = str(response_json.get("answer"))
-        lst_image_n_title = _find_images_json_content(user_input, image_content, kb_name, lst_source_matches[0])
-    else:
-        lst_image_n_title = []
+        xlst_image_n_title = _find_images_json_content(user_input, image_content, kb_name, source_match)
+
+        if xlst_image_n_title is not None:
+            lst_image_n_title.extend(xlst_image_n_title)
+
     logging.info(f"##image_n_title_turple: {lst_image_n_title}") 
 
-
     return response_answer, lst_image_n_title, lst_source_matches
-
-
-def _get_final_plain(response_content, user_input, kb_name, knowledge):
-    image_content = str(response_content)
-    response_answer = response_content
-
-    lst_source_matches = _check_soruce_matches(knowledge, response_content)
-    logging.info(f"##source_matches:\n {lst_source_matches}")  
-
-    lst_image_n_title = _find_images_plain_content(user_input, image_content, kb_name)
-    logging.info(f"##image_n_title_turple: {lst_image_n_title}")
-
-    return response_answer, lst_image_n_title, lst_source_matches   
 
 _hiqa_inited = False
 def _init_hiqa(kb_name):
@@ -285,7 +242,7 @@ def _init_hiqa(kb_name):
 def do_core_query(user_input, kb_name='test'):
     ret_dict = {}
 
-    logger_prg.info("step1.0: 10%: 初始化HiQA ")
+    logger_prg.info("step1.0: 10%: 初始化知识库")
     _init_hiqa(kb_name)
 
     req_id = random.randint(10000, 99999)
@@ -342,10 +299,9 @@ def do_core_query(user_input, kb_name='test'):
 
     logger_prg.info("step5.0: 90%: 组织回答#信息源头")
     try:
+        response_answer, lst_image_n_title, lst_source_matches = "", [], []
         if response_json is not None and "answer" in response_json and "citation" in response_json:
-            response_answer, lst_image_n_title, lst_source_matches = _get_final_json(response_json, user_input, kb_name)      
-        else:
-            response_answer, lst_image_n_title, lst_source_matches = _get_final_plain(response_content, user_input, kb_name, knowledge)
+            response_answer, lst_image_n_title, lst_source_matches = _get_composited_response_based_on_initial_response_json(response_json, user_input, kb_name)      
     except Exception as ex: 
         logging.exception(str(ex))
         ret_dict["response_answer"] = "ERROR: failed to process image or source" 

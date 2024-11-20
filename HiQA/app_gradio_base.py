@@ -87,11 +87,17 @@ def on_submit(user_input):
         last_prg = prgs[-1]
 
         progress_percentage = last_prg["percentage"]
-        current_task = f"{last_prg['task_name']}#{last_prg['extra_info']}"
+        if last_prg['extra_info'] is not None:
+            current_task = f"{last_prg['task_name']}#{last_prg['extra_info']}"
+        else:
+            current_task = f"{last_prg['task_name']}"
 
         for ndx in range(last_prgs_count, prgs_count):
             prg = prgs[ndx]
-            progress_log += f"Step{prg['step']}: {prg['task_name']}#{prg['extra_info']}<br>"
+            if prg['extra_info'] is not None:
+                progress_log += f"Step{prg['step']}: {prg['task_name']}#{prg['extra_info']}<br>"
+            else:
+                progress_log += f"Step{prg['step']}: {prg['task_name']}<br>"
 
         last_prgs_count = prgs_count
         yield (
