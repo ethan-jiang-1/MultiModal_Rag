@@ -20,8 +20,9 @@ from HiQA.build_tool.vl_description import generate_image_description
 from PIL import Image
 
 # 常量定义
-MIN_WIDTH = 256   # 图像最小宽度（像素）
-MIN_HEIGHT = 256  # 图像最小高度（像素）
+MIN_WIDTH = 198   # 图像最小宽度（像素）
+MIN_HEIGHT = 198  # 图像最小高度（像素）
+MIN_AREA = 128 * 128 # 图像最小面积（像素）
 
 def extract_doc_title(fname_org_doc):
     """
@@ -73,7 +74,7 @@ def analyze_image_content(md_page_file, fname_org_doc, image_path):
         with open(md_page_file, 'r', encoding='utf-8') as md_file:
             page_content = md_file.read()
     except Exception as e:
-        logging.exception(f"无法读取 Markdown 文件 {md_page_file}，错误: {e}")
+        logging.error(f"AIC: 无法读取 Markdown 文件 {md_page_file}，错误: {e}")
         return None, None
 
     # 3. 多模态分析逻辑
@@ -86,11 +87,14 @@ def analyze_image_content(md_page_file, fname_org_doc, image_path):
         relevance = resp_json.get("Relevance")
         if relevance is not None:
             if relevance.find("NotFit") != -1 or relevance.find("PartialFit") != -1:
+                logging.warning(f"AIC: relevance: {relevance}")
                 return None, None 
         if figure_name is not None:
             if figure_name == "None":
+                logging.warning(f"AIC: figure_name: {figure_name}")
                 return None, None 
     except Exception as e:
+        logging.error(f"AIC: 处理多模态异常，错误: {e}")
         logging.exception(e)
         return None, None
 
@@ -108,9 +112,11 @@ def process_image_reference(out_dir, image_file, md_info):
     :return: (简洁说明, 新的图像文件名) 或 (None, None) 表示不合适的图像
     """
     image_path = os.path.join(out_dir, image_file)
+    print(image_file)
 
     # 1. 图像是否存在
     if not os.path.exists(image_path):
+        logging.warning(f"PIR: 无法读取图像 {image_path}")
         return None, None
 
     # 2. 检查图像尺寸
@@ -118,21 +124,28 @@ def process_image_reference(out_dir, image_file, md_info):
         with Image.open(image_path) as img:
             width, height = img.size
             if width < MIN_WIDTH or height < MIN_HEIGHT:
+                logging.warning(f"PIR: 图像高宽太小 {os.path.basename(image_path)} {width, height}")
+                return None, None  # 图像太小
+            if width * height < MIN_AREA:
+                logging.warning(f"PIR: 图像面积太小 {os.path.basename(image_path)} {width * height} < {MIN_AREA}")
                 return None, None  # 图像太小
     except Exception as e:
-        print(f"无法读取图像 {image_path}，错误: {e}")
+        logging.warning(f"PIR: 无法读取图像 {image_path}，错误: {e}")
         return None, None
 
     # 3. 获取页号和对应的 MD 文件名
     page_match = re.search(r'_p(\d+)_', image_file)
     if not page_match:
+        logging.warning(f"PIR: 无法读取图像 {os.path.basename(image_path)} 页号")
         return None, None  # 未找到页号
+
     page_number = page_match.group(1)
     md_page_file = next(
         (fname for fname in md_info["fnames_pages"] if f'_p{page_number}' in fname),
         None
     )
     if not md_page_file:
+        logging.warning(f"PIR: 无法找到  {os.path.basename(image_path)} 页号对应的页md")
         return None, None  # 未找到对应的 MD 文件
 
     # 4. 调用多模态处理逻辑
@@ -144,6 +157,7 @@ def process_image_reference(out_dir, image_file, md_info):
     if description and new_image_path:
         return description, new_image_path
     else:
+        logging.warning(f"PIR: 无意义{os.path.basename(image_path)}")
         return None, None  # 图像被判断为无意义
 
 
@@ -166,11 +180,12 @@ def filter_markdown_images(md_src_str, out_dir, md_info):
         description, new_image_file = process_image_reference(out_dir, image_file, md_info)
         
         if description and new_image_file:
+            new_image_basename = os.path.basename(new_image_file)
             # 替换为新的 Markdown 图片引用
             if "figures" not in md_info:
                 md_info["figures"] = {}
-            md_info["figures"][new_image_file] = description
-            return f"![{description}]({new_image_file})"
+            md_info["figures"][new_image_basename] = description
+            return f"![{description}]({new_image_basename})"
         else:
             # 返回空字符串表示移除不合适的图像引用
             return ""
