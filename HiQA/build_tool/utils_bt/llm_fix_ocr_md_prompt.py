@@ -11,11 +11,10 @@ Deliver accurate, readable, and logically structured Markdown content while main
 
 USER_PROMPT_MD_SELF_CORRECT_PDF = """
 ---
-# Input Content (**original_markdown**) 
-Enclosed within ```:  
-```
+# Input Content (**original_markdown**): 
+<original_markdown>
 {markdown}
-```
+</original_markdown>
 ---
 
 # Task Description  
@@ -63,22 +62,21 @@ Your primary goal is to restore the content to accurately reflect the original P
 ---
 
 ## Output Format  
-
 Provide your response in the following JSON structure:  
-```json  
 {
     "reasoning": "<Explain the steps taken to restore the content, including how you handled disrupted flow, errors, redundancies, image references, page separators, and language consistency.>",
     "content": "<Corrected Markdown content in valid Markdown syntax.>"
 }
+
+## Your Answer:
 """
 
 USER_PROMPT_MD_SELF_CORRECT_PPT = """
 ---
-# Input Content (**original_markdown**) 
-Enclosed within ```:  
-```
+# Input Content (**original_markdown**): 
+<original_markdown>
 {markdown}
-```
+</original_markdown>
 ---
 
 # Task Description  
@@ -131,22 +129,20 @@ Your primary goal is to restore the content to accurately reflect the original P
 ---
 
 ## Output Format  
-
 Provide your response in the following JSON structure:  
-```json  
 {
     "reasoning": "<Explain the steps taken to restore the content, including how you handled disrupted structure, errors, redundancies, image references, slide separators, title recognition, and language consistency.>",
     "content": "<Corrected Markdown content in valid Markdown syntax.>"
 }
+## Your Answer:
 """
 
 USER_PROMPT_MD_SELF_CORRECT_DOC = """
 ---
-# Input Content (**original_markdown**) 
-Enclosed within ```:  
-```
+# Input Content (**original_markdown**): 
+<original_markdown>
 {markdown}
-```
+</original_markdown>
 ---
 
 # Task Description  
@@ -204,12 +200,12 @@ Your primary goal is to restore the content to accurately reflect the original D
 ## Output Format  
 
 Provide your response in the following JSON structure:  
-```json  
 {
     "reasoning": "<Explain the steps taken to restore the content, including how you handled disrupted structure, errors, redundancies, image references, section separators, list hierarchies, and language consistency.>",
     "content": "<Corrected Markdown content in valid Markdown syntax.>"
 }
 
+## Your Answer:
 """
 
 

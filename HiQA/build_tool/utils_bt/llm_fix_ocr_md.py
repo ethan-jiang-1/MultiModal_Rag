@@ -20,7 +20,7 @@ from HiQA.utils.util_llm_diag import save_llm_diag_messages, set_question_num
 from HiQA.build_tool.utils_bt.llm_base import get_gpt_client, get_gpt_messages, jsons_load_repair
 
 
-def fix_ocr_self_correct_markdown(md_text, doc_type, question_num=100, model="gpt4-o"):
+def fix_ocr_self_correct_markdown(md_text, doc_type, question_num=100, model="gpt-4o"):
     client = get_gpt_client()
     try:
         logging.info(f"start to correct markdown from doc_type:{doc_type} by {model} as questoin_number:{question_num}")

@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import sys
 import os
 import json_repair
+#import json
 
 if "./" not in sys.path:
     sys.path.append("./")
@@ -12,13 +13,15 @@ def get_gpt_messages(system_prompt, user_prompt):
     messages=[
         {
             "role": "system",
-            "content": system_prompt
+            "content": str(system_prompt)
         },
         {
             "role": "user",
-            "content": user_prompt
+            "content": str(user_prompt)
         },
     ]
+    #messages_str = json.dumps(messages)
+    #messages_loaded = json.loads(messages_str)
     return messages
 
 def get_gpt_client():
