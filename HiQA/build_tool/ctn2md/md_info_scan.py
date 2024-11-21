@@ -114,11 +114,11 @@ def analyze_scan_info(json_result0_pages, doc_type):
 def get_llm_ocr_fix_method(md_info):
     scan_info = md_info.get("scan_info", None)
     if scan_info is None:
-        return OFM_BY_SKIP, "no_scan_info"
+        return OFM_BY_SKIP, "scan_info=None"
 
     ctn_type = md_info.get_ctn_type()
     if ctn_type == CtnType.UNKNOWN or ctn_type == CtnType.XLS:
-        return OFM_BY_SKIP, f"ctn_{ctn_type}"
+        return OFM_BY_SKIP, f"ctn_type={ctn_type}"
 
     doc_type = scan_info.get("doc_type", None)
     if doc_type is None:
@@ -132,13 +132,13 @@ def get_llm_ocr_fix_method(md_info):
     ocrimg_pages = scan_info.get("ocrimg_pages", 0)
 
     if structured_pages == total_pages:
-        return OFM_BY_SKIP, "full_struct"
+        return OFM_BY_SKIP, "structured_pages=tp"
 
     if scanned_pages == 0:
-        return OFM_BY_SKIP, "no_scan" 
+        return OFM_BY_SKIP, "scanned_pages=0" 
 
     if ocrimg_pages == 0:
-        return OFM_BY_SKIP, "no_ocr"
+        return OFM_BY_SKIP, "ocrimg_pages=0"
     
     # TODO: ethan_llm_ocr_fix  need to support llm_ocr_fix multiple pages (>=5) or too many tokens 
     # as llm fix only can support limited output tokens
@@ -150,7 +150,7 @@ def get_llm_ocr_fix_method(md_info):
         return OFM_BY_PAGE, "??P0??" 
     else:
         if ctn_type == CtnType.PPT:
-            return OFM_BY_CONTENT, f"ppt@p{total_pages}"
+            return OFM_BY_CONTENT, f"ppt@tp={total_pages}"
         if not is_tokens_over_llm_output:
             return OFM_BY_CONTENT, "llm_tklimit<(S)"
         return OFM_BY_PAGE, "??P1??"
