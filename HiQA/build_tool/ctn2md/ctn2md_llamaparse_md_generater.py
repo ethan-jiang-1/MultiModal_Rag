@@ -25,7 +25,8 @@ def _get_llamaparse():
         #result_type="text",  # 选择 "markdown" 格式输出
         verbose=True,
         language="ch_sim",
-        page_suffix="mark_page_separator_{page_number}"
+        #page_suffix="mark_page_separator_{page_number}"
+        invalidate_cache=True,
     )
     return parser
 
