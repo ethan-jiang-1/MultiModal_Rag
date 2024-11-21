@@ -12,7 +12,7 @@ import re
 import tqdm
 
 from HiQA.build_tool.img_tools import parse_page_svg
-from HiQA.build_tool.vl_description import generate_image_description
+from HiQA.build_tool.util_md.vllm_description import generate_image_description
 from HiQA.utils.util_file import get_root_dir
 from HiQA.utils.util_logging import setup_logger_handlers
 
@@ -36,6 +36,9 @@ def _save_crop_image_and_description(cropped_img, pathname_no_ext):
         instruction = f"这是一张在'{title}'文件中的图片， 请简单描述一下这张图片。" 
         text_content = generate_image_description(image_pathname, instruction=instruction)
         # title = get_title_of_image(blocks[skip_block:], i, lang)
+        logging.error("text_content is None")
+        if text_content is None:
+            return None
     except Exception as e:
         logging.exception(e)
         return None

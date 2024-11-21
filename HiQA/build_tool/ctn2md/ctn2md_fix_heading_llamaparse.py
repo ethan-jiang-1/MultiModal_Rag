@@ -32,6 +32,7 @@ def filter_markdown_heading_llamapase(md_text, md_info):
     # 定义正则匹配 Markdown Heading 的模式
     heading_pattern = r"^(#{1,6})(\s*)(.+)$"
     
+    heading_lines = []
     # 规整化处理 Markdown 文本
     normalized_lines = []
     for line in md_text.splitlines():
@@ -42,11 +43,14 @@ def filter_markdown_heading_llamapase(md_text, md_info):
             content = match.group(3).strip()  # 去掉多余的空格
             normalized_line = f"{hashes} {content}"
             normalized_lines.append(normalized_line)
+            heading_lines.append(normalized_line)
         else:
             normalized_lines.append(line)
 
     # 生成规整化的 Markdown 内容
     normalized_md = "\n".join(normalized_lines)
+
+    md_info["fhl"] = {"org_heading_lines": heading_lines}
     return normalized_md
 
 def fix_headings_llamaparse(md_info_path, src_step_num=None):

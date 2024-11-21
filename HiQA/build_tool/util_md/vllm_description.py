@@ -17,7 +17,7 @@ if "./" not in sys.path:
 load_dotenv()
 
 from HiQA.utils.util_file import get_root_dir
-from HiQA.build_tool.vl_description_prompt import PROMPT_QUESTION_QAGEN_QWEN, SYSTEM_PROMPT_GPT4_QAGEN, USER_PROMPT_GPT4_QAGEN
+from HiQA.build_tool.util_md.vllm_description_prompt import PROMPT_QUESTION_QAGEN_QWEN, SYSTEM_PROMPT_GPT4_QAGEN, USER_PROMPT_GPT4_QAGEN
 from HiQA.utils.util_logging import setup_logger_handlers
 
 dashscope.api_key = "sk-a7cb64d9e5124609ac52849950c6fee2"
@@ -91,7 +91,7 @@ def generate_image_description(image_url, instruction=None, retries=5, backoff_i
             sleep_time = backoff_in_seconds * (2**attempt) + random.uniform(
                 0, 1)
             time.sleep(sleep_time)
-
+    return None
 
 if __name__ == '__main__':
     dir_root = get_root_dir()

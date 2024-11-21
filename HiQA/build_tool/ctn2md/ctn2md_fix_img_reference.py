@@ -16,7 +16,7 @@ if "./" not in sys.path:
 from HiQA.utils.util_logging import setup_logger_handlers
 from HiQA.build_tool.ctn2md.md_info_base import MdInfo
 from HiQA.build_tool.util_md.llm_fix_vl_instruction import get_vllm_instruction
-from HiQA.build_tool.vl_description import generate_image_description
+from HiQA.build_tool.util_md.vllm_description import generate_image_description
 from PIL import Image
 
 # 常量定义
@@ -87,6 +87,8 @@ def analyze_image_content(md_page_file, pathname_org_doc, image_path):
     try:
         instruction = get_page_instruction(doc_title, page_content)
         resp = generate_image_description(image_path, instruction=instruction)
+        if resp is None:
+            raise ValueError("resp is None")
         resp_json = json_repair.repair_json(resp, return_objects=True, ensure_ascii=True)
         rich.print(resp_json)
         figure_name = resp_json.get("FigureName")
