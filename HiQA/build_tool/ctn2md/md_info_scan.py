@@ -30,6 +30,7 @@ def analyze_scan_info(json_result0_pages, doc_type):
         "total_pages": len(json_result0_pages),  # 文档总页数
         "structured_pages": 0,           # 良好的结构化页面数量
         "scanned_pages": 0,              # 扫描页面数量
+        "ocrimg_pages": 0,               # ocr images
         "pages": [],                      # 每页的详细分析结果
         "doc_type": doc_type
     }
@@ -66,11 +67,15 @@ def analyze_scan_info(json_result0_pages, doc_type):
                     total_text_area += item_width * item_height
 
         # 遍历 images
+        total_ocr_images = 0
         for image in images:
             img_width = image.get("width", 0)
             img_height = image.get("height", 0)
             if (img_width is not None) and (img_height is not None):
                 total_image_area += img_width * img_height
+            ocr = image.get("ocr", None)
+            if isinstance(ocr, list) and len(ocr) > 0:
+                total_ocr_images += len(ocr)
 
         # 判断页面是否是结构化页面或扫描页面
         is_structured = (
@@ -85,6 +90,8 @@ def analyze_scan_info(json_result0_pages, doc_type):
             result["structured_pages"] += 1
         if is_scanned:
             result["scanned_pages"] += 1
+        if total_ocr_images > 0:
+            result["ocrimg_pages"] += 1
 
         # 保存当前页的详细数据
         result["pages"].append({
@@ -95,6 +102,7 @@ def analyze_scan_info(json_result0_pages, doc_type):
             "heading_blocks": heading_blocks,
             "total_text_area": total_text_area,
             "total_image_area": total_image_area,
+            "total_ocr_images": total_ocr_images,
             "page_area": page_area,
             "is_structured": is_structured,
             "is_scanned": is_scanned
@@ -119,12 +127,16 @@ def get_llm_ocr_fix_method(md_info):
     total_pages = scan_info.get("toal_pages", 1)
     scanned_pages = scan_info.get("scanned_pages", 0) 
     structured_pages = scan_info.get("structured_pages", 0)  # 良好的结构化页面数量
+    ocrimg_pages = scan_info.get("ocrimg_pages", 0)
 
     if structured_pages == total_pages:
         return OFM_BY_SKIP
 
     if scanned_pages == 0:
         return OFM_BY_SKIP 
+
+    if ocrimg_pages == 0:
+        return OFM_BY_SKIP
     
     # TODO: ethan_llm_ocr_fix  need to support llm_ocr_fix multiple pages (>=5) or too many tokens 
     # as llm fix only can support limited output tokens

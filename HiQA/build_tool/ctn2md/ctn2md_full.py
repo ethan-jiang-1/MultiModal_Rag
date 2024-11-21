@@ -33,7 +33,7 @@ def make_final_md(md_info_path):
 
     md_info["fname_final_md"] = os.path.basename(pathname_final_md)
     md_info.save()
-    return final_md_path
+    return pathname_final_md
 
 def do_content2md_convert(ctn_pathname, out_dir):
     md_info_path = cnt2md_generator(ctn_pathname, out_dir)
@@ -68,13 +68,13 @@ def do_content2md_convert(ctn_pathname, out_dir):
 if __name__ == "__main__":
     setup_logger_handlers()
     #doc_pathname = "datasrc/test/raw_docs/AIGC时代的人力资源管理进化(徐刚).pdf"
-    doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
+    #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
     #doc_pathname = "datasrc/test/raw_docs/1. 座椅STO间隙 P1.pptx"
     #doc_pathname = "datasrc/test/raw_docs/管理者角色定位与认知课程大纲.docx"
     #doc_pathname = "datasrc/test/raw_docs/考勤修改统一规则.xlsx"
     #doc_pathname = "datasrc/test/raw_docs/5. back panel 与环境匹配工程校核_P2.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/ChatGPT intimates a tantalizing future_compressed.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/Long Context LLMs Meet RAG_compressed.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/Long Context LLMs Meet RAG_compressed.pdf"
 
     out_dir = f"_work/ctn2md_{random.randint(10,99)}"
     print(f"out_dir: {out_dir}")
