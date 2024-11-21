@@ -14,7 +14,7 @@ if "./" not in sys.path:
 
 from HiQA.utils.util_logging import setup_logger_handlers
 from HiQA.build_tool.ctn2md.md_info_base import save_md_info, load_md_info, find_md_info_path
-from HiQA.build_tool.ctn2md.ctn2md_llamaparse_converter import convert_doc_to_md_by_llamaparse
+from HiQA.build_tool.ctn2md.ctn2md_md_generater import cnt2md_generator
 from HiQA.build_tool.ctn2md.ctn2md_ocr_fixer import fix_ocr_content_by_gpt
 from HiQA.build_tool.ctn2md.ctn2md_img_ref_fixer import fix_img_content_by_lvlm
 from HiQA.build_tool.ctn2md.ctn2md_heading_md_fixer import fix_markdown_headings
@@ -36,7 +36,7 @@ def make_final_md(md_info_path, md_info):
     return final_md_path
 
 def do_content2md_convert(ctn_pathname, out_dir):
-    output_md_path, md_info = convert_doc_to_md_by_llamaparse(ctn_pathname, out_dir)
+    output_md_path, md_info = cnt2md_generator(ctn_pathname, out_dir)
     if output_md_path is None:
         logging.error(f"DCC: failed {output_md_path} @convert_doc_to_md_by_llamaparse")
         return None, None 

@@ -1,12 +1,13 @@
-from dotenv import load_dotenv
+from dotenv import load_dotenv as _load_dotenv
 import os
 import sys
 #import logging
-#import rich
+import rich
 #import random
 import json
+import re
 
-load_dotenv()
+_load_dotenv()
 
 if "./" not in sys.path:
     sys.path.append("./")
@@ -14,38 +15,167 @@ if "./" not in sys.path:
 SEP_FNAME_EXT = "___"
 FNAME_MD_INFO = "info.json"
 
-def save_md_info(out_dir, md_info):
-    if isinstance(md_info, dict):
-        md_info_path = os.path.join(out_dir, FNAME_MD_INFO)
-        json_str = json.dumps(md_info, indent=4, ensure_ascii=False)
-        with open(md_info_path, 'w+', encoding='utf8') as f:
+from HiQA.build_tool.util_md.util_ctn_type import CtnType
+
+class MdInfo:
+    def __init__(self, md_info_path_or_out_dir):
+        last_chat = md_info_path_or_out_dir[-1]
+        if (last_chat in ["/", "\\"]) or os.path.isdir(md_info_path_or_out_dir):
+            self._md_info_path = os.path.join(md_info_path_or_out_dir, FNAME_MD_INFO)
+        else:
+            self._md_info_path = os.path.join(os.path.dirname(md_info_path_or_out_dir), FNAME_MD_INFO)
+
+        self._out_dir = os.path.dirname(self._md_info_path)
+        os.makedirs(self._out_dir, exist_ok=True)
+        if not os.path.isfile(self._md_info_path):
+            self._info = {}
+            self.save()
+        self._info = self.load() 
+
+    def __str__(self):
+        # 直接使用字典的__str__方法
+        return str(self._info)
+
+    def __repr__(self):
+        # 直接使用字典的__repr__方法
+        return repr(self._info)
+
+    
+    @classmethod
+    def find_md_info_path(cls, out_dir_or_file_in_out_dir):
+        if os.path.isfile(out_dir_or_file_in_out_dir):
+            dir_name = os.path.dirname(out_dir_or_file_in_out_dir)
+        elif os.path.isdir(out_dir_or_file_in_out_dir):
+            dir_name = out_dir_or_file_in_out_dir
+        else:
+            return None
+    
+        md_info_path = os.path.join(dir_name, FNAME_MD_INFO)
+        if os.path.isfile(md_info_path):
+            return md_info_path
+        return None
+
+    def load(self):
+        if os.path.isfile(self._md_info_path):
+            try:
+                with open(self._md_info_path, 'r', encoding='utf-8') as file:
+                    self._info = json.load(file)
+            except: # noqa 
+                import json_repair
+                with open(self._md_info_path, 'r', encoding='utf-8') as file:
+                    data = file.read()
+                self._info= json_repair.repair_json(data, return_objects=True, ensure_ascii=True)
+        return self._info
+
+    def save(self):
+        json_str = json.dumps(self._info, indent=4, ensure_ascii=False)
+        with open(self._md_info_path, 'w+', encoding='utf8') as f:
             f.write(json_str) 
-        return md_info_path
-    return None
+        return self._md_info_path
 
-def load_md_info(md_info_path):
-    if os.path.isfile(md_info_path):
-        try:
-            with open(md_info_path, 'r', encoding='utf-8') as file:
-                data = json.load(file)
-                return data
-        except: # noqa 
-            import json_repair
-            with open(md_info_path, 'r', encoding='utf-8') as file:
-                data = file.read()
-            return json_repair.repair_json(data, return_objects=True, ensure_ascii=True)
-    return None
+    def get_out_dir(self):
+        return self._out_dir
 
-def get_doc_type(md_info):
-    if isinstance(md_info, dict):
-        fname_org_doc = md_info.get("fname_org_doc", None)
-        if fname_org_doc is not None:
-            return fname_org_doc.split(".")[-1].lower()
-    return ""
+    def get_md_info_path(self):
+        return self._md_info_path
 
-def find_md_info_path(filepath_in_out_dir):
-    dir_name = os.path.dirname(filepath_in_out_dir)
-    md_info_path = os.path.join(dir_name, FNAME_MD_INFO)
-    if os.path.isfile(md_info_path):
-        return md_info_path
-    return None
+    def set_doc_pathname(self, doc_pathname):
+        if "path_org_doc" not in self._info:
+            self._info["pathname_org_doc"] = doc_pathname
+            self._info["streams"] = {}
+        return self.save()
+
+    def name_md_info_stream_pathname(self, step_num):
+        pathname_org_doc = self._info.get("pathname_org_doc", None)
+        if pathname_org_doc is not None:
+            basename = os.path.basename(pathname_org_doc)
+            ext_name = basename.split(".")[-1]
+            fname_step_md = basename.replace(f".{ext_name}", f"{SEP_FNAME_EXT}{ext_name}_s{step_num}.md")
+            pathname_step_md = os.path.join(self._out_dir, fname_step_md)
+            return pathname_step_md
+        return None
+
+    @classmethod
+    def get_step_num_from_pathname(cls, pathname):
+        pattern = r'_s(\d+)\.md$'
+        match = re.search(pattern, pathname)
+        if match:
+            return int(match.group(1))
+        return None
+
+    def add_step_into_md_info_stream(self, pathname_step_md, actor=None):
+        basename = os.path.basename(pathname_step_md)
+        step_num = self.get_step_num_from_pathname(pathname_step_md)
+        if isinstance(step_num, int):
+            stream = self._info.get("stream", None)
+            if stream is None:
+                self._info["stream"] = {}
+
+            self._info["stream"][str(step_num)] = {"fname": basename, 
+                                                  "actor": actor}
+            return self.save()
+        return None
+
+    def get_doc_type(self):
+        pathname_org_doc = self._info.get("pathname_org_doc", None)
+        if pathname_org_doc is not None:
+            return pathname_org_doc.split(".")[-1].lower()
+        return ""
+
+    def get_ctn_type(self):
+        doc_type = self.get_doc_type()
+        return CtnType.get_ctn_type(doc_type)
+
+    def update_info(self, dict_info):
+        if isinstance(dict_info, dict):
+            for key, val in dict_info.items():
+                self._info[key] = val
+
+    def get_info(self):
+        return self._info
+
+    def get(self, key, default=None):
+        return self._info.get(key, default=default)
+
+    def set(self, key, value):
+        self._info[key] = value
+
+    def __setitem__(self, key, value):
+        self._info[key] = value
+
+    def __getitem__(self, key):
+        return self._info.get(key)
+
+
+if __name__ == "__main__":
+    import random
+
+    pathnames = []
+    pathnames.append("_work/ctn2md_23/AIGC时代的人力资源管理进化(徐刚)___pdf_s0.md")
+    pathnames.append("_work/ctn2md_23/AIGC时代的人力资源管理进化(徐刚)___pdf_s10.md")
+    pathnames.append("_work/ctn2md_23/AIGC时代的人力资源管理进化(徐刚)___pdf_s.md")
+    pathnames.append("AIGC时代的人力资源管理进化(徐刚)___pdf_s100.md")
+ 
+    for ndx, pathname in enumerate(pathnames):
+        num = MdInfo.get_step_num_from_pathname(pathname)
+        print(ndx, num)
+
+    out_dir = f"_work/ctn2md_{random.randint(10,99)}"
+    os.makedirs(out_dir, exist_ok=True)
+    print(out_dir)
+    md_info = MdInfo(out_dir)
+    md_info["hi"] = 10
+    print(md_info["hi"])
+    md_info.save()
+
+    md_info_path = "_work/ctn2md_21/info.json"
+    md_info = MdInfo(md_info_path)
+    rich.print(md_info)
+
+    md_info_path = "_work/ctn2md_21/AIGC时代的人力资源管理进化(徐刚)___pdf_s0.md"
+    md_info = MdInfo(md_info_path)
+    rich.print(md_info)
+
+    md_info_path = "_work/ctn2md_21"
+    md_info = MdInfo(md_info_path)
+    rich.print(md_info)

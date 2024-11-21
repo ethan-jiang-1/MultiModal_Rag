@@ -13,7 +13,6 @@ if "./" not in sys.path:
 
 #from HiQA.utils.util_logging import setup_logger_handlers
 from HiQA.build_tool.util_md.util_ctn_type import CtnType
-from HiQA.build_tool.ctn2md.md_info_base import get_doc_type
 
 OFM_BY_SKIP = "ofm_skip"
 OFM_BY_CONTENT = "ofm_content"
@@ -109,8 +108,7 @@ def get_llm_ocr_fix_method(md_info):
     if scan_info is None:
         return OFM_BY_SKIP
 
-    doc_type = get_doc_type(md_info)
-    ctn_type = CtnType.get_ctn_type(doc_type)
+    ctn_type = md_info.get_ctn_type()
     if ctn_type == CtnType.UNKNOWN or ctn_type == CtnType.XLS:
         return OFM_BY_SKIP
 
