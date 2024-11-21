@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
-import os
+#import os
 import sys
-import logging
+#import logging
 import rich
 import re
 #import random
@@ -14,7 +14,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.ctn2md.md_info_base import save_md_info, load_md_info
+from HiQA.build_tool.ctn2md.md_info_base import MdInfo
 
 HIQA_INSTRUCT = """
 请帮我修改内容格式,我会给你一个PDF文档,文档中的文本可能是文字段落也可能来自表格。请将这些内容转换为markdown格式源码,且输出只有markdown源码,其他要求如下：
@@ -55,13 +55,12 @@ Table tile: Name of Table
 13. 请严格保证章节编号是正确的、递增的、层次的,请正确,准确的设置章节编号,请确保每个段落都有编号。
 """
 
-def filter_headings_for_hiqa(md_text, out_dir, md_info):
+def filter_headings_for_hiqa(md_text, md_info):
     """
     规整化 Markdown 的标题写法，为所有标题编号，所有标题均以 '#' 开头。
 
     参数:
         md_text (str): 输入的 Markdown 字符串流。
-        out_dir (str): 输出的目录路径。
         md_info (str): 输出文件的名称信息。
 
     返回:
@@ -106,43 +105,32 @@ def filter_headings_for_hiqa(md_text, out_dir, md_info):
     return normalized_md
 
 
-def fix_markdown_content_for_hiqa(md_info_path):
-    out_dir = os.path.dirname(md_info_path)
-    md_info = load_md_info(md_info_path)
-    if md_info is None:
-        return None, None 
+def fix_markdown_content_for_hiqa(md_info_path, src_step_num=None):
+    md_info = MdInfo(md_info_path)
 
-    fname_output_s3_md = md_info.get("fname_output_s3_md", None)
-    if fname_output_s3_md is None:
-        return None, None 
+    pathname_src_step_md, pathname_dst_step_md = md_info.name_src_n_dst_step_pathname(src_step_num)
+    if pathname_src_step_md is None or pathname_dst_step_md is None:
+        raise ValueError(f"no {pathname_src_step_md} and {pathname_dst_step_md}")
 
-    pname_s3 = os.path.join(out_dir, fname_output_s3_md)
-    with open(pname_s3, "r", encoding="utf8") as f:
+    with open(pathname_src_step_md, "r", encoding="utf8") as f:
         md_text = f.read()
-        rich.print(md_text)
 
-    md_text_new = filter_headings_for_hiqa(md_text, out_dir, md_info)
-    #md_text_new = md_text
+    md_text_new = filter_headings_for_hiqa(md_text, md_info)
 
-    fname_s4_md_name = os.path.basename(fname_output_s3_md).replace("_s3.md", "_s4.md")
-    fname_output_s4_md = os.path.join(out_dir, fname_s4_md_name)
-    with open(fname_output_s4_md, "w+") as f:
+    with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_new)
-
-    logging.info(f"fname_s4_md_name: {fname_s4_md_name}")
-    if isinstance(md_info, dict):
-        md_info["fname_output_s4_md"] = os.path.basename(fname_output_s4_md)
-        save_md_info(out_dir, md_info)
-    return fname_output_s4_md, md_info    
+    
+    md_info.add_step_into_md_info_streams(pathname_dst_step_md, actor="fix_markdown_content_for_hiqa")
+    md_info_path = md_info.save()
+    return md_info_path    
 
 
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    #md_info_path = "_work/ctn2md_exam0/info.json"
-    #md_info_path = "_work/ctn2md_chatgpt/info.json"
-    #md_info_path = "_work/ctn2md_backpanel/info.json"
-    md_info_path = "_work/ctn2md_chatgpt/info.json"
-    output_md_path, md_info = fix_markdown_content_for_hiqa(md_info_path)
-    print(output_md_path)
+    md_info_path = "_work/ctn2md_stream1/info.json"
+    md_info_path = fix_markdown_content_for_hiqa(md_info_path, src_step_num=3)
+
+    md_info = MdInfo(md_info_path)
     rich.print(md_info)
+    print(md_info_path)

@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
-import os
+#import os
 import sys
-import logging
+#import logging
 import rich
 import re
 #import random
@@ -14,20 +14,21 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.ctn2md.md_info_base import save_md_info, load_md_info
+from HiQA.build_tool.ctn2md.md_info_base import MdInfo
 
-def filter_markdown_heading(md_text, out_dir, md_info):
+def filter_markdown_heading(md_text, md_info):
     """
     规整化 Markdown 的 heading 写法，确保所有 heading 的 # 与内容之间仅有一个空格。
 
     参数:
         md_text (str): 输入的 Markdown 字符串流。
-        out_dir (str): 输出的目录路径。
         md_info (str): 输出文件的名称信息。
 
     返回:
         str: 规整化后的 Markdown 字符串。
     """
+
+    #out_dir = md_info.get_out_dir()
     # 定义正则匹配 Markdown Heading 的模式
     heading_pattern = r"^(#{1,6})(\s*)(.+)$"
     
@@ -48,41 +49,31 @@ def filter_markdown_heading(md_text, out_dir, md_info):
     normalized_md = "\n".join(normalized_lines)
     return normalized_md
 
-def fix_markdown_headings(md_info_path):
-    out_dir = os.path.dirname(md_info_path)
-    md_info = load_md_info(md_info_path)
-    if md_info is None:
-        return None, None 
+def fix_markdown_headings(md_info_path, src_step_num=None):
+    md_info = MdInfo(md_info_path)
 
-    fname_output_s2_md = md_info.get("fname_output_s2_md", None)
-    if fname_output_s2_md is None:
-        return None, None 
+    pathname_src_step_md, pathname_dst_step_md = md_info.name_src_n_dst_step_pathname(src_step_num)
+    if pathname_src_step_md is None or pathname_dst_step_md is None:
+        raise ValueError(f"no {pathname_src_step_md} and {pathname_dst_step_md}")
 
-    pname_s2 = os.path.join(out_dir, fname_output_s2_md)
-    with open(pname_s2, "r", encoding="utf8") as f:
+    with open(pathname_src_step_md, "r", encoding="utf8") as f:
         md_text = f.read()
-        rich.print(md_text)
 
-    md_text_new = filter_markdown_heading(md_text, out_dir, md_info)
+    md_text_new = filter_markdown_heading(md_text, md_info)
 
-    fname_s3_md_name = os.path.basename(fname_output_s2_md).replace("_s2.md", "_s3.md")
-    fname_output_s3_md = os.path.join(out_dir, fname_s3_md_name)
-    with open(fname_output_s3_md, "w+") as f:
+    with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_new)
-
-    logging.info(f"fname_s3_md_name: {fname_s3_md_name}")
-    if isinstance(md_info, dict):
-        md_info["fname_output_s3_md"] = os.path.basename(fname_output_s3_md)
-        save_md_info(out_dir, md_info)
-    return fname_output_s3_md, md_info    
-
+    
+    md_info.add_step_into_md_info_streams(pathname_dst_step_md, actor="fix_markdown_headings")
+    md_info_path = md_info.save()
+    return md_info_path 
 
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    #md_info_path = "_work/ctn2md_exam0/info.json"
-    #md_info_path = "_work/ctn2md_chatgpt/info.json"
-    md_info_path = "_work/ctn2md_backpanel/info.json"
-    output_md_path, md_info = fix_markdown_headings(md_info_path)
-    print(output_md_path)
+    md_info_path = "_work/ctn2md_stream1/info.json"
+    md_info_path = fix_markdown_headings(md_info_path, src_step_num=2)
+
+    md_info = MdInfo(md_info_path)
     rich.print(md_info)
+    print(md_info_path)

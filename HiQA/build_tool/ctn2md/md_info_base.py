@@ -90,21 +90,28 @@ class MdInfo:
         if pathname_org_doc is not None:
             basename = os.path.basename(pathname_org_doc)
             ext_name = basename.split(".")[-1]
-            fname_step_md = basename.replace(f".{ext_name}", f"{SEP_FNAME_EXT}{ext_name}_s{step_num}.md")
+            if step_num == -1:
+                fname_step_md = basename.replace(f".{ext_name}", f"{SEP_FNAME_EXT}{ext_name}.md")
+            else:
+                fname_step_md = basename.replace(f".{ext_name}", f"{SEP_FNAME_EXT}{ext_name}_s{step_num}.md")
             pathname_step_md = os.path.join(self._out_dir, fname_step_md)
             return pathname_step_md
         return None
 
     def name_src_n_dst_step_pathname(self, src_step_num):
         if src_step_num is None:
-            streams = self._info.get("streams", None)
-            if streams is None:
-                raise ValueError("no streams in MdInfo")
-            sorted_keys = sorted(streams.keys())
-            src_step_num = int(sorted_keys[-1])
+            src_step_num = self.get_last_step_num()
         pathname_src_step_md = self.name_step_pathname(src_step_num)
         pathname_dst_step_md = self.name_step_pathname(src_step_num+1)
-        return pathname_src_step_md, pathname_dst_step_md            
+        return pathname_src_step_md, pathname_dst_step_md 
+
+    def get_last_step_num(self):
+        streams = self._info.get("streams", None)
+        if streams is None:
+            raise ValueError("no streams in MdInfo")
+        sorted_keys = sorted(streams.keys())
+        src_step_num = int(sorted_keys[-1])
+        return src_step_num
 
     @classmethod
     def get_step_num_from_pathname(cls, pathname):

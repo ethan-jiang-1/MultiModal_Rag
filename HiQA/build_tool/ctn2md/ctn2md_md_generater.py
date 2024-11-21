@@ -156,3 +156,4 @@ if __name__ == "__main__":
 
     md_info = MdInfo(md_info_path)
     rich.print(md_info)
+    print(md_info_path)
