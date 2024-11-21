@@ -12,9 +12,14 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 #from HiQA.utils.util_logging import setup_logger_handlers
-#from HiQA.build_tool.ctn2md.md_info_base import save_md_info, SEP_FNAME_EXT
+from HiQA.build_tool.util_md.util_ctn_type import CtnType
+from HiQA.build_tool.ctn2md.md_info_base import get_doc_type
 
-def analyze_scan_info(json_result0_pages):
+OFM_BY_SKIP = "ofm_skip"
+OFM_BY_CONTENT = "ofm_content"
+OFM_BY_PAGE = "ofm_page"
+
+def analyze_scan_info(json_result0_pages, doc_type):
     """
     分析 JSON 结果，返回支持判断文档质量的详细数据。
 
@@ -26,7 +31,8 @@ def analyze_scan_info(json_result0_pages):
         "total_pages": len(json_result0_pages),  # 文档总页数
         "structured_pages": 0,           # 良好的结构化页面数量
         "scanned_pages": 0,              # 扫描页面数量
-        "pages": []                      # 每页的详细分析结果
+        "pages": [],                      # 每页的详细分析结果
+        "doc_type": doc_type
     }
 
     for page in json_result0_pages:
@@ -95,14 +101,20 @@ def analyze_scan_info(json_result0_pages):
 
     return result
 
-OFM_BY_SKIP = "ofm_skip"
-OFM_BY_CONTENT = "ofm_content"
-OFM_BY_PAGE = "ofm_page"
 
 def get_llm_ocr_fix_method(md_info):
     scan_info = md_info.get("scan_info", None)
     if scan_info is None:
         return OFM_BY_SKIP
+
+    doc_type = get_doc_type(md_info)
+    ctn_type = CtnType.get_ctn_type(doc_type)
+    if ctn_type == CtnType.UNKNOWN or ctn_type == CtnType.XLS:
+        return OFM_BY_SKIP
+
+    doc_type = scan_info.get("doc_type", None)
+    if doc_type is None:
+        raise ValueError("no doc_type in scan_info")
  
     total_pages = scan_info.get("toal_pages", 1)
     scanned_pages = scan_info.get("scanned_pages", 0) 
@@ -113,7 +125,7 @@ def get_llm_ocr_fix_method(md_info):
 
     if scanned_pages == 0:
         return OFM_BY_SKIP 
-
+    
     # TODO: ethan_llm_ocr_fix  need to support llm_ocr_fix multiple pages (>=5) or too many tokens 
     # as llm fix only can support limited output tokens
     if total_pages >= 5:

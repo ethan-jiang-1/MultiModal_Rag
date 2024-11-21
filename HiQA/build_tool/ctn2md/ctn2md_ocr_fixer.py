@@ -13,7 +13,7 @@ if "./" not in sys.path:
 
 from HiQA.utils.util_logging import setup_logger_handlers
 from HiQA.build_tool.util_md.llm_fix_ocr_md import fix_ocr_self_correct_markdown
-from HiQA.build_tool.ctn2md.md_info_base import save_md_info, load_md_info
+from HiQA.build_tool.ctn2md.md_info_base import save_md_info, load_md_info, get_doc_type
 from HiQA.build_tool.ctn2md.md_info_scan import get_llm_ocr_fix_method, OFM_BY_CONTENT, OFM_BY_PAGE, OFM_BY_SKIP
 from HiQA.utils.tokenizer import get_token_encoding
 
@@ -58,7 +58,8 @@ def _fix_ocr_by_stiche_pages(md_text, md_info, out_dir):
         pathname = os.path.join(out_dir, fname_page)
         with open(pathname, 'r', encoding='utf8') as f:
             md_page = f.read()
-        md_page_fixed = fix_ocr_self_correct_markdown(md_page) 
+        doc_type = get_doc_type(md_info)
+        md_page_fixed = fix_ocr_self_correct_markdown(md_page, doc_type) 
         md_text_fixed += md_page_fixed + "\n"
 
     return md_text_fixed      
@@ -68,7 +69,8 @@ def _fix_ocr_by_proc_whole(md_text, md_info, out_dir):
     if total_tokens > MAX_OUTPUT_TOKEN: 
         md_text_fixed = _fix_ocr_by_stiche_pages(md_text, md_info, out_dir)
     else:
-        md_text_fixed = fix_ocr_self_correct_markdown(md_text)  
+        doc_type = get_doc_type(md_info)
+        md_text_fixed = fix_ocr_self_correct_markdown(md_text, doc_type)  
     return md_text_fixed  
 
 def fix_ocr_content_by_gpt(md_info_path, ofm=None):
@@ -88,20 +90,21 @@ def fix_ocr_content_by_gpt(md_info_path, ofm=None):
     if ofm is None:
         ofm = get_llm_ocr_fix_method(md_info)
 
-    if ofm != OFM_BY_SKIP:
+    sel_ofm = ofm
+    if ofm == OFM_BY_PAGE:
         total_tokens = _calculate_tokens_large_text(md_text, stop_check_over_max=True)
         if total_tokens < MAX_OUTPUT_TOKEN:
-            ofm = OFM_BY_CONTENT
+            sel_ofm = OFM_BY_CONTENT
 
-    logging.info(f"OFM: {ofm}")
-    if ofm == OFM_BY_CONTENT:
+    logging.info(f"OFM: ofm:{ofm} sel_ofm:{sel_ofm}")
+    if sel_ofm == OFM_BY_CONTENT:
         md_text_fixed = _fix_ocr_by_proc_whole(md_text, md_info, out_dir)
-    elif ofm == OFM_BY_PAGE:
+    elif sel_ofm == OFM_BY_PAGE:
         md_text_fixed = _fix_ocr_by_stiche_pages(md_text, md_info, out_dir)
-    elif ofm == OFM_BY_SKIP:
+    elif sel_ofm == OFM_BY_SKIP:
         md_text_fixed = md_text
     else:
-        md_text_fixed = md_text
+        raise ValueError(f"unknown ofm: {sel_ofm}")
 
     fname_s1_md_name = os.path.basename(fname_output_s0_md).replace("_s0.md", "_s1.md")
     fname_output_s1_md = os.path.join(out_dir, fname_s1_md_name)
@@ -120,7 +123,7 @@ if __name__ == "__main__":
     #md_info_path = "_work/ctn2md_exam5/info.json"
 
     ofm = OFM_BY_PAGE
-    md_info_path = "_work/ctn2md_exam/info.json"
+    md_info_path = "_work/ctn2md_exam0/info.json"
 
     md_info_path, md_info = fix_ocr_content_by_gpt(md_info_path, ofm=ofm)
     print(md_info_path)

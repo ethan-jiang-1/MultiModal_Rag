@@ -11,7 +11,12 @@ load_dotenv()
 
 from HiQA.utils.util_file import get_root_dir
 from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.util_md.llm_fix_ocr_prompt import USER_PROMPT_MD_SELF_CORRECT, SYSTEM_PROMPT_MD_SELF_CORRECT
+from HiQA.build_tool.util_md.llm_fix_ocr_md_prompt import SYSTEM_PROMPT_MD_SELF_CORRECT 
+from HiQA.build_tool.util_md.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_PDF 
+from HiQA.build_tool.util_md.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_PPT 
+from HiQA.build_tool.util_md.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_DOC 
+#from HiQA.build_tool.util_md.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_XLS 
+from HiQA.build_tool.util_md.util_ctn_type import CtnType
 from HiQA.utils.util_llm_diag import save_llm_diag_messages, set_question_num
 
 def _get_gpt_messages(prompt):
@@ -27,13 +32,22 @@ def _get_gpt_messages(prompt):
     ]
     return messages
 
-def fix_ocr_self_correct_markdown(md_text, question_num=99):
+def fix_ocr_self_correct_markdown(md_text, doc_type, question_num=99):
     client = AzureOpenAI(api_key=os.getenv("OPENAI_API_KEY"),
                          azure_endpoint=os.getenv("OPENAI_BASE_URL"),
                          api_version="2024-02-15-preview")
     try:
-        logging.info("start to correct markdown")
-        prompt = USER_PROMPT_MD_SELF_CORRECT.replace("{markdown}", md_text)
+        logging.info(f"start to correct markdown from doc_type:{doc_type}")
+        ctn_type = CtnType.get_ctn_type(doc_type)
+
+        if ctn_type == CtnType.PDF:
+            prompt = USER_PROMPT_MD_SELF_CORRECT_PDF.replace("{markdown}", md_text)
+        elif ctn_type == CtnType.PPT:
+            prompt = USER_PROMPT_MD_SELF_CORRECT_PPT.replace("{markdown}", md_text)
+        elif ctn_type == CtnType.DOC:
+            prompt = USER_PROMPT_MD_SELF_CORRECT_DOC.replace("{markdown}", md_text)
+        else:
+            raise ValueError(f"unknown ctn_type {ctn_type}")            
 
         model = "gpt-4o"
         temperature = 0.1
@@ -64,10 +78,11 @@ if __name__ == "__main__":
 
     md_old = "_work/tmp/AIGC时代的人力资源管理进化(徐刚).md"
     md_new = "_work/tmp/AIGC时代的人力资源管理进化(徐刚)_ocr_fixed.md"
+    doc_type = "pptx"
 
     with open(md_old, 'r', encoding='utf-8') as f:
         md_text = f.read()
 
-    md_text_fixed = fix_ocr_self_correct_markdown(md_text)
+    md_text_fixed = fix_ocr_self_correct_markdown(md_text, doc_type)
     with open(md_new, "w+", encoding='utf-8') as f:
         f.write(md_text_fixed)

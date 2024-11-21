@@ -169,13 +169,13 @@ def _get_gpt_messages(prompt):
     ]
     return messages
 
-def fix_ocr_content_step1(text_file, md_file):
+def fix_ocr_content_step1(doc_pathname, md_file):
     client = AzureOpenAI(api_key=os.getenv("OPENAI_API_KEY"),
                          azure_endpoint=os.getenv("OPENAI_BASE_URL"),
                          api_version="2024-02-15-preview")
     md_text = get_md_content_step1(md_file)
     try:
-        content = get_uns_content_step1(text_file)
+        content = get_uns_content_step1(doc_pathname)
         prompt = PROMPT_GET_CONTENT.format(Content=content)
         response = client.chat.completions.create(
             model="gpt-4o",
@@ -196,7 +196,8 @@ def fix_ocr_content_step1(text_file, md_file):
     except Exception as ex: # noqa
         logging.warning(f"{md_file} exception: {ex}, ignore")
 
-    return fix_ocr_self_correct_markdown(md_text)
+    doc_type = doc_pathname.split(".")[-1].lower()
+    return fix_ocr_self_correct_markdown(md_text, doc_type)
 
 
 

@@ -30,6 +30,13 @@ def load_md_info(md_info_path):
             return data
     return None
 
+def get_doc_type(md_info):
+    if isinstance(md_info, dict):
+        fname_org_doc = md_info.get("fname_org_doc", None)
+        if fname_org_doc is not None:
+            return fname_org_doc.split(".")[-1].lower()
+    return ""
+
 def find_md_info_path(filepath_in_out_dir):
     dir_name = os.path.dirname(filepath_in_out_dir)
     md_info_path = os.path.join(dir_name, FNAME_MD_INFO)

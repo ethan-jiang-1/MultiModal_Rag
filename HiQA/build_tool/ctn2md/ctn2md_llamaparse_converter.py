@@ -108,7 +108,8 @@ def convert_doc_to_md_by_llamaparse(doc_pathname, out_dir):
     json_result0_pages = json_result[0].get("pages", None)
     scan_info = {}
     if json_result0_pages is not None:
-        scan_info = analyze_scan_info(json_result0_pages)
+        doc_type = doc_pathname.split(".")[-1].lower()
+        scan_info = analyze_scan_info(json_result0_pages, doc_type)
 
     images = parser.get_images(json_result, out_dir)  # noqa
     #tables = parser.get_xlsx(json_result, out_dir)  # noqa
