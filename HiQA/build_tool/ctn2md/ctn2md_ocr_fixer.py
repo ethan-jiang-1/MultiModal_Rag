@@ -125,6 +125,6 @@ if __name__ == "__main__":
     ofm = OFM_BY_PAGE
     md_info_path = "_work/ctn2md_exam0/info.json"
 
-    md_info_path, md_info = fix_ocr_content_by_gpt(md_info_path, ofm=ofm)
-    print(md_info_path)
+    output_md_path, md_info = fix_ocr_content_by_gpt(md_info_path, ofm=ofm)
+    print(output_md_path)
     rich.print(md_info)

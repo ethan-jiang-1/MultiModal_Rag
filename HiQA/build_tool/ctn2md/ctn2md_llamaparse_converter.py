@@ -127,8 +127,8 @@ def convert_doc_to_md_by_llamaparse(doc_pathname, out_dir):
     if isinstance(md_info, dict):
         md_info["scan_info"] = scan_info
         md_info["fname_output_s0_md"] = os.path.basename(fname_output_s0_md)
-        md_info_path = save_md_info(out_dir, md_info)
-    return md_info_path, md_info
+        save_md_info(out_dir, md_info)
+    return fname_output_s0_md, md_info
 
 if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/AIGC时代的人力资源管理进化(徐刚).pdf"
@@ -144,6 +144,6 @@ if __name__ == "__main__":
 
     setup_logger_handlers()
     os.makedirs(out_dir, exist_ok=True)
-    md_info_path, md_info = convert_doc_to_md_by_llamaparse(doc_pathname, out_dir)
-    print(md_info_path)
+    output_md_path, md_info = convert_doc_to_md_by_llamaparse(doc_pathname, out_dir)
+    print(output_md_path)
     rich.print(md_info)

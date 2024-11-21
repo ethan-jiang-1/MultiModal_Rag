@@ -241,6 +241,6 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     md_info_path = "_work/ctn2md_exam2/info.json"
-    md_info_path, md_info = fix_img_content_by_lvlm(md_info_path)
-    print(md_info_path)
+    output_md_path, md_info = fix_img_content_by_lvlm(md_info_path)
+    print(output_md_path)
     rich.print(md_info)

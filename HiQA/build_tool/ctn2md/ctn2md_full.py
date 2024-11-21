@@ -17,6 +17,7 @@ from HiQA.build_tool.ctn2md.md_info_base import save_md_info, load_md_info, find
 from HiQA.build_tool.ctn2md.ctn2md_llamaparse_converter import convert_doc_to_md_by_llamaparse
 from HiQA.build_tool.ctn2md.ctn2md_ocr_fixer import fix_ocr_content_by_gpt
 from HiQA.build_tool.ctn2md.ctn2md_img_ref_fixer import fix_img_content_by_lvlm
+from HiQA.build_tool.ctn2md.ctn2md_heading_md_fixer import fix_markdown_headings
 from HiQA.build_tool.ctn2md.ctn2md_hiqa_md_fixer import fix_markdown_content_for_hiqa
 
 
@@ -35,24 +36,29 @@ def make_final_md(md_info_path, md_info):
     return final_md_path
 
 def do_content2md_convert(ctn_pathname, out_dir, steps):
-    md_info_path, md_info = convert_doc_to_md_by_llamaparse(ctn_pathname, out_dir)
-    if md_info_path is None:
-        logging.error(f"DCC: failed {ctn_pathname} @convert_doc_to_md_by_llamaparse")
+    output_md_path, md_info = convert_doc_to_md_by_llamaparse(ctn_pathname, out_dir)
+    if output_md_path is None:
+        logging.error(f"DCC: failed {output_md_path} @convert_doc_to_md_by_llamaparse")
         return None, None 
 
-    md_info_path, md_info = fix_ocr_content_by_gpt(md_info_path)
+    output_md_path, md_info = fix_ocr_content_by_gpt(md_info_path)
     if md_info is None:
-        logging.error(f"DCC: failed {ctn_pathname} @fix_ocr_content_by_gpt")
+        logging.error(f"DCC: failed {output_md_path} @fix_ocr_content_by_gpt")
         return None, None 
 
-    md_info_path, md_info = fix_img_content_by_lvlm(md_info_path)
+    output_md_path, md_info = fix_img_content_by_lvlm(md_info_path)
     if md_info is None:
-        logging.error(f"DCC: failed {ctn_pathname} @fix_img_content_by_lvlm")
+        logging.error(f"DCC: failed {output_md_path} @fix_img_content_by_lvlm")
         return None, None 
 
-    md_info_path, md_info = fix_markdown_content_for_hiqa(md_info_path)
+    output_md_path, md_info = fix_markdown_headings(md_info_path)
     if md_info is None:
-        logging.error(f"DCC: failed {ctn_pathname} @fix_markdown_content_for_hiqa")
+        logging.error(f"DCC: failed {output_md_path} @fix_markdown_headings")
+        return None, None 
+
+    output_md_path, md_info = fix_markdown_content_for_hiqa(md_info_path)
+    if md_info is None:
+        logging.error(f"DCC: failed {output_md_path} @fix_markdown_content_for_hiqa")
         return None, None 
 
     final_md_path = make_final_md(md_info_path, md_info)
