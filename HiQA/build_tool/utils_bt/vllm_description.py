@@ -34,8 +34,7 @@ def gen_questions_on_pic_by_gpt4(container_name, img_desc):
             model="gpt-4o",
             messages=messages,
             temperature=0.3,
-            top_p=0.95,
-            timeout=120)
+            top_p=0.95)
         response_content = response.choices[0].message.content
         resp = jsons_load_repair(response_content)
         return resp

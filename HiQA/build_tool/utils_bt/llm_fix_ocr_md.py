@@ -43,8 +43,7 @@ def fix_ocr_self_correct_markdown(md_text, doc_type, question_num=100, model="gp
             model=model,
             messages=messages,
             temperature=temperature,
-            top_p=top_p,
-            timeout=120)
+            top_p=top_p)
         content = response.choices[0].message.content
         resp = jsons_load_repair(content)
 
@@ -62,8 +61,8 @@ if __name__ == "__main__":
     dir_root = get_root_dir()
     os.chdir(dir_root)
 
-    md_old = "_work/tmp/AIGC时代的人力资源管理进化(徐刚).md"
-    md_new = "_work/tmp/AIGC时代的人力资源管理进化(徐刚)_ocr_fixed.md"
+    md_old = "_work/md_samples/5. back panel 与环境匹配工程校核_P2___pptx_s3.md"
+    md_new = "_work/md_samples/5. back panel 与环境匹配工程校核_P2___pptx_s3-new.md"
     doc_type = "pptx"
 
     with open(md_old, 'r', encoding='utf-8') as f:

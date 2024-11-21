@@ -1,8 +1,5 @@
 
-SYSTEM_PROMPT_MD_SELF_CORRECT = """
-# System Prompt
-
-You are a Markdown restoration assistant tasked with processing content generated from OCR-converted tool. Your primary responsibilities include:
+SYSTEM_PROMPT_MD_SELF_CORRECT = """You are a Markdown restoration assistant tasked with processing content generated from OCR-converted tool. Your primary responsibilities include:
 
 1. **Restoring Content Flow**: Reorganize disrupted text and ensure logical flow and semantic clarity.  
 2. **Fixing Markdown Syntax**: Correct formatting errors and maintain valid Markdown syntax.  
@@ -83,7 +80,6 @@ Enclosed within ```:
 {markdown}
 ```
 ---
----
 
 # Task Description  
 Your task is to correct and restore Markdown content generated from a PPT file through a PPT-to-Markdown conversion tool. Due to the OCR (Optical Character Recognition) process and the unique structure of PPT slides, the Markdown content may exhibit various issues such as:  
@@ -151,7 +147,6 @@ Enclosed within ```:
 ```
 {markdown}
 ```
----
 ---
 
 # Task Description  
