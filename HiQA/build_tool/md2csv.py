@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import os.path
 import logging
+import rich
 
 
 def parse_markdown(file_content):
@@ -48,6 +49,8 @@ def parse_markdown(file_content):
     if current_section:
         sections.append("\n".join(current_section))
 
+    print(doc_title)
+    rich.print(sections)
     return doc_title, sections
 
 

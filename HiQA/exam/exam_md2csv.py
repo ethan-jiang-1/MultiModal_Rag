@@ -28,6 +28,7 @@ def exam_md2csv(pname_md):
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    pname_md = "_work/ctn2md_exam10/AIGC时代的人力资源管理进化(徐刚)___pdf_s2.md"
+    #pname_md = "_work/ctn2md_exam10/AIGC时代的人力资源管理进化(徐刚)___pdf_s2.md"
+    pname_md = "_work/md_samples/5. back panel 与环境匹配工程校核_P2___pptx_s3.md"
     exam_md2csv(pname_md)
 

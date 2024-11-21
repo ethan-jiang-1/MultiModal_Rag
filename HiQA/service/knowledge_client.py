@@ -113,14 +113,20 @@ def reset_by_jina(question, results, threshold=0.0, jina_weight=0.8, bm25_weight
     return format_result_list(result_list)
 
 
+def decode_knowlege_from_result(encoded_knowledge):
+    decoded_knowledge = encoded_knowledge.replace('[desc]', '')
+    decoded_knowledge = decoded_knowledge.replace('---table begin---', 'The following is table:').replace('---table end---', '')
+    return decoded_knowledge
+
 def format_result_list(result_list):
     """格式化输出知识段落"""
     string_list = []
     for res in result_list:
+        decoded_knowledge = decode_knowlege_from_result(res[3])
         knowledge = "*** New Knowledge Paragraph ***\n" \
                     f"[Source File] {res[2]['filename']} [Source File]\n" \
                     f"[Knowledge Title] {res[2]['title']} [Knowledge Title]\n" \
-                    f"[Knowledge Content] {res[3].replace('[desc]', '').replace('---table begin---', 'The following is table:').replace('---table end---', '')} [Knowledge Content]"
+                    f"[Knowledge Content] {decoded_knowledge} [Knowledge Content]"
         string_list.append(knowledge)
     return string_list
 
@@ -272,8 +278,7 @@ def retrieve_knowledge(question, question_embd, kb_name, max_token=DEFAULT_KLG_M
 
     if verbose:
         logging.info(f'ck3: after filter: {time.time() - begin}')
-    # for text in results['documents'][0]:
-    #     all_text += text.replace('[desc]', '') + '\n'
+
     all_text = returned_values
 
     tk_encoding = get_token_encoding()
