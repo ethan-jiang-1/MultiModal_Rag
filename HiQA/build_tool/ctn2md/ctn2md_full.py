@@ -35,12 +35,13 @@ def make_final_md(md_info_path, md_info):
     save_md_info(out_dir, md_info)
     return final_md_path
 
-def do_content2md_convert(ctn_pathname, out_dir, steps):
+def do_content2md_convert(ctn_pathname, out_dir):
     output_md_path, md_info = convert_doc_to_md_by_llamaparse(ctn_pathname, out_dir)
     if output_md_path is None:
         logging.error(f"DCC: failed {output_md_path} @convert_doc_to_md_by_llamaparse")
         return None, None 
 
+    md_info_path = find_md_info_path(output_md_path)
     output_md_path, md_info = fix_ocr_content_by_gpt(md_info_path)
     if md_info is None:
         logging.error(f"DCC: failed {output_md_path} @fix_ocr_content_by_gpt")
@@ -72,7 +73,8 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/管理者角色定位与认知课程大纲.docx"
     #doc_pathname = "datasrc/test/raw_docs/考勤修改统一规则.xlsx"
     #doc_pathname = "datasrc/test/raw_docs/5. back panel 与环境匹配工程校核_P2.pptx"
-    doc_pathname = "datasrc/exam/raw_docs/ChatGPT intimates a tantalizing future_compressed.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/ChatGPT intimates a tantalizing future_compressed.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/Long Context LLMs Meet RAG_compressed.pdf"
 
     out_dir = f"_work/ctn2md_{random.randint(10,99)}"
     print(f"out_dir: {out_dir}")

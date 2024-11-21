@@ -3,7 +3,7 @@ import os
 import sys
 import logging
 import rich
-#import re
+import re
 #import random
 #import json
 #import json_repair
@@ -55,6 +55,56 @@ Table tile: Name of Table
 13. 请严格保证章节编号是正确的、递增的、层次的,请正确,准确的设置章节编号,请确保每个段落都有编号。
 """
 
+def filter_headings_for_hiqa(md_text, out_dir, md_info):
+    """
+    规整化 Markdown 的标题写法，为所有标题编号，所有标题均以 '#' 开头。
+
+    参数:
+        md_text (str): 输入的 Markdown 字符串流。
+        out_dir (str): 输出的目录路径。
+        md_info (str): 输出文件的名称信息。
+
+    返回:
+        str: 规整化后的 Markdown 字符串。
+    """
+    # 定义正则匹配 Markdown Heading 的模式
+    heading_pattern = r"^(#{1,6})\s*(.+)$"
+
+    # 初始化堆栈和编号
+    stack = []
+    result_lines = []
+
+    for line in md_text.splitlines():
+        match = re.match(heading_pattern, line)
+        if match:
+            hashes = match.group(1)  # 标题等级 (e.g., #, ##, ###)
+            title = match.group(2).strip()  # 标题内容
+            level = len(hashes)  # 标题等级数 (1 = 一级标题, 2 = 二级标题, 等等)
+
+            # 更新堆栈编号
+            while len(stack) > level:  # 弹出多余的层级
+                stack.pop()
+            if len(stack) < level:
+                stack.append(1)  # 新层级从1开始
+            else:
+                stack[-1] += 1  # 当前层级编号加1
+
+            # 重置下级的编号
+            for _ in range(len(stack), level):
+                stack.append(1)
+
+            # 生成编号
+            numbering = ".".join(map(str, stack)) + "."  # e.g., "1.1.1."
+            normalized_line = f"# {numbering} {title}"
+            result_lines.append(normalized_line)
+        else:
+            # 非标题行原样保留
+            result_lines.append(line)
+
+    # 生成规整化后的 Markdown 内容
+    normalized_md = "\n".join(result_lines)
+    return normalized_md
+
 
 def fix_markdown_content_for_hiqa(md_info_path):
     out_dir = os.path.dirname(md_info_path)
@@ -71,8 +121,8 @@ def fix_markdown_content_for_hiqa(md_info_path):
         md_text = f.read()
         rich.print(md_text)
 
-    #md_text_new = filter_markdown_images(md_text, out_dir, md_info)
-    md_text_new = md_text
+    md_text_new = filter_headings_for_hiqa(md_text, out_dir, md_info)
+    #md_text_new = md_text
 
     fname_s4_md_name = os.path.basename(fname_output_s3_md).replace("_s3.md", "_s4.md")
     fname_output_s4_md = os.path.join(out_dir, fname_s4_md_name)
@@ -91,7 +141,8 @@ if __name__ == "__main__":
 
     #md_info_path = "_work/ctn2md_exam0/info.json"
     #md_info_path = "_work/ctn2md_chatgpt/info.json"
-    md_info_path = "_work/ctn2md_backpanel/info.json"
+    #md_info_path = "_work/ctn2md_backpanel/info.json"
+    md_info_path = "_work/ctn2md_chatgpt/info.json"
     output_md_path, md_info = fix_markdown_content_for_hiqa(md_info_path)
     print(output_md_path)
     rich.print(md_info)

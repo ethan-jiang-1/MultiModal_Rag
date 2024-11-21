@@ -63,13 +63,15 @@ def analyze_scan_info(json_result0_pages, doc_type):
                 text_blocks += 1
                 if item_type == "heading":
                     heading_blocks += 1
-                total_text_area += item_width * item_height
+                if (item_width is not None) and (item_height is not None):
+                    total_text_area += item_width * item_height
 
         # 遍历 images
         for image in images:
             img_width = image.get("width", 0)
             img_height = image.get("height", 0)
-            total_image_area += img_width * img_height
+            if (img_width is not None) and (img_height is not None):
+                total_image_area += img_width * img_height
 
         # 判断页面是否是结构化页面或扫描页面
         is_structured = (
