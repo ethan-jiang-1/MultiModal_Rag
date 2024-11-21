@@ -85,7 +85,7 @@ class MdInfo:
             self._info["streams"] = {}
         return self.save()
 
-    def name_md_info_stream_pathname(self, step_num):
+    def name_step_pathname(self, step_num):
         pathname_org_doc = self._info.get("pathname_org_doc", None)
         if pathname_org_doc is not None:
             basename = os.path.basename(pathname_org_doc)
@@ -95,6 +95,17 @@ class MdInfo:
             return pathname_step_md
         return None
 
+    def name_src_n_dst_step_pathname(self, src_step_num):
+        if src_step_num is None:
+            streams = self._info.get("streams", None)
+            if streams is None:
+                raise ValueError("no streams in MdInfo")
+            sorted_keys = sorted(streams.keys())
+            src_step_num = int(sorted_keys[-1])
+        pathname_src_step_md = self.name_step_pathname(src_step_num)
+        pathname_dst_step_md = self.name_step_pathname(src_step_num+1)
+        return pathname_src_step_md, pathname_dst_step_md            
+
     @classmethod
     def get_step_num_from_pathname(cls, pathname):
         pattern = r'_s(\d+)\.md$'
@@ -103,16 +114,16 @@ class MdInfo:
             return int(match.group(1))
         return None
 
-    def add_step_into_md_info_stream(self, pathname_step_md, actor=None):
+    def add_step_into_md_info_streams(self, pathname_step_md, actor=None):
         basename = os.path.basename(pathname_step_md)
         step_num = self.get_step_num_from_pathname(pathname_step_md)
         if isinstance(step_num, int):
-            stream = self._info.get("stream", None)
-            if stream is None:
-                self._info["stream"] = {}
+            streams = self._info.get("streams", None)
+            if streams is None:
+                self._info["streams"] = {}
 
-            self._info["stream"][str(step_num)] = {"fname": basename, 
-                                                  "actor": actor}
+            self._info["streams"][str(step_num)] = {"fname": basename, 
+                                                    "actor": actor}
             return self.save()
         return None
 
@@ -135,7 +146,10 @@ class MdInfo:
         return self._info
 
     def get(self, key, default=None):
-        return self._info.get(key, default=default)
+        return self._info.get(key, default)
+
+    def __getitem__(self, key):
+        return self._info.get(key)
 
     def set(self, key, value):
         self._info[key] = value
@@ -143,8 +157,7 @@ class MdInfo:
     def __setitem__(self, key, value):
         self._info[key] = value
 
-    def __getitem__(self, key):
-        return self._info.get(key)
+
 
 
 if __name__ == "__main__":

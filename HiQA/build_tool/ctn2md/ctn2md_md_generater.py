@@ -112,11 +112,11 @@ def cnt2md_generator(doc_pathname, out_dir):
     images = parser.get_images(json_result, out_dir)  # noqa
     #tables = parser.get_xlsx(json_result, out_dir)  # noqa
 
-    pathname_step0 = md_info.name_md_info_stream_pathname(0)
+    pathname_step0 = md_info.name_step_pathname(0)
     with open(pathname_step0, "w+") as f: 
         md_text = _dump_by_json_result(out_dir, json_result, md_info)
         f.write(md_text)
-    md_info.add_step_into_md_info_stream(pathname_step0, actor="cnt2md_generator")
+    md_info.add_step_into_md_info_streams(pathname_step0, actor="cnt2md_generator")
 
     logging.info(f"original doc: {doc_pathname}")
     logging.info(f"fname_output: {os.path.basename(pathname_step0)}")

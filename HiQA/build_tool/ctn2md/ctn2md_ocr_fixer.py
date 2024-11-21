@@ -13,12 +13,12 @@ if "./" not in sys.path:
 
 from HiQA.utils.util_logging import setup_logger_handlers
 from HiQA.build_tool.util_md.llm_fix_ocr_md import fix_ocr_self_correct_markdown
-from HiQA.build_tool.ctn2md.md_info_base import save_md_info, load_md_info, get_doc_type
+from HiQA.build_tool.ctn2md.md_info_base import MdInfo
 from HiQA.build_tool.ctn2md.md_info_scan import get_llm_ocr_fix_method, OFM_BY_CONTENT, OFM_BY_PAGE, OFM_BY_SKIP
 from HiQA.utils.tokenizer import get_token_encoding
 
 #TODO: check if we are able to make GPTo output more then 3*1024 token. and how
-MAX_OUTPUT_TOKEN = 3*1024
+MAX_OUTPUT_TOKEN = 8*1024
 
 #import tiktoken
 
@@ -48,43 +48,40 @@ def _calculate_tokens_large_text(text, chunk_size=2048, stop_check_over_max=Fals
     
     return total_tokens
 
-def _fix_ocr_by_stiche_pages(md_text, md_info, out_dir):
+def _fix_ocr_by_stiche_pages(md_text, md_info):
     fnames_pages = md_info.get("fnames_pages", {})
     if not fnames_pages:
         raise ValueError("fnames_pages is empty")
     
     md_text_fixed = ""
-    for fname_page in fnames_pages:
+    out_dir = md_info.get_out_dir()
+    question_num = 100
+    for ndx, fname_page in enumerate(fnames_pages):
         pathname = os.path.join(out_dir, fname_page)
         with open(pathname, 'r', encoding='utf8') as f:
             md_page = f.read()
-        doc_type = get_doc_type(md_info)
-        md_page_fixed = fix_ocr_self_correct_markdown(md_page, doc_type) 
+        doc_type = md_info.get_doc_type()
+        md_page_fixed = fix_ocr_self_correct_markdown(md_page, doc_type, question_num=question_num) 
         md_text_fixed += md_page_fixed + "\n"
+        question_num += 1
 
     return md_text_fixed      
 
-def _fix_ocr_by_proc_whole(md_text, md_info, out_dir):
+def _fix_ocr_by_proc_whole(md_text, md_info):
     total_tokens = _calculate_tokens_large_text(md_text, stop_check_over_max=True)
     if total_tokens > MAX_OUTPUT_TOKEN: 
-        md_text_fixed = _fix_ocr_by_stiche_pages(md_text, md_info, out_dir)
+        md_text_fixed = _fix_ocr_by_stiche_pages(md_text, md_info)
     else:
-        doc_type = get_doc_type(md_info)
+        doc_type = md_info.get_doc_type()
         md_text_fixed = fix_ocr_self_correct_markdown(md_text, doc_type)  
     return md_text_fixed  
 
-def fix_ocr_content_by_gpt(md_info_path, ofm=None):
-    out_dir = os.path.dirname(md_info_path)
-    md_info = load_md_info(md_info_path)
-    if md_info is None:
-        return None, None 
+def fix_ocr_content_by_gpt(md_info_path, ofm=None, src_step_num=None):
+    md_info = MdInfo(md_info_path)
 
-    fname_output_s0_md = md_info.get("fname_output_s0_md", None)
-    if fname_output_s0_md is None:
-        return None, None 
+    pathname_src_step_md, pathname_dst_step_md = md_info.name_src_n_dst_step_pathname(src_step_num)
 
-    pname_s0 = os.path.join(out_dir, fname_output_s0_md)
-    with open(pname_s0, "r", encoding="utf8") as f:
+    with open(pathname_src_step_md, "r", encoding="utf8") as f:
         md_text = f.read()
 
     if ofm is None:
@@ -98,23 +95,20 @@ def fix_ocr_content_by_gpt(md_info_path, ofm=None):
 
     logging.info(f"OFM: ofm:{ofm} sel_ofm:{sel_ofm}")
     if sel_ofm == OFM_BY_CONTENT:
-        md_text_fixed = _fix_ocr_by_proc_whole(md_text, md_info, out_dir)
+        md_text_fixed = _fix_ocr_by_proc_whole(md_text, md_info)
     elif sel_ofm == OFM_BY_PAGE:
-        md_text_fixed = _fix_ocr_by_stiche_pages(md_text, md_info, out_dir)
+        md_text_fixed = _fix_ocr_by_stiche_pages(md_text, md_info)
     elif sel_ofm == OFM_BY_SKIP:
         md_text_fixed = md_text
     else:
         raise ValueError(f"unknown ofm: {sel_ofm}")
 
-    fname_s1_md_name = os.path.basename(fname_output_s0_md).replace("_s0.md", "_s1.md")
-    fname_output_s1_md = os.path.join(out_dir, fname_s1_md_name)
-    with open(fname_output_s1_md, "w+") as f:
+    with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_fixed)
-
-    logging.info(f"fname_output_s1_md: {fname_output_s1_md}")
-    md_info["fname_output_s1_md"] = os.path.basename(fname_s1_md_name)
-    md_info_path = save_md_info(out_dir, md_info)
-    return md_info_path, md_info
+    
+    md_info.add_step_into_md_info_streams(pathname_dst_step_md, actor="fix_ocr_content_by_gpt")
+    md_info_path = md_info.save()
+    return md_info_path
 
 if __name__ == "__main__":
     setup_logger_handlers()
@@ -123,8 +117,10 @@ if __name__ == "__main__":
     #md_info_path = "_work/ctn2md_exam5/info.json"
 
     ofm = OFM_BY_PAGE
-    md_info_path = "_work/ctn2md_exam0/info.json"
+    md_info_path = "_work/ctn2md_stream/info.json"
 
-    output_md_path, md_info = fix_ocr_content_by_gpt(md_info_path, ofm=ofm)
-    print(output_md_path)
+    md_info_path = fix_ocr_content_by_gpt(md_info_path, ofm=ofm, src_step_num=0)
+    print(md_info_path)
+
+    md_info = MdInfo(md_info_path)
     rich.print(md_info)
