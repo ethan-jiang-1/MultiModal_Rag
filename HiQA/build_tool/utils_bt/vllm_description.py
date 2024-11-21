@@ -7,8 +7,7 @@ import sys
 #import json
 import rich
 from dotenv import load_dotenv
-from openai import AzureOpenAI
-import json_repair
+
 
 
 if "./" not in sys.path:
@@ -19,39 +18,27 @@ load_dotenv()
 from HiQA.utils.util_file import get_root_dir
 from HiQA.build_tool.utils_bt.vllm_description_prompt import PROMPT_QUESTION_QAGEN_QWEN, SYSTEM_PROMPT_GPT4_QAGEN, USER_PROMPT_GPT4_QAGEN
 from HiQA.utils.util_logging import setup_logger_handlers
+from HiQA.build_tool.utils_bt.llm_base import get_gpt_client, get_gpt_messages, jsons_load_repair
 
 dashscope.api_key = "sk-a7cb64d9e5124609ac52849950c6fee2"
 
 
-def _get_gpt_messages(prompt):
-    messages=[
-        {
-            "role": "system",
-            "content": SYSTEM_PROMPT_GPT4_QAGEN
-        },
-        {
-            "role": "user",
-            "content": prompt
-        },
-    ]
-    return messages
-
 def gen_questions_on_pic_by_gpt4(container_name, img_desc):
-    client = AzureOpenAI(api_key=os.getenv("OPENAI_API_KEY"),
-                         azure_endpoint=os.getenv("OPENAI_BASE_URL"),
-                         api_version="2024-02-15-preview")
+    client = get_gpt_client()
     try:
         logging.info("start to generate questions...")
         prompt = USER_PROMPT_GPT4_QAGEN.replace("{container_name}", container_name).replace("{img_desc}", img_desc)
+        
+        messages = get_gpt_messages(SYSTEM_PROMPT_GPT4_QAGEN, prompt)
         response = client.chat.completions.create(
             model="gpt-4o",
-            messages=_get_gpt_messages(prompt),
+            messages=messages,
             temperature=0.3,
             top_p=0.95,
             timeout=120)
         response_content = response.choices[0].message.content
-        res = json_repair.repair_json(response_content, ensure_ascii=True, return_objects=True)
-        return res
+        resp = jsons_load_repair(response_content)
+        return resp
     except Exception as ex: 
         logging.exception(ex)
         raise ex

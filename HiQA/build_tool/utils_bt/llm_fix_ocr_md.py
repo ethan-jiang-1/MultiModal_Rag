@@ -1,9 +1,8 @@
-from openai import AzureOpenAI
 from dotenv import load_dotenv
 import sys
 import os
 import logging
-import json_repair
+
 
 if "./" not in sys.path:
     sys.path.append("./")
@@ -18,24 +17,11 @@ from HiQA.build_tool.utils_bt.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_C
 #from HiQA.build_tool.utils_bt.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_XLS 
 from HiQA.build_tool.utils_bt.util_ctn_type import CtnType
 from HiQA.utils.util_llm_diag import save_llm_diag_messages, set_question_num
+from HiQA.build_tool.utils_bt.llm_base import get_gpt_client, get_gpt_messages, jsons_load_repair
 
-def _get_gpt_messages(prompt):
-    messages=[
-        {
-            "role": "system",
-            "content": SYSTEM_PROMPT_MD_SELF_CORRECT
-        },
-        {
-            "role": "user",
-            "content": prompt
-        },
-    ]
-    return messages
 
 def fix_ocr_self_correct_markdown(md_text, doc_type, question_num=100, model="gpt4-o"):
-    client = AzureOpenAI(api_key=os.getenv("OPENAI_API_KEY"),
-                         azure_endpoint=os.getenv("OPENAI_BASE_URL"),
-                         api_version="2024-02-15-preview")
+    client = get_gpt_client()
     try:
         logging.info(f"start to correct markdown from doc_type:{doc_type} by {model} as questoin_number:{question_num}")
         ctn_type = CtnType.get_ctn_type(doc_type)
@@ -51,7 +37,7 @@ def fix_ocr_self_correct_markdown(md_text, doc_type, question_num=100, model="gp
 
         temperature = 0.1
         top_p = 0.9
-        messages=_get_gpt_messages(prompt)
+        messages = get_gpt_messages(SYSTEM_PROMPT_MD_SELF_CORRECT, prompt)
 
         response = client.chat.completions.create(
             model=model,
@@ -60,7 +46,7 @@ def fix_ocr_self_correct_markdown(md_text, doc_type, question_num=100, model="gp
             top_p=top_p,
             timeout=120)
         content = response.choices[0].message.content
-        resp = json_repair.repair_json(content, ensure_ascii=True, return_objects=True)
+        resp = jsons_load_repair(content)
 
         set_question_num(question_num)
         save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="ocr_fix") 

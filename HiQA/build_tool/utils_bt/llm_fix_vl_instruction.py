@@ -1,9 +1,7 @@
-from openai import AzureOpenAI
 from dotenv import load_dotenv
 import sys
 import os
 import logging
-import json_repair
 import rich 
 
 if "./" not in sys.path:
@@ -15,24 +13,10 @@ from HiQA.utils.util_logging import setup_logger_handlers
 from HiQA.build_tool.utils_bt.llm_fix_vl_instruction_prompt import SYSTEM_PROMPT_GEN_VLLM_CONTEXT, USER_PROMPT_GEN_VLLM_CONTEXT
 from HiQA.build_tool.utils_bt.llm_fix_vl_instruction_prompt import TEXT_PROMPT_INST_VLLM_IMG
 from HiQA.utils.util_llm_diag import save_llm_diag_messages, set_question_num
-
-def _get_gpt_messages(prompt):
-    messages=[
-        {
-            "role": "system",
-            "content": SYSTEM_PROMPT_GEN_VLLM_CONTEXT
-        },
-        {
-            "role": "user",
-            "content": prompt
-        },
-    ]
-    return messages
+from HiQA.build_tool.utils_bt.llm_base import get_gpt_client, get_gpt_messages, jsons_load_repair
 
 def get_vllm_instruction(doc_title, page_content, question_num=200, model="gpt-4o-mini"):
-    client = AzureOpenAI(api_key=os.getenv("OPENAI_API_KEY"),
-                         azure_endpoint=os.getenv("OPENAI_BASE_URL"),
-                         api_version="2024-02-15-preview")
+    client = get_gpt_client()
     try:
         logging.info(f"start to make vllm instruction by {model} as question_num: {question_num}")
         prompt = USER_PROMPT_GEN_VLLM_CONTEXT.replace("{doc_title}", doc_title).replace("{page_content}", page_content)
@@ -41,7 +25,7 @@ def get_vllm_instruction(doc_title, page_content, question_num=200, model="gpt-4
         #model = "gpt-4o-mini"
         temperature = 0.1
         top_p = 0.9
-        messages=_get_gpt_messages(prompt)
+        messages = get_gpt_messages(SYSTEM_PROMPT_GEN_VLLM_CONTEXT, prompt)
 
         response = client.chat.completions.create(
             model=model,
@@ -50,7 +34,7 @@ def get_vllm_instruction(doc_title, page_content, question_num=200, model="gpt-4
             top_p=top_p,
             timeout=120)
         content = response.choices[0].message.content
-        resp = json_repair.repair_json(content, ensure_ascii=True, return_objects=True)
+        resp = jsons_load_repair(content)
 
         set_question_num(question_num)
         save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="ocr_fix") 
