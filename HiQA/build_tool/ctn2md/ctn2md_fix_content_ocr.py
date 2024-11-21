@@ -19,7 +19,7 @@ from HiQA.utils.tokenizer import get_token_encoding
 
 #TODO: check if we are able to make GPTo output more then 3*1024 token. and how
 #MAX_OUTPUT_TOKEN = 8*1024
-MAX_OUTPUT_TOKEN = 4*1024
+MAX_OUTPUT_TOKEN = 8*1024
 
 #import tiktoken
 
@@ -74,13 +74,9 @@ def _fix_ocr_by_stiche_pages(md_text, md_info):
     return md_text_fixed      
 
 def _fix_ocr_by_proc_whole(md_text, md_info):
-    total_tokens = _calculate_tokens_large_text(md_text, stop_check_over_max=True)
-    if total_tokens > MAX_OUTPUT_TOKEN: 
-        md_text_fixed = _fix_ocr_by_stiche_pages(md_text, md_info)
-    else:
-        doc_type = md_info.get_doc_type()
-        md_text_fixed = fix_ocr_self_correct_markdown(md_text, doc_type)  
-    return md_text_fixed  
+    doc_type = md_info.get_doc_type()
+    md_text_fixed = fix_ocr_self_correct_markdown(md_text, doc_type)  
+    return md_text_fixed
 
 def fix_ocr_content_by_gpt(md_info_path, src_step_num=None, ofm=None):
     md_info = MdInfo(md_info_path)
@@ -92,29 +88,32 @@ def fix_ocr_content_by_gpt(md_info_path, src_step_num=None, ofm=None):
     with open(pathname_src_step_md, "r", encoding="utf8") as f:
         md_text = f.read()
 
+    total_tokens = _calculate_tokens_large_text(md_text, stop_check_over_max=True)
+    is_tokens_over_llm_output = (total_tokens > MAX_OUTPUT_TOKEN)
+    ofm_reason = ""
     if ofm is None:
-        ofm = get_llm_ocr_fix_method(md_info)
+        md_info["is_tokens_over_llm_output"] = is_tokens_over_llm_output
+        ofm, ofm_reason = get_llm_ocr_fix_method(md_info)
 
-    sel_ofm = ofm
-    if ofm == OFM_BY_PAGE:
-        total_tokens = _calculate_tokens_large_text(md_text, stop_check_over_max=True)
-        if total_tokens < MAX_OUTPUT_TOKEN:
-            sel_ofm = OFM_BY_CONTENT
-
-    logging.info(f"OFM: ofm:{ofm} sel_ofm:{sel_ofm}")
-    if sel_ofm == OFM_BY_CONTENT:
-        md_text_fixed = _fix_ocr_by_proc_whole(md_text, md_info)
-    elif sel_ofm == OFM_BY_PAGE:
+    logging.info(f"OFM: ofm:{ofm}")
+    if ofm == OFM_BY_CONTENT:
+        if total_tokens > MAX_OUTPUT_TOKEN:
+            ofm = OFM_BY_PAGE
+            ofm_reason += ":>llm_tklimit"
+            md_text_fixed = _fix_ocr_by_stiche_pages(md_text, md_info) 
+        else:
+            md_text_fixed = _fix_ocr_by_proc_whole(md_text, md_info)
+    elif ofm == OFM_BY_PAGE:
         md_text_fixed = _fix_ocr_by_stiche_pages(md_text, md_info)
-    elif sel_ofm == OFM_BY_SKIP:
+    elif ofm == OFM_BY_SKIP:
         md_text_fixed = md_text
     else:
-        raise ValueError(f"unknown ofm: {sel_ofm}")
+        raise ValueError(f"unknown ofm: {ofm}")
 
     with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_fixed)
     
-    md_info.add_step_into_md_info_streams(pathname_dst_step_md, actor="fix_ocr_content_by_gpt")
+    md_info.add_step_into_md_info_streams(pathname_dst_step_md, actor=f"fix_ocr_content_by_gpt:{ofm}:{ofm_reason}")
     md_info_path = md_info.save()
     return md_info_path
 

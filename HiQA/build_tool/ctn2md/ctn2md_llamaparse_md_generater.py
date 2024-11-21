@@ -65,6 +65,8 @@ def _dump_by_json_result(out_dir, json_result, md_info):
             rich.print(page)
             md_page = page.get("md", None)
             if md_page is not None:
+                if len(md_full_content) != 0:
+                    md_full_content += "\n"
                 md_full_content += md_page
 
             md_imgs = ""
