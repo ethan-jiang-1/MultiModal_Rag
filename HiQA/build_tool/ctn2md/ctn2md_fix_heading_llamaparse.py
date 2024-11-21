@@ -16,7 +16,7 @@ if "./" not in sys.path:
 from HiQA.utils.util_logging import setup_logger_handlers
 from HiQA.build_tool.ctn2md.md_info_base import MdInfo
 
-def filter_markdown_heading(md_text, md_info):
+def filter_markdown_heading_llamapase(md_text, md_info):
     """
     规整化 Markdown 的 heading 写法，确保所有 heading 的 # 与内容之间仅有一个空格。
 
@@ -49,7 +49,7 @@ def filter_markdown_heading(md_text, md_info):
     normalized_md = "\n".join(normalized_lines)
     return normalized_md
 
-def fix_markdown_headings(md_info_path, src_step_num=None):
+def fix_headings_llamaparse(md_info_path, src_step_num=None):
     md_info = MdInfo(md_info_path)
 
     pathname_src_step_md, pathname_dst_step_md = md_info.name_src_n_dst_step_pathname(src_step_num)
@@ -59,12 +59,12 @@ def fix_markdown_headings(md_info_path, src_step_num=None):
     with open(pathname_src_step_md, "r", encoding="utf8") as f:
         md_text = f.read()
 
-    md_text_new = filter_markdown_heading(md_text, md_info)
+    md_text_new = filter_markdown_heading_llamapase(md_text, md_info)
 
     with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_new)
     
-    md_info.add_step_into_md_info_streams(pathname_dst_step_md, actor="fix_markdown_headings")
+    md_info.add_step_into_md_info_streams(pathname_dst_step_md, actor="fix_headings_llamaparse")
     md_info_path = md_info.save()
     return md_info_path 
 
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     md_info_path = "_work/ctn2md_stream1/info.json"
-    md_info_path = fix_markdown_headings(md_info_path, src_step_num=2)
+    md_info_path = fix_headings_llamaparse(md_info_path, src_step_num=0)
 
     md_info = MdInfo(md_info_path)
     rich.print(md_info)

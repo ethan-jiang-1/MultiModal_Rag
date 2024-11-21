@@ -99,7 +99,7 @@ def _dump_by_json_result(out_dir, json_result, md_info):
 #         md_full_content += doc.text
 #     return md_full_content
 
-def cnt2md_generator(doc_pathname, out_dir):
+def gen_md_llamaparse(doc_pathname, out_dir):
     parser = _get_llamaparse()
     #logging.info(parser)
 
@@ -127,7 +127,7 @@ def cnt2md_generator(doc_pathname, out_dir):
     with open(pathname_step0, "w+") as f: 
         md_text = _dump_by_json_result(out_dir, json_result, md_info)
         f.write(md_text)
-    md_info.add_step_into_md_info_streams(pathname_step0, actor="cnt2md_generator")
+    md_info.add_step_into_md_info_streams(pathname_step0, actor="gen_md_llamaparse")
 
     logging.info(f"original doc: {doc_pathname}")
     logging.info(f"fname_output: {os.path.basename(pathname_step0)}")
@@ -151,7 +151,7 @@ if __name__ == "__main__":
 
     setup_logger_handlers()
     os.makedirs(out_dir, exist_ok=True)
-    md_info_path = cnt2md_generator(doc_pathname, out_dir)
+    md_info_path = gen_md_llamaparse(doc_pathname, out_dir)
     print(md_info_path)
 
     md_info = MdInfo(md_info_path)

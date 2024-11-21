@@ -14,11 +14,11 @@ if "./" not in sys.path:
 
 from HiQA.utils.util_logging import setup_logger_handlers
 from HiQA.build_tool.ctn2md.md_info_base import MdInfo
-from HiQA.build_tool.ctn2md.ctn2md_md_generater import cnt2md_generator
-from HiQA.build_tool.ctn2md.ctn2md_ocr_fixer import fix_ocr_content_by_gpt
-from HiQA.build_tool.ctn2md.ctn2md_img_ref_fixer import fix_img_content_by_lvlm
-from HiQA.build_tool.ctn2md.ctn2md_heading_md_fixer import fix_markdown_headings
-from HiQA.build_tool.ctn2md.ctn2md_hiqa_md_fixer import fix_markdown_content_for_hiqa
+from HiQA.build_tool.ctn2md.ctn2md_llamaparse_md_generater import gen_md_llamaparse
+from HiQA.build_tool.ctn2md.ctn2md_fix_heading_llamaparse import fix_headings_llamaparse
+from HiQA.build_tool.ctn2md.ctn2md_fix_content_ocr import fix_ocr_content_by_gpt
+from HiQA.build_tool.ctn2md.ctn2md_fix_img_reference import fix_img_reference_by_lvlm
+from HiQA.build_tool.ctn2md.ctn2md_fix_heading_hiqa import fix_headings_for_hiqa
 
 
 def make_final_md(md_info_path):
@@ -36,29 +36,29 @@ def make_final_md(md_info_path):
     return pathname_final_md
 
 def do_content2md_convert(ctn_pathname, out_dir):
-    md_info_path = cnt2md_generator(ctn_pathname, out_dir)
+    md_info_path = gen_md_llamaparse(ctn_pathname, out_dir)
     if md_info_path is None:
         logging.error(f"DCC: failed {md_info_path} @convert_doc_to_md_by_llamaparse")
         return None, None 
 
-    md_info_path = fix_ocr_content_by_gpt(md_info_path, src_step_num=0)
+    md_info_path = fix_headings_llamaparse(md_info_path, src_step_num=0)
+    if md_info_path is None:
+        logging.error(f"DCC: failed {md_info_path} @fix_headings_llamaparse")
+        return None, None 
+
+    md_info_path = fix_ocr_content_by_gpt(md_info_path, src_step_num=1)
     if md_info_path is None:
         logging.error(f"DCC: failed {md_info_path} @fix_ocr_content_by_gpt")
         return None, None 
 
-    md_info_path = fix_img_content_by_lvlm(md_info_path, src_step_num=1)
+    md_info_path = fix_img_reference_by_lvlm(md_info_path, src_step_num=2)
     if md_info_path is None:
-        logging.error(f"DCC: failed {md_info_path} @fix_img_content_by_lvlm")
+        logging.error(f"DCC: failed {md_info_path} @fix_img_reference_by_lvlm")
         return None, None 
 
-    md_info_path = fix_markdown_headings(md_info_path, src_step_num=2)
+    md_info_path = fix_headings_for_hiqa(md_info_path, src_step_num=3)
     if md_info_path is None:
-        logging.error(f"DCC: failed {md_info_path} @fix_markdown_headings")
-        return None, None 
-
-    md_info_path = fix_markdown_content_for_hiqa(md_info_path, src_step_num=3)
-    if md_info_path is None:
-        logging.error(f"DCC: failed {md_info_path} @fix_markdown_content_for_hiqa")
+        logging.error(f"DCC: failed {md_info_path} @fix_headings_for_hiqa")
         return None, None 
 
     final_md_path = make_final_md(md_info_path)
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/考勤修改统一规则.xlsx"
     #doc_pathname = "datasrc/test/raw_docs/5. back panel 与环境匹配工程校核_P2.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/ChatGPT intimates a tantalizing future_compressed.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/Long Context LLMs Meet RAG_compressed.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/Long-Context LLMs Meet RAG_compressed.pdf"
 
     out_dir = f"_work/ctn2md_{random.randint(10,99)}"
     print(f"out_dir: {out_dir}")

@@ -212,7 +212,7 @@ def filter_markdown_images(md_src_str, md_info):
     return md_dst_str
 
 
-def fix_img_content_by_lvlm(md_info_path, src_step_num=None):
+def fix_img_reference_by_lvlm(md_info_path, src_step_num=None):
     md_info = MdInfo(md_info_path)
 
     pathname_src_step_md, pathname_dst_step_md = md_info.name_src_n_dst_step_pathname(src_step_num)
@@ -227,7 +227,7 @@ def fix_img_content_by_lvlm(md_info_path, src_step_num=None):
     with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_new)
     
-    md_info.add_step_into_md_info_streams(pathname_dst_step_md, actor="fix_img_content_by_lvlm")
+    md_info.add_step_into_md_info_streams(pathname_dst_step_md, actor="fix_img_reference_by_lvlm")
     md_info_path = md_info.save()
     return md_info_path  
 
@@ -236,7 +236,7 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     md_info_path = "_work/ctn2md_stream1/info.json"
-    md_info_path = fix_img_content_by_lvlm(md_info_path, src_step_num=1)
+    md_info_path = fix_img_reference_by_lvlm(md_info_path, src_step_num=2)
 
     md_info = MdInfo(md_info_path)
     rich.print(md_info)

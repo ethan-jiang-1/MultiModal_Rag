@@ -127,7 +127,7 @@ if __name__ == "__main__":
     ofm = OFM_BY_PAGE
     md_info_path = "_work/ctn2md_stream1/info.json"
 
-    md_info_path = fix_ocr_content_by_gpt(md_info_path, ofm=ofm, src_step_num=0)
+    md_info_path = fix_ocr_content_by_gpt(md_info_path, ofm=ofm, src_step_num=1)
     print(md_info_path)
 
     md_info = MdInfo(md_info_path)
