@@ -11,7 +11,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.util_md.llamaparse_converter import convert_doc_to_md_by_llamaparse
+from HiQA.build_tool.utils_bt.llamaparse_converter import convert_doc_to_md_by_llamaparse
 
 if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/AIGC时代的人力资源管理进化(徐刚).pdf"

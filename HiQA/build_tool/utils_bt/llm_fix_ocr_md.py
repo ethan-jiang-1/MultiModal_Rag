@@ -11,12 +11,12 @@ load_dotenv()
 
 from HiQA.utils.util_file import get_root_dir
 from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.util_md.llm_fix_ocr_md_prompt import SYSTEM_PROMPT_MD_SELF_CORRECT 
-from HiQA.build_tool.util_md.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_PDF 
-from HiQA.build_tool.util_md.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_PPT 
-from HiQA.build_tool.util_md.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_DOC 
-#from HiQA.build_tool.util_md.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_XLS 
-from HiQA.build_tool.util_md.util_ctn_type import CtnType
+from HiQA.build_tool.utils_bt.llm_fix_ocr_md_prompt import SYSTEM_PROMPT_MD_SELF_CORRECT 
+from HiQA.build_tool.utils_bt.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_PDF 
+from HiQA.build_tool.utils_bt.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_PPT 
+from HiQA.build_tool.utils_bt.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_DOC 
+#from HiQA.build_tool.utils_bt.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_XLS 
+from HiQA.build_tool.utils_bt.util_ctn_type import CtnType
 from HiQA.utils.util_llm_diag import save_llm_diag_messages, set_question_num
 
 def _get_gpt_messages(prompt):

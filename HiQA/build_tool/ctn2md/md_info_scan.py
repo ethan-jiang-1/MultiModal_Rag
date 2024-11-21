@@ -12,7 +12,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 #from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.util_md.util_ctn_type import CtnType
+from HiQA.build_tool.utils_bt.util_ctn_type import CtnType
 
 OFM_BY_SKIP = "ofm_skip"
 OFM_BY_CONTENT = "ofm_content"

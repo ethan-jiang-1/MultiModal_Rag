@@ -15,8 +15,8 @@ if "./" not in sys.path:
 
 from HiQA.utils.util_logging import setup_logger_handlers
 from HiQA.build_tool.ctn2md.md_info_base import MdInfo
-from HiQA.build_tool.util_md.llm_fix_vl_instruction import get_vllm_instruction
-from HiQA.build_tool.util_md.vllm_description import generate_image_description
+from HiQA.build_tool.utils_bt.llm_fix_vl_instruction import get_vllm_instruction
+from HiQA.build_tool.utils_bt.vllm_description import generate_image_description
 from PIL import Image
 
 # 常量定义

@@ -16,7 +16,7 @@ SEP_FNAME_EXT = "___"
 FNAME_MD_INFO = "info.json"
 MD_INFO_VER = "0.1.0"
 
-from HiQA.build_tool.util_md.util_ctn_type import CtnType
+from HiQA.build_tool.utils_bt.util_ctn_type import CtnType
 
 class MdInfo:
     def __init__(self, md_info_path_or_out_dir):

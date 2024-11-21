@@ -12,8 +12,8 @@ load_dotenv()
 
 from HiQA.utils.util_file import get_root_dir
 from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.util_md.llm_fix_vl_instruction_prompt import SYSTEM_PROMPT_GEN_VLLM_CONTEXT, USER_PROMPT_GEN_VLLM_CONTEXT
-from HiQA.build_tool.util_md.llm_fix_vl_instruction_prompt import TEXT_PROMPT_INST_VLLM_IMG
+from HiQA.build_tool.utils_bt.llm_fix_vl_instruction_prompt import SYSTEM_PROMPT_GEN_VLLM_CONTEXT, USER_PROMPT_GEN_VLLM_CONTEXT
+from HiQA.build_tool.utils_bt.llm_fix_vl_instruction_prompt import TEXT_PROMPT_INST_VLLM_IMG
 from HiQA.utils.util_llm_diag import save_llm_diag_messages, set_question_num
 
 def _get_gpt_messages(prompt):

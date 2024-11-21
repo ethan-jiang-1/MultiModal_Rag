@@ -12,7 +12,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.util_md.llm_fix_ocr_md import fix_ocr_self_correct_markdown
+from HiQA.build_tool.utils_bt.llm_fix_ocr_md import fix_ocr_self_correct_markdown
 from HiQA.build_tool.ctn2md.md_info_base import MdInfo
 from HiQA.build_tool.ctn2md.md_info_scan import get_llm_ocr_fix_method, OFM_BY_CONTENT, OFM_BY_PAGE, OFM_BY_SKIP
 from HiQA.utils.tokenizer import get_token_encoding
