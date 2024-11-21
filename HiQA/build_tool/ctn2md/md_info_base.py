@@ -82,6 +82,9 @@ class MdInfo:
             self._info["streams"] = {}
         return self.save()
 
+    def get_doc_pathname(self):
+        return self.get("pathname_org_doc")
+
     def name_step_pathname(self, step_num):
         pathname_org_doc = self._info.get("pathname_org_doc", None)
         if pathname_org_doc is not None:
@@ -153,6 +156,10 @@ class MdInfo:
 
     def __setitem__(self, key, value):
         self._info[key] = value
+
+    def __contains__(self, key):
+        # 这个方法会在使用in操作符时被调用
+        return key in self._info
 
 
 

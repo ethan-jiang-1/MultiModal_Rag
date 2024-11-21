@@ -23,6 +23,7 @@ def get_completion(prompt, model="gpt-4o"):
         model=model,
         messages=messages,
         temperature=0,
+        timeout=120,
     )
     return response.choices[0].message.content
 

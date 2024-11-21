@@ -57,7 +57,8 @@ def fix_ocr_self_correct_markdown(md_text, doc_type, question_num=100, model="gp
             model=model,
             messages=messages,
             temperature=temperature,
-            top_p=top_p)
+            top_p=top_p,
+            timeout=120)
         content = response.choices[0].message.content
         resp = json_repair.repair_json(content, ensure_ascii=True, return_objects=True)
 

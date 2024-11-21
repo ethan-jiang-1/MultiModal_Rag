@@ -47,7 +47,8 @@ def gen_questions_on_pic_by_gpt4(container_name, img_desc):
             model="gpt-4o",
             messages=_get_gpt_messages(prompt),
             temperature=0.3,
-            top_p=0.95)
+            top_p=0.95,
+            timeout=120)
         response_content = response.choices[0].message.content
         res = json_repair.repair_json(response_content, ensure_ascii=True, return_objects=True)
         return res
@@ -77,7 +78,8 @@ def generate_image_description(image_url, instruction=None, retries=5, backoff_i
     for attempt in range(retries):
         try:
             response = dashscope.MultiModalConversation.call(
-                model='qwen-vl-max-0809', messages=messages)
+                model='qwen-vl-max-0809', 
+                messages=messages)
             choice = response["output"]["choices"][0]
             content = choice["message"]["content"]
             answer_text = content[0]["text"]

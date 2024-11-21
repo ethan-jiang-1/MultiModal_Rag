@@ -47,7 +47,8 @@ def get_vllm_instruction(doc_title, page_content, question_num=200, model="gpt-4
             model=model,
             messages=messages,
             temperature=temperature,
-            top_p=top_p)
+            top_p=top_p,
+            timeout=120)
         content = response.choices[0].message.content
         resp = json_repair.repair_json(content, ensure_ascii=True, return_objects=True)
 

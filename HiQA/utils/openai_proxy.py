@@ -44,7 +44,8 @@ Note:
         # model='gpt-4-1106-preview',
         # max_tokens=4000,
         messages=msgs,
-        stream=False
+        stream=False,
+        timeout=120
     )
 
     return result.choices[0].message.content

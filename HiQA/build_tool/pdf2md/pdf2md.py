@@ -180,7 +180,8 @@ def fix_ocr_content_step1(doc_pathname, md_file):
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=_get_gpt_messages(prompt),
-            temperature=0.1)
+            temperature=0.1,
+            timeout=120)
         text = response.choices[0].message.content
         res = json.loads(text.replace("```", "").replace("json", ""))
         text = res['content']
@@ -189,7 +190,8 @@ def fix_ocr_content_step1(doc_pathname, md_file):
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=_get_gpt_messages(prompt),
-            temperature=0.1)
+            temperature=0.1,
+            timeout=120)
         text = response.choices[0].message.content
         res = json.loads(text.replace("```", "").replace("json", ""))
         return res['content']

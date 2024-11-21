@@ -14,7 +14,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.ctn2md.md_info_base import save_md_info, load_md_info
+from HiQA.build_tool.ctn2md.md_info_base import MdInfo
 from HiQA.build_tool.util_md.llm_fix_vl_instruction import get_vllm_instruction
 from HiQA.build_tool.vl_description import generate_image_description
 from PIL import Image
@@ -26,15 +26,15 @@ MIN_AREA = 128 * 128 # 图像最小面积（像素）
 
 FEATURE_PIC_DESP_IN_MD = True
 
-def extract_doc_title(fname_org_doc):
+def extract_doc_title(pathname_org_doc):
     """
     提取文档标题，只去掉最后的后缀名和最后的 `.`。
     
-    :param fname_org_doc: 原始文档路径
+    :param pathname_org_doc: 原始文档路径
     :return: 文档标题（去掉后缀名和最后的 `.`）
     """
     # 获取文件名部分（不包括路径）
-    file_name = os.path.basename(fname_org_doc)
+    file_name = os.path.basename(pathname_org_doc)
     
     # 找到最后一个点的位置，确保只去掉最后的后缀
     last_dot_index = file_name.rfind('.')
@@ -62,18 +62,18 @@ def get_page_instruction(doc_title, page_content):
     g_page2inst[key] = instruction
     return instruction
 
-def analyze_image_content(md_page_file, fname_org_doc, image_path):
+def analyze_image_content(md_page_file, pathname_org_doc, image_path):
     """
     模拟多模态处理函数，分析图像的内容是否有意义。
     
     :param md_page_file: 当前页的 MD 文件路径
-    :param fname_org_doc: 原始文档路径
+    :param pathname_org_doc: 原始文档路径
     :param image_path: 图像的路径
     :return: (图像简洁说明, 新的图像路径) 或 (None, None) 如果图像无意义
     """
     # 1. 提取文档标题 (doc_title)
-    # 从 fname_org_doc 中去除目录和最后的扩展名
-    doc_title = extract_doc_title(fname_org_doc)
+    # 从 pathname_org_doc 中去除目录和最后的扩展名
+    doc_title = extract_doc_title(pathname_org_doc)
 
     # 2. 读取当前页的 Markdown 内容 (md_page)
     try:
@@ -108,14 +108,14 @@ def analyze_image_content(md_page_file, fname_org_doc, image_path):
 
     return relevance_score, (figure_name, picture_discription)
 
-def process_image_reference(out_dir, image_file, md_info):
+def process_image_reference(image_file, md_info):
     """
     检查图像的合理性，并返回描述和新图像路径。
-    :param out_dir: 工作目录
     :param image_file: 图像文件名
     :param md_info: 上下文信息字典
     :return: (简洁说明, 新的图像文件名) 或 (None, None) 表示不合适的图像
     """
+    out_dir = md_info.get_out_dir()
     image_path = os.path.join(out_dir, image_file)
     print(image_file)
 
@@ -146,7 +146,7 @@ def process_image_reference(out_dir, image_file, md_info):
 
     page_number = page_match.group(1)
     md_page_file = next(
-        (fname for fname in md_info["fnames_pages"] if f'_p{page_number}' in fname),
+        (fname for fname in md_info.get_fnames_pages() if f'_p{page_number}' in fname),
         None
     )
     if not md_page_file:
@@ -156,7 +156,7 @@ def process_image_reference(out_dir, image_file, md_info):
     # 4. 调用多模态处理逻辑
     relevance_score, figure_name_n_picture_discription = analyze_image_content(
         md_page_file=os.path.join(out_dir, md_page_file),
-        fname_org_doc=md_info["fname_org_doc"],
+        pathname_org_doc=md_info.get_doc_pathname(),
         image_path=image_path
     )
     if relevance_score and figure_name_n_picture_discription:
@@ -166,25 +166,25 @@ def process_image_reference(out_dir, image_file, md_info):
         return None, None  # 图像被判断为无意义
 
 
-def filter_markdown_images(md_src_str, out_dir, md_info):
+def filter_markdown_images(md_src_str, md_info):
     """
     处理 Markdown 中的图像引用，生成新的 Markdown 字符串。
     
     :param md_src_str: 原始 Markdown 字符串
-    :param out_dir: 工作目录
+    :param md_info: 上下文信息字典
     :return: 处理后的 Markdown 字符串
     """
     # 正则匹配 Markdown 图片引用语法 ![alt](image)\n
-    #image_pattern = r'!\[.*?\]\(([^)]+)\)'
-    #image_pattern = r'!\[.*?\]\(([^)]+)\)\n'
     image_pattern = r'!\[.*?\]\(([^)]+)\)(\r?\n)?'
+    
+    out_dir = md_info.get_out_dir()
     
     def replace_image_reference(match):
         # 原始图像引用
         image_file = match.group(1)
         
         # 调用外部处理函数
-        relevance_score, figure_name_n_picture_discription= process_image_reference(out_dir, image_file, md_info)
+        relevance_score, figure_name_n_picture_discription= process_image_reference(image_file, md_info)
         
         if relevance_score and figure_name_n_picture_discription:
             # 替换为新的 Markdown 图片引用
@@ -212,39 +212,31 @@ def filter_markdown_images(md_src_str, out_dir, md_info):
     return md_dst_str
 
 
-def fix_img_content_by_lvlm(md_info_path):
-    out_dir = os.path.dirname(md_info_path)
-    md_info = load_md_info(md_info_path)
-    if md_info is None:
-        return None, None 
+def fix_img_content_by_lvlm(md_info_path, src_step_num=None):
+    md_info = MdInfo(md_info_path)
 
-    fname_output_s1_md = md_info.get("fname_output_s1_md", None)
-    if fname_output_s1_md is None:
-        return None, None 
+    pathname_src_step_md, pathname_dst_step_md = md_info.name_src_n_dst_step_pathname(src_step_num)
+    if pathname_src_step_md is None or pathname_dst_step_md is None:
+        raise ValueError(f"no {pathname_src_step_md} and {pathname_dst_step_md}")
 
-    pname_s1 = os.path.join(out_dir, fname_output_s1_md)
-    with open(pname_s1, "r", encoding="utf8") as f:
+    with open(pathname_src_step_md, "r", encoding="utf8") as f:
         md_text = f.read()
-        rich.print(md_text)
 
-    md_text_new = filter_markdown_images(md_text, out_dir, md_info)
+    md_text_new = filter_markdown_images(md_text, md_info)
 
-    fname_s2_md_name = os.path.basename(fname_output_s1_md).replace("_s1.md", "_s2.md")
-    fname_output_s2_md = os.path.join(out_dir, fname_s2_md_name)
-    with open(fname_output_s2_md, "w+") as f:
+    with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_new)
-
-    logging.info(f"fname_s2_md_name: {fname_s2_md_name}")
-    if isinstance(md_info, dict):
-        md_info["fname_output_s2_md"] = os.path.basename(fname_output_s2_md)
-        save_md_info(out_dir, md_info)
-    return fname_output_s2_md, md_info    
+    
+    md_info.add_step_into_md_info_streams(pathname_dst_step_md, actor="fix_img_content_by_lvlm")
+    md_info_path = md_info.save()
+    return md_info_path  
 
 
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    md_info_path = "_work/ctn2md_exam2/info.json"
-    output_md_path, md_info = fix_img_content_by_lvlm(md_info_path)
-    print(output_md_path)
+    md_info_path = "_work/ctn2md_stream1/info.json"
+    md_info_path = fix_img_content_by_lvlm(md_info_path, src_step_num=1)
+
+    md_info = MdInfo(md_info_path)
     rich.print(md_info)

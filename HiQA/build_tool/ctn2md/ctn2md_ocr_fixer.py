@@ -82,7 +82,7 @@ def _fix_ocr_by_proc_whole(md_text, md_info):
         md_text_fixed = fix_ocr_self_correct_markdown(md_text, doc_type)  
     return md_text_fixed  
 
-def fix_ocr_content_by_gpt(md_info_path, ofm=None, src_step_num=None):
+def fix_ocr_content_by_gpt(md_info_path, src_step_num=None, ofm=None):
     md_info = MdInfo(md_info_path)
 
     pathname_src_step_md, pathname_dst_step_md = md_info.name_src_n_dst_step_pathname(src_step_num)

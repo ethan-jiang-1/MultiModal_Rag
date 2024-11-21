@@ -113,7 +113,8 @@ def _call_generator(user_input, knowledge):
                 messages=chat_messages,
                 stream=False,
                 temperature=temperature,
-                top_p=top_p
+                top_p=top_p,
+                timeout=120
         )
         save_llm_diag_messages(chat_messages, resp, model=model_name, temperature=temperature, top_p=top_p, prefix="qacore")
     except Exception as e:
