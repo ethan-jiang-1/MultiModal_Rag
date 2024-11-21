@@ -29,16 +29,16 @@ def _get_gpt_messages(prompt):
     ]
     return messages
 
-def get_vllm_instruction(doc_title, page_content, question_num=98):
+def get_vllm_instruction(doc_title, page_content, question_num=200, model="gpt-4o-mini"):
     client = AzureOpenAI(api_key=os.getenv("OPENAI_API_KEY"),
                          azure_endpoint=os.getenv("OPENAI_BASE_URL"),
                          api_version="2024-02-15-preview")
     try:
-        logging.info("start to make vllm instruction")
+        logging.info(f"start to make vllm instruction by {model} as question_num: {question_num}")
         prompt = USER_PROMPT_GEN_VLLM_CONTEXT.replace("{doc_title}", doc_title).replace("{page_content}", page_content)
 
         #model = "gpt-4o"
-        model = "gpt-4o-mini"
+        #model = "gpt-4o-mini"
         temperature = 0.1
         top_p = 0.9
         messages=_get_gpt_messages(prompt)

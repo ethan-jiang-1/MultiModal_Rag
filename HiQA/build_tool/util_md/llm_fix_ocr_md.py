@@ -32,12 +32,12 @@ def _get_gpt_messages(prompt):
     ]
     return messages
 
-def fix_ocr_self_correct_markdown(md_text, doc_type, question_num=99):
+def fix_ocr_self_correct_markdown(md_text, doc_type, question_num=100, model="gpt4-o"):
     client = AzureOpenAI(api_key=os.getenv("OPENAI_API_KEY"),
                          azure_endpoint=os.getenv("OPENAI_BASE_URL"),
                          api_version="2024-02-15-preview")
     try:
-        logging.info(f"start to correct markdown from doc_type:{doc_type}")
+        logging.info(f"start to correct markdown from doc_type:{doc_type} by {model} as questoin_number:{question_num}")
         ctn_type = CtnType.get_ctn_type(doc_type)
 
         if ctn_type == CtnType.PDF:
@@ -49,7 +49,6 @@ def fix_ocr_self_correct_markdown(md_text, doc_type, question_num=99):
         else:
             raise ValueError(f"unknown ctn_type {ctn_type}")            
 
-        model = "gpt-4o"
         temperature = 0.1
         top_p = 0.9
         messages=_get_gpt_messages(prompt)

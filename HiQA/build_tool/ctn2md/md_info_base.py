@@ -14,6 +14,7 @@ if "./" not in sys.path:
 
 SEP_FNAME_EXT = "___"
 FNAME_MD_INFO = "info.json"
+MD_INFO_VER = "0.1.0"
 
 from HiQA.build_tool.util_md.util_ctn_type import CtnType
 
@@ -28,7 +29,7 @@ class MdInfo:
         self._out_dir = os.path.dirname(self._md_info_path)
         os.makedirs(self._out_dir, exist_ok=True)
         if not os.path.isfile(self._md_info_path):
-            self._info = {}
+            self._info = {"version": MD_INFO_VER}
             self.save()
         self._info = self.load() 
 
@@ -57,14 +58,10 @@ class MdInfo:
 
     def load(self):
         if os.path.isfile(self._md_info_path):
-            try:
-                with open(self._md_info_path, 'r', encoding='utf-8') as file:
-                    self._info = json.load(file)
-            except: # noqa 
-                import json_repair
-                with open(self._md_info_path, 'r', encoding='utf-8') as file:
-                    data = file.read()
-                self._info= json_repair.repair_json(data, return_objects=True, ensure_ascii=True)
+            import json_repair
+            with open(self._md_info_path, 'r', encoding='utf-8') as file:
+                data = file.read()
+            self._info= json_repair.repair_json(data, return_objects=True, ensure_ascii=True)
         return self._info
 
     def save(self):
@@ -137,13 +134,13 @@ class MdInfo:
         doc_type = self.get_doc_type()
         return CtnType.get_ctn_type(doc_type)
 
+    def get_fnames_pages(self):
+        return self.get("fnames_pages", {})
+
     def update_info(self, dict_info):
         if isinstance(dict_info, dict):
             for key, val in dict_info.items():
                 self._info[key] = val
-
-    def get_info(self):
-        return self._info
 
     def get(self, key, default=None):
         return self._info.get(key, default)

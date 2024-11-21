@@ -18,7 +18,8 @@ from HiQA.build_tool.ctn2md.md_info_scan import get_llm_ocr_fix_method, OFM_BY_C
 from HiQA.utils.tokenizer import get_token_encoding
 
 #TODO: check if we are able to make GPTo output more then 3*1024 token. and how
-MAX_OUTPUT_TOKEN = 8*1024
+#MAX_OUTPUT_TOKEN = 8*1024
+MAX_OUTPUT_TOKEN = 4*1024
 
 #import tiktoken
 
@@ -49,19 +50,24 @@ def _calculate_tokens_large_text(text, chunk_size=2048, stop_check_over_max=Fals
     return total_tokens
 
 def _fix_ocr_by_stiche_pages(md_text, md_info):
-    fnames_pages = md_info.get("fnames_pages", {})
+    fnames_pages = md_info.get_fnames_pages()
     if not fnames_pages:
         raise ValueError("fnames_pages is empty")
     
     md_text_fixed = ""
     out_dir = md_info.get_out_dir()
     question_num = 100
+    total_pages = len(fnames_pages)
+    logging.info(f"_fix_ocr_by_stiche_pages: total_pages: {total_pages}")
+    model = "gpt-4o"
+    if total_pages >= 6:
+        model = "gpt-4o-mini"
     for ndx, fname_page in enumerate(fnames_pages):
         pathname = os.path.join(out_dir, fname_page)
         with open(pathname, 'r', encoding='utf8') as f:
             md_page = f.read()
         doc_type = md_info.get_doc_type()
-        md_page_fixed = fix_ocr_self_correct_markdown(md_page, doc_type, question_num=question_num) 
+        md_page_fixed = fix_ocr_self_correct_markdown(md_page, doc_type, model=model, question_num=question_num) 
         md_text_fixed += md_page_fixed + "\n"
         question_num += 1
 
@@ -80,6 +86,8 @@ def fix_ocr_content_by_gpt(md_info_path, ofm=None, src_step_num=None):
     md_info = MdInfo(md_info_path)
 
     pathname_src_step_md, pathname_dst_step_md = md_info.name_src_n_dst_step_pathname(src_step_num)
+    if pathname_src_step_md is None or pathname_dst_step_md is None:
+        raise ValueError(f"no {pathname_src_step_md} and {pathname_dst_step_md}")
 
     with open(pathname_src_step_md, "r", encoding="utf8") as f:
         md_text = f.read()
@@ -117,7 +125,7 @@ if __name__ == "__main__":
     #md_info_path = "_work/ctn2md_exam5/info.json"
 
     ofm = OFM_BY_PAGE
-    md_info_path = "_work/ctn2md_stream/info.json"
+    md_info_path = "_work/ctn2md_stream1/info.json"
 
     md_info_path = fix_ocr_content_by_gpt(md_info_path, ofm=ofm, src_step_num=0)
     print(md_info_path)

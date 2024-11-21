@@ -48,13 +48,17 @@ def extract_doc_title(fname_org_doc):
 
 g_page2inst = {}
 
+g_question_num = 200
+
 def get_page_instruction(doc_title, page_content):
     global g_page2inst
+    global g_question_num
     key = f"{doc_title}##{page_content}"
     if key in g_page2inst:
         return g_page2inst[key]
 
-    instruction = get_vllm_instruction(doc_title, page_content)
+    instruction = get_vllm_instruction(doc_title, page_content, question_num=g_question_num)
+    g_question_num += 1
     g_page2inst[key] = instruction
     return instruction
 

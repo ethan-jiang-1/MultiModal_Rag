@@ -29,6 +29,18 @@ def _get_llamaparse():
     )
     return parser
 
+def _save_md_page(out_dir, job_id, ndx, md_page, md_imgs):
+    try:
+        md_page_all = md_page + md_imgs
+        fname_page = f"{job_id}-content_p{ndx}.md"
+        fname_page_md = os.path.join(out_dir, fname_page)
+        with open(fname_page_md, "w", encoding="utf8") as f:
+            f.write(md_page_all)
+        return fname_page
+    except Exception as ex:
+        logging.exception(ex)
+    return None 
+
 def _dump_by_json_result(out_dir, json_result, md_info):
     os.makedirs(out_dir, exist_ok=True)
     md_full_content = ""
@@ -54,12 +66,8 @@ def _dump_by_json_result(out_dir, json_result, md_info):
             md_page = page.get("md", None)
             if md_page is not None:
                 md_full_content += md_page
-                fname_page = f"{job_id}-content_p{ndx}.md"
-                fname_page_md = os.path.join(out_dir, fname_page)
-                with open(fname_page_md, "w", encoding="utf8") as f:
-                    f.write(md_page)
-                fnames_pages.append(fname_page)
 
+            md_imgs = ""
             images = page.get("images", None)
             if images is not None:
                 img_refs = []
@@ -72,6 +80,9 @@ def _dump_by_json_result(out_dir, json_result, md_info):
                 if len(img_refs) > 0:
                     md_imgs = "\n" + "\n".join(img_refs) + "\n"
                     md_full_content += md_imgs
+
+                fname_page = _save_md_page(out_dir, job_id, ndx, md_page, md_imgs)
+                fnames_pages.append(fname_page)
     
     info_extra = {"job_id": job_ids_set.pop(),
                   "job_metadata": job_metadata,
