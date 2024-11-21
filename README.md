@@ -27,3 +27,6 @@ MultiModal_Rag/ <br>
 │ ├─<kb_name>/mds/ # 预训练模型用的MD文件 <br>
 │ ├─<kb_name>/raw_docs/ # 原始打算入库的文件 <br>
 │ ├─<kb_name>/raw_questions/ # 原始询问的问题 <br>
+
+
+original HiQA: https://github.com/TebooNok/HiQA

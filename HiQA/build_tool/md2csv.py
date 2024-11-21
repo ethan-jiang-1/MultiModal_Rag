@@ -72,6 +72,12 @@ def list_md_files(directory: str):
 
     return md_files
 
+def save_sections_to_csv(fname_csv_sections, sections):
+    df = pd.DataFrame(sections, columns=['section'])
+    df.to_csv(fname_csv_sections,
+              index=False,
+              encoding='utf-8')
+    return df
 
 def md2sections(file_path, output_directory):
     # name = os.path.splitext(file_name)[0]
@@ -80,11 +86,14 @@ def md2sections(file_path, output_directory):
     with open(file_path, 'r', encoding='utf-8') as f:
         file_content = f.read()
         title, sections = parse_markdown(file_content)
-        df = pd.DataFrame(sections, columns=['section'])
-        csv_sections = output_directory + "/" + name + '.csv'
-        df.to_csv(csv_sections,
-                  index=False,
-                  encoding='utf-8')
-        logging.info(f"sec_csv: {csv_sections} saved. csv_columns: {df.columns}")
-    return csv_sections
+        fname_csv_sections = output_directory + "/" + name + '.csv'
+
+        # df = pd.DataFrame(sections, columns=['section'])
+        # df.to_csv(fname_csv_sections,
+        #           index=False,
+        #           encoding='utf-8')
+        df = save_sections_to_csv(fname_csv_sections, sections)
+
+        logging.info(f"sec_csv: {fname_csv_sections} saved. csv_columns: {df.columns}")
+    return fname_csv_sections
 
