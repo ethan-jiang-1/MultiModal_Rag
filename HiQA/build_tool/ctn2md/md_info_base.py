@@ -25,9 +25,15 @@ def save_md_info(out_dir, md_info):
 
 def load_md_info(md_info_path):
     if os.path.isfile(md_info_path):
-        with open(md_info_path, 'r', encoding='utf-8') as file:
-            data = json.load(file)
-            return data
+        try:
+            with open(md_info_path, 'r', encoding='utf-8') as file:
+                data = json.load(file)
+                return data
+        except: # noqa 
+            import json_repair
+            with open(md_info_path, 'r', encoding='utf-8') as file:
+                data = file.read()
+            return json_repair.repair_json(data, return_objects=True, ensure_ascii=True)
     return None
 
 def get_doc_type(md_info):

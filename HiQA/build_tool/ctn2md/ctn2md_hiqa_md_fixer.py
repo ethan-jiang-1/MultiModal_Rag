@@ -50,7 +50,8 @@ def fix_markdown_content_for_hiqa(md_info_path):
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    md_info_path = "_work/ctn2md_exam0/info.json"
+    #md_info_path = "_work/ctn2md_exam0/info.json"
+    md_info_path = "_work/ctn2md_chatgpt/info.json"
     md_info_path, md_info = fix_markdown_content_for_hiqa(md_info_path)
     print(md_info_path)
     rich.print(md_info)

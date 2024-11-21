@@ -17,8 +17,24 @@ from HiQA.build_tool.ctn2md.md_info_base import save_md_info, load_md_info, find
 from HiQA.build_tool.ctn2md.ctn2md_llamaparse_converter import convert_doc_to_md_by_llamaparse
 from HiQA.build_tool.ctn2md.ctn2md_ocr_fixer import fix_ocr_content_by_gpt
 from HiQA.build_tool.ctn2md.ctn2md_img_ref_fixer import fix_img_content_by_lvlm
+from HiQA.build_tool.ctn2md.ctn2md_hiqa_md_fixer import fix_markdown_content_for_hiqa
 
-def do_content2md_convert(ctn_pathname, out_dir):
+
+def make_final_md(md_info_path, md_info):
+    fname_output_s3_md = md_info.get("fname_output_s3_md")
+    fname_output_md = fname_output_s3_md.replace("_s3.md", ".md")
+
+    src_path = os.path.join(out_dir, fname_output_s3_md)
+    final_md_path = os.path.join(out_dir, fname_output_md)
+    if os.path.isfile(final_md_path):
+        os.unlink(final_md_path)
+    shutil.copy(src_path, final_md_path)
+
+    md_info["fname_final_md"] = os.path.basename(final_md_path)
+    save_md_info(out_dir, md_info)
+    return final_md_path
+
+def do_content2md_convert(ctn_pathname, out_dir, steps):
     md_info_path, md_info = convert_doc_to_md_by_llamaparse(ctn_pathname, out_dir)
     if md_info_path is None:
         logging.error(f"DCC: failed {ctn_pathname} @convert_doc_to_md_by_llamaparse")
@@ -34,17 +50,12 @@ def do_content2md_convert(ctn_pathname, out_dir):
         logging.error(f"DCC: failed {ctn_pathname} @fix_img_content_by_lvlm")
         return None, None 
 
-    fname_output_s2_md = md_info.get("fname_output_s2_md")
-    fname_output_md = fname_output_s2_md.replace("_s2.md", ".md")
+    md_info_path, md_info = fix_markdown_content_for_hiqa(md_info_path)
+    if md_info is None:
+        logging.error(f"DCC: failed {ctn_pathname} @fix_markdown_content_for_hiqa")
+        return None, None 
 
-    src_path = os.path.join(out_dir, fname_output_s2_md)
-    final_md_path = os.path.join(out_dir, fname_output_md)
-    if os.path.isfile(final_md_path):
-        os.unlink(final_md_path)
-    shutil.copy(src_path, final_md_path)
-
-    md_info["fname_final_md"] = os.path.basename(final_md_path)
-    save_md_info(out_dir, md_info)
+    final_md_path = make_final_md(md_info_path, md_info)
 
     return final_md_path
 
