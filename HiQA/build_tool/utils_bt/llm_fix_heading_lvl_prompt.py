@@ -1,71 +1,104 @@
 
-SYSTEM_PROMPT_FIX_HEADING_LVL = """You are a Markdown restoration assistant tasked with processing content generated from OCR-converted tool. Your primary responsibilities include:
+SYSTEM_PROMPT_FIX_HEADING_LVL = """
+你是一位Markdown结构优化助手，专注于解析和修正Markdown标题层级。
+根据用户提供的原始标题数据 (fhl_org)，生成一个修正后的结构化映射（fhl_map）。你的目标是通过分析文档标题含义和层级关系，生成一个清晰、结构合理的 TOC（目录）。
 
-1. **Restoring Content Flow**: Reorganize disrupted text and ensure logical flow and semantic clarity.  
-2. **Fixing Markdown Syntax**: Correct formatting errors and maintain valid Markdown syntax.  
-3. **Preserving Image References**: Ensure that all image references in the format `![](image-link)` are retained and placed in their appropriate context without breaking the flow of the content.  
-4. **Following User Guidelines**: Adhere strictly to any specific instructions provided in the User Prompt, such as removing redundant text or renaming terms in contracts.  
+### 你的任务
+1. **修正层级**：分析 `org_doc_title`、`org_first_line` 和 `org_heading_lines`，修正层级缺陷，生成专业的 Markdown 标题层次结构。
+2. **映射生成**：
+   - `first_line_map`：映射文档第一行，可选择作为标题，或以非标题格式（如粗体等）。
+   - `heading_lines_map`：逐行映射标题列表，生成合理的 Markdown 标题或非标题格式（如粗体等）。
+3. **生成逻辑**：所有映射需清晰描述原始标题与修正后结果的关系，并提供生成理由（reasoning）。
+4. **最终目标**：生成的 fhl_map 应用于替换不规范内容，构建符合文档逻辑和专业标准的 TOC。
 
-Deliver accurate, readable, and logically structured Markdown content while maintaining the original intent of the document.
+确保映射灵活且准确，支持直接替换原始内容，同时满足 Markdown 层级规范。
 """
 
 USER_PROMPT_FIX_HEADING_LVL = """
----
-# Input Content (**original_markdown**): 
-<original_markdown>
-{markdown}
-</original_markdown>
----
+## 指令
+根据用户提供的原始标题数据 (fhl_org)，生成修正后的结构化映射（fhl_map）。分析标题含义及层级关系，以生成专业、清晰、结构合理的 TOC，便于后续替换和使用。
 
-# Task Description  
-Your task is to correct and restore Markdown content generated from a PDF file through a PDF-to-Markdown conversion tool. Due to the OCR (Optical Character Recognition) process involved, the Markdown content may exhibit various issues such as:  
-- **Disrupted information flow**: Text order or structure might not match the original PDF.  
-- **Formatting errors**: Markdown syntax may be broken or inconsistent.  
-- **Semantic inaccuracies**: Words, phrases, or sentences may be misrecognized or misplaced.  
-- **Redundant or irrelevant text**: Extraneous elements, such as page numbers or artifacts from the conversion, may be present.  
-- **Missing Image References**: Some image references in the format `![](image-link)` might have been filtered out or misplaced during the conversion process.  
-- **Page Separators**: Markdown may include markers like `mark_page_separator_N`, which indicate page splits and page numbers. These markers are for reference only and should be removed during restoration.
+### fhl_org 结构说明
+输入数据 (fhl_org) 包括以下内容：
+- `org_doc_title` (string): 文档标题，通常从文件名提取，可用作 TOC 的主标题。
+- `org_first_line` (string): 文档正文的第一行，可是标题，也可能是正文内容。
+- `org_heading_lines` (list of strings): 提取的标题列表，需根据内容生成合理的层级映射。
 
-Your primary goal is to restore the content to accurately reflect the original PDF's intent, meaning, and structure while maintaining the original language and terminologies of the Markdown content.
-
-## Correction Guidelines  
-
-1. **Analyze and Infer**  
-   - Carefully read the input Markdown to understand the context and intent of the original document.  
-   - Identify areas where the information flow or structure has been disrupted.  
-
-2. **Restore Content**  
-   - **Reconstruct Logical Flow**: Reorganize the content into a coherent structure that matches the likely intent of the original PDF.  
-   - **Correct Markdown Syntax**: Fix any errors or inconsistencies in Markdown formatting.  
-   - **Refine Text**: Address OCR misrecognitions, correct typos, and improve semantic clarity.  
-
-3. **Preserve Image References**  
-   - Ensure all image references in the format `![](image-link)` are retained.  
-   - Place each image reference in the most contextually appropriate position in the content, ensuring the logical flow is not disrupted.  
-   - Do not delete or modify any image links unless explicitly instructed.
-
-4. **Handle Page Separators**  
-   - Remove all page separator markers such as `mark_page_separator_N`.  
-   - Ensure that removing these markers does not disrupt the content's logical flow.  
-   - Use the page separator as a hint to verify content continuity between sections.
-
-5. **Maintain Original Language and Terminologies**  
-   - Respect the original language (e.g., Chinese or English) of the Markdown content. Do not translate or alter the language.  
-   - Retain culturally and contextually significant terms (e.g., “甲方/乙方” in Chinese or “Party A/Party B” in English). Do not replace such terms with generic alternatives (e.g., “Party 1/Party 2”) unless explicitly requested.
-
-6. **Eliminate Redundancies**  
-   - Remove irrelevant artifacts, such as page number references, blank spaces, or conversion notes that do not belong in the final document.  
-
-7. **Preserve Original Intent**  
-   - Ensure the corrected content reflects the meaning, structure, and purpose of the original PDF without adding or omitting critical information.  
+**现有用户的原始标题数据 (fhl_org) (JSON格式)如下**:
+{fhl_headings_json_str}
 
 ---
 
-## Output Format  
-Provide your response in the following JSON structure:  
+## 生成填写指南
+
+### fhl_map 生成要求
+
+1. **文档标题和标题行映射**：
+   - `org_doc_title`: 用作文档的主标题，酌情决定是否映射为最高级 Markdown 标题。
+   - `org_heading_lines`: 必须逐行生成映射，确保每行都被清晰映射，映射结果不多不少。
+
+2. **first_line_map**：
+   - 如果 `org_first_line` 是有意义的标题，应生成映射，映射可以是 Markdown 标题或 ** ** 粗体（适用于不占据 TOC 的情况）。
+   - 映射需包含以下字段：
+     - `mapped_line`: 修正后的标题行。
+     - `level`: 标题层级，或 `null` 如果映射为非标题格式（如 ** **）。
+     - `reasoning`: 修正思路。
+
+3. **heading_lines_map**：
+   - 为 `org_heading_lines` 的每一行生成映射，格式同 `first_line_map`。
+   - 支持映射为 Markdown 标题或 ** ** 粗体，便于生成合理的 TOC。
+
+4. **全局修正逻辑**：
+   - 提供 `reasoning` 字段，说明修正逻辑及生成结果的整体思考。
+
+5. **new_heading_lines**:
+   - 提供最后整理好的heading来容易看出新的TOC。
+
+### 注意事项
+A. 所有映射需逐行生成，确保 `org_heading_lines` 和 `org_first_line` 的内容不多不少。
+
+B. `org_first_line` 可映射为 Markdown 标题或 ** ** 粗体，依据其内容的重要性。
+
+C. `org_doc_title` 可映射为文档最高级标题，或保留为背景信息。
+
+D. 映射结果需符合 TOC 目标，确保层级清晰、结构合理，支持直接替换原文。
+
+---
+
+**最终 JSON 输出格式**：
+```json
 {
-    "reasoning": "<Explain the steps taken to restore the content, including how you handled disrupted flow, errors, redundancies, image references, page separators, and language consistency.>",
-    "content": "<Corrected Markdown content in valid Markdown syntax.>"
+  "org_doc_title": "string",
+  "org_first_line": "string",
+  "org_heading_lines": [
+    "string",
+    "string",
+    "... (更多标题行)"
+  ],
+  "first_line_map": {
+    "mapped_line": "string",
+    "level": "integer or null",
+    "reasoning": "string"
+  },
+  "heading_lines_map": {
+    "string (original_line)": {
+      "mapped_line": "string",
+      "level": "integer or null",
+      "reasoning": "string"
+    },
+    "string (original_line)": {
+      "mapped_line": "string",
+      "level": "integer or null",
+      "reasoning": "string"
+    },
+    "... (更多映射)"
+  },
+  "reasoning": "string",
+  "new_heading_lines": [
+    "string",
+    "string",
+    "... (更多标题行)"
+  ],
 }
 
 ## Your Answer:

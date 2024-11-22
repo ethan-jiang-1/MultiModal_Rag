@@ -78,8 +78,8 @@ def fix_headings_llamaparse(md_info_path, src_step_num=None):
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    #md_info_path = "_work/ctn2md_stream0/info.json"
-    md_info_path = "_work/ctn2md_s3_0/info.json"
+    md_info_path = "_work/ctn2md_stream1/info.json"
+    #md_info_path = "_work/ctn2md_s0_0/info.json"
     md_info_path = fix_headings_llamaparse(md_info_path, src_step_num=0)
 
     md_info = MdInfo(md_info_path)

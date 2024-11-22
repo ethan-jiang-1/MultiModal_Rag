@@ -44,10 +44,9 @@ def fix_heading_lvl_markdown(fhl_headings, question_num=400, model="gpt-4o"):
         resp = jsons_load_repair(response.choices[0].message.content)
 
         set_question_num(question_num)
-        save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="ocr_fix") 
+        save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="heading_fix") 
 
-        content = resp['content']
-        return content
+        return resp
     except Exception as ex: 
         logging.exception(ex)
         raise ex
