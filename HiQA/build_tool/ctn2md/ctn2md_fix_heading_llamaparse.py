@@ -15,6 +15,7 @@ if "./" not in sys.path:
 
 from HiQA.utils.util_logging import setup_logger_handlers
 from HiQA.build_tool.ctn2md.md_info_base import MdInfo
+from HiQA.build_tool.utils_bt.llm_fix_heading_lvl import fix_heading_lvl_markdown
 
 def filter_markdown_heading_llamapase(md_text, md_info):
     """
@@ -67,6 +68,10 @@ def fix_headings_llamaparse(md_info_path, src_step_num=None):
         md_text = f.read()
 
     md_text_new = filter_markdown_heading_llamapase(md_text, md_info)
+
+    fhl = md_info["fhl"]
+    resp = fix_heading_lvl_markdown(fhl)
+    rich.print(resp)
 
     with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_new)

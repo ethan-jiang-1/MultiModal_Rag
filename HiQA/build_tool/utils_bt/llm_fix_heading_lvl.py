@@ -17,7 +17,7 @@ from HiQA.utils.util_llm_diag import save_llm_diag_messages, set_question_num
 from HiQA.build_tool.utils_bt.llm_base import get_gpt_client, get_gpt_messages, jsons_load_repair
 
 
-def fix_heading_lvl_markdown(fhl_headings, question_num=400, model="gpt-4o"):
+def fix_heading_lvl_markdown(fhl_headings, question_num=400, model="gpt-4o-mini"):
     client = get_gpt_client()
     try:
         if model not in ["gpt-4o-mini", "gpt-4o"]: 
