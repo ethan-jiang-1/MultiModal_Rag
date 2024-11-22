@@ -23,6 +23,9 @@ from HiQA.build_tool.utils_bt.llm_base import get_gpt_client, get_gpt_messages, 
 def fix_ocr_self_correct_markdown(md_text, doc_type, question_num=100, model="gpt-4o"):
     client = get_gpt_client()
     try:
+        if model not in ["gpt-4o-mini", "gpt-4o"]: 
+            raise ValueError(f"f{model} not supporst")
+
         logging.info(f"start to correct markdown from doc_type:{doc_type} by {model} as questoin_number:{question_num}")
         ctn_type = CtnType.get_ctn_type(doc_type)
 
@@ -44,14 +47,13 @@ def fix_ocr_self_correct_markdown(md_text, doc_type, question_num=100, model="gp
             messages=messages,
             temperature=temperature,
             top_p=top_p)
-        content = response.choices[0].message.content
-        resp = jsons_load_repair(content)
+        resp = jsons_load_repair(response.choices[0].message.content)
 
         set_question_num(question_num)
         save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="ocr_fix") 
 
-        text = resp['content']
-        return text
+        content = resp['content']
+        return content
     except Exception as ex: 
         logging.exception(ex)
         raise ex

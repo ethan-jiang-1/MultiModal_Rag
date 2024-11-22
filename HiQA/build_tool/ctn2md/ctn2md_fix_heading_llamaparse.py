@@ -35,7 +35,8 @@ def filter_markdown_heading_llamapase(md_text, md_info):
     heading_lines = []
     # 规整化处理 Markdown 文本
     normalized_lines = []
-    for line in md_text.splitlines():
+    org_lines = md_text.splitlines()
+    for line in org_lines:
         match = re.match(heading_pattern, line)
         if match:
             # 提取 # 符号 和 heading 的内容
@@ -50,7 +51,8 @@ def filter_markdown_heading_llamapase(md_text, md_info):
     # 生成规整化的 Markdown 内容
     normalized_md = "\n".join(normalized_lines)
 
-    md_info["fhl"] = {"org_heading_lines": heading_lines}
+    md_info["fhl"] = {"org_first_line": org_lines[0],
+                      "org_heading_lines": heading_lines}
     return normalized_md
 
 def fix_headings_llamaparse(md_info_path, src_step_num=None):
@@ -75,7 +77,8 @@ def fix_headings_llamaparse(md_info_path, src_step_num=None):
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    md_info_path = "_work/ctn2md_stream1/info.json"
+    #md_info_path = "_work/ctn2md_stream0/info.json"
+    md_info_path = "_work/ctn2md_s3_0/info.json"
     md_info_path = fix_headings_llamaparse(md_info_path, src_step_num=0)
 
     md_info = MdInfo(md_info_path)

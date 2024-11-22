@@ -18,11 +18,12 @@ from HiQA.build_tool.utils_bt.llm_base import get_gpt_client, get_gpt_messages, 
 def get_vllm_instruction(doc_title, page_content, question_num=200, model="gpt-4o-mini"):
     client = get_gpt_client()
     try:
+        if model not in ["gpt-4o-mini", "gpt-4o"]: 
+            raise ValueError(f"f{model} not supporst")
+
         logging.info(f"start to make vllm instruction by {model} as question_num: {question_num}")
         prompt = USER_PROMPT_GEN_VLLM_CONTEXT.replace("{doc_title}", doc_title).replace("{page_content}", page_content)
 
-        #model = "gpt-4o"
-        #model = "gpt-4o-mini"
         temperature = 0.1
         top_p = 0.9
         messages = get_gpt_messages(SYSTEM_PROMPT_GEN_VLLM_CONTEXT, prompt)
@@ -32,8 +33,7 @@ def get_vllm_instruction(doc_title, page_content, question_num=200, model="gpt-4
             messages=messages,
             temperature=temperature,
             top_p=top_p)
-        content = response.choices[0].message.content
-        resp = jsons_load_repair(content)
+        resp = jsons_load_repair(response.choices[0].message.content)
 
         set_question_num(question_num)
         save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="ocr_fix") 

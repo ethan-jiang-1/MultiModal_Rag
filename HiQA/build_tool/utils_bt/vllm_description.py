@@ -18,25 +18,33 @@ load_dotenv()
 from HiQA.utils.util_file import get_root_dir
 from HiQA.build_tool.utils_bt.vllm_description_prompt import PROMPT_QUESTION_QAGEN_QWEN, SYSTEM_PROMPT_GPT4_QAGEN, USER_PROMPT_GPT4_QAGEN
 from HiQA.utils.util_logging import setup_logger_handlers
+from HiQA.utils.util_llm_diag import save_llm_diag_messages, set_question_num
 from HiQA.build_tool.utils_bt.llm_base import get_gpt_client, get_gpt_messages, jsons_load_repair
 
 dashscope.api_key = "sk-a7cb64d9e5124609ac52849950c6fee2"
 
 
-def gen_questions_on_pic_by_gpt4(container_name, img_desc):
+def gen_questions_on_pic_by_gpt4(container_name, img_desc, model="gpt-4o", question_num=300):
     client = get_gpt_client()
     try:
-        logging.info("start to generate questions...")
+        if model not in ["gpt-4o-mini", "gpt-4o"]: 
+            raise ValueError(f"f{model} not supporst")
+    
+        logging.info(f"start to generate questions by {model}...")
         prompt = USER_PROMPT_GPT4_QAGEN.replace("{container_name}", container_name).replace("{img_desc}", img_desc)
-        
+
+        temperature = 0.3
+        top_p = 0.95        
         messages = get_gpt_messages(SYSTEM_PROMPT_GPT4_QAGEN, prompt)
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=messages,
-            temperature=0.3,
-            top_p=0.95)
-        response_content = response.choices[0].message.content
-        resp = jsons_load_repair(response_content)
+            temperature=temperature,
+            top_p=top_p)
+        resp = jsons_load_repair(response.choices[0].message.content)
+
+        set_question_num(question_num)
+        save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="ocr_fix") 
         return resp
     except Exception as ex: 
         logging.exception(ex)
