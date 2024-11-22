@@ -51,7 +51,8 @@ def filter_markdown_heading_llamapase(md_text, md_info):
     # 生成规整化的 Markdown 内容
     normalized_md = "\n".join(normalized_lines)
 
-    md_info["fhl"] = {"org_first_line": org_lines[0],
+    md_info["fhl"] = {"org_doc_title": md_info.get_doc_title(),
+                      "org_first_line": org_lines[0],
                       "org_heading_lines": heading_lines}
     return normalized_md
 

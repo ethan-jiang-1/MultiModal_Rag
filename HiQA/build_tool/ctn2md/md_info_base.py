@@ -18,6 +18,7 @@ MD_INFO_VER = "0.2.0"
 
 from HiQA.build_tool.utils_bt.util_ctn_type import CtnType
 
+
 class MdInfo:
     def __init__(self, md_info_path_or_out_dir):
         last_chat = md_info_path_or_out_dir[-1]
@@ -41,7 +42,6 @@ class MdInfo:
         # 直接使用字典的__repr__方法
         return repr(self._info)
 
-    
     @classmethod
     def find_md_info_path(cls, out_dir_or_file_in_out_dir):
         if os.path.isfile(out_dir_or_file_in_out_dir):
@@ -55,6 +55,36 @@ class MdInfo:
         if os.path.isfile(md_info_path):
             return md_info_path
         return None
+
+    @classmethod
+    def extract_doc_title(cls, pathname_org_doc):
+        """
+        提取文档标题，去掉以下内容：
+        1. 文件路径，只保留文件名。
+        2. 最后的后缀名和最后的 `.`。
+        3. 标题前无关的顺序标记（如 "1.", "A." 等）。
+
+        :param pathname_org_doc: 原始文档路径
+        :return: 文档标题（去掉后缀名、无关顺序标记和多余内容）
+        """
+        if not isinstance(pathname_org_doc, str):
+            return ""
+    
+        # 获取文件名部分（不包括路径）
+        file_name = os.path.basename(pathname_org_doc)
+        
+        # 找到最后一个点的位置，确保只去掉最后的后缀
+        last_dot_index = file_name.rfind('.')
+        if last_dot_index != -1:
+            file_name = file_name[:last_dot_index]
+        
+        # 去掉标题前的顺序标记，如 "1.", "A." 等
+        file_name = re.sub(r"^\s*[\dA-Za-z]+[\.\-\)]\s*", "", file_name)
+        
+        # 去掉两端多余的空白
+        file_name = file_name.strip()
+        
+        return file_name
 
     def load(self):
         if os.path.isfile(self._md_info_path):
@@ -84,6 +114,9 @@ class MdInfo:
 
     def get_doc_pathname(self):
         return self.get("pathname_org_doc")
+    
+    def get_doc_title(self):
+        return self.extract_doc_title(self.get("pathname_org_doc"))
 
     def name_step_pathname(self, step_num):
         pathname_org_doc = self._info.get("pathname_org_doc", None)

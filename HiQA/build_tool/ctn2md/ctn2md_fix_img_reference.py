@@ -26,26 +26,6 @@ MIN_AREA = 128 * 128 # 图像最小面积（像素）
 
 FEATURE_PIC_DESP_IN_MD = True
 
-def extract_doc_title(pathname_org_doc):
-    """
-    提取文档标题，只去掉最后的后缀名和最后的 `.`。
-    
-    :param pathname_org_doc: 原始文档路径
-    :return: 文档标题（去掉后缀名和最后的 `.`）
-    """
-    # 获取文件名部分（不包括路径）
-    file_name = os.path.basename(pathname_org_doc)
-    
-    # 找到最后一个点的位置，确保只去掉最后的后缀
-    last_dot_index = file_name.rfind('.')
-    
-    # 如果找到了点，去掉后缀和最后的点
-    if last_dot_index != -1:
-        return file_name[:last_dot_index]
-    else:
-        # 如果没有点，直接返回文件名
-        return file_name
-
 g_page2inst = {}
 
 g_question_num = 200
@@ -73,7 +53,7 @@ def analyze_image_content(md_page_file, pathname_org_doc, image_path):
     """
     # 1. 提取文档标题 (doc_title)
     # 从 pathname_org_doc 中去除目录和最后的扩展名
-    doc_title = extract_doc_title(pathname_org_doc)
+    doc_title = MdInfo.extract_doc_title(pathname_org_doc)
 
     # 2. 读取当前页的 Markdown 内容 (md_page)
     try:
@@ -194,7 +174,7 @@ def filter_markdown_images(md_src_str, md_info):
                 md_info["figures"] = {}
             figure_name, picture_discription = figure_name_n_picture_discription
             md_info["figures"][image_file] = (relevance_score, figure_name, picture_discription)
-            image_txt_path = os.path.join(out_dir, extract_doc_title(image_file) + ".txt")
+            image_txt_path = os.path.join(out_dir, MdInfo.extract_doc_title(image_file) + ".txt")
             with open(image_txt_path, "w+", encoding="utf8") as f:
                 f.write(picture_discription)
             
