@@ -107,6 +107,79 @@ def count_markdown_heading_content(md_text, md_info):
         md_info.save()
     return heading_content_counts
 
+def update_markdown_heading_content(md_text, md_info, fhl_map):
+    """
+    替换 Markdown 文本中的标题内容，根据 fhl_map 提供的替换规则。
+
+    :param md_text: Markdown 文本
+    :param md_info: Markdown 文件的基本信息
+    :param fhl_map: 包含映射规则的 JSON 字典
+    :return: 替换后的 Markdown 文本 new_md_text 和未处理的 fhl_map 副本
+    """
+    import copy
+
+    # 创建 fhl_map 的副本以进行替换操作
+    fhl_map_copy = copy.deepcopy(fhl_map)
+
+    # 提取映射规则
+    first_line_map = fhl_map_copy.get("first_line_map", {})
+    heading_lines_map = fhl_map_copy.get("heading_lines_map", [])
+
+    # 初始化结果 Markdown 文本
+    lines = md_text.splitlines()
+    new_lines = []
+
+    # 标记哪些 heading_lines_map 的项已被处理
+    used_indices = set()
+
+    # 处理第一行
+    if lines:
+        first_line = lines[0].strip()
+        if first_line_map and "mapped_line" in first_line_map:
+            if first_line.startswith("#"):
+                for i, item in enumerate(heading_lines_map):
+                    if i in used_indices:
+                        continue
+                    if item["original_line"] == first_line:
+                        new_lines.append(item["mapped_line"])
+                        used_indices.add(i)
+                        break
+                else:
+                    new_lines.append(first_line_map["mapped_line"])
+            else:
+                new_lines.append(first_line_map["mapped_line"])
+        else:
+            new_lines.append(first_line)
+
+    # 逐行处理剩余内容
+    for line in lines[1:]:
+        stripped_line = line.strip()
+        replaced = False
+
+        for i, item in enumerate(heading_lines_map):
+            if i in used_indices:
+                continue
+            if item["original_line"] == stripped_line:
+                new_lines.append(item["mapped_line"])
+                used_indices.add(i)
+                replaced = True
+                break
+
+        if not replaced:
+            new_lines.append(line)
+
+    # 检查未处理的 heading_lines_map 项
+    unprocessed_heading_lines_map = [
+        item for i, item in enumerate(heading_lines_map) if i not in used_indices
+    ]
+    fhl_map_copy["unprocessed_heading_lines_map"] = unprocessed_heading_lines_map
+
+    # 生成新的 Markdown 文本
+    new_md_text = "\n".join(new_lines)
+
+    return new_md_text, unprocessed_heading_lines_map
+
+
 def fix_headings_llamaparse(md_info_path, src_step_num=None):
     md_info = MdInfo(md_info_path)
 
@@ -121,11 +194,15 @@ def fix_headings_llamaparse(md_info_path, src_step_num=None):
     count_markdown_heading_content(md_text_new, md_info)
 
     fhl = md_info["fhl"]
+    rich.print(fhl)
     fhl_map = fix_heading_lvl_markdown(fhl)
     rich.print(fhl_map)
 
+    md_text_new1, unprocessed_heading_lines_map = update_markdown_heading_content(md_text_new, md_info, fhl_map)
+    rich.print(unprocessed_heading_lines_map)
+
     with open(pathname_dst_step_md, "w+") as f:
-        f.write(md_text_new)
+        f.write(md_text_new1)
     
     md_info.add_step_into_md_info_streams(pathname_dst_step_md, actor="fix_headings_llamaparse")
     md_info_path = md_info.save()
@@ -135,7 +212,8 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     #md_info_path = "_work/ctn2md_stream0/info.json"
-    md_info_path = "_work/ctn2md_s3_0/info.json"
+    #md_info_path = "_work/ctn2md_s2_0/info.json"
+    md_info_path = "_work/ctn2md_91/_info.json"
     md_info_path = fix_headings_llamaparse(md_info_path, src_step_num=0)
 
     md_info = MdInfo(md_info_path)

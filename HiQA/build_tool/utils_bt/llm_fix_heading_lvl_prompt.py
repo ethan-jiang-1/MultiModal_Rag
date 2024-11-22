@@ -20,8 +20,8 @@ USER_PROMPT_FIX_HEADING_LVL = """
 
 ### fhl_org 结构说明
 输入数据 (fhl_org) 包括以下内容：
-- `org_doc_title` (string): 文档标题，通常从文件名提取，可用作 TOC 的主标题。
-- `org_first_line` (string): 文档正文的第一行，可是标题，也可能是正文内容。
+- `org_doc_title` (string): 文档来源文件名，通常从文件名提取， 不要参与TOC 的标题。
+- `org_first_line` (string): 文档正文的第一行，可是标题，也可能是正文内容，酌情考虑。
 - `org_heading_lines` (list of turples: string as heading and count of word under the heading ): 提取的标题列表和这标题下字符数，需根据内容生成合理的层级映射。
 
 **现有用户的原始标题数据 (fhl_org) (JSON格式)如下**:
@@ -34,8 +34,9 @@ USER_PROMPT_FIX_HEADING_LVL = """
 ### fhl_map 生成要求
 
 1. **文档标题和标题行映射**：
-   - `org_doc_title`: 用作文档的主标题，酌情决定是否映射为最高级 Markdown 标题。
    - `org_heading_lines`: 必须逐行生成映射，确保每行都被清晰映射，映射结果不多不少。
+   - `org_doc_title`: 不要参与做标题，只是一个辅助构造TOC的参考内容而已。
+   - 顶部内容用 heading 1， 即 `# `开始为第一层。 
 
 2. **first_line_map**：
    - 如果 `org_first_line` 是有意义的标题，应生成映射，映射可以是 Markdown 标题或 ** ** 粗体（适用于不占据 TOC 的情况）。
@@ -58,6 +59,7 @@ USER_PROMPT_FIX_HEADING_LVL = """
    - 提供 `reasoning` 字段，说明修正逻辑及生成结果的整体思考。
 
 5. **new_heading_lines**:
+   - 和 ** org_heading_lines ** 数量一摸一样多，完全从org_heading_lines逐一能从旧的映射到新的。
    - 提供最后整理好的heading来容易看出新的TOC。
 
 ### 注意事项
