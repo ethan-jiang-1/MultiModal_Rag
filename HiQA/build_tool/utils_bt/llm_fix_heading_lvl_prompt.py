@@ -22,7 +22,7 @@ USER_PROMPT_FIX_HEADING_LVL = """
 输入数据 (fhl_org) 包括以下内容：
 - `org_doc_title` (string): 文档标题，通常从文件名提取，可用作 TOC 的主标题。
 - `org_first_line` (string): 文档正文的第一行，可是标题，也可能是正文内容。
-- `org_heading_lines` (list of strings): 提取的标题列表，需根据内容生成合理的层级映射。
+- `org_heading_lines` (list of turples: string as heading and count of word under the heading ): 提取的标题列表和这标题下字符数，需根据内容生成合理的层级映射。
 
 **现有用户的原始标题数据 (fhl_org) (JSON格式)如下**:
 {fhl_headings_json_str}
@@ -40,12 +40,18 @@ USER_PROMPT_FIX_HEADING_LVL = """
 2. **first_line_map**：
    - 如果 `org_first_line` 是有意义的标题，应生成映射，映射可以是 Markdown 标题或 ** ** 粗体（适用于不占据 TOC 的情况）。
    - 映射需包含以下字段：
+     - `original_line`: org_first_line
      - `mapped_line`: 修正后的标题行。
      - `level`: 标题层级，或 `null` 如果映射为非标题格式（如 ** **）。
      - `reasoning`: 修正思路。
 
 3. **heading_lines_map**：
-   - 为 `org_heading_lines` 的每一行生成映射，格式同 `first_line_map`。
+   - 为 `org_heading_lines` 的每一行生成映射，格式同 `first_line_map`。 映射格式类似如下
+   - 映射需包含以下字段：
+     - `original_line`: org_heading_line
+     - `mapped_line`: 修正后的标题行。
+     - `level`: 标题层级，或 `null` 如果映射为非标题格式（如 ** **）。
+     - `reasoning`: 修正思路。
    - 支持映射为 Markdown 标题或 ** ** 粗体，便于生成合理的 TOC。
 
 4. **全局修正逻辑**：
@@ -66,40 +72,43 @@ D. 映射结果需符合 TOC 目标，确保层级清晰、结构合理，支持
 ---
 
 **最终 JSON 输出格式**：
-```json
 {
-  "org_doc_title": "string",
-  "org_first_line": "string",
-  "org_heading_lines": [
-    "string",
-    "string",
-    "... (更多标题行)"
+  "org_doc_title": "string",  // 原始文档的标题。
+  "org_first_line": "string",  // Markdown 文档的第一行内容。
+  "org_heading_lines": [  // 文档中的所有标题行。
+    "string",  // 第一个标题行。
+    "string",  // 第二个标题行。
+    "... (更多标题行)"  // 其他标题行。
   ],
-  "first_line_map": {
-    "mapped_line": "string",
-    "level": "integer or null",
-    "reasoning": "string"
+  "mapped_heading_lines": [  // 带编号的新标题行列表。
+    "string",  // 编号后的第一个标题行。
+    "string",  // 编号后的第二个标题行。
+    "... (更多标题行)"  // 更多编号后的标题行。
+  ]，
+  "first_line_map": {  // 第一行的映射信息。
+    "original_line": "string (original_first_line)",  // 原始标题行。
+    "mapped_line": "string",  // 第一行内容的映射结果。
+    "level": "integer or null",  // 层级，若不是标题则为 null。
+    "reasoning": "string"  // 对映射结果的解释。
   },
-  "heading_lines_map": {
-    "string (original_line)": {
-      "mapped_line": "string",
-      "level": "integer or null",
-      "reasoning": "string"
+  "heading_lines_map": [  // 所有标题的映射信息列表。
+    {
+      "original_line": "string (original_line)",  // 原始标题行。
+      "mapped_line": "string",  // 标题映射后的内容。
+      "level": "integer or null",  // 标题层级，例如 1 表示 `#`，2 表示 `##`，依此类推。
+      "reasoning": "string"  // 映射结果的推理解释。
     },
-    "string (original_line)": {
-      "mapped_line": "string",
-      "level": "integer or null",
-      "reasoning": "string"
+    {
+      "original_line": "string (original_line)",  // 第二个标题行。
+      "mapped_line": "string",  // 第二个标题行的映射结果。
+      "level": "integer or null",  // 第二个标题行的层级。
+      "reasoning": "string"  // 映射结果的推理解释。
     },
-    "... (更多映射)"
-  },
-  "reasoning": "string",
-  "new_heading_lines": [
-    "string",
-    "string",
-    "... (更多标题行)"
+    "... (更多映射)"  // 更多标题的映射信息。
   ],
+  "reasoning": "string",  // 全局推理逻辑，用于解释如何映射标题和内容。
 }
+
 
 ## Your Answer:
 """

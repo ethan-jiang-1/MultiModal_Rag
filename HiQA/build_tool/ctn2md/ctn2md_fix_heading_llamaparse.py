@@ -55,7 +55,57 @@ def filter_markdown_heading_llamapase(md_text, md_info):
     md_info["fhl"] = {"org_doc_title": md_info.get_doc_title(),
                       "org_first_line": org_lines[0],
                       "org_heading_lines": heading_lines}
+    md_info.save()
+                
     return normalized_md
+
+def count_markdown_heading_content(md_text, md_info):
+    """
+    统计 Markdown 文本中每个 heading (以 # 开头) 的内容字符数（去除空白）。
+
+    :param md_text: Markdown 文本内容
+    :param md_info: 文档信息（文件名等）
+    :return: 一个字典，key 为标题内容，value 为标题后内容的字符数
+    """
+    # 定义正则匹配 Markdown Heading 的模式
+    heading_pattern = r"^(#{1,6})\s*(.+)$"
+
+    # 分割 Markdown 文本的行
+    lines = md_text.splitlines()
+    
+    # 用于存储每个标题的内容字符数
+    heading_content_counts = {}
+
+    current_heading = None
+    current_content = []
+
+    for line in lines:
+        match = re.match(heading_pattern, line)
+        if match:
+            # 如果匹配到新的 heading
+            if current_heading is not None:
+                # 统计当前标题的内容字符数
+                content_text = ''.join(current_content).replace(' ', '').replace('\n', '')
+                heading_content_counts[current_heading] = len(content_text)
+            # 更新当前标题
+            current_heading = match.group(0).strip()
+            current_content = []
+        else:
+            # 非标题行，加入当前标题的内容
+            current_content.append(line.strip())
+
+    # 处理最后一个标题的内容
+    if current_heading is not None:
+        content_text = ''.join(current_content).replace(' ', '').replace('\n', '')
+        heading_content_counts[current_heading] = len(content_text)
+    fhl = md_info.get("fhl")
+    if fhl is not None:
+        org_heading_lines = fhl.get("org_heading_lines")
+        for ndx, heading_line in enumerate(org_heading_lines):
+            cnt = heading_content_counts.get(heading_line, 0)
+            org_heading_lines[ndx] = (heading_line, cnt)
+        md_info.save()
+    return heading_content_counts
 
 def fix_headings_llamaparse(md_info_path, src_step_num=None):
     md_info = MdInfo(md_info_path)
@@ -68,10 +118,11 @@ def fix_headings_llamaparse(md_info_path, src_step_num=None):
         md_text = f.read()
 
     md_text_new = filter_markdown_heading_llamapase(md_text, md_info)
+    count_markdown_heading_content(md_text_new, md_info)
 
     fhl = md_info["fhl"]
-    resp = fix_heading_lvl_markdown(fhl)
-    rich.print(resp)
+    fhl_map = fix_heading_lvl_markdown(fhl)
+    rich.print(fhl_map)
 
     with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_new)
@@ -83,8 +134,8 @@ def fix_headings_llamaparse(md_info_path, src_step_num=None):
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    md_info_path = "_work/ctn2md_stream1/info.json"
-    #md_info_path = "_work/ctn2md_s0_0/info.json"
+    #md_info_path = "_work/ctn2md_stream0/info.json"
+    md_info_path = "_work/ctn2md_s3_0/info.json"
     md_info_path = fix_headings_llamaparse(md_info_path, src_step_num=0)
 
     md_info = MdInfo(md_info_path)
