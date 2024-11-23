@@ -127,11 +127,13 @@ class MdInfo:
             return pathname_step_md
         return None
 
-    def name_src_n_dst_step_pathname(self, src_step_num):
+    def name_src_n_dst_step_pathname(self, src_step_num, dst_step_num=None):
         if src_step_num is None:
             src_step_num = self.get_last_step_num()
         pathname_src_step_md = self.name_step_pathname(src_step_num)
-        pathname_dst_step_md = self.name_step_pathname(src_step_num+1)
+        if dst_step_num is None:
+            dst_step_num = src_step_num + 1
+        pathname_dst_step_md = self.name_step_pathname(dst_step_num)
         return pathname_src_step_md, pathname_dst_step_md 
 
     def get_last_step_num(self):

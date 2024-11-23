@@ -16,9 +16,9 @@ from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo
 from ctn2md.src.ctn2md_llamaparse_md_generater import gen_md_llamaparse
 from ctn2md.src.ctn2md_fix_heading_llamaparse import fix_headings_llamaparse
-from ctn2md.src.ctn2md_fix_ocr_content_llamaparse import fix_ocr_content_by_gpt
+from ctn2md.src.ctn2md_fix_content_ocr_llamaparse import fix_content_ocr_by_gpt
 from ctn2md.src.ctn2md_fix_img_reference import fix_img_reference_by_lvlm
-from ctn2md.src.ctn2md_fix_heading_hiqa import fix_headings_for_hiqa
+from ctn2md.src.ctn2md_fix_section_hierarchy_numbers import fix_section_heirarchy_numbers
 
 DEFAULT_OUT_ROOT = "_work"
 
@@ -55,9 +55,9 @@ def do_content2md_convert(ctn_pathname, out_dir=None, skip_gen=False):
     else:
         md_info_path = MdInfo(out_dir).get_md_info_path()
 
-    md_info_path = fix_ocr_content_by_gpt(md_info_path, src_step_num=0)
+    md_info_path = fix_content_ocr_by_gpt(md_info_path, src_step_num=0)
     if md_info_path is None:
-        logging.error(f"DCC: failed {md_info_path} @fix_ocr_content_by_gpt")
+        logging.error(f"DCC: failed {md_info_path} @fix_content_ocr_by_gpt")
         return None, None 
 
     md_info_path = fix_headings_llamaparse(md_info_path, src_step_num=1)
@@ -70,9 +70,9 @@ def do_content2md_convert(ctn_pathname, out_dir=None, skip_gen=False):
         logging.error(f"DCC: failed {md_info_path} @fix_img_reference_by_lvlm")
         return None, None 
 
-    md_info_path = fix_headings_for_hiqa(md_info_path, src_step_num=3)
+    md_info_path = fix_section_heirarchy_numbers(md_info_path, src_step_num=3)
     if md_info_path is None:
-        logging.error(f"DCC: failed {md_info_path} @fix_headings_for_hiqa")
+        logging.error(f"DCC: failed {md_info_path} @fix_section_heirarchy_numbers")
         return None, None 
 
     final_md_path = make_final_md(md_info_path)

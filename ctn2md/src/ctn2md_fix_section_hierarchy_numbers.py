@@ -55,7 +55,7 @@ Table tile: Name of Table
 13. 请严格保证章节编号是正确的、递增的、层次的,请正确,准确的设置章节编号,请确保每个段落都有编号。
 """
 
-def filter_headings_for_hiqa(md_text, md_info):
+def filter_headings_for_heirarchy_numbers(md_text, md_info):
     """
     规整化 Markdown 的标题写法，为所有标题编号，所有标题均以 '#' 开头。
 
@@ -105,23 +105,23 @@ def filter_headings_for_hiqa(md_text, md_info):
     return normalized_md
 
 
-def fix_headings_for_hiqa(md_info_path, src_step_num=None):
+def fix_section_heirarchy_numbers(md_info_path, src_step_num=None, dst_step_num=None):
     md_info = MdInfo(md_info_path)
 
-    pathname_src_step_md, pathname_dst_step_md = md_info.name_src_n_dst_step_pathname(src_step_num)
+    pathname_src_step_md, pathname_dst_step_md = md_info.name_src_n_dst_step_pathname(src_step_num, dst_step_num=dst_step_num)
     if pathname_src_step_md is None or pathname_dst_step_md is None:
         raise ValueError(f"no {pathname_src_step_md} and {pathname_dst_step_md}")
 
     with open(pathname_src_step_md, "r", encoding="utf8") as f:
         md_text = f.read()
 
-    md_text_new = filter_headings_for_hiqa(md_text, md_info)
+    md_text_new = filter_headings_for_heirarchy_numbers(md_text, md_info)
 
-    logging.warning(f"fix_headings_for_hiqa: pathname_dst_step_md: {pathname_dst_step_md}")
+    logging.warning(f"fix_section_heirarchy_numbers: pathname_dst_step_md: {pathname_dst_step_md}")
     with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_new)
     
-    md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_headings_for_hiqa")
+    md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_section_heirarchy_numbers")
     md_info_path = md_info.save()
     return md_info_path    
 
@@ -129,8 +129,11 @@ def fix_headings_for_hiqa(md_info_path, src_step_num=None):
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    md_info_path = "_work/ctn2md_stream1/info.json"
-    md_info_path = fix_headings_for_hiqa(md_info_path, src_step_num=3)
+    src_step_num = 3
+    dst_step_num = 40
+    md_info_path = "_work/ctn2md_时代的人力资源管理进化(徐刚)/_info.json"
+
+    md_info_path = fix_section_heirarchy_numbers(md_info_path, src_step_num=src_step_num, dst_step_num=dst_step_num)
 
     md_info = MdInfo(md_info_path)
     rich.print(md_info)
