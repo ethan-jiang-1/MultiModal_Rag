@@ -16,6 +16,7 @@ if "./" not in sys.path:
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo
 from ctn2md.utils_llm.llm_fix_heading_lvl import fix_heading_lvl_markdown
+from ctn2md.utils.util_markdown import extract_pure_text_from_markdown
 
 def filter_markdown_heading_llamapase(md_text, md_info):
     """
@@ -85,9 +86,9 @@ def count_markdown_heading_content(md_text, md_info):
         if match:
             # 如果匹配到新的 heading
             if current_heading is not None:
-                # 统计当前标题的内容字符数
-                content_text = ''.join(current_content).replace(' ', '').replace('\n', '')
-                heading_content_counts[current_heading] = len(content_text)
+                # 统计当前标题的内容字符数 (为刚才过去的heading)
+                pure_content_text = extract_pure_text_from_markdown(''.join(current_content))
+                heading_content_counts[current_heading] = len(pure_content_text)
             # 更新当前标题
             current_heading = match.group(0).strip()
             current_content = []
