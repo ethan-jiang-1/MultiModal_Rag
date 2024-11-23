@@ -110,6 +110,7 @@ def fix_ocr_content_by_gpt(md_info_path, src_step_num=None, ofm=None):
     else:
         raise ValueError(f"unknown ofm: {ofm}")
 
+    logging.warning(f"fix_ocr_content_by_gpt: pathname_dst_step_md: {pathname_dst_step_md}")
     with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_fixed)
     
@@ -120,13 +121,16 @@ def fix_ocr_content_by_gpt(md_info_path, src_step_num=None, ofm=None):
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    #ofm = None
+    ofm = None
+    src_step_num = 0
     #md_info_path = "_work/ctn2md_exam5/info.json"
 
-    ofm = OFM_BY_PAGE
-    md_info_path = "_work/ctn2md_stream1/info.json"
+    #ofm = OFM_BY_PAGE
+    #md_info_path = "_work/ctn2md_stream1/info.json"
 
-    md_info_path = fix_ocr_content_by_gpt(md_info_path, ofm=ofm, src_step_num=1)
+    md_info_path = "_work/ctn2md_40/_info.json"
+
+    md_info_path = fix_ocr_content_by_gpt(md_info_path, ofm=ofm, src_step_num=src_step_num)
     print(md_info_path)
 
     md_info = MdInfo(md_info_path)

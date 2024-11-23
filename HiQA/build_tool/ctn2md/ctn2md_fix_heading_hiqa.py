@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 #import os
 import sys
-#import logging
+import logging
 import rich
 import re
 #import random
@@ -117,6 +117,7 @@ def fix_headings_for_hiqa(md_info_path, src_step_num=None):
 
     md_text_new = filter_headings_for_hiqa(md_text, md_info)
 
+    logging.warning(f"fix_headings_for_hiqa: pathname_dst_step_md: {pathname_dst_step_md}")
     with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_new)
     

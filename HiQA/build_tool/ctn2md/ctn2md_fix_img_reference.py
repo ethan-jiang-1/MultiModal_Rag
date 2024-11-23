@@ -166,7 +166,7 @@ def filter_markdown_images(md_src_str, md_info):
         image_file = match.group(1)
         
         # 调用外部处理函数
-        relevance_score, figure_name_n_picture_discription= process_image_reference(image_file, md_info)
+        relevance_score, figure_name_n_picture_discription = process_image_reference(image_file, md_info)
         
         if relevance_score and figure_name_n_picture_discription:
             # 替换为新的 Markdown 图片引用
@@ -206,6 +206,7 @@ def fix_img_reference_by_lvlm(md_info_path, src_step_num=None):
 
     md_text_new = filter_markdown_images(md_text, md_info)
 
+    logging.warning(f"fix_img_reference_by_lvlm: pathname_dst_step_md: {pathname_dst_step_md}")
     with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_new)
     
@@ -217,8 +218,12 @@ def fix_img_reference_by_lvlm(md_info_path, src_step_num=None):
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    md_info_path = "_work/ctn2md_stream1/info.json"
-    md_info_path = fix_img_reference_by_lvlm(md_info_path, src_step_num=2)
+    src_step_num = 2
+    #md_info_path = "_work/ctn2md_stream1/info.json"
+    md_info_path = "_work/ctn2md_s0_0/_info.json"
+    src_step_num = 1
+
+    md_info_path = fix_img_reference_by_lvlm(md_info_path, src_step_num=src_step_num)
 
     md_info = MdInfo(md_info_path)
     rich.print(md_info)

@@ -39,8 +39,9 @@ def get_vllm_instruction(doc_title, page_content, question_num=200, model="gpt-4
         save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="ocr_fix") 
 
         page_context = resp['page_context']
+        page_content_language = resp['page_content_language']
 
-        instruction = TEXT_PROMPT_INST_VLLM_IMG.replace("{page_context}", page_context)
+        instruction = TEXT_PROMPT_INST_VLLM_IMG.replace("{page_context}", page_context).replace("{page_content_language}",page_content_language)
         return instruction
     except Exception as ex: 
         logging.exception(ex)

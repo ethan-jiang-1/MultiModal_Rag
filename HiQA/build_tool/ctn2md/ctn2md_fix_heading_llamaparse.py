@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 #import os
 import sys
-#import logging
+import logging
 import rich
 import re
 #import random
@@ -194,13 +194,15 @@ def fix_headings_llamaparse(md_info_path, src_step_num=None):
     count_markdown_heading_content(md_text_new, md_info)
 
     fhl = md_info["fhl"]
-    rich.print(fhl)
+    #rich.print(fhl)
     fhl_map = fix_heading_lvl_markdown(fhl)
+    #rich.print(fhl_map)
     rich.print(fhl_map)
 
     md_text_new1, unprocessed_heading_lines_map = update_markdown_heading_content(md_text_new, md_info, fhl_map)
     rich.print(unprocessed_heading_lines_map)
 
+    logging.warning(f"fix_headings_llamaparse: pathname_dst_step_md: {pathname_dst_step_md}")
     with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_new1)
     
@@ -212,8 +214,8 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     #md_info_path = "_work/ctn2md_stream0/info.json"
-    #md_info_path = "_work/ctn2md_s2_0/info.json"
-    md_info_path = "_work/ctn2md_91/_info.json"
+    md_info_path = "_work/ctn2md_s0_0/info.json"
+    #md_info_path = "_work/ctn2md_91/_info.json"
     md_info_path = fix_headings_llamaparse(md_info_path, src_step_num=0)
 
     md_info = MdInfo(md_info_path)
