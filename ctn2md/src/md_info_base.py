@@ -79,12 +79,12 @@ class MdInfo:
             file_name = file_name[:last_dot_index]
         
         # 去掉标题前的顺序标记，如 "1.", "A." 等
-        file_name = re.sub(r"^\s*[\dA-Za-z]+[\.\-\)]\s*", "", file_name)
+        doc_title = re.sub(r"^\s*[\dA-Za-z]+[\.\-\)]\s*", "", file_name)
         
         # 去掉两端多余的空白
-        file_name = file_name.strip()
+        doc_title = doc_title.strip()
         
-        return file_name
+        return doc_title
 
     def load(self):
         if os.path.isfile(self._md_info_path):

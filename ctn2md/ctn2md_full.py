@@ -20,6 +20,7 @@ from ctn2md.src.ctn2md_fix_content_ocr import fix_ocr_content_by_gpt
 from ctn2md.src.ctn2md_fix_img_reference import fix_img_reference_by_lvlm
 from ctn2md.src.ctn2md_fix_heading_hiqa import fix_headings_for_hiqa
 
+DEFAULT_OUT_ROOT = "_work"
 
 def make_final_md(md_info_path):
     md_info = MdInfo(md_info_path)
@@ -35,7 +36,17 @@ def make_final_md(md_info_path):
     md_info.save()
     return pathname_final_md
 
-def do_content2md_convert(ctn_pathname, out_dir):
+def get_suggested_out_dir(ctn_pathname):
+    doc_title = MdInfo.extract_doc_title(ctn_pathname)
+    out_dir = f"{DEFAULT_OUT_ROOT}/ctn2md_{doc_title}"
+    return out_dir
+
+def do_content2md_convert(ctn_pathname, out_dir=None):
+    if out_dir is None:
+        out_dir = get_suggested_out_dir(ctn_pathname)
+    logging.warning(f"work out_dir: {out_dir}")
+    os.makedirs(out_dir, exist_ok=True)
+
     md_info_path = gen_md_llamaparse(ctn_pathname, out_dir)
     if md_info_path is None:
         logging.error(f"DCC: failed {md_info_path} @convert_doc_to_md_by_llamaparse")
@@ -77,10 +88,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/Long-Context LLMs Meet RAG_compressed.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
 
-    out_dir = f"_work/ctn2md_{random.randint(10,99)}"
-    print(f"out_dir: {out_dir}")
-
-    os.makedirs(out_dir, exist_ok=True)
+    out_dir = None
     final_md_path = do_content2md_convert(doc_pathname, out_dir)
     print(final_md_path)
 
