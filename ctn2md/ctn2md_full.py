@@ -19,6 +19,7 @@ from ctn2md.src.ctn2md_fix_heading_llamaparse import fix_headings_llamaparse
 from ctn2md.src.ctn2md_fix_content_ocr_llamaparse import fix_content_ocr_by_gpt
 from ctn2md.src.ctn2md_fix_img_reference import fix_img_reference_by_lvlm
 from ctn2md.src.ctn2md_fix_section_hierarchy_numbers import fix_section_heirarchy_numbers
+from ctn2md.src.ctn2md_fix_section_hierarchy_comments import fix_section_heirarchy_comments
 
 DEFAULT_OUT_ROOT = "_work"
 
@@ -41,7 +42,7 @@ def get_suggested_out_dir(ctn_pathname):
     out_dir = f"{DEFAULT_OUT_ROOT}/ctn2md_{doc_title}"
     return out_dir
 
-def do_content2md_convert(ctn_pathname, out_dir=None, skip_gen=False):
+def do_content2md_convert(ctn_pathname, out_dir=None, skip_gen=False, section_by_number=False):
     if out_dir is None:
         out_dir = get_suggested_out_dir(ctn_pathname)
     logging.warning(f"work out_dir: {out_dir}")
@@ -53,7 +54,11 @@ def do_content2md_convert(ctn_pathname, out_dir=None, skip_gen=False):
             logging.error(f"DCC: failed {md_info_path} @convert_doc_to_md_by_llamaparse")
             return None, None 
     else:
-        md_info_path = MdInfo(out_dir).get_md_info_path()
+        md_info = MdInfo(out_dir)
+        md_info_path = md_info.get_md_info_path()
+        pathname_s0_md = md_info.name_step_pathname(0)
+        if not os.path.isfile(pathname_s0_md):
+            raise ValueError(f"{pathname_s0_md} not exist, you have to generate it first")
 
     md_info_path = fix_content_ocr_by_gpt(md_info_path, src_step_num=0)
     if md_info_path is None:
@@ -70,10 +75,16 @@ def do_content2md_convert(ctn_pathname, out_dir=None, skip_gen=False):
         logging.error(f"DCC: failed {md_info_path} @fix_img_reference_by_lvlm")
         return None, None 
 
-    md_info_path = fix_section_heirarchy_numbers(md_info_path, src_step_num=3)
-    if md_info_path is None:
-        logging.error(f"DCC: failed {md_info_path} @fix_section_heirarchy_numbers")
-        return None, None 
+    if section_by_number:
+        md_info_path = fix_section_heirarchy_numbers(md_info_path, src_step_num=3)
+        if md_info_path is None:
+            logging.error(f"DCC: failed {md_info_path} @fix_section_heirarchy_numbers")
+            return None, None 
+    else:
+        md_info_path = fix_section_heirarchy_comments(md_info_path, src_step_num=3)
+        if md_info_path is None:
+            logging.error(f"DCC: failed {md_info_path} @fix_section_heirarchy_comments")
+            return None, None         
 
     final_md_path = make_final_md(md_info_path)
 
@@ -81,9 +92,9 @@ def do_content2md_convert(ctn_pathname, out_dir=None, skip_gen=False):
 
 if __name__ == "__main__":
     setup_logger_handlers()
-    doc_pathname = "datasrc/test/raw_docs/AIGC时代的人力资源管理进化(徐刚).pdf"
+    #doc_pathname = "datasrc/test/raw_docs/AIGC时代的人力资源管理进化(徐刚).pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
-    #doc_pathname = "datasrc/test/raw_docs/1. 座椅STO间隙 P1.pptx"
+    doc_pathname = "datasrc/test/raw_docs/1. 座椅STO间隙 P1.pptx"
     #doc_pathname = "datasrc/test/raw_docs/管理者角色定位与认知课程大纲.docx"
     #doc_pathname = "datasrc/test/raw_docs/考勤修改统一规则.xlsx"
     #doc_pathname = "datasrc/test/raw_docs/5. back panel 与环境匹配工程校核_P2.pptx"
@@ -92,7 +103,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
 
     out_dir = None
-    skip_gen = True 
+    skip_gen = False 
 
     final_md_path = do_content2md_convert(doc_pathname, out_dir=out_dir, skip_gen=skip_gen)
     print(final_md_path)
