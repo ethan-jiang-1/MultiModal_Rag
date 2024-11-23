@@ -99,11 +99,12 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/考勤修改统一规则.xlsx"
     #doc_pathname = "datasrc/test/raw_docs/5. back panel 与环境匹配工程校核_P2.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/ChatGPT intimates a tantalizing future_compressed.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/Long-Context LLMs Meet RAG_compressed.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/Long-Context LLMs Meet RAG_compressed.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
+    doc_pathname = "datasrc/test/raw_docs/高效沟通之黄金三角模型课程大纲.docx"
 
     out_dir = None
-    skip_gen = True 
+    skip_gen = False 
 
     final_md_path = do_content2md_convert(doc_pathname, out_dir=out_dir, skip_gen=skip_gen)
     print(final_md_path)
