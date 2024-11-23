@@ -213,7 +213,7 @@ def fix_headings_llamaparse(md_info_path, src_step_num=None):
 
     #rich.print(fhl_map)
     rich.print(fhl_map)
-    o2n_map = {"org_heading_lines": fhl_map["org_heading_lines"],
+    o2n_map = {"org_heading_lines": [item[0] for item in fhl_map["org_heading_lines"]],
                "new_heading_lines": fhl_map["new_heading_lines"]}
     rich.print(o2n_map)
 

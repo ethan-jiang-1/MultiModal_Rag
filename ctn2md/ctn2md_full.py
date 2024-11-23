@@ -103,7 +103,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
 
     out_dir = None
-    skip_gen = False 
+    skip_gen = True 
 
     final_md_path = do_content2md_convert(doc_pathname, out_dir=out_dir, skip_gen=skip_gen)
     print(final_md_path)
