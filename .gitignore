@@ -131,3 +131,6 @@ share_url.txt
 
 datasets/exam
 datasrc/exam
+
+logs/ctn_monitor.csv
+logs/
