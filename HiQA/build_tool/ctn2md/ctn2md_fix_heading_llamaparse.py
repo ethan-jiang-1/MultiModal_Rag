@@ -206,7 +206,7 @@ def fix_headings_llamaparse(md_info_path, src_step_num=None):
     with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_new1)
     
-    md_info.add_step_into_md_info_streams(pathname_dst_step_md, actor="fix_headings_llamaparse")
+    md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_headings_llamaparse")
     md_info_path = md_info.save()
     return md_info_path 
 

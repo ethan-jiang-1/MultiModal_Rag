@@ -114,7 +114,7 @@ def fix_ocr_content_by_gpt(md_info_path, src_step_num=None, ofm=None):
     with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_fixed)
     
-    md_info.add_step_into_md_info_streams(pathname_dst_step_md, actor=f"fix_ocr_content_by_gpt:{ofm}:{ofm_reason}")
+    md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_ocr_content_by_gpt", extra=f"{ofm}:{ofm_reason}")
     md_info_path = md_info.save()
     return md_info_path
 

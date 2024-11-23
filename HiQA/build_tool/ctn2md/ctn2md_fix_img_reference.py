@@ -210,7 +210,7 @@ def fix_img_reference_by_lvlm(md_info_path, src_step_num=None):
     with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_new)
     
-    md_info.add_step_into_md_info_streams(pathname_dst_step_md, actor="fix_img_reference_by_lvlm")
+    md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_img_reference_by_lvlm")
     md_info_path = md_info.save()
     return md_info_path  
 

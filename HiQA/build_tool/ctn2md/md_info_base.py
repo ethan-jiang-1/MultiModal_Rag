@@ -14,7 +14,7 @@ if "./" not in sys.path:
 
 SEP_FNAME_EXT = "___"
 FNAME_MD_INFO = "_info.json"
-MD_INFO_VER = "0.2.0"
+MD_INFO_VER = "0.3.0"
 
 from HiQA.build_tool.utils_bt.util_ctn_type import CtnType
 
@@ -109,7 +109,7 @@ class MdInfo:
     def set_doc_pathname(self, doc_pathname):
         if "path_org_doc" not in self._info:
             self._info["pathname_org_doc"] = doc_pathname
-            self._info["streams"] = {}
+            self._info["mdflow"] = {}
         return self.save()
 
     def get_doc_pathname(self):
@@ -139,10 +139,10 @@ class MdInfo:
         return pathname_src_step_md, pathname_dst_step_md 
 
     def get_last_step_num(self):
-        streams = self._info.get("streams", None)
-        if streams is None:
-            raise ValueError("no streams in MdInfo")
-        sorted_keys = sorted(streams.keys())
+        mdflow = self._info.get("mdflow", None)
+        if mdflow is None:
+            raise ValueError("no mdflow in MdInfo")
+        sorted_keys = sorted(mdflow.keys())
         src_step_num = int(sorted_keys[-1])
         return src_step_num
 
@@ -154,16 +154,20 @@ class MdInfo:
             return int(match.group(1))
         return None
 
-    def add_step_into_md_info_streams(self, pathname_step_md, actor=None):
+    def add_step_into_md_info_mdflow(self, pathname_step_md, actor=None, extra=None):
         basename = os.path.basename(pathname_step_md)
         step_num = self.get_step_num_from_pathname(pathname_step_md)
         if isinstance(step_num, int):
-            streams = self._info.get("streams", None)
-            if streams is None:
-                self._info["streams"] = {}
+            mdflow = self._info.get("mdflow", None)
+            if mdflow is None:
+                self._info["mdflow"] = {}
 
-            self._info["streams"][str(step_num)] = {"fname": basename, 
-                                                    "actor": actor}
+            flow = {"fname": basename, 
+                    "actor": actor}
+            if extra is not None:
+                flow["extra"] = extra
+
+            self._info["mdflow"][str(step_num)] = flow
             return self.save()
         return None
 

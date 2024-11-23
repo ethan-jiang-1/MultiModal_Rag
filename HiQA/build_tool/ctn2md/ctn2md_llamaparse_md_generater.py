@@ -130,7 +130,7 @@ def gen_md_llamaparse(doc_pathname, out_dir):
     with open(pathname_step0, "w+") as f: 
         md_text = _dump_by_json_result(out_dir, json_result, md_info)
         f.write(md_text)
-    md_info.add_step_into_md_info_streams(pathname_step0, actor="gen_md_llamaparse")
+    md_info.add_step_into_md_info_mdflow(pathname_step0, actor="gen_md_llamaparse")
 
     logging.info(f"original doc: {doc_pathname}")
     logging.info(f"fname_output: {os.path.basename(pathname_step0)}")
