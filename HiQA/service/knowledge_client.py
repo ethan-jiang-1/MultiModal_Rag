@@ -8,6 +8,7 @@ import jieba
 import pandas as pd
 import logging
 import rich
+from dotenv import load_dotenv
 
 import time
 from chromadb.config import Settings # , DEFAULT_TENANT, DEFAULT_DATABASE
@@ -22,6 +23,8 @@ from rank_bm25 import BM25Okapi
 
 if "./" not in sys.path:
     sys.path.append("./")
+
+load_dotenv()
 
 from HiQA.utils.filter import filter_product_names, filter_knowledge # , critic_keywords
 from HiQA.utils.openai_proxy import get_text_embedding
@@ -56,7 +59,7 @@ def get_knowledge(question, kb_name, max_token=DEFAULT_KLG_MAX_TOKENS, max_item=
 
 def reset_by_jina(question, results, threshold=0.0, jina_weight=0.8, bm25_weight=0.5):
     # 提取输入的各类信息
-    url = "http://region-42.seetacloud.com:29664/rerank/"
+    url = os.environ["JINA_RERANKER_ENDPOINT"]
     ids = results['ids'][0]
     distances = results['distances'][0]
     metas = results['metadatas'][0]
