@@ -19,15 +19,17 @@ from ctn2md.src.md_info_base import MdInfo
 
 def filter_headings_for_hierarchy_comments(md_text, md_info):
     """
-    在 Markdown 文本的每个标题前插入基于层级的描述注释。
+    在 Markdown 文本的每个标题前插入基于层级的描述注释，并记录分割情况。
 
     :param md_text: 原始 Markdown 文本
-    :return: 带描述注释的 Markdown 文本
+    :param md_info: 已存在的字典，用于记录描述注释信息
+    :return: 带描述注释的 Markdown 文本和更新后的 md_info
     """
     lines = md_text.strip().split('\n')
     processed_lines = []
     hierarchy_stack = []  # 用于维护标题的层级
-    doc_title = None  # 用于保存文档标题（第一个一级标题）
+    doc_title = None  # 当前的一级标题
+    md_info["sections"] = {}
 
     for line in lines:
         # 检测是否是标题行
@@ -35,18 +37,25 @@ def filter_headings_for_hierarchy_comments(md_text, md_info):
             level = line.count("#")  # 根据 # 的数量确定标题层级
             title = line[level:].strip()  # 提取标题内容
 
-            # 如果是第一个一级标题，定义文档标题
-            if level == 1 and not doc_title:
-                doc_title = title
-                hierarchy_stack = []  # 初始化层级堆栈
+            # 如果是一级标题，更新文档标题
+            if level == 1:
+                doc_title = title  # 设置新的一级标题
+                hierarchy_stack = []  # 清空层级堆栈
+                # 确保 doc_title 在 md_info 中存在
+                if doc_title not in md_info["sections"]:
+                    md_info["sections"][doc_title] = []  # 初始化该 doc_title 的记录
             else:
                 # 调整堆栈以匹配当前标题的层级
-                while len(hierarchy_stack) >= level:
+                while len(hierarchy_stack) >= level - 1:
                     hierarchy_stack.pop()
                 hierarchy_stack.append(title)  # 添加当前标题到堆栈
 
             # 生成描述信息
-            desc = f"<!-- [desc] {doc_title} __ {' __ '.join(hierarchy_stack)} [desc] -->"
+            hierarchy_desc = f"{doc_title} __ {' __ '.join(hierarchy_stack)}"
+            desc = f"<!-- [desc] {hierarchy_desc} [desc] -->"
+
+            # 记录到 md_info
+            md_info["sections"][doc_title].append(hierarchy_desc)
 
             # 插入描述注释
             processed_lines.append("")
