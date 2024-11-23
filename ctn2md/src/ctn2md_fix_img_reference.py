@@ -7,17 +7,18 @@ import re
 #import random
 #import json
 import json_repair
+from PIL import Image
 
 load_dotenv()
 
 if "./" not in sys.path:
     sys.path.append("./")
 
-from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.ctn2md.md_info_base import MdInfo
-from HiQA.build_tool.utils_bt.llm_fix_vl_instruction import get_vllm_instruction
-from HiQA.build_tool.utils_bt.vllm_description import generate_image_description
-from PIL import Image
+from ctn2md.utils.util_logging import setup_logger_handlers
+from ctn2md.src.md_info_base import MdInfo
+from ctn2md.utils_llm.llm_fix_vl_instruction import get_vllm_instruction
+from ctn2md.utils_llm.vllm_description import generate_image_description
+
 
 # 常量定义
 MIN_WIDTH = 198   # 图像最小宽度（像素）

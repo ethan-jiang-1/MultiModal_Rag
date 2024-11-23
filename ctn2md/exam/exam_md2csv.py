@@ -9,11 +9,11 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.ctn2md.md_info_base import load_md_info, find_md_info_path
-from HiQA.build_tool.md2csv import parse_markdown
+from ctn2md.utils.util_logging import setup_logger_handlers
+from ctn2md.src.md_info_base import load_md_info, find_md_info_path
 
 def exam_md2csv(pname_md):
+    from HiQA.build_tool.md2csv import parse_markdown
     with open(pname_md, 'r', encoding="utf8") as f:
         file_content = f.read()
 

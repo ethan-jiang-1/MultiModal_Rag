@@ -8,12 +8,10 @@ if "./" not in sys.path:
     sys.path.append("./")
 load_dotenv()
 
-from HiQA.utils.util_file import get_root_dir
-from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.utils_bt.llm_fix_vl_instruction_prompt import SYSTEM_PROMPT_GEN_VLLM_CONTEXT, USER_PROMPT_GEN_VLLM_CONTEXT
-from HiQA.build_tool.utils_bt.llm_fix_vl_instruction_prompt import TEXT_PROMPT_INST_VLLM_IMG
-from HiQA.utils.util_llm_diag import save_llm_diag_messages, set_question_num
-from HiQA.build_tool.utils_bt.llm_base import get_gpt_client, get_gpt_messages, jsons_load_repair
+from ctn2md.utils_llm.llm_fix_vl_instruction_prompt import SYSTEM_PROMPT_GEN_VLLM_CONTEXT, USER_PROMPT_GEN_VLLM_CONTEXT
+from ctn2md.utils_llm.llm_fix_vl_instruction_prompt import TEXT_PROMPT_INST_VLLM_IMG
+from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num
+from ctn2md.utils_llm.llm_base import get_gpt_client, get_gpt_messages, jsons_load_repair
 
 def get_vllm_instruction(doc_title, page_content, question_num=200, model="gpt-4o-mini"):
     client = get_gpt_client()
@@ -48,6 +46,8 @@ def get_vllm_instruction(doc_title, page_content, question_num=200, model="gpt-4
         raise ex
 
 if __name__ == "__main__":
+    from ctn2md.utils.util_file import get_root_dir
+    from ctn2md.utils.util_logging import setup_logger_handlers
     setup_logger_handlers()
     dir_root = get_root_dir()
     os.chdir(dir_root)

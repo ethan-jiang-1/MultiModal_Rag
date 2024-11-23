@@ -13,8 +13,8 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.ctn2md.md_info_base import MdInfo
+from ctn2md.utils.util_logging import setup_logger_handlers
+from ctn2md.src.md_info_base import MdInfo
 
 HIQA_INSTRUCT = """
 请帮我修改内容格式,我会给你一个PDF文档,文档中的文本可能是文字段落也可能来自表格。请将这些内容转换为markdown格式源码,且输出只有markdown源码,其他要求如下：

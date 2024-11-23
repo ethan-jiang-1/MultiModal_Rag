@@ -15,13 +15,11 @@ if "./" not in sys.path:
 
 load_dotenv()
 
-from HiQA.utils.util_file import get_root_dir
-from HiQA.build_tool.utils_bt.vllm_description_prompt import PROMPT_QUESTION_QAGEN_QWEN, SYSTEM_PROMPT_GPT4_QAGEN, USER_PROMPT_GPT4_QAGEN
-from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.utils.util_llm_diag import save_llm_diag_messages, set_question_num
-from HiQA.build_tool.utils_bt.llm_base import get_gpt_client, get_gpt_messages, jsons_load_repair
+from ctn2md.utils_llm.vllm_description_prompt import PROMPT_QUESTION_QAGEN_QWEN, SYSTEM_PROMPT_GPT4_QAGEN, USER_PROMPT_GPT4_QAGEN
+from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num
+from ctn2md.utils_llm.llm_base import get_gpt_client, get_gpt_messages, jsons_load_repair
 
-dashscope.api_key = "sk-a7cb64d9e5124609ac52849950c6fee2"
+dashscope.api_key = os.environ["DASHSCOPE_API_KEY"]
 
 
 def gen_questions_on_pic_by_gpt4(container_name, img_desc, model="gpt-4o", question_num=300):
@@ -88,6 +86,8 @@ def generate_image_description(image_url, instruction=None, retries=5, backoff_i
     return None
 
 if __name__ == '__main__':
+    from ctn2md.utils.util_file import get_root_dir
+    from ctn2md.utils.util_logging import setup_logger_handlers
     dir_root = get_root_dir()
     setup_logger_handlers()
 

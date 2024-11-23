@@ -11,11 +11,11 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.utils_bt.llm_fix_ocr_md import fix_ocr_self_correct_markdown
-from HiQA.build_tool.ctn2md.md_info_base import MdInfo
-from HiQA.build_tool.ctn2md.md_info_scan import get_llm_ocr_fix_method, OFM_BY_CONTENT, OFM_BY_PAGE, OFM_BY_SKIP
-from HiQA.utils.tokenizer import get_token_encoding
+from ctn2md.utils.util_logging import setup_logger_handlers
+from ctn2md.utils_llm.llm_fix_ocr_md import fix_ocr_self_correct_markdown
+from ctn2md.src.md_info_base import MdInfo
+from ctn2md.src.md_info_scan import get_llm_ocr_fix_method, OFM_BY_CONTENT, OFM_BY_PAGE, OFM_BY_SKIP
+from ctn2md.utils.tokenizer import get_token_encoding
 
 #TODO: check if we are able to make GPTo output more then 3*1024 token. and how
 #MAX_OUTPUT_TOKEN = 8*1024

@@ -12,13 +12,13 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.ctn2md.md_info_base import MdInfo
-from HiQA.build_tool.ctn2md.ctn2md_llamaparse_md_generater import gen_md_llamaparse
-from HiQA.build_tool.ctn2md.ctn2md_fix_heading_llamaparse import fix_headings_llamaparse
-from HiQA.build_tool.ctn2md.ctn2md_fix_content_ocr import fix_ocr_content_by_gpt
-from HiQA.build_tool.ctn2md.ctn2md_fix_img_reference import fix_img_reference_by_lvlm
-from HiQA.build_tool.ctn2md.ctn2md_fix_heading_hiqa import fix_headings_for_hiqa
+from ctn2md.utils.util_logging import setup_logger_handlers
+from ctn2md.src.md_info_base import MdInfo
+from ctn2md.src.ctn2md_llamaparse_md_generater import gen_md_llamaparse
+from ctn2md.src.ctn2md_fix_heading_llamaparse import fix_headings_llamaparse
+from ctn2md.src.ctn2md_fix_content_ocr import fix_ocr_content_by_gpt
+from ctn2md.src.ctn2md_fix_img_reference import fix_img_reference_by_lvlm
+from ctn2md.src.ctn2md_fix_heading_hiqa import fix_headings_for_hiqa
 
 
 def make_final_md(md_info_path):

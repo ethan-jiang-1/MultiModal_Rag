@@ -11,9 +11,9 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.ctn2md.md_info_base import MdInfo
-from HiQA.build_tool.ctn2md.md_info_scan import analyze_scan_info
+from ctn2md.utils.util_logging import setup_logger_handlers
+from ctn2md.src.md_info_base import MdInfo
+from ctn2md.src.md_info_scan import analyze_scan_info
 
 def _get_llamaparse():
     from llama_parse import LlamaParse

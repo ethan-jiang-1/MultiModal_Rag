@@ -12,10 +12,9 @@ import re
 import tqdm
 
 from HiQA.build_tool.img_tools import parse_page_svg
-from HiQA.build_tool.utils_bt.vllm_description import generate_image_description
 from HiQA.utils.util_file import get_root_dir
 from HiQA.utils.util_logging import setup_logger_handlers
-
+from ctn2md.utils_llm.vllm_description import generate_image_description
 
 def _save_crop_image_and_description(cropped_img, pathname_no_ext):
     image_pathname = pathname_no_ext + '.png'

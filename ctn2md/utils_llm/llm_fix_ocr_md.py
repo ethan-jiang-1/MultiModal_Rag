@@ -8,16 +8,14 @@ if "./" not in sys.path:
     sys.path.append("./")
 load_dotenv()
 
-from HiQA.utils.util_file import get_root_dir
-from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.build_tool.utils_bt.llm_fix_ocr_md_prompt import SYSTEM_PROMPT_MD_SELF_CORRECT 
-from HiQA.build_tool.utils_bt.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_PDF 
-from HiQA.build_tool.utils_bt.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_PPT 
-from HiQA.build_tool.utils_bt.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_DOC 
-#from HiQA.build_tool.utils_bt.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_XLS 
-from HiQA.build_tool.utils_bt.util_ctn_type import CtnType
-from HiQA.utils.util_llm_diag import save_llm_diag_messages, set_question_num
-from HiQA.build_tool.utils_bt.llm_base import get_gpt_client, get_gpt_messages, jsons_load_repair
+from ctn2md.utils_llm.llm_fix_ocr_md_prompt import SYSTEM_PROMPT_MD_SELF_CORRECT 
+from ctn2md.utils_llm.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_PDF 
+from ctn2md.utils_llm.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_PPT 
+from ctn2md.utils_llm.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_DOC 
+#from ctn2md.utils_llm.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_XLS 
+from ctn2md.utils.util_ctn_type import CtnType
+from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num
+from ctn2md.utils_llm.llm_base import get_gpt_client, get_gpt_messages, jsons_load_repair
 
 
 def fix_ocr_self_correct_markdown(md_text, doc_type, question_num=100, model="gpt-4o"):
@@ -59,6 +57,8 @@ def fix_ocr_self_correct_markdown(md_text, doc_type, question_num=100, model="gp
         raise ex
 
 if __name__ == "__main__":
+    from ctn2md.utils.util_logging import setup_logger_handlers
+    from ctn2md.utils.util_file import get_root_dir
     setup_logger_handlers()
     dir_root = get_root_dir()
     os.chdir(dir_root)
