@@ -53,6 +53,7 @@ def filter_markdown_heading_llamapase(md_text, md_info):
     normalized_md = "\n".join(normalized_lines)
 
     md_info["fhl"] = {"org_doc_title": md_info.get_doc_title(),
+                      "org_doc_type": md_info.get_ctn_type(),
                       "org_first_line": org_lines[0],
                       "org_heading_lines": heading_lines}
     md_info.save()
@@ -213,9 +214,7 @@ def fix_headings_llamaparse(md_info_path, src_step_num=None):
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    #md_info_path = "_work/ctn2md_stream0/info.json"
-    md_info_path = "_work/ctn2md_s0_0/info.json"
-    #md_info_path = "_work/ctn2md_91/_info.json"
+    md_info_path = "_work/ctn2md_flow1"
     md_info_path = fix_headings_llamaparse(md_info_path, src_step_num=0)
 
     md_info = MdInfo(md_info_path)
