@@ -16,7 +16,7 @@ from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo
 from ctn2md.src.ctn2md_llamaparse_md_generater import gen_md_llamaparse
 from ctn2md.src.ctn2md_fix_heading_llamaparse import fix_headings_llamaparse
-from ctn2md.src.ctn2md_fix_content_ocr import fix_ocr_content_by_gpt
+from ctn2md.src.ctn2md_fix_ocr_content_llamaparse import fix_ocr_content_by_gpt
 from ctn2md.src.ctn2md_fix_img_reference import fix_img_reference_by_lvlm
 from ctn2md.src.ctn2md_fix_heading_hiqa import fix_headings_for_hiqa
 
@@ -41,16 +41,19 @@ def get_suggested_out_dir(ctn_pathname):
     out_dir = f"{DEFAULT_OUT_ROOT}/ctn2md_{doc_title}"
     return out_dir
 
-def do_content2md_convert(ctn_pathname, out_dir=None):
+def do_content2md_convert(ctn_pathname, out_dir=None, skip_gen=False):
     if out_dir is None:
         out_dir = get_suggested_out_dir(ctn_pathname)
     logging.warning(f"work out_dir: {out_dir}")
     os.makedirs(out_dir, exist_ok=True)
 
-    md_info_path = gen_md_llamaparse(ctn_pathname, out_dir)
-    if md_info_path is None:
-        logging.error(f"DCC: failed {md_info_path} @convert_doc_to_md_by_llamaparse")
-        return None, None 
+    if not skip_gen:
+        md_info_path = gen_md_llamaparse(ctn_pathname, out_dir)
+        if md_info_path is None:
+            logging.error(f"DCC: failed {md_info_path} @convert_doc_to_md_by_llamaparse")
+            return None, None 
+    else:
+        md_info_path = MdInfo(out_dir).get_md_info_path()
 
     md_info_path = fix_ocr_content_by_gpt(md_info_path, src_step_num=0)
     if md_info_path is None:
@@ -89,7 +92,9 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
 
     out_dir = None
-    final_md_path = do_content2md_convert(doc_pathname, out_dir)
+    skip_gen = True 
+
+    final_md_path = do_content2md_convert(doc_pathname, out_dir=out_dir, skip_gen=skip_gen)
     print(final_md_path)
 
     md_info = MdInfo(final_md_path)

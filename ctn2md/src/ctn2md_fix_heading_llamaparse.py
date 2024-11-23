@@ -214,8 +214,10 @@ def fix_headings_llamaparse(md_info_path, src_step_num=None):
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    md_info_path = "_work/ctn2md_flow1"
-    md_info_path = fix_headings_llamaparse(md_info_path, src_step_num=0)
+    md_info_path = "_work/ctn2md_时代的人力资源管理进化(徐刚)"
+    src_step_num = 1
+
+    md_info_path = fix_headings_llamaparse(md_info_path, src_step_num=1)
 
     md_info = MdInfo(md_info_path)
     rich.print(md_info)

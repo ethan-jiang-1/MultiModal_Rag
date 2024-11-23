@@ -59,11 +59,7 @@ class MdInfo:
     @classmethod
     def extract_doc_title(cls, pathname_org_doc):
         """
-        提取文档标题，去掉以下内容：
-        1. 文件路径，只保留文件名。
-        2. 最后的后缀名和最后的 `.`。
-        3. 标题前无关的顺序标记（如 "1.", "A." 等）。
-
+        提取文档标题，
         :param pathname_org_doc: 原始文档路径
         :return: 文档标题（去掉后缀名、无关顺序标记和多余内容）
         """
@@ -78,11 +74,11 @@ class MdInfo:
         if last_dot_index != -1:
             file_name = file_name[:last_dot_index]
         
-        # 去掉标题前的顺序标记，如 "1.", "A." 等
-        doc_title = re.sub(r"^\s*[\dA-Za-z]+[\.\-\)]\s*", "", file_name)
-        
-        # 去掉两端多余的空白
-        doc_title = doc_title.strip()
+        # 去掉文件名开头的 Markdown 符号和顺序标记
+        file_name = re.sub(r"^\s*[#\*\-·‘’“”\"\'、。，\.]?[\dA-Za-z]*[\.\。\·、\"\'‘’“”]?\s*", "", file_name)
+    
+        # 移除多余空白并保持文件名紧凑
+        doc_title = re.sub(r"\s+", " ", file_name).strip()
         
         return doc_title
 
@@ -220,6 +216,7 @@ if __name__ == "__main__":
     for ndx, pathname in enumerate(pathnames):
         num = MdInfo.get_step_num_from_pathname(pathname)
         print(ndx, num)
+        print(MdInfo.extract_doc_title(pathname))
 
     out_dir = f"_work/ctn2md_{random.randint(10,99)}"
     os.makedirs(out_dir, exist_ok=True)
