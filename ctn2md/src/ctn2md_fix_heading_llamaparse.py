@@ -213,8 +213,9 @@ def fix_headings_llamaparse(md_info_path, src_step_num=None):
 
     #rich.print(fhl_map)
     rich.print(fhl_map)
-    rich.print({"org_heading_lines": fhl_map["org_heading_lines"],
-                "new_heading_lines": fhl_map["new_heading_lines"]})
+    o2n_map = {"org_heading_lines": fhl_map["org_heading_lines"],
+               "new_heading_lines": fhl_map["new_heading_lines"]}
+    rich.print(o2n_map)
 
     md_text_new1, unprocessed_heading_lines_map = update_markdown_heading_content(md_text_new, md_info, fhl_map)
     rich.print(unprocessed_heading_lines_map)
@@ -223,6 +224,7 @@ def fix_headings_llamaparse(md_info_path, src_step_num=None):
     with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_new1)
     
+    md_info["fhl_map_o2n"] = o2n_map
     md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_headings_llamaparse")
     md_info_path = md_info.save()
     return md_info_path 
@@ -231,7 +233,8 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     src_step_num = 1
-    md_info_path = "_work/ctn2md_考勤修改统一规则/_info.json)"
+    #md_info_path = "_work/ctn2md_考勤修改统一规则/_info.json)"
+    md_info_path = "_work/ctn2md_-Context LLMs Meet RAG_compressed/_info.json"
 
     md_info_path = fix_headings_llamaparse(md_info_path, src_step_num=src_step_num)
 

@@ -106,6 +106,7 @@ def fix_content_ocr_by_gpt(md_info_path, src_step_num=None, ofm=None):
     elif ofm == OFM_BY_PAGE:
         md_text_fixed = _fix_ocr_by_stiche_pages(md_text, md_info)
     elif ofm == OFM_BY_SKIP:
+        #TODO: ethan_content, some file have page number in the content, (ChatGPT intimates...)
         md_text_fixed = md_text
     else:
         raise ValueError(f"unknown ofm: {ofm}")

@@ -57,7 +57,7 @@ def do_content2md_convert(ctn_pathname, out_dir=None, skip_gen=False, section_by
         md_info = MdInfo(out_dir)
         md_info_path = md_info.get_md_info_path()
         pathname_s0_md = md_info.name_step_pathname(0)
-        if not os.path.isfile(pathname_s0_md):
+        if (pathname_s0_md is None) or (not os.path.exists(pathname_s0_md)):
             raise ValueError(f"{pathname_s0_md} not exist, you have to generate it first")
 
     md_info_path = fix_content_ocr_by_gpt(md_info_path, src_step_num=0)
@@ -96,14 +96,14 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
     #doc_pathname = "datasrc/test/raw_docs/1. 座椅STO间隙 P1.pptx"
     #doc_pathname = "datasrc/test/raw_docs/管理者角色定位与认知课程大纲.docx"
-    doc_pathname = "datasrc/test/raw_docs/考勤修改统一规则.xlsx"
+    #doc_pathname = "datasrc/test/raw_docs/考勤修改统一规则.xlsx"
     #doc_pathname = "datasrc/test/raw_docs/5. back panel 与环境匹配工程校核_P2.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/ChatGPT intimates a tantalizing future_compressed.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/Long-Context LLMs Meet RAG_compressed.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/Long-Context LLMs Meet RAG_compressed.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
 
     out_dir = None
-    skip_gen = True 
+    skip_gen = False 
 
     final_md_path = do_content2md_convert(doc_pathname, out_dir=out_dir, skip_gen=skip_gen)
     print(final_md_path)
