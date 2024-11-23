@@ -15,11 +15,10 @@ from ctn2md.utils_llm.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_D
 #from ctn2md.utils_llm.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_XLS 
 from ctn2md.utils.util_ctn_type import CtnType
 from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
-from ctn2md.utils_llm.llm_base import get_gpt_client, get_gpt_messages, jsons_load_repair
+from ctn2md.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
 
 
 def fix_ocr_self_correct_markdown(md_text, doc_type, model="gpt-4o", question_num=None):
-    client = get_gpt_client()
     if question_num is None:
         question_num = get_next_question_num()
 
@@ -43,12 +42,10 @@ def fix_ocr_self_correct_markdown(md_text, doc_type, model="gpt-4o", question_nu
         top_p = 0.9
         messages = get_gpt_messages(SYSTEM_PROMPT_MD_SELF_CORRECT, prompt)
 
-        response = client.chat.completions.create(
-            model=model,
-            messages=messages,
-            temperature=temperature,
-            top_p=top_p)
-        resp = jsons_load_repair(response.choices[0].message.content)
+        resp = chat_gpt_json(messages, 
+                             model=model,
+                             temperature=temperature,
+                             top_p=top_p)
 
         set_question_num(question_num)
         save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="fox_ocr") 

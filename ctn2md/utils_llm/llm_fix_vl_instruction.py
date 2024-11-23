@@ -11,11 +11,10 @@ load_dotenv()
 from ctn2md.utils_llm.llm_fix_vl_instruction_prompt import SYSTEM_PROMPT_GEN_VLLM_CONTEXT, USER_PROMPT_GEN_VLLM_CONTEXT
 from ctn2md.utils_llm.llm_fix_vl_instruction_prompt import TEXT_PROMPT_INST_VLLM_IMG
 from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
-from ctn2md.utils_llm.llm_base import get_gpt_client, get_gpt_messages, jsons_load_repair
+from ctn2md.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
 
 
 def get_vllm_instruction(doc_title, page_content, model="gpt-4o-mini", question_num=None):
-    client = get_gpt_client()
     if question_num is None:
         question_num = get_next_question_num()
 
@@ -30,12 +29,10 @@ def get_vllm_instruction(doc_title, page_content, model="gpt-4o-mini", question_
         top_p = 0.9
         messages = get_gpt_messages(SYSTEM_PROMPT_GEN_VLLM_CONTEXT, prompt)
 
-        response = client.chat.completions.create(
-            model=model,
-            messages=messages,
-            temperature=temperature,
-            top_p=top_p)
-        resp = jsons_load_repair(response.choices[0].message.content)
+        resp = chat_gpt_json(messages, 
+                             model=model,
+                             temperature=temperature,
+                             top_p=top_p)
 
         set_question_num(question_num)
         save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="gvi_vllminst") 

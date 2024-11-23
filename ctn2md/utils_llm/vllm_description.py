@@ -17,13 +17,12 @@ load_dotenv()
 
 from ctn2md.utils_llm.vllm_description_prompt import PROMPT_QUESTION_QAGEN_QWEN, SYSTEM_PROMPT_GPT4_QAGEN, USER_PROMPT_GPT4_QAGEN
 from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
-from ctn2md.utils_llm.llm_base import get_gpt_client, get_gpt_messages, jsons_load_repair
+from ctn2md.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
 
 dashscope.api_key = os.environ["DASHSCOPE_API_KEY"]
 
 
 def gen_questions_on_pic_by_gpt4(container_name, img_desc, model="gpt-4o", question_num=None):
-    client = get_gpt_client()
     if question_num is None:
         question_num = get_next_question_num()
 
@@ -37,12 +36,11 @@ def gen_questions_on_pic_by_gpt4(container_name, img_desc, model="gpt-4o", quest
         temperature = 0.3
         top_p = 0.95        
         messages = get_gpt_messages(SYSTEM_PROMPT_GPT4_QAGEN, prompt)
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=messages,
-            temperature=temperature,
-            top_p=top_p)
-        resp = jsons_load_repair(response.choices[0].message.content)
+
+        resp = chat_gpt_json(messages, 
+                             model=model,
+                             temperature=temperature,
+                             top_p=top_p)
 
         set_question_num(question_num)
         save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="gqo_picdesc") 
