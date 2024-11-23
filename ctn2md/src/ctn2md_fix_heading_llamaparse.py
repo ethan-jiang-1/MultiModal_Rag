@@ -195,11 +195,13 @@ def fix_headings_llamaparse(md_info_path, src_step_num=None):
     md_text_new = filter_markdown_heading_llamapase(md_text, md_info)
     count_markdown_heading_content(md_text_new, md_info)
 
-    fhl = md_info["fhl"]
+    fhl_org = md_info["fhl"]
     #rich.print(fhl)
-    fhl_map = fix_heading_lvl_markdown(fhl)
+    fhl_map = fix_heading_lvl_markdown(fhl_org)
     #rich.print(fhl_map)
     rich.print(fhl_map)
+    rich.print({"org_heading_lines": fhl_map["org_heading_lines"],
+                "new_heading_lines": fhl_map["new_heading_lines"]})
 
     md_text_new1, unprocessed_heading_lines_map = update_markdown_heading_content(md_text_new, md_info, fhl_map)
     rich.print(unprocessed_heading_lines_map)
@@ -218,7 +220,7 @@ if __name__ == "__main__":
     md_info_path = "_work/ctn2md_时代的人力资源管理进化(徐刚)"
     src_step_num = 1
 
-    md_info_path = fix_headings_llamaparse(md_info_path, src_step_num=1)
+    md_info_path = fix_headings_llamaparse(md_info_path, src_step_num=src_step_num)
 
     md_info = MdInfo(md_info_path)
     rich.print(md_info)

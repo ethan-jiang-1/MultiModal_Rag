@@ -10,11 +10,15 @@ load_dotenv()
 
 from ctn2md.utils_llm.llm_fix_vl_instruction_prompt import SYSTEM_PROMPT_GEN_VLLM_CONTEXT, USER_PROMPT_GEN_VLLM_CONTEXT
 from ctn2md.utils_llm.llm_fix_vl_instruction_prompt import TEXT_PROMPT_INST_VLLM_IMG
-from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num
+from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from ctn2md.utils_llm.llm_base import get_gpt_client, get_gpt_messages, jsons_load_repair
 
-def get_vllm_instruction(doc_title, page_content, question_num=200, model="gpt-4o-mini"):
+
+def get_vllm_instruction(doc_title, page_content, model="gpt-4o-mini", question_num=None):
     client = get_gpt_client()
+    if question_num is None:
+        question_num = get_next_question_num()
+
     try:
         if model not in ["gpt-4o-mini", "gpt-4o"]: 
             raise ValueError(f"f{model} not supporst")
@@ -34,7 +38,7 @@ def get_vllm_instruction(doc_title, page_content, question_num=200, model="gpt-4
         resp = jsons_load_repair(response.choices[0].message.content)
 
         set_question_num(question_num)
-        save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="ocr_fix") 
+        save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="gvi_vllminst") 
 
         page_context = resp['page_context']
         page_content_language = resp['page_content_language']

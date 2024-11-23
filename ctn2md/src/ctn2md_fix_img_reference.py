@@ -29,7 +29,7 @@ FEATURE_PIC_DESP_IN_MD = True
 
 g_page2inst = {}
 
-g_question_num = 200
+g_question_num = 6000
 
 def get_page_instruction(doc_title, page_content):
     global g_page2inst

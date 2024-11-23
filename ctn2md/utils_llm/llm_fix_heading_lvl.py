@@ -11,24 +11,26 @@ if "./" not in sys.path:
 load_dotenv()
 
 from ctn2md.utils_llm.llm_fix_heading_lvl_prompt import SYSTEM_PROMPT_FIX_HEADING_LVL, USER_PROMPT_FIX_HEADING_LVL 
-from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num
+from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from ctn2md.utils_llm.llm_base import get_gpt_client, get_gpt_messages, jsons_load_repair
 
-
-def fix_heading_lvl_markdown(fhl_headings, question_num=400, model="gpt-4o"):
+def fix_heading_lvl_markdown(fhl_org, model="gpt-4o",  question_num=None):
     client = get_gpt_client()
+    if question_num is None:
+        question_num = get_next_question_num()
+
     try:
         if model not in ["gpt-4o-mini", "gpt-4o"]: 
             raise ValueError(f"f{model} not supporst")
 
-        if not isinstance(fhl_headings, dict):
+        if not isinstance(fhl_org, dict):
             raise ValueError("fhl_heading need to be dict")
 
         logging.info(f"start to correct heading level by {model} as questoin_number:{question_num}")
 
-        fhl_headings_json_str = json.dumps(fhl_headings, ensure_ascii=False, indent=4)
+        fhl_org_json_str = json.dumps(fhl_org, ensure_ascii=False, indent=4)
 
-        prompt = USER_PROMPT_FIX_HEADING_LVL.replace("{fhl_headings_json_str}", fhl_headings_json_str)      
+        prompt = USER_PROMPT_FIX_HEADING_LVL.replace("{fhl_org_json_str}", fhl_org_json_str)      
 
         temperature = 0.1
         top_p = 0.9
@@ -42,7 +44,7 @@ def fix_heading_lvl_markdown(fhl_headings, question_num=400, model="gpt-4o"):
         resp = jsons_load_repair(response.choices[0].message.content)
 
         set_question_num(question_num)
-        save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="heading_fix") 
+        save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="fhl_heading") 
 
         return resp
     except Exception as ex: 
@@ -56,7 +58,7 @@ if __name__ == "__main__":
     dir_root = get_root_dir()
     os.chdir(dir_root)
 
-    fhl = {
+    fhl_org = {
         "org_doc_title": "业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）",
         "org_first_line": "# 技术服务合同",
         "org_heading_lines": [
@@ -90,5 +92,5 @@ if __name__ == "__main__":
             ]
         ]
     }
-    new_fhl = fix_heading_lvl_markdown(fhl)
+    new_fhl = fix_heading_lvl_markdown(fhl_org)
     rich.print(new_fhl)

@@ -56,7 +56,7 @@ def _fix_ocr_by_stiche_pages(md_text, md_info):
     
     md_text_fixed = ""
     out_dir = md_info.get_out_dir()
-    question_num = 100
+    question_num = 8000
     total_pages = len(fnames_pages)
     logging.info(f"_fix_ocr_by_stiche_pages: total_pages: {total_pages}")
     model = "gpt-4o"
@@ -128,7 +128,7 @@ if __name__ == "__main__":
     #ofm = OFM_BY_PAGE
     #md_info_path = "_work/ctn2md_stream1/info.json"
 
-    md_info_path = "_work/ctn2md_40/_info.json"
+    md_info_path = "_work/ctn2md_时代的人力资源管理进化(徐刚)/_info.json"
 
     md_info_path = fix_ocr_content_by_gpt(md_info_path, ofm=ofm, src_step_num=src_step_num)
     print(md_info_path)

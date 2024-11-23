@@ -14,12 +14,15 @@ from ctn2md.utils_llm.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_P
 from ctn2md.utils_llm.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_DOC 
 #from ctn2md.utils_llm.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_XLS 
 from ctn2md.utils.util_ctn_type import CtnType
-from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num
+from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from ctn2md.utils_llm.llm_base import get_gpt_client, get_gpt_messages, jsons_load_repair
 
 
-def fix_ocr_self_correct_markdown(md_text, doc_type, question_num=100, model="gpt-4o"):
+def fix_ocr_self_correct_markdown(md_text, doc_type, model="gpt-4o", question_num=None):
     client = get_gpt_client()
+    if question_num is None:
+        question_num = get_next_question_num()
+
     try:
         if model not in ["gpt-4o-mini", "gpt-4o"]: 
             raise ValueError(f"f{model} not supporst")
@@ -48,7 +51,7 @@ def fix_ocr_self_correct_markdown(md_text, doc_type, question_num=100, model="gp
         resp = jsons_load_repair(response.choices[0].message.content)
 
         set_question_num(question_num)
-        save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="ocr_fix") 
+        save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="fox_ocr") 
 
         content = resp['content']
         return content

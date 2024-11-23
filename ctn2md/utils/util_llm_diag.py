@@ -40,14 +40,27 @@ def get_chat_messages(system_prompt, user_prompt):
 def set_question_num(quetion_num):
     os.environ[ENV_QUESION_NUM] = str(quetion_num)
 
-def save_llm_diag_messages(messages, response, model="gpt4-o", top_p=0.8, temperature=0.2, max_tokens=None, prefix=None, is_json_response=True):
+def get_question_num():
+    question_num = int(os.environ.get(ENV_QUESION_NUM, "0"))   
+    return question_num 
+
+def get_next_question_num():
+    question_num = get_question_num()
+    question_num += 1
+    set_question_num(question_num)
+    return question_num
+
+
+def save_llm_diag_messages(messages, response, model="gpt4-o", top_p=0.8, temperature=0.2, max_tokens=None, prefix=None, is_json_response=True, question_num=None):
     try:
-        question_num = int(os.environ.get(ENV_QUESION_NUM, "99"))
+        if question_num is None:
+            question_num = get_question_num()
         output_dir = os.path.join(_get_root_dir(), f"_work/llm_dialogs")
         os.makedirs(output_dir, exist_ok=True)
 
         llmfname = os.path.join(output_dir, f"llm_{prefix}_q{question_num}.txt")
 
+        logging.info(f"SLD: last llm_diag saved at {llmfname}")
         with open(llmfname, 'w', encoding='utf-8') as f:
             for message in messages:
                 if isinstance(message, dict):
@@ -76,7 +89,7 @@ def save_llm_diag_messages(messages, response, model="gpt4-o", top_p=0.8, temper
     except Exception as ex:
         logging.exception(ex)
 
-def save_llm_diag_prompt(prompt, response, system_prompt=None, model="gpt4-o", top_p=0.8, temperature=0.2, prefix=None, is_json_response=True):
+def save_llm_diag_prompt(prompt, response, system_prompt=None, model="gpt4-o", top_p=0.8, temperature=0.2, prefix=None, is_json_response=True, question_num=None):
     if system_prompt is None:
         system_prompt = ""
     messages = [
@@ -89,7 +102,7 @@ def save_llm_diag_prompt(prompt, response, system_prompt=None, model="gpt4-o", t
             "content": prompt
         },
     ]
-    return save_llm_diag_messages(messages, response, model=model, top_p=top_p, temperature=temperature, prefix=prefix, is_json_response=is_json_response)
+    return save_llm_diag_messages(messages, response, model=model, top_p=top_p, temperature=temperature, prefix=prefix, is_json_response=is_json_response, question_num=question_num)
 
 def load_llm_diag(filename):
     file_content = ""

@@ -16,14 +16,17 @@ if "./" not in sys.path:
 load_dotenv()
 
 from ctn2md.utils_llm.vllm_description_prompt import PROMPT_QUESTION_QAGEN_QWEN, SYSTEM_PROMPT_GPT4_QAGEN, USER_PROMPT_GPT4_QAGEN
-from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num
+from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from ctn2md.utils_llm.llm_base import get_gpt_client, get_gpt_messages, jsons_load_repair
 
 dashscope.api_key = os.environ["DASHSCOPE_API_KEY"]
 
 
-def gen_questions_on_pic_by_gpt4(container_name, img_desc, model="gpt-4o", question_num=300):
+def gen_questions_on_pic_by_gpt4(container_name, img_desc, model="gpt-4o", question_num=None):
     client = get_gpt_client()
+    if question_num is None:
+        question_num = get_next_question_num()
+
     try:
         if model not in ["gpt-4o-mini", "gpt-4o"]: 
             raise ValueError(f"f{model} not supporst")
@@ -42,7 +45,7 @@ def gen_questions_on_pic_by_gpt4(container_name, img_desc, model="gpt-4o", quest
         resp = jsons_load_repair(response.choices[0].message.content)
 
         set_question_num(question_num)
-        save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="ocr_fix") 
+        save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="gqo_picdesc") 
         return resp
     except Exception as ex: 
         logging.exception(ex)
