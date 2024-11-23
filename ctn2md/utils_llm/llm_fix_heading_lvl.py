@@ -39,7 +39,8 @@ def fix_heading_lvl_markdown(fhl_org, model="gpt-4o",  question_num=None):
         resp = chat_gpt_json(messages, 
                              model=model,
                              temperature=temperature,
-                             top_p=top_p)
+                             top_p=top_p,
+                             track_id=f"fhl_heading_{question_num}")
 
         set_question_num(question_num)
         save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="fhl_heading") 

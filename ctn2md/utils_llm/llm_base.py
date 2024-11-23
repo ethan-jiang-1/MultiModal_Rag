@@ -9,6 +9,7 @@ import logging
 import time
 import csv
 import datetime
+import rich 
 #import json
 
 if "./" not in sys.path:
@@ -65,7 +66,7 @@ def _get_monitor_filename():
         g_monitor_filename = filename
     return g_monitor_filename
 
-def _monitor_call(d0, messages, response):
+def _monitor_call(d0, messages, response, track_id=None):
     d1 = time.time()
 
     try:
@@ -94,7 +95,7 @@ def _monitor_call(d0, messages, response):
 
         with open(filename, 'a', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow([ts0, finish_reason, model, sec_span, total_tokens, prompt_tokens, completion_tokens, token_per_ms])
+            writer.writerow([ts0, finish_reason, model, sec_span, total_tokens, prompt_tokens, completion_tokens, token_per_ms, str(track_id)])
 
     except:  # noqa
         pass 
@@ -107,7 +108,8 @@ def chat_gpt_json(messages,
                   retries=DEFAULT_RETRY_NUM,
                   backoff_factor=2,
                   backoff_sec=1,
-                  delay_base_sec=5):
+                  delay_base_sec=5,
+                  track_id=None):
     attempt = 0
     client = _get_gpt_client()
     while attempt < retries:
@@ -119,7 +121,7 @@ def chat_gpt_json(messages,
                 temperature=temperature,
                 top_p=top_p,
                 response_format={"type": "json_object"})
-            _monitor_call(d0, messages, response)
+            _monitor_call(d0, messages, response, track_id=track_id)
             resp = jsons_load_repair(response.choices[0].message.content)
             return resp
         except (requests.exceptions.RequestException, ValueError, openai.RateLimitError) as e:
@@ -141,7 +143,8 @@ def chat_gpt_plain(messages,
                   retries=DEFAULT_RETRY_NUM,
                   backoff_factor=2,
                   backoff_sec=1,
-                  delay_base_sec=5):
+                  delay_base_sec=5,
+                  track_id=None):
     attempt = 0
     client = _get_gpt_client()
     while attempt < retries:
@@ -151,9 +154,8 @@ def chat_gpt_plain(messages,
                 model=model,
                 messages=messages,
                 temperature=temperature,
-                top_p=top_p,
-                response_format={"type": "json_object"})
-            _monitor_call(d0, messages, response)
+                top_p=top_p)
+            _monitor_call(d0, messages, response, track_id=track_id)
             return response.choices[0].message.content
         except (requests.exceptions.RequestException, ValueError, openai.RateLimitError) as e:
             if isinstance(e, openai.RateLimitError):
@@ -166,3 +168,21 @@ def chat_gpt_plain(messages,
             backoff_sec = backoff_factor**attempt + delay_base_sec
             logging.info(f"Retrying after backoff: {backoff_sec} seconds...")
             time.sleep(backoff_sec)
+
+
+if __name__ == "__main__":
+    messages = get_gpt_messages("", "hi, response in json")
+    resp = chat_gpt_json(messages=messages, model="gpt-4o")
+    rich.print(resp)
+
+    messages = get_gpt_messages("", "hi, response in json")
+    resp = chat_gpt_json(messages=messages, model="gpt-4o-mini")
+    rich.print(resp)
+
+    messages = get_gpt_messages("", "hi, response in text")
+    resp = chat_gpt_plain(messages=messages, model="gpt-4o")
+    rich.print(resp)
+
+    messages = get_gpt_messages("", "hi, response in text")
+    resp = chat_gpt_plain(messages=messages, model="gpt-4o-mini")
+    rich.print(resp)

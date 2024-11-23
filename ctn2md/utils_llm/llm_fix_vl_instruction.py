@@ -32,7 +32,8 @@ def get_vllm_instruction(doc_title, page_content, model="gpt-4o-mini", question_
         resp = chat_gpt_json(messages, 
                              model=model,
                              temperature=temperature,
-                             top_p=top_p)
+                             top_p=top_p,
+                             track_id=f"gvi_vllinst_{question_num}")
 
         set_question_num(question_num)
         save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="gvi_vllminst") 

@@ -45,7 +45,8 @@ def fix_ocr_self_correct_markdown(md_text, doc_type, model="gpt-4o", question_nu
         resp = chat_gpt_json(messages, 
                              model=model,
                              temperature=temperature,
-                             top_p=top_p)
+                             top_p=top_p,
+                             track_id=f"fox_orc_{question_num}")
 
         set_question_num(question_num)
         save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="fox_ocr") 

@@ -40,7 +40,8 @@ def gen_questions_on_pic_by_gpt4(container_name, img_desc, model="gpt-4o", quest
         resp = chat_gpt_json(messages, 
                              model=model,
                              temperature=temperature,
-                             top_p=top_p)
+                             top_p=top_p,
+                             track_id=f"gqo_picdesc_{question_num}")
 
         set_question_num(question_num)
         save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="gqo_picdesc") 
