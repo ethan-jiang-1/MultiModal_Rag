@@ -7,6 +7,7 @@ import re
 #import random
 #import json
 #import json_repair
+import copy
 
 load_dotenv()
 
@@ -60,6 +61,11 @@ def filter_markdown_heading_llamapase(md_text, md_info):
     md_info.save()
                 
     return normalized_md
+
+def fix_markdown_with_no_heading(md_text, md_info):
+    doc_title = md_info.get_doc_title()
+    heading_line = "# " + doc_title + "\n\n"
+    return heading_line + md_text
 
 def count_markdown_heading_content(md_text, md_info):
     """
@@ -118,7 +124,6 @@ def update_markdown_heading_content(md_text, md_info, fhl_map):
     :param fhl_map: 包含映射规则的 JSON 字典
     :return: 替换后的 Markdown 文本 new_md_text 和未处理的 fhl_map 副本
     """
-    import copy
 
     # 创建 fhl_map 的副本以进行替换操作
     fhl_map_copy = copy.deepcopy(fhl_map)
@@ -196,8 +201,16 @@ def fix_headings_llamaparse(md_info_path, src_step_num=None):
     count_markdown_heading_content(md_text_new, md_info)
 
     fhl_org = md_info["fhl"]
+    org_heading_lines = fhl_org["org_heading_lines"]
+    if len(org_heading_lines) == 0:
+        md_text_new = fix_markdown_with_no_heading(md_text_new, md_info)
+        md_text_new = filter_markdown_heading_llamapase(md_text_new, md_info)
+        count_markdown_heading_content(md_text_new, md_info)
+        fhl_org = md_info["fhl"]
+    
     #rich.print(fhl)
     fhl_map = fix_heading_lvl_markdown(fhl_org)
+
     #rich.print(fhl_map)
     rich.print(fhl_map)
     rich.print({"org_heading_lines": fhl_map["org_heading_lines"],
@@ -217,8 +230,8 @@ def fix_headings_llamaparse(md_info_path, src_step_num=None):
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    md_info_path = "_work/ctn2md_时代的人力资源管理进化(徐刚)"
     src_step_num = 1
+    md_info_path = "_work/ctn2md_考勤修改统一规则/_info.json)"
 
     md_info_path = fix_headings_llamaparse(md_info_path, src_step_num=src_step_num)
 
