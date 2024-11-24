@@ -17,9 +17,6 @@ from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo
 
 HIQA_INSTRUCT = """
-请帮我修改内容格式,我会给你一个PDF文档,文档中的文本可能是文字段落也可能来自表格。请将这些内容转换为markdown格式源码,且输出只有markdown源码,其他要求如下：
-1. 无需考虑图片,只提取文字和表格
-
 ##2. 要求格式为,PDF文本中的每一章节都作为markdown中的一个一级标题(只用一个 # 号)章节,
    无论章节还是子章节的标题,都要用markdown的一级标题表示,我们将用章节的编号来标记章节的级别。
    该章节的内容从这一章节的标题的后一行开始写。
@@ -42,8 +39,6 @@ Table tile: Name of Table
 此外,表格所在的段落也应有独立的标题。
 
 ##6. 转换后的每个章节中只能有一个表格,如果有多段表格,请为每一个表格设置一个新章节,放置这个表格,并且设置合适的标题。
-7. 输出内容只包含markdown源码,不要输出任何其他内容。markdown源码前后不要有说明和补充。
-8. 你是一个支持超长文本的模型,你的任务是格式处理,因此不要省略、总结、丢弃任何内容,只要是输入的内容,也包括表格内容,都要在输出中体现出来。
 
 ##9. 不要带 '```', 'markdown' 这种多余内容
 
@@ -52,12 +47,11 @@ Table tile: Name of Table
 ##11. 请为每个章节设置一个准确、简要的标题。如果原文中有合适的标题请保留原文标题,若无,则设置一个合适的标题。
 ##12. 章节编号请使用阿拉伯数字,请使用小数点'.'作为编号间隔符,请严格遵循上下文的编号,如上一段为 '# 3. '时,其子章节为 '# 3.2. '
 
-13. 请严格保证章节编号是正确的、递增的、层次的,请正确,准确的设置章节编号,请确保每个段落都有编号。
 """
 
 def filter_headings_for_heirarchy_numbers(md_text, md_info):
     """
-    规整化 Markdown 的标题写法，为所有标题编号，所有标题均以 '#' 开头。
+    规整化 Markdown 的标题写法，为所有标题编号，并移除行中的 <!-- PLW: ... --> 注释。
 
     参数:
         md_text (str): 输入的 Markdown 字符串流。
@@ -69,11 +63,21 @@ def filter_headings_for_heirarchy_numbers(md_text, md_info):
     # 定义正则匹配 Markdown Heading 的模式
     heading_pattern = r"^(#{1,6})\s*(.+)$"
 
+    def remove_plw_comment(line):
+        """
+        移除行中的 <!-- PLW: ... --> 注释。
+        """
+        return re.sub(r'<!-- PLW: .*? -->', '', line).strip()
+
     # 初始化堆栈和编号
     stack = []
     result_lines = []
 
     for line in md_text.splitlines():
+        # 先移除行中的 <!-- PLW: ... --> 注释
+        line = remove_plw_comment(line)
+
+        # 匹配标题行
         match = re.match(heading_pattern, line)
         if match:
             hashes = match.group(1)  # 标题等级 (e.g., #, ##, ###)
