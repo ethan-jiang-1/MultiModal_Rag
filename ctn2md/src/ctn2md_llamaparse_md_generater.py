@@ -4,7 +4,7 @@ import sys
 import logging
 import rich
 import random
-#import json
+import re
 
 load_dotenv()
 
@@ -42,7 +42,68 @@ def _save_md_page(out_dir, job_id, ndx, md_page, md_imgs):
         logging.exception(ex)
     return None 
 
-# TODO，ethan_enrich_md leave page info, line/total/all info in image tag to pickup to help TOC rebuild
+def inject_aux_info_to_page(md_page, page_ndx, total_pages, md_info):
+    """
+    注入统计信息到 Markdown 文档标题行。
+    :param md_page: str, 当前页面的 Markdown 内容
+    :param page_ndx: int, 当前页码（从 0 开始计数）
+    :param total_pages: int, 文档总页数
+    :param md_info: dict, 包含整个文档的信息（例如标题等，暂未使用）
+    :return: str, 注入统计信息后的 Markdown 文档内容
+    """
+    def count_chars(text):
+        """
+        统计文本中的字符数，忽略 Markdown 特殊符号和图片引用。
+        """
+        # 移除 Markdown 特殊符号和图片引用
+        text = re.sub(r'[>#*_\-`~\[\]]', '', text)  # 去掉 Markdown 符号
+        text = re.sub(r'!\[.*?\]\(.*?\)', '', text)  # 去掉图片引用
+        text = re.sub(r'\s+', '', text)             # 去掉空白符
+        return len(text)
+
+    # 分割 Markdown 文档为行，并确定总行数
+    lines = md_page.split('\n')
+    total_lines = len(lines)
+
+    # 使用正则提取标题和其内容范围
+    sections = []
+    current_section = {"title": None, "lines": []}
+
+    for line in lines:
+        if re.match(r'^#+\s', line):  # 如果是标题行
+            # 如果当前有积累的标题范围，保存
+            if current_section["title"]:
+                sections.append(current_section)
+            # 开始一个新的标题范围
+            current_section = {"title": line, "lines": []}
+        else:
+            # 非标题行，归属于当前标题范围
+            current_section["lines"].append(line)
+
+    # 最后一个标题范围
+    if current_section["title"]:
+        sections.append(current_section)
+
+    # 计算总字符数
+    total_char_count = sum(
+        count_chars(line) for line in lines
+    )
+
+    # 结果行列表
+    result_lines = []
+    for section in sections:
+        title = section["title"]
+        content_lines = section["lines"]
+        content_char_count = sum(count_chars(line) for line in content_lines)
+
+        # 注释信息
+        line_number = lines.index(title) + 1
+        injected_title = f"{title} <!-- PLW: Page:{page_ndx + 1}/{total_pages}, Line:{line_number}/{total_lines}, Chars:{content_char_count}/{total_char_count} -->"
+        result_lines.append(injected_title)
+        result_lines.extend(content_lines)
+
+    return '\n'.join(result_lines)
+
 def _dump_by_json_result(out_dir, json_result, md_info):
     os.makedirs(out_dir, exist_ok=True)
     md_full_content = ""
@@ -63,13 +124,16 @@ def _dump_by_json_result(out_dir, json_result, md_info):
         if pages is None:
             continue
 
-        for ndx, page in enumerate(pages):
+        total_pages = len(pages)
+        for page_ndx, page in enumerate(pages):
             rich.print(page)
             md_page = page.get("md", None)
             if md_page is not None:
-                if len(md_full_content) != 0:
-                    md_full_content += "\n"
-                md_full_content += md_page
+                md_page_modified = inject_aux_info_to_page(md_page, page_ndx, total_pages, md_info)
+                if len(md_page_modified) > 0:
+                    if len(md_full_content) != 0:
+                        md_full_content += "\n"
+                    md_full_content += md_page_modified
 
             md_imgs = ""
             images = page.get("images", None)
@@ -85,7 +149,7 @@ def _dump_by_json_result(out_dir, json_result, md_info):
                     md_imgs = "\n\n" + "\n".join(img_refs) + "\n"
                     md_full_content += md_imgs
 
-                fname_page = _save_md_page(out_dir, job_id, ndx, md_page, md_imgs)
+                fname_page = _save_md_page(out_dir, job_id, page_ndx, md_page, md_imgs)
                 fnames_pages.append(fname_page)
     
     info_extra = {"job_id": job_ids_set.pop(),
@@ -95,13 +159,6 @@ def _dump_by_json_result(out_dir, json_result, md_info):
     
     md_info.update_info(info_extra)
     return md_full_content
-
-# def _dump_by_documents(out_dir, documents, md_info):
-#     md_full_content = ""
-#     for doc in documents:
-#         rich.print(doc)
-#         md_full_content += doc.text
-#     return md_full_content
 
 def gen_md_llamaparse(doc_pathname, out_dir):
     parser = _get_llamaparse()
@@ -144,16 +201,16 @@ if __name__ == "__main__":
     out_dir = f"_work/ctn2md_{random.randint(10,99)}"
 
     #doc_pathname = "datasrc/test/raw_docs/AIGC时代的人力资源管理进化(徐刚).pdf"
-    doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
-    out_dir = "_work/ctn2md_40"
-    #doc_pathname = "datasrc/test/raw_docs/1. 座椅STO间隙 P1.pptx"
+    #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
+    doc_pathname = "datasrc/test/raw_docs/1. 座椅STO间隙 P1.pptx"
     #doc_pathname = "datasrc/test/raw_docs/管理者角色定位与认知课程大纲.docx"
     #doc_pathname = "datasrc/test/raw_docs/考勤修改统一规则.xlsx"
     #doc_pathname = "datasrc/test/raw_docs/5. back panel 与环境匹配工程校核_P2.pptx"
+    
     #doc_pathname = "datasrc/exam/raw_docs/ChatGPT intimates a tantalizing future_compressed.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
 
-    os.makedirs(out_dir, exist_ok=True)
-    print(f"out_dir: {out_dir}")
+    out_dir = MdInfo.get_suggested_out_dir(doc_pathname)
 
     setup_logger_handlers()
     os.makedirs(out_dir, exist_ok=True)

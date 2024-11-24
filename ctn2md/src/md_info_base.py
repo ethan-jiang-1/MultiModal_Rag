@@ -16,6 +16,8 @@ SEP_FNAME_EXT = "___"
 FNAME_MD_INFO = "_info.json"
 MD_INFO_VER = "0.3.0"
 
+DEFAULT_OUT_ROOT = "_work"
+
 from ctn2md.utils.util_ctn_type import CtnType
 
 
@@ -81,6 +83,12 @@ class MdInfo:
         doc_title = re.sub(r"\s+", " ", file_name).strip()
         
         return doc_title
+
+    @classmethod
+    def get_suggested_out_dir(cls, pathname_org_doc):
+        doc_title = cls.extract_doc_title(pathname_org_doc)
+        out_dir = f"{DEFAULT_OUT_ROOT}/ctn2md_{doc_title}"
+        return out_dir
 
     def load(self):
         if os.path.isfile(self._md_info_path):

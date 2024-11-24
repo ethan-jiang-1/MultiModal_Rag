@@ -21,7 +21,6 @@ from ctn2md.src.ctn2md_fix_img_reference import fix_img_reference_by_lvlm
 from ctn2md.src.ctn2md_fix_section_hierarchy_numbers import fix_section_heirarchy_numbers
 from ctn2md.src.ctn2md_fix_section_hierarchy_comments import fix_section_heirarchy_comments
 
-DEFAULT_OUT_ROOT = "_work"
 
 def make_final_md(md_info_path):
     md_info = MdInfo(md_info_path)
@@ -37,14 +36,10 @@ def make_final_md(md_info_path):
     md_info.save()
     return pathname_final_md
 
-def get_suggested_out_dir(ctn_pathname):
-    doc_title = MdInfo.extract_doc_title(ctn_pathname)
-    out_dir = f"{DEFAULT_OUT_ROOT}/ctn2md_{doc_title}"
-    return out_dir
 
 def do_content2md_convert(ctn_pathname, out_dir=None, skip_gen=False, section_by_number=False):
     if out_dir is None:
-        out_dir = get_suggested_out_dir(ctn_pathname)
+        out_dir = MdInfo.get_suggested_out_dir(ctn_pathname)
     logging.warning(f"work out_dir: {out_dir}")
     os.makedirs(out_dir, exist_ok=True)
 
