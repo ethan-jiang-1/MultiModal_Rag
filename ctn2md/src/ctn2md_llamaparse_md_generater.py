@@ -42,6 +42,7 @@ def _save_md_page(out_dir, job_id, ndx, md_page, md_imgs):
         logging.exception(ex)
     return None 
 
+# TODO，ethan_enrich_md leave page info, line/total/all info in image tag to pickup to help TOC rebuild
 def _dump_by_json_result(out_dir, json_result, md_info):
     os.makedirs(out_dir, exist_ok=True)
     md_full_content = ""

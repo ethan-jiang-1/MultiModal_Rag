@@ -167,7 +167,10 @@ def update_markdown_heading_content(md_text, md_info, fhl_map):
             if i in used_indices:
                 continue
             if item["original_line"] == stripped_line:
-                new_lines.append(item["mapped_line"])
+                new_line = item["mapped_line"]
+                if new_line is None:
+                    new_line = ""
+                new_lines.append(new_line)
                 used_indices.add(i)
                 replaced = True
                 break
