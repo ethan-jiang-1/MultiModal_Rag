@@ -234,7 +234,7 @@ if __name__ == "__main__":
 
     src_step_num = 1
     #md_info_path = "_work/ctn2md_考勤修改统一规则/_info.json)"
-    md_info_path = "_work/ctn2md_-Context LLMs Meet RAG_compressed/_info.json"
+    md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
 
     md_info_path = fix_headings_llamaparse(md_info_path, src_step_num=src_step_num)
 
