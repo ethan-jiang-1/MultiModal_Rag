@@ -115,8 +115,13 @@ def split_markdown_to_files_with_desc_and_sequence(markdown_text, output_dir):
                 file_name = f"{file_index:04d}_{safe_desc}.md"
                 file_path = os.path.join(output_dir, file_name)
                 with open(file_path, 'w', encoding='utf-8') as file:
-                    file.write(f"[desc] {clean_desc} [/desc]\n")
-                    file.write("\n".join(current_section))
+                    desc = f"[desc] {clean_desc} [/desc]\n"
+                    desc = remove_plc_comment(desc)
+                    file.write(desc)
+                    
+                    section_content = "\n".join(current_section)
+                    section_content = remove_plc_comment(section_content)
+                    file.write(section_content)
                 current_section = []  # 重置当前 section
 
             # 提取描述内容并清理换行符

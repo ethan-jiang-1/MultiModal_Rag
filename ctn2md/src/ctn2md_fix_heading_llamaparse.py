@@ -47,11 +47,11 @@ def filter_markdown_heading_llamapase(md_text, md_info):
             if first_line_no_heading is None:
                 if not match:
                     plc_comment = PLC_COMMENT.format(current_page=1,
-                                                    total_pages=-1,
-                                                    line_number=ndx+1,
-                                                    total_lines=-1,
-                                                    content_char_count=-1,
-                                                    total_char_count=-1)
+                                                     total_pages=-1,
+                                                     line_number=ndx+1,
+                                                     total_lines=-1,
+                                                     content_char_count=-1,
+                                                     total_char_count=-1)
                     first_line_no_heading = "## " + first_line_no_heading + " " + plc_comment
                     match = re.match(heading_pattern, line)
 
