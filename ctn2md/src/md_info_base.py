@@ -14,7 +14,7 @@ if "./" not in sys.path:
 
 SEP_FNAME_EXT = "___"
 FNAME_MD_INFO = "_info.json"
-MD_INFO_VER = "0.3.0"
+MD_INFO_VER = "0.4.0"
 
 DEFAULT_OUT_ROOT = "_work"
 

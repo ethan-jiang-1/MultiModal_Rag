@@ -31,7 +31,7 @@ def filter_headings_for_hierarchy_comments(md_text, md_info):
     processed_lines = []
     hierarchy_stack = []  # 用于维护标题的层级
     doc_title = None  # 当前的一级标题
-    md_info["sections"] = {}
+    md_info["md_sections"] = {}
 
     for line in lines:
         # 移除 <!-- PLC: ... --> 注释
@@ -47,8 +47,8 @@ def filter_headings_for_hierarchy_comments(md_text, md_info):
                 doc_title = title  # 设置新的一级标题
                 hierarchy_stack = []  # 清空层级堆栈
                 # 确保 doc_title 在 md_info 中存在
-                if doc_title not in md_info["sections"]:
-                    md_info["sections"][doc_title] = []  # 初始化该 doc_title 的记录
+                if doc_title not in md_info["md_sections"]:
+                    md_info["md_sections"][doc_title] = []  # 初始化该 doc_title 的记录
             else:
                 # 调整堆栈以匹配当前标题的层级
                 while len(hierarchy_stack) >= level - 1:
@@ -65,7 +65,7 @@ def filter_headings_for_hierarchy_comments(md_text, md_info):
             desc = f"<!-- [desc] {hierarchy_desc} [desc] -->"
 
             # 记录到 md_info
-            md_info["sections"][doc_title].append(hierarchy_desc)
+            md_info["md_sections"][doc_title].append(hierarchy_desc)
 
             # 插入描述注释
             processed_lines.append("")
@@ -155,7 +155,7 @@ def fix_section_heirarchy_comments(md_info_path, src_step_num=None, dst_step_num
     with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_new)
 
-    pathname_sections = os.path.join(os.path.dirname(md_info.get_md_info_path()), "sections") 
+    pathname_sections = os.path.join(os.path.dirname(md_info.get_md_info_path()), "md_sections") 
     md_info["sections_output_dir"] = pathname_sections
     if os.path.isdir(pathname_sections):
         shutil.rmtree(pathname_sections)
@@ -172,7 +172,7 @@ if __name__ == "__main__":
 
     src_step_num = 3
     dst_step_num = 41
-    md_info_path = "_work/ctn2md_时代的人力资源管理进化(徐刚)/_info.json"
+    md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
 
     md_info_path = fix_section_heirarchy_comments(md_info_path, src_step_num=src_step_num, dst_step_num=dst_step_num)
 
