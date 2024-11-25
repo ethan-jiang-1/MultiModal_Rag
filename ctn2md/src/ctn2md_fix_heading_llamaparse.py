@@ -17,7 +17,8 @@ if "./" not in sys.path:
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo
 from ctn2md.utils_llm.llm_fix_heading_lvl import fix_heading_lvl_markdown
-from ctn2md.utils.util_markdown import extract_pure_text_from_markdown
+#from ctn2md.utils.util_markdown import extract_pure_text_from_markdown
+from ctn2md.src.md_process_plc import inject_plc_comment_to_page, separate_heading_and_plc_comment, PLC_COMMENT
 
 def filter_markdown_heading_llamapase(md_text, md_info):
     """
@@ -39,24 +40,44 @@ def filter_markdown_heading_llamapase(md_text, md_info):
     # 规整化处理 Markdown 文本
     normalized_lines = []
     org_lines = md_text.splitlines()
-    for line in org_lines:
+    first_line_no_heading = None
+    for ndx, line in enumerate(org_lines):
         match = re.match(heading_pattern, line)
+        if len(line.strip()) != 0:
+            if first_line_no_heading is None:
+                if not match:
+                    plc_comment = PLC_COMMENT.format(current_page=1,
+                                                    total_pages=-1,
+                                                    line_number=ndx+1,
+                                                    total_lines=-1,
+                                                    content_char_count=-1,
+                                                    total_char_count=-1)
+                    first_line_no_heading = "## " + first_line_no_heading + " " + plc_comment
+                    match = re.match(heading_pattern, line)
+
         if match:
+            first_line_no_heading = ""
             # 提取 # 符号 和 heading 的内容
             hashes = match.group(1)
             content = match.group(3).strip()  # 去掉多余的空格
             normalized_line = f"{hashes} {content}"
             normalized_lines.append(normalized_line)
-            heading_lines.append(normalized_line)
+
+            heading_line, plc_comment = separate_heading_and_plc_comment(normalized_line)
+            heading_lines.append((heading_line, plc_comment))
         else:
             normalized_lines.append(line)
 
     # 生成规整化的 Markdown 内容
     normalized_md = "\n".join(normalized_lines)
 
+    heading_first_line, plc_comment_first_line = "", ""
+    if first_line_no_heading is not None and len(first_line_no_heading) > 0:
+        heading_first_line, plc_comment_first_line = separate_heading_and_plc_comment(normalized_line)
+
     md_info["fhl"] = {"org_doc_title": md_info.get_doc_title(),
                       "org_doc_type": md_info.get_ctn_type(),
-                      "org_first_line": org_lines[0],
+                      "org_first_line": (heading_first_line, plc_comment_first_line),
                       "org_heading_lines": heading_lines}
     md_info.save()
                 
@@ -65,55 +86,9 @@ def filter_markdown_heading_llamapase(md_text, md_info):
 def fix_markdown_with_no_heading(md_text, md_info):
     doc_title = md_info.get_doc_title()
     heading_line = "# " + doc_title + "\n\n"
-    return heading_line + md_text
+    new_md_text = heading_line + md_text
+    return inject_plc_comment_to_page(new_md_text, 1, 1, md_info)
 
-def count_markdown_heading_content(md_text, md_info):
-    """
-    统计 Markdown 文本中每个 heading (以 # 开头) 的内容字符数（去除空白）。
-
-    :param md_text: Markdown 文本内容
-    :param md_info: 文档信息（文件名等）
-    :return: 一个字典，key 为标题内容，value 为标题后内容的字符数
-    """
-    # 定义正则匹配 Markdown Heading 的模式
-    heading_pattern = r"^(#{1,6})\s*(.+)$"
-
-    # 分割 Markdown 文本的行
-    lines = md_text.splitlines()
-    
-    # 用于存储每个标题的内容字符数
-    heading_content_counts = {}
-
-    current_heading = None
-    current_content = []
-
-    for line in lines:
-        match = re.match(heading_pattern, line)
-        if match:
-            # 如果匹配到新的 heading
-            if current_heading is not None:
-                # 统计当前标题的内容字符数 (为刚才过去的heading)
-                pure_content_text = extract_pure_text_from_markdown(''.join(current_content))
-                heading_content_counts[current_heading] = len(pure_content_text)
-            # 更新当前标题
-            current_heading = match.group(0).strip()
-            current_content = []
-        else:
-            # 非标题行，加入当前标题的内容
-            current_content.append(line.strip())
-
-    # 处理最后一个标题的内容
-    if current_heading is not None:
-        content_text = ''.join(current_content).replace(' ', '').replace('\n', '')
-        heading_content_counts[current_heading] = len(content_text)
-    fhl = md_info.get("fhl")
-    if fhl is not None:
-        org_heading_lines = fhl.get("org_heading_lines")
-        for ndx, heading_line in enumerate(org_heading_lines):
-            cnt = heading_content_counts.get(heading_line, 0)
-            org_heading_lines[ndx] = (heading_line, cnt)
-        md_info.save()
-    return heading_content_counts
 
 def update_markdown_heading_content(md_text, md_info, fhl_map):
     """
@@ -129,8 +104,7 @@ def update_markdown_heading_content(md_text, md_info, fhl_map):
     fhl_map_copy = copy.deepcopy(fhl_map)
 
     # 提取映射规则
-    first_line_map = fhl_map_copy.get("first_line_map", {})
-    heading_lines_map = fhl_map_copy.get("heading_lines_map", [])
+    heading_lines_map = fhl_map_copy.get("optimized_heading_lins_map", [])
 
     # 初始化结果 Markdown 文本
     lines = md_text.splitlines()
@@ -139,27 +113,7 @@ def update_markdown_heading_content(md_text, md_info, fhl_map):
     # 标记哪些 heading_lines_map 的项已被处理
     used_indices = set()
 
-    # 处理第一行
-    if lines:
-        first_line = lines[0].strip()
-        if first_line_map and "mapped_line" in first_line_map:
-            if first_line.startswith("#"):
-                for i, item in enumerate(heading_lines_map):
-                    if i in used_indices:
-                        continue
-                    if item["original_line"] == first_line:
-                        new_lines.append(item["mapped_line"])
-                        used_indices.add(i)
-                        break
-                else:
-                    new_lines.append(first_line_map["mapped_line"])
-            else:
-                new_lines.append(first_line_map["mapped_line"])
-        else:
-            new_lines.append(first_line)
-
-    # 逐行处理剩余内容
-    for line in lines[1:]:
+    for line in lines:
         stripped_line = line.strip()
         replaced = False
 
@@ -201,14 +155,12 @@ def fix_headings_llamaparse(md_info_path, src_step_num=None):
         md_text = f.read()
 
     md_text_new = filter_markdown_heading_llamapase(md_text, md_info)
-    count_markdown_heading_content(md_text_new, md_info)
 
     fhl_org = md_info["fhl"]
     org_heading_lines = fhl_org["org_heading_lines"]
     if len(org_heading_lines) == 0:
         md_text_new = fix_markdown_with_no_heading(md_text_new, md_info)
         md_text_new = filter_markdown_heading_llamapase(md_text_new, md_info)
-        count_markdown_heading_content(md_text_new, md_info)
         fhl_org = md_info["fhl"]
     
     #rich.print(fhl)
@@ -216,7 +168,7 @@ def fix_headings_llamaparse(md_info_path, src_step_num=None):
 
     #rich.print(fhl_map)
     rich.print(fhl_map)
-    o2n_map = {"org_heading_lines": [item[0] for item in fhl_map["org_heading_lines"]],
+    o2n_map = {"org_heading_lines": [item["heading"] for item in fhl_map["org_heading_lines"]],
                "new_heading_lines": fhl_map["new_heading_lines"]}
     rich.print(o2n_map)
 
@@ -236,8 +188,8 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     src_step_num = 1
-    #md_info_path = "_work/ctn2md_考勤修改统一规则/_info.json)"
-    md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
+    #md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
+    md_info_path = "_work/ctn2md_座椅STO间隙 P1/_info.json"
 
     md_info_path = fix_headings_llamaparse(md_info_path, src_step_num=src_step_num)
 

@@ -129,7 +129,8 @@ if __name__ == "__main__":
     #ofm = OFM_BY_PAGE
     #md_info_path = "_work/ctn2md_stream1/info.json"
 
-    md_info_path = "_work/ctn2md_时代的人力资源管理进化(徐刚)/_info.json"
+    #md_info_path = "_work/ctn2md_时代的人力资源管理进化(徐刚)/_info.json"
+    md_info_path = "_work/ctn2md_座椅STO间隙 P1/_info.json"
 
     md_info_path = fix_content_ocr_by_gpt(md_info_path, ofm=ofm, src_step_num=src_step_num)
     print(md_info_path)

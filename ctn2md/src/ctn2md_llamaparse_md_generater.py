@@ -4,7 +4,7 @@ import sys
 import logging
 import rich
 import random
-import re
+#import re
 
 load_dotenv()
 
@@ -14,6 +14,7 @@ if "./" not in sys.path:
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo
 from ctn2md.src.md_info_scan import analyze_scan_info
+from ctn2md.src.md_process_plc import inject_plc_comment_to_page
 
 def _get_llamaparse():
     from llama_parse import LlamaParse
@@ -42,68 +43,6 @@ def _save_md_page(out_dir, job_id, ndx, md_page, md_imgs):
         logging.exception(ex)
     return None 
 
-def inject_aux_info_to_page(md_page, page_ndx, total_pages, md_info):
-    """
-    注入统计信息到 Markdown 文档标题行。
-    :param md_page: str, 当前页面的 Markdown 内容
-    :param page_ndx: int, 当前页码（从 0 开始计数）
-    :param total_pages: int, 文档总页数
-    :param md_info: dict, 包含整个文档的信息（例如标题等，暂未使用）
-    :return: str, 注入统计信息后的 Markdown 文档内容
-    """
-    def count_chars(text):
-        """
-        统计文本中的字符数，忽略 Markdown 特殊符号和图片引用。
-        """
-        # 移除 Markdown 特殊符号和图片引用
-        text = re.sub(r'[>#*_\-`~\[\]]', '', text)  # 去掉 Markdown 符号
-        text = re.sub(r'!\[.*?\]\(.*?\)', '', text)  # 去掉图片引用
-        text = re.sub(r'\s+', '', text)             # 去掉空白符
-        return len(text)
-
-    # 分割 Markdown 文档为行，并确定总行数
-    lines = md_page.split('\n')
-    total_lines = len(lines)
-
-    # 使用正则提取标题和其内容范围
-    sections = []
-    current_section = {"title": None, "lines": []}
-
-    for line in lines:
-        if re.match(r'^#+\s', line):  # 如果是标题行
-            # 如果当前有积累的标题范围，保存
-            if current_section["title"]:
-                sections.append(current_section)
-            # 开始一个新的标题范围
-            current_section = {"title": line, "lines": []}
-        else:
-            # 非标题行，归属于当前标题范围
-            current_section["lines"].append(line)
-
-    # 最后一个标题范围
-    if current_section["title"]:
-        sections.append(current_section)
-
-    # 计算总字符数
-    total_char_count = sum(
-        count_chars(line) for line in lines
-    )
-
-    # 结果行列表
-    result_lines = []
-    for section in sections:
-        title = section["title"]
-        content_lines = section["lines"]
-        content_char_count = sum(count_chars(line) for line in content_lines)
-
-        # 注释信息
-        line_number = lines.index(title) + 1
-        injected_title = f"{title} <!-- PLW: Page:{page_ndx + 1}/{total_pages}, Line:{line_number}/{total_lines}, Chars:{content_char_count}/{total_char_count} -->"
-        result_lines.append(injected_title)
-        result_lines.extend(content_lines)
-
-    return '\n'.join(result_lines)
-
 def _dump_by_json_result(out_dir, json_result, md_info):
     os.makedirs(out_dir, exist_ok=True)
     md_full_content = ""
@@ -129,7 +68,7 @@ def _dump_by_json_result(out_dir, json_result, md_info):
             rich.print(page)
             md_page = page.get("md", None)
             if md_page is not None:
-                md_page_modified = inject_aux_info_to_page(md_page, page_ndx, total_pages, md_info)
+                md_page_modified = inject_plc_comment_to_page(md_page, page_ndx, total_pages, md_info)
                 if len(md_page_modified) > 0:
                     if len(md_full_content) != 0:
                         md_full_content += "\n"

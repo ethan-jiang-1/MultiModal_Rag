@@ -16,22 +16,17 @@ if "./" not in sys.path:
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo
+from ctn2md.src.md_process_plc import remove_plc_comment
 
 
 def filter_headings_for_hierarchy_comments(md_text, md_info):
     """
-    在 Markdown 文本的每个标题前插入基于层级的描述注释，并移除所有 <!-- PLW: ... --> 内容。
+    在 Markdown 文本的每个标题前插入基于层级的描述注释，并移除所有 <!-- PLC: ... --> 内容。
 
     :param md_text: 原始 Markdown 文本
     :param md_info: 已存在的字典，用于记录描述注释信息
     :return: 带描述注释的 Markdown 文本和更新后的 md_info
     """
-    def remove_plw_comment(line):
-        """
-        移除行中的 <!-- PLW: ... --> 注释。
-        """
-        return re.sub(r'<!-- PLW: .*? -->', '', line).strip()
-
     lines = md_text.strip().split('\n')
     processed_lines = []
     hierarchy_stack = []  # 用于维护标题的层级
@@ -39,8 +34,8 @@ def filter_headings_for_hierarchy_comments(md_text, md_info):
     md_info["sections"] = {}
 
     for line in lines:
-        # 移除 <!-- PLW: ... --> 注释
-        line = remove_plw_comment(line)
+        # 移除 <!-- PLC: ... --> 注释
+        line = remove_plc_comment(line)
 
         # 检测是否是标题行
         if line.startswith("#"):
