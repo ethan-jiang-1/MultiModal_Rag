@@ -104,7 +104,9 @@ def update_markdown_heading_content(md_text, md_info, fhl_map):
     fhl_map_copy = copy.deepcopy(fhl_map)
 
     # 提取映射规则
-    heading_lines_map = fhl_map_copy.get("optimized_heading_lins_map", [])
+    heading_lines_map = fhl_map_copy.get("optimized_heading_lines_map", [])
+    if len(heading_lines_map) == 0:
+        logging.warning("UMHC: heading_lines_map == [] ?!")
 
     # 初始化结果 Markdown 文本
     lines = md_text.splitlines()
@@ -117,17 +119,18 @@ def update_markdown_heading_content(md_text, md_info, fhl_map):
         stripped_line = line.strip()
         replaced = False
 
-        for i, item in enumerate(heading_lines_map):
-            if i in used_indices:
-                continue
-            if item["original_line"] == stripped_line:
-                new_line = item["mapped_line"]
-                if new_line is None:
-                    new_line = ""
-                new_lines.append(new_line)
-                used_indices.add(i)
-                replaced = True
-                break
+        if stripped_line.startswith("#"):
+            for i, item in enumerate(heading_lines_map):
+                if i in used_indices:
+                    continue
+                if stripped_line.startswith(item["original_line"]):
+                    new_line = item["mapped_line"]
+                    if new_line is None:
+                        new_line = ""
+                    new_lines.append(new_line)
+                    used_indices.add(i)
+                    replaced = True
+                    break
 
         if not replaced:
             new_lines.append(line)
