@@ -22,6 +22,7 @@ from ctn2md.src.ctn2md_fix_section_hierarchy_numbers import fix_section_heirarch
 from ctn2md.src.ctn2md_fix_section_hierarchy_comments import fix_section_heirarchy_comments
 
 
+# TODO: ethan_bm25 keywords for bm25 at doc level
 def _make_final_md(md_info_path):
     md_info = MdInfo(md_info_path)
     last_step_num = md_info.get_last_step_num()
