@@ -16,7 +16,7 @@ if "./" not in sys.path:
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo
-from ctn2md.src.md_process_plc import remove_plc_comment
+from ctn2md.utils.util_markdown import remove_comment
 
 
 def _filter_headings_for_hierarchy_comments(md_text, md_info):
@@ -34,8 +34,8 @@ def _filter_headings_for_hierarchy_comments(md_text, md_info):
     md_info["md_sections"] = {}
 
     for line in lines:
-        # 移除 <!-- PLC: ... --> 注释
-        line = remove_plc_comment(line)
+        # 移除 <!-- ... --> 注释
+        line = remove_comment(line)
 
         # 检测是否是标题行
         if line.startswith("#"):
@@ -116,11 +116,11 @@ def _split_markdown_to_files_with_desc_and_sequence(markdown_text, output_dir):
                 file_path = os.path.join(output_dir, file_name)
                 with open(file_path, 'w', encoding='utf-8') as file:
                     desc = f"[desc] {clean_desc} [/desc]\n"
-                    desc = remove_plc_comment(desc)
+                    desc = remove_comment(desc)
                     file.write(desc)
                     
                     section_content = "\n".join(current_section)
-                    section_content = remove_plc_comment(section_content)
+                    section_content = remove_comment(section_content)
                     file.write(section_content)
                 current_section = []  # 重置当前 section
 

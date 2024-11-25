@@ -24,3 +24,8 @@ def extract_pure_text_from_markdown(md_content):
     # 返回提取后的纯文本内容
     return md_content
 
+def remove_comment(line):
+    """
+    移除行中的 <!-- ... --> 注释。
+    """
+    return re.sub(r'<!--.*?-->', '', line).strip()
