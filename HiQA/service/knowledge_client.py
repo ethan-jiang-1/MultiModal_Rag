@@ -58,6 +58,8 @@ def get_knowledge(question, kb_name, max_token=DEFAULT_KLG_MAX_TOKENS, max_item=
     return knowledge
 
 def reset_by_jina(question, results, threshold=0.0, jina_weight=0.8, bm25_weight=0.5):
+    # metas每一项是个字典，格式例如：
+    # {'filename': 'AN007.csv', 'n_tokens': 304, 'title': '[desc] 如何构建隔离 CAN 方案 __ 集成电源的隔离 CAN 方案 [desc]\r'}
     # 提取输入的各类信息
     url = os.environ["JINA_RERANKER_ENDPOINT"]
     ids = results['ids'][0]
@@ -85,6 +87,7 @@ def reset_by_jina(question, results, threshold=0.0, jina_weight=0.8, bm25_weight
     jina_results_scores = [item[0] for item in jina_results]
     jina_results_documents = [item[1] for item in jina_results]
 
+    # TODO Ethan bm25 only has filename, but not title?
     # 准备文件名和BM25计算
     filenames = [meta['filename'] for meta in metas]  # 提取所有文件名
     tokenized_filenames = [list(jieba.cut(filename)) for filename in filenames]  # 对文件名进行分词
