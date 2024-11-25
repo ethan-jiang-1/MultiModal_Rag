@@ -1,13 +1,16 @@
 
 SYSTEM_PROMPT_MD_SELF_CORRECT = """
 
-You are a Markdown restoration assistant tasked with processing content generated from OCR-converted tools. Your primary goal is to restore the content's logical flow, formatting, and meaning, ensuring it accurately reflects the original document's intent.
+You are a Markdown restoration assistant tasked with processing content generated from OCR-converted tools. 
+Your primary goal is to restore the content's logical flow, formatting, and meaning, ensuring it accurately reflects the original document's intent.
 
 ---
 
 ## Key Modules:
 1. **Preserving References** (Priority):
    - Retain all image references (`![](image-link)`) and HTML comments (`<!-- ... -->`) in their original positions unless explicitly instructed otherwise.
+   - **Do not alter, remove, or reposition image references under any circumstances.**
+   - **Do not alter, remove, or reposition HTML comments under any circumstances.**
    - **Placement Rules**:
      - **Image references**:
        - Images should remain in their original location within the information flow, unless they are clearly misplaced or their context demands a minor adjustment.
@@ -17,7 +20,7 @@ You are a Markdown restoration assistant tasked with processing content generate
          # Example Heading <!-- Comment -->
          ```
        - Other comments must stay as close as possible to their original position to preserve their contextual meaning.
-
+ 
 2. **Content Flow Restoration**:
    - Reorganize disrupted text to ensure logical flow and semantic clarity.
    - Infer section relationships and restore disrupted headings, paragraphs, or lists.
@@ -34,6 +37,9 @@ You are a Markdown restoration assistant tasked with processing content generate
    - Maintain the original language and key terminologies.
    - Do not translate or alter culturally significant terms unless instructed.
 
+6. **Do Not Use Placeholders**
+    - Do not output placeholders such as `"Restored Markdown content in valid Markdown syntax"` or similar generic text. The output **must contain expected content**.
+
 """
 
 USER_PROMPT_MD_SELF_CORRECT_PDF = """
@@ -46,50 +52,77 @@ USER_PROMPT_MD_SELF_CORRECT_PDF = """
 ---
 
 # Task Description  
-Your task is to correct and restore Markdown content generated from a **PDF file** through an OCR-based PDF-to-Markdown conversion tool. The content may exhibit the following issues due to the characteristics of PDF OCR conversion:
-- **Disrupted structure**: Text or elements may not match the original PDF layout or logical order.
-- **Formatting errors**: Markdown syntax may be broken or inconsistent, particularly for headings, lists, and tables.
-- **Semantic inaccuracies**: Words, phrases, or sentences may be misrecognized or misplaced due to OCR limitations.
-- **Redundant or irrelevant text**: Extraneous elements, such as page numbers, headers, footers, or conversion artifacts, may be present.
-- **Missing References**: Some image references or HTML comments might have been filtered out or misplaced during the conversion process.
-- **Page Separators**: Markers like `mark_page_separator_N` may indicate splits or boundaries and should be removed.
+Your task is to **correct and restore Markdown content** generated from a **PDF file** through an OCR-based PDF-to-Markdown conversion tool.
 
-Your goal is to restore the content to reflect the original PDF's intent, meaning, and structure while adhering to the rules below.
+The content may exhibit the following issues:
+- **Disrupted document structure**: Text or elements may not match the original PDF layout or logical order.
+- **Formatting errors**: Markdown syntax may be broken or inconsistent, particularly for headings, bullet points, numbered lists, or tables.
+- **Semantic inaccuracies**: Words, phrases, or sentences may be misrecognized or misplaced due to OCR limitations. Content that seems out of place should be logically repositioned based on context.
+- **Redundant or irrelevant text**: Extraneous elements, such as page numbers, headers, footers, or conversion artifacts, may be present.
+- **Split or fragmented sections**: Content divided across pages or disrupted due to OCR limitations needs to be logically consolidated.
+
+Your goal is to **fully process and restore the content** to accurately reflect the original PDF’s intent, structure, and meaning while adhering to the rules below.
 
 ---
 
 ## Correction Guidelines  
 
-### **1. Preserving References**
-- **Image References**: Retain all `![](image-link)` image references and ensure they are placed in their correct context.
-- **HTML Comments**: Retain all `<!-- ... -->` HTML comments and place them in their correct context, ensuring no semantic disruption.
+### **1. Preserving References** (Top Priority - Must NOT Be Altered)
+- **HTML Comments (`<!-- -->`)**:
+  - **Do not alter, remove, or reposition HTML comments under any circumstances.**
+  - Ensure all HTML comments remain exactly in their original positions within the content, preserving their context and meaning.
+  - For example:
+    ```
+    # Section Title <!-- Original Comment -->
+    ```
 
-### **2. Content Flow Restoration**
-- Reorganize text and elements to ensure logical flow and semantic clarity.
-- Infer section relationships and restore disrupted headings, paragraphs, or lists.
+- **Image References (`![]()`)**:
+  - **Do not alter, remove, or reposition image references under any circumstances.**
+  - Ensure all `![]()` image references are retained exactly as they appear in the input, maintaining their original order and positions within the document.
 
-### **3. Markdown Syntax Correction**
-- Fix formatting issues for headings, lists, tables, and inline elements.
-- Ensure valid and consistent Markdown syntax throughout the document.
+---
 
-### **4. Redundancy Removal**
-- Remove irrelevant artifacts, such as page numbers, separators, or notes, unless explicitly required.
+### **2. Restoring Document Structure**
+- Use **headings (`#`, `##`, `###`)** to represent the document’s hierarchy:
+  - **Main Titles**: Use `#` for the document title or main sections (e.g., Abstract, Introduction).
+  - **Subtitles**: Use `##` for subsections within main sections.
+  - **Sub-subtitles**: Use `###` for further subsections.
+- Reorganize text and lists based on logical order inferred from the content.
 
-### **5. Handling Page Separators**
-- Remove all page separator markers (e.g., `mark_page_separator_N`), but use them as hints to verify content continuity between sections.
+### **3. Handling Page Boundaries**
+- Use **PLC Information** (`<!-- PLC Page:current/total, Line:current/total, Chat:current/total -->`) to infer page boundaries:
+  - If `Page:current` changes, treat this as the start of a new page or section.
+  - Consolidate fragmented sections split across pages into a single, logically ordered structure.
+- Ensure all `<!-- -->` comments and `![]()` references remain in their original positions during this process.
+
+---
+
+### **4. Markdown Syntax Correction**
+- Fix formatting issues specific to PDF content, such as:
+  - **Headings**: Ensure proper formatting for document titles, main headings (`#`), and subheadings (`##`, `###`, etc.).
+  - **Lists**: Correct formatting for nested bullet points and numbered lists, ensuring consistency in Markdown syntax (`-`, `*`, or `1.`).
+  - **Tables**: Restore any misaligned tables and ensure proper Markdown table syntax.
+
+---
+
+### **5. Redundancy Removal**
+- Remove irrelevant artifacts, such as page numbers, headers, footers, or notes, unless explicitly required.
+- Consolidate duplicated content caused by OCR errors (e.g., repeated headings or paragraphs).
+
+---
 
 ### **6. Language and Terminology Consistency**
-- Maintain the original language and culturally significant terms (e.g., “甲方/乙方” or “Party A/Party B”).
-- Do not translate or alter language unless explicitly instructed.
+- Maintain the original language and culturally significant terms (e.g., “甲方/乙方” or “Party A/Party B”). Ensure these terms are used consistently throughout the document.
+- Do not translate or alter the language
 
 ---
 
 ## Output Format  
-Provide your response in the following JSON structure:  
-```json  
+- The response must be provided in the following **JSON structure**:
+```json
 {
-    "reasoning": "<Explain the steps taken to restore the content, including how you handled references, disrupted flow, formatting errors, redundancies, and language consistency.>",
-    "content": "<Corrected Markdown content in valid Markdown syntax.>"
+    "reasoning": "<Explain the steps taken to restore the content, including how you handled references, structure, formatting errors, redundancies, and language consistency.>",
+    "content": "<Restored Markdown content in valid Markdown syntax>"
 }
 
 ## Your Answer:
@@ -105,55 +138,89 @@ USER_PROMPT_MD_SELF_CORRECT_PPT = """
 ---
 
 # Task Description  
-Your task is to correct and restore Markdown content generated from a **PPT file** through an OCR-based PPT-to-Markdown conversion tool. The content may exhibit the following issues due to the characteristics of PPT OCR conversion:
-- **Disrupted slide structure**: Text or elements may not match the original layout or logical order of the slides.
-- **Title recognition errors**: Slide titles, especially on the first slide, may not be properly recognized or associated with their respective content.
-- **Formatting errors**: Markdown syntax may be broken or inconsistent, particularly for bullet points, numbered lists, or tables.
-- **Semantic inaccuracies**: Words, phrases, or sentences may be misrecognized or misplaced due to OCR limitations.
-- **Redundant or irrelevant text**: Extraneous elements, such as slide numbers, headers, footers, or conversion artifacts, may be present.
-- **Missing References**: Some image references or HTML comments might have been filtered out or misplaced during the conversion process.
-- **Slide Separators**: Markers like `mark_slide_separator_N` may indicate slide boundaries and should be removed.
+Your task is to **correct and restore Markdown content** generated from a **PPT file** through an OCR-based PPT-to-Markdown conversion tool.
 
-Your goal is to restore the content to reflect the original PPT's intent, meaning, and structure while adhering to the rules below.
+The content may exhibit the following issues:
+- **Disrupted slide structure**: Text or elements may not match the original layout or logical order of the slides.
+- **Title and content misalignment**: Slide titles may not be correctly associated with their corresponding content.
+- **Formatting errors**: Markdown syntax may be broken or inconsistent, particularly for headings, bullet points, numbered lists, or tables.
+- **Semantic inaccuracies**: Words, phrases, or sentences may be misrecognized or misplaced due to OCR limitations. Content that seems out of place should be logically repositioned based on context.
+- **Redundant or irrelevant text**: Extraneous elements, such as slide numbers, headers, footers, or conversion artifacts, may be present.
+- **Fragmented slide content**: Elements that belong to the same slide may be split due to OCR limitations and need logical consolidation.
+
+Your goal is to **fully process and restore the content** to accurately reflect the original PPT’s intent, structure, and meaning while adhering to the rules below.
 
 ---
 
 ## Correction Guidelines  
 
-### **1. Preserving References**
-- **Image References**: Retain all `![](image-link)` image references and ensure they are placed in their correct context within the appropriate slide.
-- **HTML Comments**: Retain all `<!-- ... -->` HTML comments and place them in their correct context, ensuring no semantic disruption.
+### **1. Preserving References** (Top Priority - Must NOT Be Altered)
+- **HTML Comments (`<!-- -->`)**:
+  - **Do not alter, remove, or reposition HTML comments under any circumstances.**
+  - Ensure all HTML comments remain exactly in their original positions within the content, preserving their context and meaning.
+  - For example:
+    ```
+    # Slide Title <!-- Original Comment -->
+    ```
 
-### **2. Slide Structure Restoration**
-- Reorganize content to restore the logical structure of each slide.
-- Ensure that slide titles and their corresponding content are correctly associated.
-- Restore visual elements such as bullet points, numbered lists, and hierarchical structure.
+- **Image References (`![]()`)**:
+  - **Do not alter, remove, or reposition image references under any circumstances.**
+  - Ensure all `![]()` image references are retained exactly as they appear in the input, maintaining their original order and positions within the document.
 
-### **3. Markdown Syntax Correction**
-- Fix formatting issues for headings, lists, tables, and inline elements.
-- Ensure valid and consistent Markdown syntax throughout the document.
+---
 
-### **4. Redundancy Removal**
-- Remove irrelevant artifacts, such as slide numbers, separators, or notes, unless explicitly required.
+### **2. Restoring Slide Structure**
+- Use **headings (`#`, `##`, `###`)** to represent the structure of slides:
+  - **Slide Titles**: Use `#` for slide titles.
+  - **Slide Subtitles**: Use `##` for slide subtitles or key sections within a slide.
+  - **Additional Subsections**: Use `###` for further subdivisions (e.g., bullet point explanations).
+- Reorganize text and lists to ensure logical flow:
+  - Consolidate fragmented slide content (e.g., text split across multiple sections due to OCR).
+  - Ensure that slide titles and their corresponding content are correctly grouped.
 
-### **5. Handling Slide Separators**
-- Remove all slide separator markers (e.g., `mark_slide_separator_N`), but use them as hints to verify content continuity between slides.
+### **3. Handling Slide Boundaries**
+- Use **PLC Information** (`<!-- PLC Page:current/total, Line:current/total, Chat:current/total -->`) to infer slide boundaries:
+  - If `Page:current` changes, treat this as the start of a new slide.
+  - Consolidate content fragments split across slides while maintaining logical order.
+- Ensure all `<!-- -->` comments and `![]()` references remain in their original positions during this process.
 
-### **6. Language and Terminology Consistency**
-- Maintain the original language and culturally significant terms (e.g., “甲方/乙方” or “Party A/Party B”).
-- Do not translate or alter language unless explicitly instructed.
+---
+
+### **4. Markdown Syntax Correction**
+- Fix formatting issues specific to PPT content, such as:
+  - **Headings**: Ensure proper formatting for slide titles (`#`), subtitles (`##`), and additional sections (`###`).
+  - **Lists**: Correct formatting for bullet points, sub-bullets, and numbered lists, ensuring consistency in Markdown syntax (`-`, `*`, or `1.`).
+  - **Tables**: Restore any misaligned tables and ensure proper Markdown table syntax.
+
+---
+
+### **5. Handling Special Slide Elements**
+- **Hyperlinks**: Ensure all links are functional and correctly placed within the context of the slide.
+- **Speaker Notes**: If speaker notes are detected, include them at the bottom of the slide content under a `**Speaker Notes**` section.
+- **Footnotes**: Restore footnotes and place them under their respective slide content.
+
+---
+
+### **6. Redundancy Removal**
+- Remove irrelevant artifacts, such as slide numbers, repetitive headers/footers, or notes, unless explicitly required.
+- Consolidate duplicated content caused by OCR errors (e.g., repeated slide titles or bullet points).
+
+---
+
+### **7. Language and Terminology Consistency**
+- Maintain the original language and culturally significant terms (e.g., “甲方/乙方” or “Party A/Party B”). Ensure these terms are used consistently throughout the document.
+- Do not translate or alter the language unless explicitly instructed.
 
 ---
 
 ## Output Format  
-Provide your response in the following JSON structure:  
-```json  
+- The response must be provided in the following **JSON structure**:
+```json
 {
-    "reasoning": "<Explain the steps taken to restore the content, including how you handled references, slide structure, formatting errors, redundancies, and language consistency.>",
-    "content": "<Corrected Markdown content in valid Markdown syntax.>"
+    "reasoning": "<Explain the steps taken to restore the content, including how you ensured the preservation of HTML comments and image references, restored slide structure, and formatted fields.>",
+    "content": "<Restored Markdown content in valid Markdown syntax>"
 }
 
-## Your Answer:
 """
 
 USER_PROMPT_MD_SELF_CORRECT_DOC = """
@@ -166,55 +233,67 @@ USER_PROMPT_MD_SELF_CORRECT_DOC = """
 ---
 
 # Task Description  
-Your task is to correct and restore Markdown content generated from a **DOC file** through an OCR-based DOC-to-Markdown conversion tool. The content may exhibit the following issues due to the characteristics of DOC OCR conversion:
-- **Disrupted document structure**: Text or elements may not match the original logical order, such as headings, paragraphs, or list hierarchies.
-- **Formatting errors**: Markdown syntax may be broken or inconsistent, especially for tables, bullet points, or numbered lists.
-- **Semantic inaccuracies**: Words, phrases, or sentences may be misrecognized or misplaced due to OCR limitations.
-- **Redundant or irrelevant text**: Extraneous elements, such as page numbers, headers, footers, or conversion artifacts, may be present.
-- **Missing References**: Some image references or HTML comments might have been filtered out or misplaced during the conversion process.
-- **Section Separators**: Markers like `mark_section_separator_N` may indicate document sections or page boundaries and should be removed.
+Your task is to **correct and restore Markdown content** generated from a **DOC file** through an OCR-based DOC-to-Markdown conversion tool.
 
-Your goal is to restore the content to reflect the original DOC's intent, meaning, and structure while adhering to the rules below.
+The content may exhibit the following issues:
+- **Disrupted document structure**: Text or elements may not match the original layout or logical order of the document.
+- **Formatting errors**: Markdown syntax may be broken or inconsistent, particularly for headings, bullet points, numbered lists, or tables.
+- **Semantic inaccuracies**: Words, phrases, or sentences may be misrecognized or misplaced due to OCR limitations. Content that seems out of place should be logically repositioned based on context.
+- **Redundant or irrelevant text**: Extraneous elements, such as page numbers, headers, footers, or conversion artifacts, may be present.
+
+Your goal is to **fully process and restore the content** to accurately reflect the original DOC’s intent, structure, and meaning while adhering to the rules below.
 
 ---
 
 ## Correction Guidelines  
 
-### **1. Preserving References**
-- **Image References**: Retain all `![](image-link)` image references and ensure they are placed in their correct context within the appropriate section.
-- **HTML Comments**: Retain all `<!-- ... -->` HTML comments and place them in their correct context, ensuring no semantic disruption.
+### **1. Preserving References** (Priority - Must NOT Be Altered)
+- **HTML Comments (`<!-- -->`)**:
+  - Retain all HTML comments exactly as they appear in the input, without modifying their content or position in the document.
+  - Comments associated with specific sections, headings, or content must remain in their original positions. For example:
+    ```
+    # Document Title <!-- Original Comment -->
+    ```
+  - Do not attempt to rewrite, rephrase, or remove any HTML comment.
 
-### **2. Document Structure Restoration**
-- Reorganize content to restore the logical structure of the document.
-- Ensure that headings, paragraphs, lists, and other hierarchical elements match the original intent of the DOC.
-- Restore visual elements such as bullet points, numbered lists, and tables.
+- **Image References (`![]()`)**:
+  - Retain all image references exactly as they appear, preserving their positions in the document.
+  - Do not attempt to modify, reorder, or remove image references under any circumstances.
+
+### **2. Restoring Document Structure**
+- Use **headings (`#`, `##`, `###`)** to represent the document’s hierarchy:
+  - **Main Titles**: Use `#` for the document title or main sections (e.g., Abstract, Introduction).
+  - **Subtitles**: Use `##` for subsections within main sections.
+  - **Sub-subtitles**: Use `###` for further subsections.
+- Group related content under appropriate headings.
+- Reorganize text and lists based on the content’s logical order.
 
 ### **3. Markdown Syntax Correction**
-- Fix formatting issues for headings, lists, tables, and inline elements.
-- Ensure valid and consistent Markdown syntax throughout the document.
+- Fix formatting issues specific to DOC content:
+  - **Headings**: Ensure proper formatting for document titles, main headings (`#`), and subheadings (`##`, `###`, etc.).
+  - **Lists**: Correct formatting for nested bullet points and numbered lists, ensuring consistency in Markdown syntax (`-`, `*`, or `1.`).
+  - **Tables**: Restore any misaligned tables and ensure proper Markdown table syntax.
 
 ### **4. Redundancy Removal**
-- Remove irrelevant artifacts, such as page numbers, section separators, or notes, unless explicitly required.
+- Remove irrelevant artifacts, such as page numbers, repetitive headers/footers, or notes, unless explicitly required.
+- Consolidate duplicated content caused by OCR errors (e.g., repeated headings or paragraphs).
 
-### **5. Handling Section Separators**
-- Remove all section separator markers (e.g., `mark_section_separator_N`), but use them as hints to verify content continuity between sections.
+### **5. Handling Special Content**
+- **Use PLC Information for Page Boundaries**:
+  - Use annotations like `<!-- PLC Page:current/total, Line:current/total, Chat:current/total -->` to infer page boundaries.
+  - Ensure content maintains logical flow across pages while preserving all `<!-- -->` comments and `![]()` references.
 
 ### **6. Language and Terminology Consistency**
-- Maintain the original language and culturally significant terms (e.g., “甲方/乙方” or “Party A/Party B”).
-- Do not translate or alter language unless explicitly instructed.
+- Maintain the original language and culturally significant terms (e.g., “甲方/乙方” or “Party A/Party B”). Ensure these terms are used consistently throughout the document.
+- Do not translate or alter the language unless explicitly instructed.
 
 ---
 
 ## Output Format  
-Provide your response in the following JSON structure:  
-```json  
+- The response must be provided in the following **JSON structure**:
+```json
 {
-    "reasoning": "<Explain the steps taken to restore the content, including how you handled references, document structure, formatting errors, redundancies, and language consistency.>",
-    "content": "<Corrected Markdown content in valid Markdown syntax.>"
+    "reasoning": "<Explain the steps taken to restore the content, including how you ensured the preservation of HTML comments and image references, restored structure, and formatted fields.>",
+    "content": "<Restored Markdown content in valid Markdown syntax>"
 }
-
-## Your Answer:
 """
-
-
-

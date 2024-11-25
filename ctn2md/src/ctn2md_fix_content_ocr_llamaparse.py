@@ -58,15 +58,18 @@ def _fix_ocr_by_stiche_pages(md_text, md_info):
     out_dir = md_info.get_out_dir()
     question_num = 8000
     total_pages = len(fnames_pages)
-    logging.info(f"_fix_ocr_by_stiche_pages: total_pages: {total_pages}")
-    model = "gpt-4o"
-    if total_pages >= 6:
-        model = "gpt-4o-mini"
+    if total_pages <= 6:
+        logging.info(f"_fix_ocr_by_stiche_pages: total_pages: {total_pages}")
+    else:
+        logging.warning(f"_fix_ocr_by_stiche_pages: total_pages: {total_pages}, it may take a while....")
+    model = "gpt-4o"  # has to be gpt-4o
     for ndx, fname_page in enumerate(fnames_pages):
         pathname = os.path.join(out_dir, fname_page)
         with open(pathname, 'r', encoding='utf8') as f:
             md_page = f.read()
         doc_type = md_info.get_doc_type()
+
+        logging.info(f"_fix_ocr_by_stiche_pages: current_page: {ndx+1} / total_pages: {total_pages}...")
         md_page_fixed = fix_ocr_self_correct_markdown(md_page, doc_type, model=model, question_num=question_num) 
         md_text_fixed += md_page_fixed + "\n"
         question_num += 1
@@ -95,7 +98,7 @@ def fix_content_ocr_by_gpt(md_info_path, src_step_num=None, ofm=None):
         md_info["is_tokens_over_llm_output"] = is_tokens_over_llm_output
         ofm, ofm_reason = get_llm_ocr_fix_method(md_info)
 
-    logging.info(f"OFM: ofm:{ofm}")
+    logging.info(f"OFM: ofm:{ofm} ofm_reason: {ofm_reason}")
     if ofm == OFM_BY_CONTENT:
         if total_tokens > MAX_OUTPUT_TOKEN:
             ofm = OFM_BY_PAGE
@@ -130,7 +133,8 @@ if __name__ == "__main__":
     #md_info_path = "_work/ctn2md_stream1/info.json"
 
     #md_info_path = "_work/ctn2md_时代的人力资源管理进化(徐刚)/_info.json"
-    md_info_path = "_work/ctn2md_座椅STO间隙 P1/_info.json"
+    #md_info_path = "_work/ctn2md_座椅STO间隙 P1/_info.json"
+    md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
 
     md_info_path = fix_content_ocr_by_gpt(md_info_path, ofm=ofm, src_step_num=src_step_num)
     print(md_info_path)
