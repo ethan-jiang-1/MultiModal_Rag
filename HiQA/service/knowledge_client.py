@@ -87,7 +87,7 @@ def reset_by_jina(question, results, threshold=0.0, jina_weight=0.8, bm25_weight
     jina_results_scores = [item[0] for item in jina_results]
     jina_results_documents = [item[1] for item in jina_results]
 
-    # TODO Ethan bm25 only has filename, but not title?
+    # TODO Ethan_bm25 only has filename, but not title?
     # 准备文件名和BM25计算
     filenames = [meta['filename'] for meta in metas]  # 提取所有文件名
     tokenized_filenames = [list(jieba.cut(filename)) for filename in filenames]  # 对文件名进行分词

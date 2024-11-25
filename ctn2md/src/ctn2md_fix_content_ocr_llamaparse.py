@@ -17,7 +17,7 @@ from ctn2md.src.md_info_base import MdInfo
 from ctn2md.src.md_info_scan import get_llm_ocr_fix_method, OFM_BY_CONTENT, OFM_BY_PAGE, OFM_BY_SKIP
 from ctn2md.utils.util_tokenizer import get_token_encoding
 
-#TODO: check if we are able to make GPTo output more then 3*1024 token. and how
+#TODO: ethan_output_token check if we are able to make GPTo output more then 3*1024 token. and how
 #MAX_OUTPUT_TOKEN = 8*1024
 MAX_OUTPUT_TOKEN = 8*1024
 
@@ -58,10 +58,10 @@ def _fix_ocr_by_stiche_pages(md_text, md_info):
     out_dir = md_info.get_out_dir()
     question_num = 8000
     total_pages = len(fnames_pages)
-    if total_pages <= 6:
-        logging.info(f"_fix_ocr_by_stiche_pages: total_pages: {total_pages}")
-    else:
+    if total_pages >= 5:
         logging.warning(f"_fix_ocr_by_stiche_pages: total_pages: {total_pages}, it may take a while....")
+    else:
+        logging.info(f"_fix_ocr_by_stiche_pages: total_pages: {total_pages}")
     model = "gpt-4o"  # has to be gpt-4o
     for ndx, fname_page in enumerate(fnames_pages):
         pathname = os.path.join(out_dir, fname_page)

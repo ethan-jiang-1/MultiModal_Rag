@@ -109,10 +109,11 @@ if __name__ == "__main__":
 
     #doc_pathname = "datasrc/exam/raw_docs/ChatGPT intimates a tantalizing future_compressed.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/Long-Context LLMs Meet RAG_compressed.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/0530-大模型微调培训-VisualGLM.pdf"
 
     out_dir = None
-    skip_gen = True 
+    skip_gen = False 
 
     final_md_path = _do_content2md_convert_core(doc_pathname, out_dir=out_dir, skip_gen=skip_gen)
     print(final_md_path)

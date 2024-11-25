@@ -18,14 +18,14 @@ from ctn2md.src.md_process_plc import inject_plc_comment_to_page
 
 def _get_llamaparse():
     from llama_parse import LlamaParse
+    from llama_parse.utils import Language
 
     LLAMAPARSE_API_KEY = os.environ.get("LLAMAPARSE_API_KEY")
     parser = LlamaParse(
         api_key=LLAMAPARSE_API_KEY,  # 替换为您的 API 密钥
         result_type="markdown",  # 选择 "markdown" 格式输出
-        #result_type="text",  # 选择 "markdown" 格式输出
         verbose=True,
-        language="ch_sim",
+        language=Language.SIMPLIFIED_CHINESE,  # "ch_sim",
         #page_suffix="mark_page_separator_{page_number}"
         invalidate_cache=True,
     )
