@@ -19,7 +19,7 @@ from ctn2md.src.md_info_base import MdInfo
 from ctn2md.src.md_process_plc import remove_plc_comment
 
 
-def filter_headings_for_hierarchy_comments(md_text, md_info):
+def _filter_headings_for_hierarchy_comments(md_text, md_info):
     """
     在 Markdown 文本的每个标题前插入基于层级的描述注释，并移除所有 <!-- PLC: ... --> 内容。
 
@@ -77,7 +77,7 @@ def filter_headings_for_hierarchy_comments(md_text, md_info):
     # 将处理后的内容重新组合为 Markdown 文本
     return "\n".join(processed_lines)
 
-def truncate_name(name, max_length=16):
+def _truncate_name(name, max_length=16):
     """
     截断名称，限制长度为 max_length，超长时用 '--' 表示省略。
     """
@@ -86,7 +86,7 @@ def truncate_name(name, max_length=16):
     return f"{name[:4]}--{name[-4:]}"
 
 
-def split_markdown_to_files_with_desc_and_sequence(markdown_text, output_dir):
+def _split_markdown_to_files_with_desc_and_sequence(markdown_text, output_dir):
     """
     将带有 `<!-- [desc] ... [desc] -->` 标记的 Markdown 文本切割为多个部分，
     保存到指定目录，并为文件名添加序号和截断描述。
@@ -109,7 +109,7 @@ def split_markdown_to_files_with_desc_and_sequence(markdown_text, output_dir):
                 file_index += 1
                 clean_desc = re.sub(r'\s+', ' ', current_desc).strip()
                 safe_desc = "__".join(
-                    truncate_name(part.strip(), max_length=16)
+                    _truncate_name(part.strip(), max_length=16)
                     for part in clean_desc.split(" __ ")
                 )
                 file_name = f"{file_index:04d}_{safe_desc}.md"
@@ -135,7 +135,7 @@ def split_markdown_to_files_with_desc_and_sequence(markdown_text, output_dir):
         file_index += 1
         clean_desc = re.sub(r'\s+', ' ', current_desc).strip()
         safe_desc = "__".join(
-            truncate_name(part.strip(), max_length=16)
+            _truncate_name(part.strip(), max_length=16)
             for part in clean_desc.split(" __ ")
         )
         file_name = f"{file_index:04d}_{safe_desc}.md"
@@ -154,7 +154,7 @@ def fix_section_heirarchy_comments(md_info_path, src_step_num=None, dst_step_num
     with open(pathname_src_step_md, "r", encoding="utf8") as f:
         md_text = f.read()
 
-    md_text_new = filter_headings_for_hierarchy_comments(md_text, md_info)
+    md_text_new = _filter_headings_for_hierarchy_comments(md_text, md_info)
 
     logging.warning(f"fix_section_heirarchy_comments: pathname_dst_step_md: {pathname_dst_step_md}")
     with open(pathname_dst_step_md, "w+") as f:
@@ -165,7 +165,7 @@ def fix_section_heirarchy_comments(md_info_path, src_step_num=None, dst_step_num
     if os.path.isdir(pathname_sections):
         shutil.rmtree(pathname_sections)
     os.makedirs(pathname_sections, exist_ok=True)
-    split_markdown_to_files_with_desc_and_sequence(md_text_new, pathname_sections)
+    _split_markdown_to_files_with_desc_and_sequence(md_text_new, pathname_sections)
     
     md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_section_heirarchy_comments")
     md_info_path = md_info.save()

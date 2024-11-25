@@ -31,7 +31,7 @@ g_page2inst = {}
 
 g_question_num = 6000
 
-def get_page_instruction(doc_title, page_content):
+def _get_page_instruction(doc_title, page_content):
     global g_page2inst
     global g_question_num
     key = f"{doc_title}##{page_content}"
@@ -43,7 +43,7 @@ def get_page_instruction(doc_title, page_content):
     g_page2inst[key] = instruction
     return instruction
 
-def analyze_image_content(md_page_file, pathname_org_doc, image_path):
+def _analyze_image_content(md_page_file, pathname_org_doc, image_path):
     """
     模拟多模态处理函数，分析图像的内容是否有意义。
     
@@ -66,7 +66,7 @@ def analyze_image_content(md_page_file, pathname_org_doc, image_path):
 
     # 3. 多模态分析逻辑
     try:
-        instruction = get_page_instruction(doc_title, page_content)
+        instruction = _get_page_instruction(doc_title, page_content)
         resp = generate_image_description(image_path, instruction=instruction)
         if resp is None:
             raise ValueError("resp is None")
@@ -91,7 +91,7 @@ def analyze_image_content(md_page_file, pathname_org_doc, image_path):
 
     return relevance_score, (figure_name, picture_discription)
 
-def process_image_reference(image_file, md_info):
+def _process_image_reference(image_file, md_info):
     """
     检查图像的合理性，并返回描述和新图像路径。
     :param image_file: 图像文件名
@@ -137,7 +137,7 @@ def process_image_reference(image_file, md_info):
         return None, None  # 未找到对应的 MD 文件
 
     # 4. 调用多模态处理逻辑
-    relevance_score, figure_name_n_picture_discription = analyze_image_content(
+    relevance_score, figure_name_n_picture_discription = _analyze_image_content(
         md_page_file=os.path.join(out_dir, md_page_file),
         pathname_org_doc=md_info.get_doc_pathname(),
         image_path=image_path
@@ -149,7 +149,7 @@ def process_image_reference(image_file, md_info):
         return None, None  # 图像被判断为无意义
 
 
-def filter_markdown_images(md_src_str, md_info):
+def _filter_markdown_images(md_src_str, md_info):
     """
     处理 Markdown 中的图像引用，生成新的 Markdown 字符串。
     
@@ -167,7 +167,7 @@ def filter_markdown_images(md_src_str, md_info):
         image_file = match.group(1)
         
         # 调用外部处理函数
-        relevance_score, figure_name_n_picture_discription = process_image_reference(image_file, md_info)
+        relevance_score, figure_name_n_picture_discription = _process_image_reference(image_file, md_info)
         
         if relevance_score and figure_name_n_picture_discription:
             # 替换为新的 Markdown 图片引用
@@ -205,7 +205,7 @@ def fix_img_reference_by_lvlm(md_info_path, src_step_num=None):
     with open(pathname_src_step_md, "r", encoding="utf8") as f:
         md_text = f.read()
 
-    md_text_new = filter_markdown_images(md_text, md_info)
+    md_text_new = _filter_markdown_images(md_text, md_info)
 
     logging.warning(f"fix_img_reference_by_lvlm: pathname_dst_step_md: {pathname_dst_step_md}")
     with open(pathname_dst_step_md, "w+") as f:

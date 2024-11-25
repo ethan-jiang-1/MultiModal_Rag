@@ -29,7 +29,7 @@ HIQA_MD_STYLE = """
 
 """
 
-def filter_headings_for_heirarchy_numbers(md_text, md_info):
+def _filter_headings_for_heirarchy_numbers(md_text, md_info):
     """
     规整化 Markdown 的标题写法，为所有标题编号，并移除行中的 <!-- PLC: ... --> 注释。
 
@@ -93,7 +93,7 @@ def fix_section_heirarchy_numbers(md_info_path, src_step_num=None, dst_step_num=
     with open(pathname_src_step_md, "r", encoding="utf8") as f:
         md_text = f.read()
 
-    md_text_new = filter_headings_for_heirarchy_numbers(md_text, md_info)
+    md_text_new = _filter_headings_for_heirarchy_numbers(md_text, md_info)
 
     logging.warning(f"fix_section_heirarchy_numbers: pathname_dst_step_md: {pathname_dst_step_md}")
     with open(pathname_dst_step_md, "w+") as f:

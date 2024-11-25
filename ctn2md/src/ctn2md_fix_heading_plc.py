@@ -20,7 +20,7 @@ from ctn2md.utils_llm.llm_fix_heading_lvl import fix_heading_lvl_markdown
 #from ctn2md.utils.util_markdown import extract_pure_text_from_markdown
 from ctn2md.src.md_process_plc import inject_plc_comment_to_page, separate_heading_and_plc_comment, PLC_COMMENT
 
-def filter_markdown_heading_llamapase(md_text, md_info):
+def _filter_markdown_heading_plc(md_text, md_info):
     """
     规整化 Markdown 的 heading 写法，确保所有 heading 的 # 与内容之间仅有一个空格。
 
@@ -83,14 +83,14 @@ def filter_markdown_heading_llamapase(md_text, md_info):
                 
     return normalized_md
 
-def fix_markdown_with_no_heading(md_text, md_info):
+def _fix_markdown_with_no_heading(md_text, md_info):
     doc_title = md_info.get_doc_title()
     heading_line = "# " + doc_title + "\n\n"
     new_md_text = heading_line + md_text
     return inject_plc_comment_to_page(new_md_text, 1, 1, md_info)
 
 
-def update_markdown_heading_content(md_text, md_info, fhl_map):
+def _update_markdown_heading_content(md_text, md_info, fhl_map):
     """
     替换 Markdown 文本中的标题内容，根据 fhl_map 提供的替换规则。
 
@@ -147,7 +147,7 @@ def update_markdown_heading_content(md_text, md_info, fhl_map):
     return new_md_text, unprocessed_heading_lines_map
 
 
-def fix_headings_llamaparse(md_info_path, src_step_num=None):
+def fix_headings_plc(md_info_path, src_step_num=None):
     md_info = MdInfo(md_info_path)
 
     pathname_src_step_md, pathname_dst_step_md = md_info.name_src_n_dst_step_pathname(src_step_num)
@@ -157,13 +157,13 @@ def fix_headings_llamaparse(md_info_path, src_step_num=None):
     with open(pathname_src_step_md, "r", encoding="utf8") as f:
         md_text = f.read()
 
-    md_text_new = filter_markdown_heading_llamapase(md_text, md_info)
+    md_text_new = _filter_markdown_heading_plc(md_text, md_info)
 
     fhl_org = md_info["fhl"]
     org_heading_lines = fhl_org["org_heading_lines"]
     if len(org_heading_lines) == 0:
-        md_text_new = fix_markdown_with_no_heading(md_text_new, md_info)
-        md_text_new = filter_markdown_heading_llamapase(md_text_new, md_info)
+        md_text_new = _fix_markdown_with_no_heading(md_text_new, md_info)
+        md_text_new = _filter_markdown_heading_plc(md_text_new, md_info)
         fhl_org = md_info["fhl"]
     
     #rich.print(fhl)
@@ -175,7 +175,7 @@ def fix_headings_llamaparse(md_info_path, src_step_num=None):
                "new_heading_lines": fhl_map["new_heading_lines"]}
     rich.print(o2n_map)
 
-    md_text_new1, unprocessed_heading_lines_map = update_markdown_heading_content(md_text_new, md_info, fhl_map)
+    md_text_new1, unprocessed_heading_lines_map = _update_markdown_heading_content(md_text_new, md_info, fhl_map)
     rich.print(unprocessed_heading_lines_map)
 
     logging.warning(f"fix_headings_llamaparse: pathname_dst_step_md: {pathname_dst_step_md}")
@@ -194,7 +194,7 @@ if __name__ == "__main__":
     #md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
     md_info_path = "_work/ctn2md_座椅STO间隙 P1/_info.json"
 
-    md_info_path = fix_headings_llamaparse(md_info_path, src_step_num=src_step_num)
+    md_info_path = fix_headings_plc(md_info_path, src_step_num=src_step_num)
 
     md_info = MdInfo(md_info_path)
     rich.print(md_info)

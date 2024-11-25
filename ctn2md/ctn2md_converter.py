@@ -15,7 +15,7 @@ if "./" not in sys.path:
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo
 from ctn2md.src.ctn2md_llamaparse_md_generater import gen_md_llamaparse
-from ctn2md.src.ctn2md_fix_heading_llamaparse import fix_headings_llamaparse
+from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc
 from ctn2md.src.ctn2md_fix_content_ocr_llamaparse import fix_content_ocr_by_gpt
 from ctn2md.src.ctn2md_fix_img_reference import fix_img_reference_by_lvlm
 from ctn2md.src.ctn2md_fix_section_hierarchy_numbers import fix_section_heirarchy_numbers
@@ -60,7 +60,7 @@ def _do_content2md_convert_core(ctn_pathname, out_dir=None, skip_gen=False, sect
         logging.error(f"DCC: failed {md_info_path} @fix_content_ocr_by_gpt")
         return None, None 
 
-    md_info_path = fix_headings_llamaparse(md_info_path, src_step_num=1)
+    md_info_path = fix_headings_plc(md_info_path, src_step_num=1)
     if md_info_path is None:
         logging.error(f"DCC: failed {md_info_path} @fix_headings_llamaparse")
         return None, None 
