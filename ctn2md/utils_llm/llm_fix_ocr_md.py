@@ -26,7 +26,7 @@ def fix_ocr_self_correct_markdown(md_text, doc_type, model="gpt-4o", question_nu
         if model not in ["gpt-4o-mini", "gpt-4o"]: 
             raise ValueError(f"f{model} not supporst")
 
-        logging.info(f"start to correct ocr conent from doc_type:{doc_type} by {model} as questoin_number:{question_num}")
+        logging.info(f"start to correct ocr content from doc_type:{doc_type} by {model} as questoin_number:{question_num}")
         ctn_type = CtnType.get_ctn_type(doc_type)
 
         if ctn_type == CtnType.PDF:

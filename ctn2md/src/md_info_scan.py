@@ -99,10 +99,10 @@ def analyze_scan_info(json_result0_pages, doc_type):
             "height": height,
             "text_blocks": text_blocks,
             "heading_blocks": heading_blocks,
-            "total_text_area": total_text_area,
-            "total_image_area": total_image_area,
+            "total_text_area": round(total_text_area, 2),
+            "total_image_area": round(total_image_area, 2),
             "total_ocr_images": total_ocr_images,
-            "page_area": page_area,
+            "page_area": round(page_area, 2),
             "is_structured": is_structured,
             "is_scanned": is_scanned
         })

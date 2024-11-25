@@ -106,7 +106,7 @@ def update_markdown_heading_content(md_text, md_info, fhl_map):
     # 提取映射规则
     heading_lines_map = fhl_map_copy.get("optimized_heading_lines_map", [])
     if len(heading_lines_map) == 0:
-        logging.warning("UMHC: heading_lines_map == [] ?!")
+        raise ValueError("UMHC: heading_lines_map == [] ?!")
 
     # 初始化结果 Markdown 文本
     lines = md_text.splitlines()
