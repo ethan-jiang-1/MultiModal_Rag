@@ -171,8 +171,9 @@ def fix_headings_plc_by_gpt(md_info_path, src_step_num=None):
 
     #rich.print(fhl_map)
     rich.print(fhl_map)
-    o2n_map = {"org_heading_lines": [item["heading"] for item in fhl_map["org_heading_lines"]],
-               "new_heading_lines": fhl_map["new_heading_lines"]}
+    optimized_heading_lines_map = fhl_map["optimized_heading_lines_map"]
+    o2n_map = {"org_heading_lines": [item["original_line"] for item in optimized_heading_lines_map],
+               "new_heading_lines": [item["mapped_line"] for item in optimized_heading_lines_map]}
     rich.print(o2n_map)
 
     md_text_new1, unprocessed_heading_lines_map = _update_markdown_heading_content(md_text_new, md_info, fhl_map)
