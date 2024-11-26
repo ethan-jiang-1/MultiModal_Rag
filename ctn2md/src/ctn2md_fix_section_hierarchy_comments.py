@@ -31,7 +31,10 @@ class HeadingStack:
         :param title: 一级标题内容
         """
         self._stack = [{"title": title}]
-        self._chapter_numbers = [1]  # 一级标题从 1 开始
+        if len(self._chapter_numbers) > 0:
+            self._chapter_numbers = [self._chapter_numbers[0] + 1]
+        else:
+            self._chapter_numbers = [1]  # 一级标题从 1 开始
         self._log.append(f"Reset stack: {self._stack}, chapter_numbers: {self._chapter_numbers}")
 
     def _adjust_to_level(self, level: int):
@@ -124,7 +127,7 @@ def _filter_headings_for_hierarchy_comments(md_text, md_info):
             if level == 1:
                 #doc_title = title
                 chapter_number = stack.push_level(level, title)  # 使用 push_level 更新堆栈
-                ordered_name = f"{chapter_number}. {title}"
+                ordered_name = f"{chapter_number}) {title}"
                 hierarchy_desc = stack.get_hierarchy_desc()
 
                 # 记录到 md_info
@@ -135,7 +138,7 @@ def _filter_headings_for_hierarchy_comments(md_text, md_info):
             else:
                 # 调整堆栈深度并添加标题
                 chapter_number = stack.push_level(level, title)
-                ordered_name = f"{chapter_number}. {title}"
+                ordered_name = f"{chapter_number}) {title}"
                 hierarchy_desc = stack.get_hierarchy_desc()
 
                 # 记录到 md_info
@@ -269,7 +272,8 @@ def _save_section_to_file(output_dir, file_index, ordered_name, desc, section_co
     """
     try:
         # 安全处理文件名
-        safe_ordered_name = re.sub(r'[^\w\-]', '_', ordered_name)  # 非字母、数字、下划线或连字符的字符替换为下划线
+        safe_ordered_name = re.sub(r'\)', '-', ordered_name, count=1)
+        safe_ordered_name = re.sub(r'[^\w\-]', '_', safe_ordered_name)  # 非字母、数字、下划线或连字符的字符替换为下划线
         file_name = f"{file_index:04d}_{safe_ordered_name}.md"
         file_path = os.path.join(output_dir, file_name)
 
@@ -343,7 +347,8 @@ if __name__ == "__main__":
 
     src_step_num = 3
     dst_step_num = 41
-    md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
+    #md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
+    md_info_path = "_work/ctn2md_-波士顿咨询：银行业生成式AI应用报告（2023）/_info.json"
 
     md_info_path = fix_section_heirarchy_comments(md_info_path, src_step_num=src_step_num, dst_step_num=dst_step_num)
 
