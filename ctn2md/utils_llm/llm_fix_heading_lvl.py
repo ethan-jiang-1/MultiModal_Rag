@@ -21,7 +21,7 @@ def fix_heading_lvl_markdown(fhl_org, model="gpt-4o",  question_num=None):
 
     try:
         if model not in ["gpt-4o-mini", "gpt-4o"]: 
-            raise ValueError(f"f{model} not supporst")
+            raise ValueError(f"{model} not supporst")
 
         if not isinstance(fhl_org, dict):
             raise ValueError("fhl_heading need to be dict")

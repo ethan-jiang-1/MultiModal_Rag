@@ -167,7 +167,10 @@ def fix_headings_plc_by_gpt(md_info_path, src_step_num=None):
         fhl_org = md_info["fhl"]
     
     #rich.print(fhl)
-    fhl_map = fix_heading_lvl_markdown(fhl_org)
+    # TODO： ethan_heading_recover gpt-4o-mini not able to handle yet
+    #model = "gpt-4o-mini"  
+    model = "gpt-4o"
+    fhl_map = fix_heading_lvl_markdown(fhl_org, model=model)
 
     #rich.print(fhl_map)
     rich.print(fhl_map)
