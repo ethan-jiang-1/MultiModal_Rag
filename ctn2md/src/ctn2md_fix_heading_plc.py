@@ -191,8 +191,8 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     src_step_num = 1
-    #md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
-    md_info_path = "_work/ctn2md_座椅STO间隙 P1/_info.json"
+    md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
+    #md_info_path = "_work/ctn2md_座椅STO间隙 P1/_info.json"
 
     md_info_path = fix_headings_plc_by_gpt(md_info_path, src_step_num=src_step_num)
 
