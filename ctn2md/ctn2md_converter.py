@@ -18,8 +18,7 @@ from ctn2md.src.ctn2md_llamaparse_md_generater import gen_md_llamaparse
 from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_gpt
 from ctn2md.src.ctn2md_fix_content_ocr import fix_content_ocr_by_gpt
 from ctn2md.src.ctn2md_fix_img_reference import fix_img_reference_by_lvlm
-from ctn2md.src.ctn2md_fix_section_hierarchy_numbers import fix_section_heirarchy_numbers
-from ctn2md.src.ctn2md_fix_section_hierarchy_comments import fix_section_heirarchy_comments
+from ctn2md.src.ctn2md_fix_section_hierarchy import fix_section_heirarchy
 
 
 # TODO: ethan_bm25 keywords for bm25 at doc level
@@ -71,16 +70,10 @@ def _do_content2md_convert_core(ctn_pathname, out_dir=None, skip_gen=False, sect
         logging.error(f"DCC: failed {md_info_path} @fix_img_reference_by_lvlm")
         return None, None 
 
-    if section_by_number:
-        md_info_path = fix_section_heirarchy_numbers(md_info_path, src_step_num=3)
-        if md_info_path is None:
-            logging.error(f"DCC: failed {md_info_path} @fix_section_heirarchy_numbers")
-            return None, None 
-    else:
-        md_info_path = fix_section_heirarchy_comments(md_info_path, src_step_num=3)
-        if md_info_path is None:
-            logging.error(f"DCC: failed {md_info_path} @fix_section_heirarchy_comments")
-            return None, None         
+    md_info_path = fix_section_heirarchy(md_info_path, src_step_num=3)
+    if md_info_path is None:
+        logging.error(f"DCC: failed {md_info_path} @fix_section_heirarchy_comments")
+        return None, None         
 
     final_md_path = _make_final_md(md_info_path)
 
@@ -105,9 +98,9 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/1. 座椅STO间隙 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/2. 座垫与钢丝间隙 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/3. 头枕杆圆角定义 P1.pptx"
-    #doc_pathname = "datasrc/exam/raw_docs/4. 前后排座椅间距定义 P1.pptx"
+    doc_pathname = "datasrc/exam/raw_docs/4. 前后排座椅间距定义 P1.pptx"
     #doc_pathname = "datasrc/test/raw_docs/5. back panel 与环境匹配工程校核_P2.pptx"
-    doc_pathname = "datasrc/exam/raw_docs/6. 前后排座椅H点距离要求 P1.pptx"
+    #doc_pathname = "datasrc/exam/raw_docs/6. 前后排座椅H点距离要求 P1.pptx"
     #doc_pathname = "datasrc/test/raw_docs/管理者角色定位与认知课程大纲.docx"
     #doc_pathname = "datasrc/test/raw_docs/考勤修改统一规则.xlsx"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"

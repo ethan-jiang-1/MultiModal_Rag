@@ -25,7 +25,7 @@ MIN_WIDTH = 198   # 图像最小宽度（像素）
 MIN_HEIGHT = 198  # 图像最小高度（像素）
 MIN_AREA = 128 * 128 # 图像最小面积（像素）
 
-MIN_RELEVANCE_SCORE = 2.0  # 0 - 10
+MIN_IMG_RELEVANCE_SCORE = 2.0  # 0 - 10
 
 FEATURE_PIC_DESP_IN_MD = True
 
@@ -45,7 +45,7 @@ def _get_page_instruction(doc_title, page_content):
     g_page2inst[key] = instruction
     return instruction
 
-def _analyze_image_content(md_page_file, pathname_org_doc, image_path):
+def _analyze_image_content(md_info, md_page_file=None, pathname_org_doc=None, image_path=None):
     """
     模拟多模态处理函数，分析图像的内容是否有意义。
     
@@ -79,7 +79,7 @@ def _analyze_image_content(md_page_file, pathname_org_doc, image_path):
         picture_discription = resp_json.get("PictureDescription")
         if relevance_score is not None:
             relevance_score = float(relevance_score)
-            if relevance_score < MIN_RELEVANCE_SCORE: 
+            if relevance_score < md_info.get_md_control("mc_min_img_relevance_score", MIN_IMG_RELEVANCE_SCORE): 
                 logging.warning(f"AIC: relevance_score: {relevance_score}")
                 return None, None 
         if figure_name is not None:
@@ -139,7 +139,7 @@ def _process_image_reference(image_file, md_info):
         return None, None  # 未找到对应的 MD 文件
 
     # 4. 调用多模态处理逻辑
-    relevance_score, figure_name_n_picture_discription = _analyze_image_content(
+    relevance_score, figure_name_n_picture_discription = _analyze_image_content(md_info,
         md_page_file=os.path.join(out_dir, md_page_file),
         pathname_org_doc=md_info.get_doc_pathname(),
         image_path=image_path

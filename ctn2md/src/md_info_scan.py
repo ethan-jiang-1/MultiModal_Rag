@@ -98,8 +98,8 @@ def analyze_lp_scan_info(json_result0_pages, doc_type):
         # 保存当前页的详细数据
         result_pages.append({
             "page_number": page.get("page", 0),
-            "width": width,
-            "height": height,
+            "width": round(width, 2),
+            "height": round(height,2),
             "text_blocks": text_blocks,
             "heading_blocks": heading_blocks,
             "total_text_area": round(total_text_area, 2),
@@ -113,7 +113,7 @@ def analyze_lp_scan_info(json_result0_pages, doc_type):
     return result
 
 
-def get_llm_ocr_fix_method(md_info):
+def get_llm_ocr_fix_method_from_scan_info(md_info):
     scan_info = md_info.get(MDFN.LP_SCAN_INFO, None)
     if scan_info is None:
         return OFM_BY_SKIP, "scan_info=None"
@@ -126,7 +126,7 @@ def get_llm_ocr_fix_method(md_info):
     if doc_type is None:
         raise ValueError("no doc_type in scan_info")
 
-    is_num_tokens_over_llm_output_limit = md_info.get_md_control("is_num_tokens_over_llm_output_limit", False)
+    mc_is_num_tokens_over_llm_output_limit = md_info.get_md_control("mc_is_num_tokens_over_llm_output_limit", False)
  
     total_pages = scan_info.get("total_pages", 1)
     scanned_pages = scan_info.get("scanned_pages", 0) 
@@ -147,13 +147,13 @@ def get_llm_ocr_fix_method(md_info):
     if total_pages >= 5:
         if structured_pages / total_pages >= 0.8:
             return OFM_BY_SKIP, "stp>=0.8"
-        if not is_num_tokens_over_llm_output_limit:
+        if not mc_is_num_tokens_over_llm_output_limit:
             return OFM_BY_CONTENT, "llm_tklimit<(L)"
         return OFM_BY_PAGE, "??P0??" 
     else:
         if ctn_type == CtnType.PPT:
             return OFM_BY_CONTENT, f"ppt@tp={total_pages}"
-        if not is_num_tokens_over_llm_output_limit:
+        if not mc_is_num_tokens_over_llm_output_limit:
             return OFM_BY_CONTENT, "llm_tklimit<(S)"
         return OFM_BY_PAGE, "??P1??"
 

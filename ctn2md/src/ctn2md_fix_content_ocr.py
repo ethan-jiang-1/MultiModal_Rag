@@ -14,7 +14,7 @@ if "./" not in sys.path:
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.utils_llm.llm_fix_ocr_md import fix_ocr_self_correct_markdown
 from ctn2md.src.md_info_base import MdInfo, MDFN
-from ctn2md.src.md_info_scan import get_llm_ocr_fix_method, OFM_BY_CONTENT, OFM_BY_PAGE, OFM_BY_SKIP
+from ctn2md.src.md_info_scan import get_llm_ocr_fix_method_from_scan_info, OFM_BY_CONTENT, OFM_BY_PAGE, OFM_BY_SKIP
 from ctn2md.utils.util_tokenizer import get_token_encoding
 
 #TODO: ethan_output_token check if we are able to make GPTo output more then 3*1024 token. and how
@@ -82,6 +82,19 @@ def _fix_ocr_by_proc_whole(md_text, md_info):
     md_text_fixed = fix_ocr_self_correct_markdown(md_text, doc_type)  
     return md_text_fixed
 
+def _find_ofm_and_reason(md_text, md_info):
+    total_tokens = _calculate_tokens_large_text(md_text, stop_check_over_max=True)
+    mc_is_num_tokens_over_llm_output_limit = (total_tokens > MAX_OUTPUT_TOKEN)
+    md_info.set_md_contrl("mc_is_num_tokens_over_llm_output_limit", mc_is_num_tokens_over_llm_output_limit)
+
+    ofm = md_info.get_md_control("mc_ofm", None)
+    ofm_reason = ""
+    if ofm is None:
+        ofm, ofm_reason = get_llm_ocr_fix_method_from_scan_info(md_info)
+    else:
+        ofm_reason = "mc_control"
+    return ofm, ofm_reason
+
 def fix_content_ocr_by_gpt(md_info_path, src_step_num=None, dst_step_num=None, ofm=None):
     md_info = MdInfo(md_info_path)
 
@@ -92,31 +105,20 @@ def fix_content_ocr_by_gpt(md_info_path, src_step_num=None, dst_step_num=None, o
     with open(pathname_src_step_md, "r", encoding="utf8") as f:
         md_text = f.read()
 
-    total_tokens = _calculate_tokens_large_text(md_text, stop_check_over_max=True)
-    is_num_tokens_over_llm_output_limit = (total_tokens > MAX_OUTPUT_TOKEN)
-    ofm_reason = ""
-    if ofm is None:
-        ofm, ofm_reason = get_llm_ocr_fix_method(md_info)
-
-    md_info.set_md_contrl("is_num_tokens_over_llm_output_limit", is_num_tokens_over_llm_output_limit)
-    logging.info(f"OFM: ofm:{ofm} ofm_reason: {ofm_reason}")
-    if ofm == OFM_BY_CONTENT:
-        if total_tokens > MAX_OUTPUT_TOKEN:
-            ofm = OFM_BY_PAGE
-            ofm_reason += ":>llm_tklimit"
-            md_text_fixed = _fix_ocr_by_stiche_pages(md_text, md_info) 
-        else:
-            md_text_fixed = _fix_ocr_by_proc_whole(md_text, md_info)
-    elif ofm == OFM_BY_PAGE:
-        md_text_fixed = _fix_ocr_by_stiche_pages(md_text, md_info)
-    elif ofm == OFM_BY_SKIP:
-        #TODO: ethan_content, some file have page number in the content, (ChatGPT intimates...)
-        md_text_fixed = md_text
-    else:
-        raise ValueError(f"unknown ofm: {ofm}")
+    ofm, ofm_reason = _find_ofm_and_reason(md_text, md_info)
     ofm_info = {"ofm": ofm,
                 "ofm_reason": ofm_reason}
     md_info[MDFN.OFM_INFO] = ofm_info
+
+    logging.info(f"OFM: ofm:{ofm} ofm_reason: {ofm_reason}")
+    if ofm == OFM_BY_CONTENT:
+        md_text_fixed = _fix_ocr_by_proc_whole(md_text, md_info)
+    elif ofm == OFM_BY_PAGE:
+        md_text_fixed = _fix_ocr_by_stiche_pages(md_text, md_info)
+    elif ofm == OFM_BY_SKIP:
+        md_text_fixed = md_text
+    else:
+        raise ValueError(f"unknown ofm: {ofm}")
 
     logging.warning(f"fix_content_ocr_by_gpt: pathname_dst_step_md: {pathname_dst_step_md}")
     with open(pathname_dst_step_md, "w+") as f:

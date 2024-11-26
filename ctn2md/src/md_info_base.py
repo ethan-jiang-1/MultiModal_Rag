@@ -61,7 +61,8 @@ class MdInfo:
         if not os.path.isfile(self._md_info_path):
             self._info = {MDFN.VERSION: MD_INFO_VER}
             self._info[MDFN.MDFLOW] = {}
-            self._info[MDFN.MDCONTROL] = {}
+            self._info[MDFN.MDCONTROL] = {"mc_min_img_relevance_score": 0.2,
+                                          "mc_ofm": None,}
             self.save()
         self._info = self.load()
         #if "mdflow_control" 

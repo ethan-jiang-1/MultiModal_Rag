@@ -313,7 +313,7 @@ def _extract_ordered_and_desc(line):
         logging.exception(e)
         return None, None
 
-def fix_section_heirarchy_comments(md_info_path, src_step_num=None, dst_step_num=None):
+def fix_section_heirarchy(md_info_path, src_step_num=None, dst_step_num=None):
     md_info = MdInfo(md_info_path)
 
     pathname_src_step_md, pathname_dst_step_md = md_info.name_src_n_dst_step_pathname(src_step_num, dst_step_num=dst_step_num)
@@ -350,7 +350,7 @@ if __name__ == "__main__":
     #md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
     md_info_path = "_work/ctn2md_-波士顿咨询：银行业生成式AI应用报告（2023）/_info.json"
 
-    md_info_path = fix_section_heirarchy_comments(md_info_path, src_step_num=src_step_num, dst_step_num=dst_step_num)
+    md_info_path = fix_section_heirarchy(md_info_path, src_step_num=src_step_num, dst_step_num=dst_step_num)
 
     md_info = MdInfo(md_info_path)
     rich.print(md_info)
