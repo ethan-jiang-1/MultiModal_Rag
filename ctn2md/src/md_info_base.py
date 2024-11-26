@@ -43,8 +43,8 @@ class MDFN:
     IMG_FIGURES = "img_figures"
 
     MD_SECTIONS = "md_sections"
-    MD_SECTIONS_OUTPUT_DIR = "md_sections_output_dir"
-    MD_SECTIONS_OUTPUT_NAMES = "md_sections_output_names"
+    FNAMES_SECS = "fnames_secs"
+
     OFM_INFO = "ofm_info"
     FNAME_FINAL_MD = "fname_final_md"
 

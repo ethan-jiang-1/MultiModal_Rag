@@ -3,7 +3,7 @@ import os
 import sys
 import logging
 import rich
-import shutil
+#import shutil
 import re
 #import random
 #import json
@@ -158,7 +158,26 @@ def _filter_headings_for_hierarchy_comments(md_text, md_info):
     # 返回处理后的 Markdown 文本
     return "\n".join(processed_lines)
 
-def _split_markdown_to_files_with_desc_and_sequence(markdown_text, output_dir):
+def _clear_section_files(output_dir):
+    if not os.path.isdir(output_dir):
+        return 
+
+    # 正则模式：匹配以 sec 开头，后跟 4 位或 5 位数字的文件名，并以 .md 结尾
+    pattern = re.compile(r'^xcs\d{4,5}\.md$')
+    
+    names = os.listdir(output_dir)
+    for name in names:
+        # 检查是否符合正则模式
+        if pattern.match(name):
+            file_path = os.path.join(output_dir, name)
+            try:
+                os.remove(file_path)
+                logging.info(f"Deleted: {file_path}")
+            except Exception as e:
+                logging.exception(f"Failed to delete {file_path}: {e}")
+        
+
+def _split_sections_to_files_with_desc_and_sequence(markdown_text, output_dir):
     """
     将带有 `<!-- [ordered_name] ... [ordered_name] [desc] ... [desc] -->` 标记的 Markdown 文本
     切割为多个部分，保存到指定目录，并使用 `ordered_name` 作为文件名（在前面加上4位递增的数字作为前缀，再跟上一个 `_`）。
@@ -274,7 +293,7 @@ def _save_section_to_file(output_dir, file_index, ordered_name, desc, section_co
         # 安全处理文件名
         safe_ordered_name = re.sub(r'\)', '-', ordered_name, count=1)
         safe_ordered_name = re.sub(r'[^\w\-]', '_', safe_ordered_name)  # 非字母、数字、下划线或连字符的字符替换为下划线
-        file_name = f"{file_index:04d}_{safe_ordered_name}.md"
+        file_name = f"xcs{file_index:04d}_{safe_ordered_name}.md"
         file_path = os.path.join(output_dir, file_name)
 
         # 写入文件
@@ -329,13 +348,11 @@ def fix_section_heirarchy(md_info_path, src_step_num=None, dst_step_num=None):
     with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_new)
 
-    pathname_sections = os.path.join(os.path.dirname(md_info.get_md_info_path()), "md_sections") 
-    md_info[MDFN.MD_SECTIONS_OUTPUT_DIR] = pathname_sections
-    if os.path.isdir(pathname_sections):
-        shutil.rmtree(pathname_sections)
-    os.makedirs(pathname_sections, exist_ok=True)
-    sdsec_names = _split_markdown_to_files_with_desc_and_sequence(md_text_new, pathname_sections)
-    md_info[MDFN.MD_SECTIONS_OUTPUT_NAMES] = sdsec_names
+
+    output_dir = md_info.get_out_dir()
+    _clear_section_files(output_dir)
+    sdsec_names = _split_sections_to_files_with_desc_and_sequence(md_text_new, output_dir)
+    md_info[MDFN.FNAMES_SECS] = sdsec_names
     
     md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_section_heirarchy")
     md_info_path = md_info.save()
