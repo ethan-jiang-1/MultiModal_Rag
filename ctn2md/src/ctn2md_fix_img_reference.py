@@ -168,6 +168,7 @@ def _filter_markdown_images(md_src_str, md_info):
     
     #out_dir = md_info.get_out_dir()
     aux_dir = md_info.get_aux_dir()
+    md_info[MDFN.IMG_FIGURES] = {}
 
     def replace_image_reference(match):
         # 原始图像引用
@@ -177,9 +178,6 @@ def _filter_markdown_images(md_src_str, md_info):
         relevance_score, figure_name_n_picture_discription = _process_image_reference(image_file, md_info)
         
         if relevance_score and figure_name_n_picture_discription:
-            # 替换为新的 Markdown 图片引用
-            if MDFN.IMG_FIGURES not in md_info:
-                md_info[MDFN.IMG_FIGURES] = {}
             figure_name, picture_discription = figure_name_n_picture_discription
             md_info[MDFN.IMG_FIGURES][image_file] = (relevance_score, figure_name, picture_discription)
 
