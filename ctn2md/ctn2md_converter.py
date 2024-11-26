@@ -5,7 +5,7 @@ import logging
 import rich
 #import random
 #import json
-import shutil
+#import shutil
 
 load_dotenv()
 
@@ -13,31 +13,20 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, MDFN
-from ctn2md.src.ctn2md_llamaparse_md_generater import gen_md_llamaparse
+from ctn2md.src.md_info_base import MdInfo
+from ctn2md.src.ctn2md_gen_md_llamaparse import gen_md_llamaparse
 from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_gpt
 from ctn2md.src.ctn2md_fix_content_ocr import fix_content_ocr_by_gpt
 from ctn2md.src.ctn2md_fix_img_reference import fix_img_reference_by_lvlm
 from ctn2md.src.ctn2md_fix_section_hierarchy import fix_section_heirarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_gpt
-
-# TODO: ethan_bm25 keywords for bm25 at doc level
-def _make_final_md(md_info_path):
-    md_info = MdInfo(md_info_path)
-    last_step_num = md_info.get_last_step_num()
-    pathname_step_md = md_info.name_step_pathname(last_step_num)
-    pathname_final_md = md_info.name_step_pathname(-1)
-
-    if os.path.isfile(pathname_final_md):
-        os.unlink(pathname_final_md)
-    shutil.copy(pathname_step_md, pathname_final_md)
-
-    md_info[MDFN.FNAME_FINAL_MD] = os.path.basename(pathname_final_md)
-    md_info.save()
-    return pathname_final_md
+from ctn2md.src.make_final_md import make_final_md
 
 
-def _do_content2md_convert_core(ctn_pathname, out_dir=None, skip_gen=False, section_by_number=False):
+def _do_content2md_convert_core(ctn_pathname, 
+                                out_dir=None, 
+                                skip_gen=False, 
+                                move_aux_files=True):
     if out_dir is None:
         out_dir = MdInfo.get_suggested_out_dir(ctn_pathname)
     logging.warning(f"work out_dir: {out_dir}")
@@ -80,17 +69,17 @@ def _do_content2md_convert_core(ctn_pathname, out_dir=None, skip_gen=False, sect
         logging.error(f"DCC: failed {md_info_path} @summarize_content_by_gpt")
         return None, None          
 
-    final_md_path = _make_final_md(md_info_path)
+    final_md_path = make_final_md(md_info_path, move_aux_files=move_aux_files)
 
     return final_md_path
 
-def do_content2md_convert(ctn_pathname, out_dir=None, skip_gen=False, section_by_number=False):
+def do_content2md_convert(ctn_pathname, out_dir=None, skip_gen=False, move_aux_files=True):
     final_md_path = None
     try:
         final_md_path = _do_content2md_convert_core(ctn_pathname,
                                                     out_dir=out_dir,
                                                     skip_gen=skip_gen,
-                                                    section_by_number=section_by_number)
+                                                    move_aux_files=move_aux_files)
     except Exception as ex:
         logging.exception(ex)
     return final_md_path
@@ -100,7 +89,7 @@ if __name__ == "__main__":
 
     #doc_pathname = "datasrc/test/raw_docs/AIGC时代的人力资源管理进化(徐刚).pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
-    #doc_pathname = "datasrc/test/raw_docs/1. 座椅STO间隙 P1.pptx"
+    doc_pathname = "datasrc/test/raw_docs/1. 座椅STO间隙 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/2. 座垫与钢丝间隙 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/3. 头枕杆圆角定义 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/4. 前后排座椅间距定义 P1.pptx"
@@ -116,12 +105,13 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/0530-大模型微调培训-VisualGLM.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/ai602-波士顿咨询：银行业生成式AI应用报告（2023）.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/AI未来十年_大模型产业落地的机遇与挑战_大数据研究院.pptx"
+    #doc_pathname = "datasrc/exam/raw_docs/AI未来十年_大模型产业落地的机遇与挑战_大数据研究院.pptx"
 
     out_dir = None
     skip_gen = False 
+    move_aux_files = True
 
-    final_md_path = _do_content2md_convert_core(doc_pathname, out_dir=out_dir, skip_gen=skip_gen)
+    final_md_path = _do_content2md_convert_core(doc_pathname, out_dir=out_dir, skip_gen=skip_gen, move_aux_files=move_aux_files)
     print(final_md_path)
 
     md_info = MdInfo(final_md_path)

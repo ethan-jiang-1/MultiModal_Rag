@@ -59,6 +59,9 @@ class MdInfo:
 
         self._out_dir = os.path.dirname(self._md_info_path)
         os.makedirs(self._out_dir, exist_ok=True)
+        aux_dir = self.get_aux_dir()
+        os.makedirs(aux_dir, exist_ok=True)
+
         self._migrate()
 
     def __str__(self):
@@ -132,20 +135,22 @@ class MdInfo:
     def _migrate(self):
         if os.path.isfile(self._md_info_path):
             self._info = self.load()
+            self._info[MDFN.VERSION] = MD_INFO_VER
         else:
             self._info = {MDFN.VERSION: MD_INFO_VER}
-            self.save()
 
-        if self._info.get(MDFN.VERSION, 0.0) < MD_INFO_VER:
-            if MDFN.MDFLOW not in self._info:
-                self._info[MDFN.MDFLOW] = {}
-            if MDFN.MDCONTROL not in self._info:
-                self._info[MDFN.MDCONTROL] = {"mc_min_img_relevance_score": 0.2,
-                                              "mc_ofm": None,}
-            self._info[MDFN.VERSION] = MD_INFO_VER
+        if MDFN.MDFLOW not in self._info:
+            self._info[MDFN.MDFLOW] = {}
+        if MDFN.MDCONTROL not in self._info:
+            self._info[MDFN.MDCONTROL] = {"mc_min_img_relevance_score": 0.2,
+                                          "mc_ofm": None,}
+        self.save()
 
     def get_out_dir(self):
         return self._out_dir
+
+    def get_aux_dir(self):
+        return os.path.join(self._out_dir, "_aux")
 
     def get_md_info_path(self):
         return self._md_info_path

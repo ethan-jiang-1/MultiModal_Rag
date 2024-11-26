@@ -45,6 +45,15 @@ def _get_page_instruction(doc_title, page_content):
     g_page2inst[key] = instruction
     return instruction
 
+def _gen_figure_info(md_info, doc_title, page_content, image_path):
+    instruction = _get_page_instruction(doc_title, page_content)
+    resp = generate_image_description(image_path, instruction=instruction)
+    if resp is None:
+        raise ValueError("resp is None")
+    resp_json = json_repair.repair_json(resp, return_objects=True, ensure_ascii=True)
+    rich.print(resp_json)
+    return resp_json
+
 def _analyze_image_content(md_info, md_page_file=None, pathname_org_doc=None, image_path=None):
     """
     模拟多模态处理函数，分析图像的内容是否有意义。
@@ -68,12 +77,7 @@ def _analyze_image_content(md_info, md_page_file=None, pathname_org_doc=None, im
 
     # 3. 多模态分析逻辑
     try:
-        instruction = _get_page_instruction(doc_title, page_content)
-        resp = generate_image_description(image_path, instruction=instruction)
-        if resp is None:
-            raise ValueError("resp is None")
-        resp_json = json_repair.repair_json(resp, return_objects=True, ensure_ascii=True)
-        rich.print(resp_json)
+        resp_json = _gen_figure_info(md_info, doc_title, page_content, image_path)
         figure_name = resp_json.get("FigureName")
         relevance_score = resp_json.get("RelevanceScore")
         picture_discription = resp_json.get("PictureDescription")
@@ -162,8 +166,9 @@ def _filter_markdown_images(md_src_str, md_info):
     # 正则匹配 Markdown 图片引用语法 ![alt](image)\n
     image_pattern = r'!\[.*?\]\(([^)]+)\)(\r?\n)?'
     
-    out_dir = md_info.get_out_dir()
-    
+    #out_dir = md_info.get_out_dir()
+    aux_dir = md_info.get_aux_dir()
+
     def replace_image_reference(match):
         # 原始图像引用
         image_file = match.group(1)
@@ -177,9 +182,13 @@ def _filter_markdown_images(md_src_str, md_info):
                 md_info[MDFN.IMG_FIGURES] = {}
             figure_name, picture_discription = figure_name_n_picture_discription
             md_info[MDFN.IMG_FIGURES][image_file] = (relevance_score, figure_name, picture_discription)
-            image_txt_path = os.path.join(out_dir, MdInfo.extract_doc_title(image_file) + ".txt")
-            with open(image_txt_path, "w+", encoding="utf8") as f:
-                f.write(picture_discription)
+
+            try:
+                tmp_image_txt_path = os.path.join(aux_dir, image_file + ".pic_desp.txt")
+                with open(tmp_image_txt_path, "w+", encoding="utf8") as f:
+                    f.write(picture_discription)
+            except Exception as ex:
+                logging.exception(ex)
             
             if FEATURE_PIC_DESP_IN_MD:
                 pic_desp = picture_discription.replace('"', '\"')

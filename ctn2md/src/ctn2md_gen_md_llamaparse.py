@@ -4,7 +4,7 @@ import sys
 import logging
 import rich
 import random
-#import re
+import re
 
 load_dotenv()
 
@@ -29,6 +29,8 @@ def _get_llamaparse():
         language=Language.SIMPLIFIED_CHINESE,  # "ch_sim",
         #page_suffix="mark_page_separator_{page_number}"
         invalidate_cache=True,
+        check_interval=3,
+        max_timeout=30*60,
     )
     return parser
 
@@ -42,7 +44,23 @@ def _save_md_page(out_dir, job_id, ndx, md_page, md_imgs):
         return fname_page
     except Exception as ex:
         logging.exception(ex)
-    return None 
+    return None
+
+def _dump_images_ref_by_page(page):
+    md_imgs = ""
+    images = page.get("images", None)
+    if images is not None:
+        img_refs = []
+        for image in images:
+            path = image.get("path")
+            if path is not None and os.path.isfile(path):
+                basename = os.path.basename(path)
+                img_refs.append(f"![]({basename})")
+            else:
+                logging.warning(f"image file {path} not found.")
+        if len(img_refs) > 0:
+            md_imgs = "\n\n" + "\n".join(img_refs) + "\n"
+    return md_imgs 
 
 def _dump_md_content_from_lp_json_result(out_dir, json_result, md_info):
     os.makedirs(out_dir, exist_ok=True)
@@ -74,21 +92,11 @@ def _dump_md_content_from_lp_json_result(out_dir, json_result, md_info):
                         md_full_content += "\n"
                     md_full_content += md_page_modified
 
-            md_imgs = ""
-            images = page.get("images", None)
-            if images is not None:
-                img_refs = []
-                for image in images:
-                    path = image.get("path")
-                    if path is not None and os.path.isfile(path):
-                        basename = os.path.basename(path)
-                        img_refs.append(f"![]({basename})")
-                if len(img_refs) > 0:
-                    md_imgs = "\n\n" + "\n".join(img_refs) + "\n"
-                    md_full_content += md_imgs
+            md_imgs = _dump_images_ref_by_page(page)
+            md_full_content += md_imgs
 
-                fname_page = _save_md_page(out_dir, job_id, page_ndx, md_page_modified, md_imgs)
-                fnames_pages.append(fname_page)
+            fname_page = _save_md_page(out_dir, job_id, page_ndx, md_page_modified, md_imgs)
+            fnames_pages.append(fname_page)
     
     info_extra = {MDFN.LP_JOB_ID: job_ids_set.pop(),
                   MDFN.LP_JOB_METADATA: job_metadata,
@@ -96,6 +104,38 @@ def _dump_md_content_from_lp_json_result(out_dir, json_result, md_info):
     
     md_info.update_info(info_extra)
     return md_full_content
+
+def _clean_misc_files(md_info):
+    """
+    清理指定目录及其子目录下，以特定规则命名的文件：
+    1. 以类似 UUID 前缀命名的文件。
+    2. 以 xcs0000_（四位数字）前缀命名的 .md 文件。
+
+    Args:
+        md_info: 提供输出目录的对象，需实现 get_out_dir 方法。
+    """
+    # 获取输出目录
+    out_dir = md_info.get_out_dir()
+
+    if not out_dir or not os.path.exists(out_dir):
+        print(f"目录不存在或无效: {out_dir}")
+        return
+
+    # 正则模式
+    uuid_pattern = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+    xcs_pattern = re.compile(r"^xcs\d{4}_.*\.md$")  # 匹配 xcs0000_ 开头的 .md 文件
+
+    # 遍历目录及其子目录
+    for root, _, files in os.walk(out_dir):
+        files = sorted(files)
+        for file_name in files:
+            file_path = os.path.join(root, file_name)
+            if uuid_pattern.match(file_name) or xcs_pattern.match(file_name):  # 匹配任意一个模式
+                try:
+                    os.remove(file_path)
+                    logging.info(f"已删除: {file_path}")
+                except Exception as e:
+                    logging.exception(f"删除失败: {file_path}, 错误: {e}")
 
 def _dump_page_scan_info(json_result, md_info):
     if json_result is not None and len(json_result) > 0:
@@ -135,6 +175,11 @@ def gen_md_llamaparse(doc_pathname, out_dir):
     if json_result is None or len(json_result) == 0:
         raise ValueError(f"json_result is empty for {doc_pathname}")
 
+    _clean_misc_files(md_info)
+    _dump_images(parser, json_result, md_info)
+    _dump_tables(parser, json_result, md_info)
+    _dump_page_scan_info(json_result, md_info)
+
     pathname_step0 = md_info.name_step_pathname(0)
     with open(pathname_step0, "w+") as f: 
         md_text = _dump_md_content_from_lp_json_result(out_dir, json_result, md_info)
@@ -143,12 +188,7 @@ def gen_md_llamaparse(doc_pathname, out_dir):
 
     logging.info(f"original doc: {doc_pathname}")
     logging.info(f"fname_output: {os.path.basename(pathname_step0)}")
-
-    _dump_images(parser, json_result, md_info)
-    _dump_tables(parser, json_result, md_info)
     
-    _dump_page_scan_info(json_result, md_info)
-
     md_info_path = md_info.save()
     return md_info_path
 
