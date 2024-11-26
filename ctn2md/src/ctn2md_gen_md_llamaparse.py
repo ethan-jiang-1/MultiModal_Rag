@@ -5,6 +5,7 @@ import logging
 import rich
 import random
 import re
+import shutil
 
 load_dotenv()
 
@@ -105,7 +106,7 @@ def _dump_md_content_from_lp_json_result(out_dir, json_result, md_info):
     md_info.update_info(info_extra)
     return md_full_content
 
-def _clean_misc_files(md_info):
+def _remove_misc_files(md_info):
     """
     清理指定目录及其子目录下，以特定规则命名的文件：
     1. 以类似 UUID 前缀命名的文件。
@@ -116,6 +117,8 @@ def _clean_misc_files(md_info):
     """
     # 获取输出目录
     out_dir = md_info.get_out_dir()
+    aux_dir = md_info.get_aux_dir()
+    os.makedirs(aux_dir, exist_ok=True)
 
     if not out_dir or not os.path.exists(out_dir):
         print(f"目录不存在或无效: {out_dir}")
@@ -129,13 +132,13 @@ def _clean_misc_files(md_info):
     for root, _, files in os.walk(out_dir):
         files = sorted(files)
         for file_name in files:
-            file_path = os.path.join(root, file_name)
+            src_path = os.path.join(root, file_name)
             if uuid_pattern.match(file_name) or xcs_pattern.match(file_name):  # 匹配任意一个模式
                 try:
-                    os.remove(file_path)
-                    logging.info(f"已删除: {file_path}")
+                    dst_path = os.path.join(aux_dir, os.path.basename(src_path))
+                    shutil.move(src_path, dst_path)
                 except Exception as e:
-                    logging.exception(f"删除失败: {file_path}, 错误: {e}")
+                    logging.exception(f"删除失败: {src_path}, 错误: {e}")
 
 def _dump_page_scan_info(json_result, md_info):
     if json_result is not None and len(json_result) > 0:
@@ -175,7 +178,7 @@ def gen_md_llamaparse(doc_pathname, out_dir):
     if json_result is None or len(json_result) == 0:
         raise ValueError(f"json_result is empty for {doc_pathname}")
 
-    _clean_misc_files(md_info)
+    _remove_misc_files(md_info)
     _dump_images(parser, json_result, md_info)
     _dump_tables(parser, json_result, md_info)
     _dump_page_scan_info(json_result, md_info)
