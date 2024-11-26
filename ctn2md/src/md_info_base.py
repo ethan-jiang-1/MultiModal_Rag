@@ -47,6 +47,7 @@ class MDFN:
 
     OFM_INFO = "ofm_info"
     FNAME_FINAL_MD = "fname_final_md"
+    FNAME_FINAL_SUM = "fname_final_sum"
 
 class MdInfo:
     def __init__(self, md_info_path_or_out_dir):

@@ -19,7 +19,7 @@ from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_gpt
 from ctn2md.src.ctn2md_fix_content_ocr import fix_content_ocr_by_gpt
 from ctn2md.src.ctn2md_fix_img_reference import fix_img_reference_by_lvlm
 from ctn2md.src.ctn2md_fix_section_hierarchy import fix_section_heirarchy
-
+from ctn2md.src.ctn2md_summarize_content import summarize_content_by_gpt
 
 # TODO: ethan_bm25 keywords for bm25 at doc level
 def _make_final_md(md_info_path):
@@ -73,7 +73,12 @@ def _do_content2md_convert_core(ctn_pathname, out_dir=None, skip_gen=False, sect
     md_info_path = fix_section_heirarchy(md_info_path, src_step_num=3)
     if md_info_path is None:
         logging.error(f"DCC: failed {md_info_path} @fix_section_heirarchy")
-        return None, None         
+        return None, None
+
+    md_info_path = summarize_content_by_gpt(md_info_path, src_step_num=4)
+    if md_info_path is None:
+        logging.error(f"DCC: failed {md_info_path} @summarize_content_by_gpt")
+        return None, None          
 
     final_md_path = _make_final_md(md_info_path)
 
@@ -96,9 +101,9 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/AIGC时代的人力资源管理进化(徐刚).pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
     #doc_pathname = "datasrc/test/raw_docs/1. 座椅STO间隙 P1.pptx"
-    #doc_pathname = "datasrc/exam/raw_docs/2. 座垫与钢丝间隙 P1.pptx"
+    doc_pathname = "datasrc/exam/raw_docs/2. 座垫与钢丝间隙 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/3. 头枕杆圆角定义 P1.pptx"
-    doc_pathname = "datasrc/exam/raw_docs/4. 前后排座椅间距定义 P1.pptx"
+    #doc_pathname = "datasrc/exam/raw_docs/4. 前后排座椅间距定义 P1.pptx"
     #doc_pathname = "datasrc/test/raw_docs/5. back panel 与环境匹配工程校核_P2.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/6. 前后排座椅H点距离要求 P1.pptx"
     #doc_pathname = "datasrc/test/raw_docs/管理者角色定位与认知课程大纲.docx"
