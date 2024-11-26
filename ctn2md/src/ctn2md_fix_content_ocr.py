@@ -93,12 +93,12 @@ def fix_content_ocr_by_gpt(md_info_path, src_step_num=None, dst_step_num=None, o
         md_text = f.read()
 
     total_tokens = _calculate_tokens_large_text(md_text, stop_check_over_max=True)
-    is_tokens_over_llm_output = (total_tokens > MAX_OUTPUT_TOKEN)
+    is_num_tokens_over_llm_output_limit = (total_tokens > MAX_OUTPUT_TOKEN)
     ofm_reason = ""
     if ofm is None:
         ofm, ofm_reason = get_llm_ocr_fix_method(md_info)
 
-    md_info.set_md_contrl("is_tokens_over_llm_output", is_tokens_over_llm_output)
+    md_info.set_md_contrl("is_num_tokens_over_llm_output_limit", is_num_tokens_over_llm_output_limit)
     logging.info(f"OFM: ofm:{ofm} ofm_reason: {ofm_reason}")
     if ofm == OFM_BY_CONTENT:
         if total_tokens > MAX_OUTPUT_TOKEN:

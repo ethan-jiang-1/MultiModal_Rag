@@ -173,10 +173,10 @@ def _filter_markdown_images(md_src_str, md_info):
         
         if relevance_score and figure_name_n_picture_discription:
             # 替换为新的 Markdown 图片引用
-            if MDFN.FIGURES not in md_info:
-                md_info[MDFN.FIGURES] = {}
+            if MDFN.IMG_FIGURES not in md_info:
+                md_info[MDFN.IMG_FIGURES] = {}
             figure_name, picture_discription = figure_name_n_picture_discription
-            md_info[MDFN.FIGURES][image_file] = (relevance_score, figure_name, picture_discription)
+            md_info[MDFN.IMG_FIGURES][image_file] = (relevance_score, figure_name, picture_discription)
             image_txt_path = os.path.join(out_dir, MdInfo.extract_doc_title(image_file) + ".txt")
             with open(image_txt_path, "w+", encoding="utf8") as f:
                 f.write(picture_discription)

@@ -12,7 +12,7 @@ _load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-MD_INFO_VER = "0.5.0"
+MD_INFO_VER = "0.0.6"
 
 MD_SEP_FNAME_EXT = "___"
 MD_FNAME_MD_INFO = "_info.json"
@@ -22,8 +22,7 @@ from ctn2md.utils.util_ctn_type import CtnType
 
 class MDFN:
     VERSION = "version"
-    JOB_ID = "job_id"
-    JOB_METADATA = "job_metadata"
+
     PATHNAME_ORG_DOC = "pathname_org_doc"
 
     MDFLOW = "mdflow"
@@ -31,12 +30,17 @@ class MDFN:
 
     FNAMES_PAGES = "fnames_pages"
     FNAMES_IMGS = "fnames_imgs"
+    FNAMES_TBLS = "fnames_tbls"
 
-    SCAN_INFO = "scan_info"
+    GEN_ENGINE = "parse_engine"
+    LP_JOB_ID = "lp_job_id"
+    LP_JOB_METADATA = "lp_job_metadata"
+    LP_SCAN_INFO = "lp_scan_info"
 
-    FHL = "fhl"
+    FHL_ORG = "fhl_org"
     FHL_MAP_O2N = "fhl_map_o2n"
-    FIGURES = "figures"
+
+    IMG_FIGURES = "img_figures"
 
     MD_SECTIONS = "md_sections"
     MD_SECTIONS_OUTPUT_DIR = "md_sections_output_dir"
@@ -137,9 +141,15 @@ class MdInfo:
         return self._md_info_path
 
     def set_doc_pathname(self, doc_pathname):
-        if "path_org_doc" not in self._info:
+        if MDFN.PATHNAME_ORG_DOC not in self._info:
             self._info[MDFN.PATHNAME_ORG_DOC] = doc_pathname
         return self.save()
+    
+    def set_gen_engine(self, gen_engine_name):
+        self._info[MDFN.GEN_ENGINE] = gen_engine_name
+
+    def get_gen_engine(self):
+        return self._info.get(MDFN.GEN_ENGINE, None)
 
     def get_doc_pathname(self):
         return self.get(MDFN.PATHNAME_ORG_DOC)

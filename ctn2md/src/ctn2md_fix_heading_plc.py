@@ -75,10 +75,10 @@ def _filter_markdown_heading_plc(md_text, md_info):
     if first_line_no_heading is not None and len(first_line_no_heading) > 0:
         heading_first_line, plc_comment_first_line = separate_heading_and_plc_comment(normalized_line)
 
-    md_info[MDFN.FHL] = {"org_doc_title": md_info.get_doc_title(),
-                         "org_doc_type": md_info.get_ctn_type(),
-                         "org_first_line": (heading_first_line, plc_comment_first_line),
-                         "org_heading_lines": heading_lines}
+    md_info[MDFN.FHL_ORG] = {"org_doc_title": md_info.get_doc_title(),
+                             "org_doc_type": md_info.get_ctn_type(),
+                             "org_first_line": (heading_first_line, plc_comment_first_line),
+                             "org_heading_lines": heading_lines}
     md_info.save()
                 
     return normalized_md
@@ -159,12 +159,12 @@ def fix_headings_plc_by_gpt(md_info_path, src_step_num=None):
 
     md_text_new = _filter_markdown_heading_plc(md_text, md_info)
 
-    fhl_org = md_info[MDFN.FHL]
+    fhl_org = md_info[MDFN.FHL_ORG]
     org_heading_lines = fhl_org["org_heading_lines"]
     if len(org_heading_lines) == 0:
         md_text_new = _fix_markdown_with_no_heading(md_text_new, md_info)
         md_text_new = _filter_markdown_heading_plc(md_text_new, md_info)
-        fhl_org = md_info[MDFN.FHL]
+        fhl_org = md_info[MDFN.FHL_ORG]
     
     #rich.print(fhl)
     # TODO： ethan_heading_recover gpt-4o-mini not able to handle yet

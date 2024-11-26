@@ -13,7 +13,7 @@ if "./" not in sys.path:
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MDFN
-from ctn2md.src.md_info_scan import analyze_scan_info
+from ctn2md.src.md_info_scan import analyze_lp_scan_info
 from ctn2md.src.md_process_plc import inject_plc_comment_to_page
 
 def _get_llamaparse():
@@ -44,13 +44,12 @@ def _save_md_page(out_dir, job_id, ndx, md_page, md_imgs):
         logging.exception(ex)
     return None 
 
-def _dump_by_json_result(out_dir, json_result, md_info):
+def _dump_md_content_from_lp_json_result(out_dir, json_result, md_info):
     os.makedirs(out_dir, exist_ok=True)
     md_full_content = ""
     job_ids_set = set()
     file_paths_set = set()
     job_metadata = {}
-    fnames_imgs = []
     fnames_pages = []
     for node in json_result:
         job_id = node.get("job_id", None)
@@ -84,7 +83,6 @@ def _dump_by_json_result(out_dir, json_result, md_info):
                     if path is not None and os.path.isfile(path):
                         basename = os.path.basename(path)
                         img_refs.append(f"![]({basename})")
-                        fnames_imgs.append(basename)
                 if len(img_refs) > 0:
                     md_imgs = "\n\n" + "\n".join(img_refs) + "\n"
                     md_full_content += md_imgs
@@ -92,48 +90,65 @@ def _dump_by_json_result(out_dir, json_result, md_info):
                 fname_page = _save_md_page(out_dir, job_id, page_ndx, md_page_modified, md_imgs)
                 fnames_pages.append(fname_page)
     
-    info_extra = {MDFN.JOB_ID: job_ids_set.pop(),
-                  MDFN.JOB_METADATA: job_metadata,
-                  MDFN.FNAMES_IMGS: fnames_imgs,
+    info_extra = {MDFN.LP_JOB_ID: job_ids_set.pop(),
+                  MDFN.LP_JOB_METADATA: job_metadata,
                   MDFN.FNAMES_PAGES: fnames_pages}
     
     md_info.update_info(info_extra)
     return md_full_content
+
+def _dump_page_scan_info(json_result, md_info):
+    if json_result is not None and len(json_result) > 0:
+        json_result0_pages = json_result[0].get("pages", None)
+        lp_scan_info = {}
+        if json_result0_pages is not None:
+            doc_pathname = md_info.get_doc_pathname()
+            doc_type = doc_pathname.split(".")[-1].lower()
+            lp_scan_info = analyze_lp_scan_info(json_result0_pages, doc_type)
+        md_info[MDFN.LP_SCAN_INFO] = lp_scan_info
+
+def _dump_images(parser, json_result, md_info):
+    out_dir = md_info.get_out_dir()
+    images = parser.get_images(json_result, out_dir)
+    fnames_imgs = [os.path.basename(item["path"]) for item in images]
+    md_info[MDFN.FNAMES_IMGS] = fnames_imgs
+
+def _dump_tables(parser, json_result, md_info):
+    out_dir = md_info.get_out_dir()
+    tables = parser.get_xlsx(json_result, out_dir)
+    fnames_tbls = [os.path.basename(item["path"]) for item in tables]
+    md_info[MDFN.FNAMES_TBLS] = fnames_tbls    
 
 def gen_md_llamaparse(doc_pathname, out_dir):
     parser = _get_llamaparse()
     #logging.info(parser)
 
     md_info = MdInfo(out_dir)
+    md_info.set_gen_engine("llamaparse:lp")
     md_info.set_doc_pathname(doc_pathname)
 
     documents = parser.load_data(doc_pathname)
     if documents is None or len(documents) == 0:
         raise ValueError(f"document is empty for {doc_pathname}")
 
-    json_result = parser.get_json_result(doc_pathname) # noqa
+    json_result = parser.get_json_result(doc_pathname)
     if json_result is None or len(json_result) == 0:
         raise ValueError(f"json_result is empty for {doc_pathname}")
 
-    json_result0_pages = json_result[0].get("pages", None)
-    scan_info = {}
-    if json_result0_pages is not None:
-        doc_type = doc_pathname.split(".")[-1].lower()
-        scan_info = analyze_scan_info(json_result0_pages, doc_type)
-
-    images = parser.get_images(json_result, out_dir)  # noqa
-    #tables = parser.get_xlsx(json_result, out_dir)  # noqa
-
     pathname_step0 = md_info.name_step_pathname(0)
     with open(pathname_step0, "w+") as f: 
-        md_text = _dump_by_json_result(out_dir, json_result, md_info)
+        md_text = _dump_md_content_from_lp_json_result(out_dir, json_result, md_info)
         f.write(md_text)
     md_info.add_step_into_md_info_mdflow(pathname_step0, actor="gen_md_llamaparse")
 
     logging.info(f"original doc: {doc_pathname}")
     logging.info(f"fname_output: {os.path.basename(pathname_step0)}")
 
-    md_info[MDFN.SCAN_INFO] = scan_info
+    _dump_images(parser, json_result, md_info)
+    _dump_tables(parser, json_result, md_info)
+    
+    _dump_page_scan_info(json_result, md_info)
+
     md_info_path = md_info.save()
     return md_info_path
 
@@ -142,13 +157,13 @@ if __name__ == "__main__":
 
     #doc_pathname = "datasrc/test/raw_docs/AIGC时代的人力资源管理进化(徐刚).pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
-    #doc_pathname = "datasrc/test/raw_docs/1. 座椅STO间隙 P1.pptx"
+    doc_pathname = "datasrc/test/raw_docs/1. 座椅STO间隙 P1.pptx"
     #doc_pathname = "datasrc/test/raw_docs/管理者角色定位与认知课程大纲.docx"
     #doc_pathname = "datasrc/test/raw_docs/考勤修改统一规则.xlsx"
     #doc_pathname = "datasrc/test/raw_docs/5. back panel 与环境匹配工程校核_P2.pptx"
     
     #doc_pathname = "datasrc/exam/raw_docs/ChatGPT intimates a tantalizing future_compressed.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
 
     out_dir = MdInfo.get_suggested_out_dir(doc_pathname)
 
