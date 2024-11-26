@@ -13,7 +13,7 @@ if "./" not in sys.path:
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.utils_llm.llm_fix_ocr_md import fix_ocr_self_correct_markdown
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.src.md_info_base import MdInfo, MDFN
 from ctn2md.src.md_info_scan import get_llm_ocr_fix_method, OFM_BY_CONTENT, OFM_BY_PAGE, OFM_BY_SKIP
 from ctn2md.utils.util_tokenizer import get_token_encoding
 
@@ -96,8 +96,12 @@ def fix_content_ocr_by_gpt(md_info_path, src_step_num=None, ofm=None):
     is_tokens_over_llm_output = (total_tokens > MAX_OUTPUT_TOKEN)
     ofm_reason = ""
     if ofm is None:
-        md_info["is_tokens_over_llm_output"] = is_tokens_over_llm_output
         ofm, ofm_reason = get_llm_ocr_fix_method(md_info)
+
+    ofm_info = {"ofm": ofm,
+                "ofm_reason": ofm_reason,
+                "is_tokens_over_llm_output": is_tokens_over_llm_output}
+    md_info[MDFN.OFM_INFO] = ofm_info
 
     logging.info(f"OFM: ofm:{ofm} ofm_reason: {ofm_reason}")
     if ofm == OFM_BY_CONTENT:
@@ -114,6 +118,8 @@ def fix_content_ocr_by_gpt(md_info_path, src_step_num=None, ofm=None):
         md_text_fixed = md_text
     else:
         raise ValueError(f"unknown ofm: {ofm}")
+    ofm_info["ofm"] = ofm 
+    ofm_info["ofm_reason"] = ofm_reason
 
     logging.warning(f"fix_content_ocr_by_gpt: pathname_dst_step_md: {pathname_dst_step_md}")
     with open(pathname_dst_step_md, "w+") as f:

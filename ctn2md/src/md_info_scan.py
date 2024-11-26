@@ -12,6 +12,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_ctn_type import CtnType
+from ctn2md.src.md_info_base import MDFN
 
 OFM_BY_SKIP = "ofm_skip"
 OFM_BY_CONTENT = "ofm_content"
@@ -111,7 +112,7 @@ def analyze_scan_info(json_result0_pages, doc_type):
 
 
 def get_llm_ocr_fix_method(md_info):
-    scan_info = md_info.get("scan_info", None)
+    scan_info = md_info.get(MDFN.SCAN_INFO, None)
     if scan_info is None:
         return OFM_BY_SKIP, "scan_info=None"
 
@@ -123,7 +124,10 @@ def get_llm_ocr_fix_method(md_info):
     if doc_type is None:
         raise ValueError("no doc_type in scan_info")
 
-    is_tokens_over_llm_output = md_info.get("is_tokens_over_llm_output", False)
+    is_tokens_over_llm_output = False
+    ofm_info = md_info.get(MDFN.OFM_INFO, None)
+    if ofm_info is not None:
+        is_tokens_over_llm_output = ofm_info.get("is_tokens_over_llm_output", False)
  
     total_pages = scan_info.get("toal_pages", 1)
     scanned_pages = scan_info.get("scanned_pages", 0) 

@@ -12,7 +12,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.src.md_info_base import MdInfo, MDFN
 from ctn2md.src.md_info_scan import analyze_scan_info
 from ctn2md.src.md_process_plc import inject_plc_comment_to_page
 
@@ -92,10 +92,10 @@ def _dump_by_json_result(out_dir, json_result, md_info):
                 fname_page = _save_md_page(out_dir, job_id, page_ndx, md_page_modified, md_imgs)
                 fnames_pages.append(fname_page)
     
-    info_extra = {"job_id": job_ids_set.pop(),
-                  "job_metadata": job_metadata,
-                  "fnames_imgs": fnames_imgs,
-                  "fnames_pages": fnames_pages}
+    info_extra = {MDFN.JOB_ID: job_ids_set.pop(),
+                  MDFN.JOB_METADATA: job_metadata,
+                  MDFN.FNAMES_IMGS: fnames_imgs,
+                  MDFN.FNAMES_PAGES: fnames_pages}
     
     md_info.update_info(info_extra)
     return md_full_content
@@ -133,7 +133,7 @@ def gen_md_llamaparse(doc_pathname, out_dir):
     logging.info(f"original doc: {doc_pathname}")
     logging.info(f"fname_output: {os.path.basename(pathname_step0)}")
 
-    md_info["scan_info"] = scan_info
+    md_info[MDFN.SCAN_INFO] = scan_info
     md_info_path = md_info.save()
     return md_info_path
 

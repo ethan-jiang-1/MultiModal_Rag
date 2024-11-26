@@ -15,7 +15,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.src.md_info_base import MdInfo, MDFN
 from ctn2md.utils.util_markdown import remove_comment
 
 class HeadingStack:
@@ -105,12 +105,11 @@ def _filter_headings_for_hierarchy_comments(md_text, md_info):
     同时生成标题的章节编号，确保一级标题独立编号，子章节正确继承父级编号。
     支持容错处理输入的标题层级跳跃或逆序。
     """
-    MD_SECTIONS = "md_sections"  # 定义常量
     lines = md_text.strip().split('\n')
     processed_lines = []
     stack = HeadingStack()  # 使用堆栈对象
     #doc_title = None  # 当前的一级标题
-    md_info[MD_SECTIONS] = []  # 初始化列表
+    md_info[MDFN.MD_SECTIONS] = []  # 初始化列表
 
     for line in lines:
         # 移除 <!-- ... --> 注释
@@ -129,7 +128,7 @@ def _filter_headings_for_hierarchy_comments(md_text, md_info):
                 hierarchy_desc = stack.get_hierarchy_desc()
 
                 # 记录到 md_info
-                md_info[MD_SECTIONS].append({
+                md_info[MDFN.MD_SECTIONS].append({
                     "hierarchy_desc": hierarchy_desc,
                     "ordered_name": ordered_name
                 })
@@ -140,7 +139,7 @@ def _filter_headings_for_hierarchy_comments(md_text, md_info):
                 hierarchy_desc = stack.get_hierarchy_desc()
 
                 # 记录到 md_info
-                md_info[MD_SECTIONS].append({
+                md_info[MDFN.MD_SECTIONS].append({
                     "hierarchy_desc": hierarchy_desc,
                     "ordered_name": ordered_name
                 })
@@ -327,12 +326,12 @@ def fix_section_heirarchy_comments(md_info_path, src_step_num=None, dst_step_num
         f.write(md_text_new)
 
     pathname_sections = os.path.join(os.path.dirname(md_info.get_md_info_path()), "md_sections") 
-    md_info["sections_output_dir"] = pathname_sections
+    md_info[MDFN.MD_SECTIONS_OUTPUT_DIR] = pathname_sections
     if os.path.isdir(pathname_sections):
         shutil.rmtree(pathname_sections)
     os.makedirs(pathname_sections, exist_ok=True)
     sdsec_names = _split_markdown_to_files_with_desc_and_sequence(md_text_new, pathname_sections)
-    md_info["sections_output_names"] = sdsec_names
+    md_info[MDFN.MD_SECTIONS_OUTPUT_NAMES] = sdsec_names
     
     md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_section_heirarchy_comments")
     md_info_path = md_info.save()

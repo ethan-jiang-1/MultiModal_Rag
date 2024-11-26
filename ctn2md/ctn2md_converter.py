@@ -13,7 +13,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.src.md_info_base import MdInfo, MDFN
 from ctn2md.src.ctn2md_llamaparse_md_generater import gen_md_llamaparse
 from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_gpt
 from ctn2md.src.ctn2md_fix_content_ocr import fix_content_ocr_by_gpt
@@ -33,7 +33,7 @@ def _make_final_md(md_info_path):
         os.unlink(pathname_final_md)
     shutil.copy(pathname_step_md, pathname_final_md)
 
-    md_info["fname_final_md"] = os.path.basename(pathname_final_md)
+    md_info[MDFN.FNAME_FINAL_MD] = os.path.basename(pathname_final_md)
     md_info.save()
     return pathname_final_md
 
@@ -110,8 +110,9 @@ if __name__ == "__main__":
 
     #doc_pathname = "datasrc/exam/raw_docs/ChatGPT intimates a tantalizing future_compressed.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/Long-Context LLMs Meet RAG_compressed.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/0530-大模型微调培训-VisualGLM.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/ai602-波士顿咨询：银行业生成式AI应用报告（2023）.pdf"
 
     out_dir = None
     skip_gen = True 

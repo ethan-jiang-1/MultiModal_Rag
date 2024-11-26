@@ -15,7 +15,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.src.md_info_base import MdInfo, MDFN
 from ctn2md.utils_llm.llm_fix_vl_instruction import get_vllm_instruction
 from ctn2md.utils_llm.vllm_description import generate_image_description
 
@@ -173,10 +173,10 @@ def _filter_markdown_images(md_src_str, md_info):
         
         if relevance_score and figure_name_n_picture_discription:
             # 替换为新的 Markdown 图片引用
-            if "figures" not in md_info:
-                md_info["figures"] = {}
+            if MDFN.FIGURES not in md_info:
+                md_info[MDFN.FIGURES] = {}
             figure_name, picture_discription = figure_name_n_picture_discription
-            md_info["figures"][image_file] = (relevance_score, figure_name, picture_discription)
+            md_info[MDFN.FIGURES][image_file] = (relevance_score, figure_name, picture_discription)
             image_txt_path = os.path.join(out_dir, MdInfo.extract_doc_title(image_file) + ".txt")
             with open(image_txt_path, "w+", encoding="utf8") as f:
                 f.write(picture_discription)
