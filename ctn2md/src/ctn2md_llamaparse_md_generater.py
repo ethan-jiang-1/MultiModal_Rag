@@ -20,6 +20,7 @@ def _get_llamaparse():
     from llama_parse import LlamaParse
     from llama_parse.utils import Language
 
+    #TODO: ethan_llamaparse parameters
     LLAMAPARSE_API_KEY = os.environ.get("LLAMAPARSE_API_KEY")
     parser = LlamaParse(
         api_key=LLAMAPARSE_API_KEY,  # 替换为您的 API 密钥

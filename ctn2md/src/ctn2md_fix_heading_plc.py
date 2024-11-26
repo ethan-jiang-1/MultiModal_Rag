@@ -147,7 +147,7 @@ def _update_markdown_heading_content(md_text, md_info, fhl_map):
     return new_md_text, unprocessed_heading_lines_map
 
 
-def fix_headings_plc(md_info_path, src_step_num=None):
+def fix_headings_plc_by_gpt(md_info_path, src_step_num=None):
     md_info = MdInfo(md_info_path)
 
     pathname_src_step_md, pathname_dst_step_md = md_info.name_src_n_dst_step_pathname(src_step_num)
@@ -194,7 +194,7 @@ if __name__ == "__main__":
     #md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
     md_info_path = "_work/ctn2md_座椅STO间隙 P1/_info.json"
 
-    md_info_path = fix_headings_plc(md_info_path, src_step_num=src_step_num)
+    md_info_path = fix_headings_plc_by_gpt(md_info_path, src_step_num=src_step_num)
 
     md_info = MdInfo(md_info_path)
     rich.print(md_info)

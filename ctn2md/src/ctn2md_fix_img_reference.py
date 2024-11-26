@@ -25,6 +25,8 @@ MIN_WIDTH = 198   # 图像最小宽度（像素）
 MIN_HEIGHT = 198  # 图像最小高度（像素）
 MIN_AREA = 128 * 128 # 图像最小面积（像素）
 
+MIN_RELEVANCE_SCORE = 2.0  # 0 - 10
+
 FEATURE_PIC_DESP_IN_MD = True
 
 g_page2inst = {}
@@ -77,7 +79,7 @@ def _analyze_image_content(md_page_file, pathname_org_doc, image_path):
         picture_discription = resp_json.get("PictureDescription")
         if relevance_score is not None:
             relevance_score = float(relevance_score)
-            if relevance_score < 5.0: 
+            if relevance_score < MIN_RELEVANCE_SCORE: 
                 logging.warning(f"AIC: relevance_score: {relevance_score}")
                 return None, None 
         if figure_name is not None:

@@ -17,7 +17,7 @@ from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num,
 from ctn2md.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
 
 
-def fix_ocr_self_correct_markdown(md_text, doc_type, model="gpt-4o", question_num=None):
+def fix_ocr_self_correct_markdown(md_text, doc_type, model="gpt-4o-mini", question_num=None):
     if question_num is None:
         question_num = get_next_question_num()
 
@@ -30,8 +30,8 @@ def fix_ocr_self_correct_markdown(md_text, doc_type, model="gpt-4o", question_nu
 
         if ctn_type not in [CtnType.PDF, CtnType.PPT, CtnType.DOC]:
             raise ValueError(f"unknown ctn_type {ctn_type}")   
-        if model != "gpt-4o":
-            raise ValueError(f" ocr is hard, need gpt-4o model only.")
+        # if model != "gpt-4o":
+        #     raise ValueError(f" ocr is hard, need gpt-4o model only.")
         system_prompt = SYSTEM_PROMPT_MD_SELF_CORRECT
         if ctn_type == CtnType.PDF:
             user_prompt = USER_PROMPT_MD_SELF_CORRECT_PDF

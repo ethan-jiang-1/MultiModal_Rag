@@ -58,11 +58,12 @@ def _fix_ocr_by_stiche_pages(md_text, md_info):
     out_dir = md_info.get_out_dir()
     question_num = 8000
     total_pages = len(fnames_pages)
+    model = "gpt-4o"  # has to be gpt-4o
     if total_pages >= 5:
+        model = "gpt-4o-mini"
         logging.warning(f"_fix_ocr_by_stiche_pages: total_pages: {total_pages}, it may take a while....")
     else:
         logging.info(f"_fix_ocr_by_stiche_pages: total_pages: {total_pages}")
-    model = "gpt-4o"  # has to be gpt-4o
     for ndx, fname_page in enumerate(fnames_pages):
         pathname = os.path.join(out_dir, fname_page)
         with open(pathname, 'r', encoding='utf8') as f:

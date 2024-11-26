@@ -15,8 +15,8 @@ if "./" not in sys.path:
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo
 from ctn2md.src.ctn2md_llamaparse_md_generater import gen_md_llamaparse
-from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc
-from ctn2md.src.ctn2md_fix_content_ocr_llamaparse import fix_content_ocr_by_gpt
+from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_gpt
+from ctn2md.src.ctn2md_fix_content_ocr import fix_content_ocr_by_gpt
 from ctn2md.src.ctn2md_fix_img_reference import fix_img_reference_by_lvlm
 from ctn2md.src.ctn2md_fix_section_hierarchy_numbers import fix_section_heirarchy_numbers
 from ctn2md.src.ctn2md_fix_section_hierarchy_comments import fix_section_heirarchy_comments
@@ -61,7 +61,7 @@ def _do_content2md_convert_core(ctn_pathname, out_dir=None, skip_gen=False, sect
         logging.error(f"DCC: failed {md_info_path} @fix_content_ocr_by_gpt")
         return None, None 
 
-    md_info_path = fix_headings_plc(md_info_path, src_step_num=1)
+    md_info_path = fix_headings_plc_by_gpt(md_info_path, src_step_num=1)
     if md_info_path is None:
         logging.error(f"DCC: failed {md_info_path} @fix_headings_llamaparse")
         return None, None 
@@ -110,11 +110,11 @@ if __name__ == "__main__":
 
     #doc_pathname = "datasrc/exam/raw_docs/ChatGPT intimates a tantalizing future_compressed.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/Long-Context LLMs Meet RAG_compressed.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/0530-大模型微调培训-VisualGLM.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/0530-大模型微调培训-VisualGLM.pdf"
 
     out_dir = None
-    skip_gen = False 
+    skip_gen = True 
 
     final_md_path = _do_content2md_convert_core(doc_pathname, out_dir=out_dir, skip_gen=skip_gen)
     print(final_md_path)
