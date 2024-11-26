@@ -15,7 +15,7 @@ if "./" not in sys.path:
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo
-from ctn2md.src.md_process_plc import remove_plc_comment
+from ctn2md.utils.util_markdown import remove_comment
 
 HIQA_MD_STYLE = """
 ##1. 要求格式为,PDF文本中的每一章节都作为markdown中的一个一级标题(只用一个 # 号)章节,
@@ -31,7 +31,7 @@ HIQA_MD_STYLE = """
 
 def _filter_headings_for_heirarchy_numbers(md_text, md_info):
     """
-    规整化 Markdown 的标题写法，为所有标题编号，并移除行中的 <!-- PLC: ... --> 注释。
+    规整化 Markdown 的标题写法，为所有标题编号，并移除行中的 <!--... --> 注释。
 
     参数:
         md_text (str): 输入的 Markdown 字符串流。
@@ -48,8 +48,8 @@ def _filter_headings_for_heirarchy_numbers(md_text, md_info):
     result_lines = []
 
     for line in md_text.splitlines():
-        # 先移除行中的 <!-- PLC: ... --> 注释
-        line = remove_plc_comment(line)
+        # 先移除行中的 <!-- ... --> 注释
+        line = remove_comment(line)
 
         # 匹配标题行
         match = re.match(heading_pattern, line)
