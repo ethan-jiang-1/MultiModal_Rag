@@ -325,7 +325,7 @@ def fix_section_heirarchy(md_info_path, src_step_num=None, dst_step_num=None):
 
     md_text_new = _filter_headings_for_hierarchy_comments(md_text, md_info)
 
-    logging.warning(f"fix_section_heirarchy_comments: pathname_dst_step_md: {pathname_dst_step_md}")
+    logging.warning(f"fix_section_heirarchy: pathname_dst_step_md: {pathname_dst_step_md}")
     with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_new)
 
@@ -337,7 +337,7 @@ def fix_section_heirarchy(md_info_path, src_step_num=None, dst_step_num=None):
     sdsec_names = _split_markdown_to_files_with_desc_and_sequence(md_text_new, pathname_sections)
     md_info[MDFN.MD_SECTIONS_OUTPUT_NAMES] = sdsec_names
     
-    md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_section_heirarchy_comments")
+    md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_section_heirarchy")
     md_info_path = md_info.save()
     return md_info_path    
 

@@ -62,7 +62,7 @@ def _do_content2md_convert_core(ctn_pathname, out_dir=None, skip_gen=False, sect
 
     md_info_path = fix_headings_plc_by_gpt(md_info_path, src_step_num=1)
     if md_info_path is None:
-        logging.error(f"DCC: failed {md_info_path} @fix_headings_llamaparse")
+        logging.error(f"DCC: failed {md_info_path} @fix_headings_plc_by_gpt")
         return None, None 
 
     md_info_path = fix_img_reference_by_lvlm(md_info_path, src_step_num=2)
@@ -72,7 +72,7 @@ def _do_content2md_convert_core(ctn_pathname, out_dir=None, skip_gen=False, sect
 
     md_info_path = fix_section_heirarchy(md_info_path, src_step_num=3)
     if md_info_path is None:
-        logging.error(f"DCC: failed {md_info_path} @fix_section_heirarchy_comments")
+        logging.error(f"DCC: failed {md_info_path} @fix_section_heirarchy")
         return None, None         
 
     final_md_path = _make_final_md(md_info_path)
