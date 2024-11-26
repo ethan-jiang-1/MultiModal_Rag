@@ -1,4 +1,5 @@
 from openai import AzureOpenAI
+from openai import OpenAI
 from dotenv import load_dotenv, find_dotenv
 import sys
 import os
@@ -42,10 +43,17 @@ def get_gpt_messages(system_prompt, user_prompt):
     #messages_loaded = json.loads(messages_str)
     return messages
 
-def _get_gpt_client():
+def get_azure_gpt_client():
     client = AzureOpenAI(api_key=os.getenv("OPENAI_API_KEY"),
                          azure_endpoint=os.getenv("OPENAI_BASE_URL"),
                          api_version="2024-02-15-preview")
+    return client
+
+def get_dashscope_client():
+    client = OpenAI(
+        api_key=os.getenv("DASHSCOPE_API_KEY"),
+        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+    )
     return client
 
 
@@ -109,9 +117,11 @@ def chat_gpt_json(messages,
                   backoff_factor=2,
                   backoff_sec=1,
                   delay_base_sec=5,
-                  track_id=None):
+                  track_id=None,
+                  client=None):
     attempt = 0
-    client = _get_gpt_client()
+    if client is None:
+        client = get_azure_gpt_client()
     while attempt < retries:
         try:
             d0 = time.time()
@@ -144,9 +154,11 @@ def chat_gpt_plain(messages,
                   backoff_factor=2,
                   backoff_sec=1,
                   delay_base_sec=5,
-                  track_id=None):
+                  track_id=None,
+                  client=None):
     attempt = 0
-    client = _get_gpt_client()
+    if client is None:
+        client = get_azure_gpt_client()
     while attempt < retries:
         try:
             d0 = time.time()
