@@ -22,24 +22,27 @@ from ctn2md.utils.util_ctn_type import CtnType
 
 class MDFN:
     VERSION = "version"
-    PATHNAME_ORG_DOC = "pathname_org_doc"
-    MDFLOW = "mdflow"
-    FNAMES_PAGES = "fnames_pages"
-    FNAMES_IMGS = "fnames_imgs"
     JOB_ID = "job_id"
     JOB_METADATA = "job_metadata"
+    PATHNAME_ORG_DOC = "pathname_org_doc"
+
+    MDFLOW = "mdflow"
+    MDCONTROL = "mdcontrol"
+
+    FNAMES_PAGES = "fnames_pages"
+    FNAMES_IMGS = "fnames_imgs"
+
     SCAN_INFO = "scan_info"
-    FNAME_FINAL_MD = "fname_final_md"
+
     FHL = "fhl"
     FHL_MAP_O2N = "fhl_map_o2n"
     FIGURES = "figures"
+
     MD_SECTIONS = "md_sections"
     MD_SECTIONS_OUTPUT_DIR = "md_sections_output_dir"
     MD_SECTIONS_OUTPUT_NAMES = "md_sections_output_names"
     OFM_INFO = "ofm_info"
-
-class MdFlowControl:
-    pass
+    FNAME_FINAL_MD = "fname_final_md"
 
 class MdInfo:
     def __init__(self, md_info_path_or_out_dir):
@@ -53,6 +56,8 @@ class MdInfo:
         os.makedirs(self._out_dir, exist_ok=True)
         if not os.path.isfile(self._md_info_path):
             self._info = {MDFN.VERSION: MD_INFO_VER}
+            self._info[MDFN.MDFLOW] = {}
+            self._info[MDFN.MDCONTROL] = {}
             self.save()
         self._info = self.load()
         #if "mdflow_control" 
@@ -134,7 +139,6 @@ class MdInfo:
     def set_doc_pathname(self, doc_pathname):
         if "path_org_doc" not in self._info:
             self._info[MDFN.PATHNAME_ORG_DOC] = doc_pathname
-            self._info[MDFN.MDFLOW] = {}
         return self.save()
 
     def get_doc_pathname(self):
@@ -142,6 +146,15 @@ class MdInfo:
     
     def get_doc_title(self):
         return self.extract_doc_title(self.get(MDFN.PATHNAME_ORG_DOC))
+
+    def set_md_contrl(self, mdctrl_name, val):
+        if isinstance(mdctrl_name, str):
+            self._info[MDFN.MDCONTROL][mdctrl_name] = val
+            return val 
+        return None 
+    
+    def get_md_control(self, mdctrl_name, default_val):
+        return self._info[MDFN.MDCONTROL].get(mdctrl_name, default_val)
 
     def name_step_pathname(self, step_num):
         pathname_org_doc = self._info.get(MDFN.PATHNAME_ORG_DOC, None)

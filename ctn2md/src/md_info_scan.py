@@ -35,6 +35,8 @@ def analyze_scan_info(json_result0_pages, doc_type):
         "doc_type": doc_type
     }
 
+    result_pages = result["pages"]
+
     for page in json_result0_pages:
         # 提取页面级信息
         width = page.get("width", 0)
@@ -94,7 +96,7 @@ def analyze_scan_info(json_result0_pages, doc_type):
             result["ocrimg_pages"] += 1
 
         # 保存当前页的详细数据
-        result["pages"].append({
+        result_pages.append({
             "page_number": page.get("page", 0),
             "width": width,
             "height": height,
@@ -105,7 +107,7 @@ def analyze_scan_info(json_result0_pages, doc_type):
             "total_ocr_images": total_ocr_images,
             "page_area": round(page_area, 2),
             "is_structured": is_structured,
-            "is_scanned": is_scanned
+            "is_scanned": is_scanned,
         })
 
     return result
@@ -124,12 +126,9 @@ def get_llm_ocr_fix_method(md_info):
     if doc_type is None:
         raise ValueError("no doc_type in scan_info")
 
-    is_tokens_over_llm_output = False
-    ofm_info = md_info.get(MDFN.OFM_INFO, None)
-    if ofm_info is not None:
-        is_tokens_over_llm_output = ofm_info.get("is_tokens_over_llm_output", False)
+    is_tokens_over_llm_output = md_info.get_md_control("is_tokens_over_llm_output", False)
  
-    total_pages = scan_info.get("toal_pages", 1)
+    total_pages = scan_info.get("total_pages", 1)
     scanned_pages = scan_info.get("scanned_pages", 0) 
     structured_pages = scan_info.get("structured_pages", 0)  # 良好的结构化页面数量
     ocrimg_pages = scan_info.get("ocrimg_pages", 0)
@@ -146,8 +145,8 @@ def get_llm_ocr_fix_method(md_info):
     # TODO: ethan_llm_ocr_fix  need to support llm_ocr_fix multiple pages (>=5) or too many tokens 
     # as llm fix only can support limited output tokens
     if total_pages >= 5:
-        if structured_pages / total_pages > 0.8:
-            return OFM_BY_SKIP, "stp>0.8"
+        if structured_pages / total_pages >= 0.8:
+            return OFM_BY_SKIP, "stp>=0.8"
         if not is_tokens_over_llm_output:
             return OFM_BY_CONTENT, "llm_tklimit<(L)"
         return OFM_BY_PAGE, "??P0??" 

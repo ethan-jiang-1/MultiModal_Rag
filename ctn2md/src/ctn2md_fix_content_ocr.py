@@ -82,10 +82,10 @@ def _fix_ocr_by_proc_whole(md_text, md_info):
     md_text_fixed = fix_ocr_self_correct_markdown(md_text, doc_type)  
     return md_text_fixed
 
-def fix_content_ocr_by_gpt(md_info_path, src_step_num=None, ofm=None):
+def fix_content_ocr_by_gpt(md_info_path, src_step_num=None, dst_step_num=None, ofm=None):
     md_info = MdInfo(md_info_path)
 
-    pathname_src_step_md, pathname_dst_step_md = md_info.name_src_n_dst_step_pathname(src_step_num)
+    pathname_src_step_md, pathname_dst_step_md = md_info.name_src_n_dst_step_pathname(src_step_num, dst_step_num=dst_step_num)
     if pathname_src_step_md is None or pathname_dst_step_md is None:
         raise ValueError(f"no {pathname_src_step_md} and {pathname_dst_step_md}")
 
@@ -98,11 +98,7 @@ def fix_content_ocr_by_gpt(md_info_path, src_step_num=None, ofm=None):
     if ofm is None:
         ofm, ofm_reason = get_llm_ocr_fix_method(md_info)
 
-    ofm_info = {"ofm": ofm,
-                "ofm_reason": ofm_reason,
-                "is_tokens_over_llm_output": is_tokens_over_llm_output}
-    md_info[MDFN.OFM_INFO] = ofm_info
-
+    md_info.set_md_contrl("is_tokens_over_llm_output", is_tokens_over_llm_output)
     logging.info(f"OFM: ofm:{ofm} ofm_reason: {ofm_reason}")
     if ofm == OFM_BY_CONTENT:
         if total_tokens > MAX_OUTPUT_TOKEN:
@@ -118,8 +114,9 @@ def fix_content_ocr_by_gpt(md_info_path, src_step_num=None, ofm=None):
         md_text_fixed = md_text
     else:
         raise ValueError(f"unknown ofm: {ofm}")
-    ofm_info["ofm"] = ofm 
-    ofm_info["ofm_reason"] = ofm_reason
+    ofm_info = {"ofm": ofm,
+                "ofm_reason": ofm_reason}
+    md_info[MDFN.OFM_INFO] = ofm_info
 
     logging.warning(f"fix_content_ocr_by_gpt: pathname_dst_step_md: {pathname_dst_step_md}")
     with open(pathname_dst_step_md, "w+") as f:
@@ -141,9 +138,12 @@ if __name__ == "__main__":
 
     #md_info_path = "_work/ctn2md_时代的人力资源管理进化(徐刚)/_info.json"
     #md_info_path = "_work/ctn2md_座椅STO间隙 P1/_info.json"
-    md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
+    #md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
 
-    md_info_path = fix_content_ocr_by_gpt(md_info_path, ofm=ofm, src_step_num=src_step_num)
+    dst_step_num = 11
+    md_info_path = "_work/ctn2md_-波士顿咨询：银行业生成式AI应用报告（2023）/_info.json"
+
+    md_info_path = fix_content_ocr_by_gpt(md_info_path, ofm=ofm, src_step_num=src_step_num, dst_step_num=dst_step_num)
     print(md_info_path)
 
     md_info = MdInfo(md_info_path)
