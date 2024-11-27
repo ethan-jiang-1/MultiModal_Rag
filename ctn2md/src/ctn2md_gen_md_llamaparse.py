@@ -47,6 +47,51 @@ def _save_md_page(out_dir, job_id, ndx, md_page, md_imgs):
         logging.exception(ex)
     return None
 
+def _n2u_replace_fnames(md_info, mifn_fnames, unique_job_id, new_job_id):
+    out_dir = md_info.get_out_dir()
+    changed = 0
+    md_info_mifn_fnames = md_info[mifn_fnames]
+    for ndx, new_fname in enumerate(md_info_mifn_fnames):
+        unique_fname = new_fname.replace(new_job_id, unique_job_id)
+        if unique_fname != new_fname:
+
+            src_fname = os.path.join(out_dir, new_fname)
+            dst_fname = os.path.join(out_dir, unique_fname)
+            shutil.move(src_fname, dst_fname)
+
+            md_info_mifn_fnames[ndx] = unique_fname
+            changed += 1
+    return changed
+
+def _n2u_update_md_content(md_info, pathname_md, unique_job_id, new_job_id):
+    with open(pathname_md, "r") as f: 
+        md_text = f.read()
+
+    with open(pathname_md, "w+") as f: 
+        md_text_new = md_text.replace(new_job_id, unique_job_id)
+        f.write(md_text_new)
+
+def _n2u_stick_with_old_names(md_info, unique_job_id, new_job_id):
+    if unique_job_id == new_job_id:
+        return 
+    
+    out_dir = md_info.get_out_dir()
+    _n2u_replace_fnames(md_info, MIFN.FNAMES_PAGES, unique_job_id, new_job_id)
+    _n2u_replace_fnames(md_info, MIFN.FNAMES_IMGS, unique_job_id, new_job_id)
+    _n2u_replace_fnames(md_info, MIFN.FNAMES_TBLS, unique_job_id, new_job_id)
+
+    for fname_md_page in md_info[MIFN.FNAMES_PAGES]:
+        pathname_page = os.path.join(out_dir, fname_md_page)
+        _n2u_update_md_content(md_info, pathname_page, unique_job_id, new_job_id)
+
+    pathname_step0 = md_info.name_step_pathname(0)
+    _n2u_update_md_content(md_info, pathname_step0, unique_job_id, new_job_id)
+
+def _n2u_restore_unique_name(md_info):
+    cur_job_id = md_info.get(MIFN.LP_CUR_JOB_ID)
+    unique_job_id = md_info.get_unique_job_id()
+    _n2u_stick_with_old_names(md_info, unique_job_id, cur_job_id)
+
 def _dump_images_ref_by_page(page):
     md_imgs = ""
     images = page.get("images", None)
@@ -99,11 +144,14 @@ def _dump_md_content_from_lp_json_result(out_dir, json_result, md_info):
             fname_page = _save_md_page(out_dir, job_id, page_ndx, md_page_modified, md_imgs)
             fnames_pages.append(fname_page)
     
-    info_extra = {MIFN.LP_JOB_ID: job_ids_set.pop(),
-                  MIFN.LP_JOB_METADATA: job_metadata,
-                  MIFN.FNAMES_PAGES: fnames_pages}
-    
-    md_info.update_info(info_extra)
+    cur_job_id = job_ids_set.pop()
+    md_info[MIFN.LP_CUR_JOB_ID] = cur_job_id
+    md_info[MIFN.LP_CUR_JOB_METADATA] = job_metadata
+    md_info[MIFN.FNAMES_PAGES] = fnames_pages
+    if MIFN.LP_JOB_ID_HISTORY not in md_info:
+        md_info[MIFN.LP_JOB_ID_HISTORY] = []
+    md_info[MIFN.LP_JOB_ID_HISTORY].append(cur_job_id)
+    md_info.save()
     return md_full_content
 
 def _remove_misc_files(md_info):
@@ -188,6 +236,9 @@ def gen_md_llamaparse(doc_pathname, out_dir):
         md_text = _dump_md_content_from_lp_json_result(out_dir, json_result, md_info)
         f.write(md_text)
     md_info.add_step_into_md_info_mdflow(pathname_step0, actor="gen_md_llamaparse")
+
+    md_info.save()
+    _n2u_restore_unique_name(md_info)
 
     logging.info(f"original doc: {doc_pathname}")
     logging.info(f"fname_output: {os.path.basename(pathname_step0)}")

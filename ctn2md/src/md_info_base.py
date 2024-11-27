@@ -14,7 +14,7 @@ if "./" not in sys.path:
 
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 
-_MIB_INFO_VER = "0.0.7"
+_MIB_INFO_VER = "0.1.0"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_DEFAULT_OUT_ROOT = "_work"
@@ -39,8 +39,10 @@ class MIFN:  # Markdown Field Name
     FNAMES_TBLS = "fnames_tbls"
 
     GEN_ENGINE = "parse_engine"
-    LP_JOB_ID = "lp_job_id"
-    LP_JOB_METADATA = "lp_job_metadata"
+
+    LP_JOB_ID_HISTORY = "lp_job_ids"
+    LP_CUR_JOB_ID = "lp_cur_job_id"
+    LP_CUR_JOB_METADATA = "lp_cur_job_metadata"
     LP_SCAN_INFO = "lp_scan_info"
 
     FHL_ORG = "fhl_org"
@@ -174,6 +176,12 @@ class MdInfo:
     def get_md_info_path(self):
         return self._md_info_path
 
+    def get_unique_job_id(self):
+        job_ids = self._info.get(MIFN.LP_JOB_ID_HISTORY, [])
+        if len(job_ids) > 0:
+            return job_ids[0]
+        return self.get_doc_title()
+
     def set_doc_pathname(self, doc_pathname):
         if MIFN.PATHNAME_ORG_DOC not in self._info:
             self._info[MIFN.PATHNAME_ORG_DOC] = doc_pathname
@@ -276,11 +284,6 @@ class MdInfo:
 
     def get_fnames_pages(self):
         return self.get(MIFN.FNAMES_PAGES, {})
-
-    def update_info(self, dict_info):
-        if isinstance(dict_info, dict):
-            for key, val in dict_info.items():
-                self._info[key] = val
 
     def get(self, key, default=None):
         return self._info.get(key, default)
