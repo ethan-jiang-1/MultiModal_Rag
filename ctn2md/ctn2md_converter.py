@@ -35,7 +35,7 @@ def _do_content2md_convert_core(ctn_pathname,
     if not skip_gen:
         md_info_path = gen_md_llamaparse(ctn_pathname, out_dir)
         if md_info_path is None:
-            logging.error(f"DCC: failed {md_info_path} @convert_doc_to_md_by_llamaparse")
+            logging.error(f"DCCC: failed {md_info_path} @convert_doc_to_md_by_llamaparse")
             return None, None 
     else:
         md_info = MdInfo(out_dir)
@@ -48,32 +48,27 @@ def _do_content2md_convert_core(ctn_pathname,
 
     md_info_path = fix_content_ocr_by_gpt(md_info_path, src_step_num=0)
     if md_info_path is None:
-        logging.error(f"DCC: failed {md_info_path} @fix_content_ocr_by_gpt")
+        logging.error(f"DCCC: failed {md_info_path} @fix_content_ocr_by_gpt")
         return None, None 
 
     md_info_path = fix_headings_plc_by_gpt(md_info_path, src_step_num=1)
     if md_info_path is None:
-        logging.error(f"DCC: failed {md_info_path} @fix_headings_plc_by_gpt")
+        logging.error(f"DCCC: failed {md_info_path} @fix_headings_plc_by_gpt")
         return None, None 
 
-    md_info_path = fix_headings_plc_by_gpt(md_info_path, src_step_num=2)
+    md_info_path = fix_img_reference_by_lvlm(md_info_path, src_step_num=2)
     if md_info_path is None:
-        logging.error(f"DCC: failed {md_info_path} @fix_headings_plc_by_gpt")
-        return None, None
-
-    md_info_path = fix_img_reference_by_lvlm(md_info_path, src_step_num=3)
-    if md_info_path is None:
-        logging.error(f"DCC: failed {md_info_path} @fix_img_reference_by_lvlm")
+        logging.error(f"DCCC: failed {md_info_path} @fix_img_reference_by_lvlm")
         return None, None 
 
     md_info_path = fix_section_heirarchy(md_info_path, src_step_num=3)
     if md_info_path is None:
-        logging.error(f"DCC: failed {md_info_path} @fix_section_heirarchy")
+        logging.error(f"DCCC: failed {md_info_path} @fix_section_heirarchy")
         return None, None
 
     md_info_path = summarize_content_by_gpt(md_info_path, src_step_num=4)
     if md_info_path is None:
-        logging.error(f"DCC: failed {md_info_path} @summarize_content_by_gpt")
+        logging.error(f"DCCC: failed {md_info_path} @summarize_content_by_gpt")
         return None, None          
 
     final_md_path = make_final_md(md_info_path)
