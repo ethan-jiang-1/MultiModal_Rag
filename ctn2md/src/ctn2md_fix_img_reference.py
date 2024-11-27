@@ -166,8 +166,8 @@ def _filter_markdown_images(md_src_str, md_info):
     # 正则匹配 Markdown 图片引用语法 ![alt](image)\n
     image_pattern = r'!\[.*?\]\(([^)]+)\)(\r?\n)?'
     
-    #out_dir = md_info.get_out_dir()
-    aux_dir = md_info.get_aux_dir()
+    out_dir = md_info.get_out_dir()
+    #aux_dir = md_info.get_aux_dir()
     md_info[MDFN.IMG_FIGURES] = {}
 
     def replace_image_reference(match):
@@ -182,7 +182,7 @@ def _filter_markdown_images(md_src_str, md_info):
             md_info[MDFN.IMG_FIGURES][image_file] = (relevance_score, figure_name, picture_discription)
 
             try:
-                tmp_image_txt_path = os.path.join(aux_dir, image_file + ".pic_desp.txt")
+                tmp_image_txt_path = os.path.join(out_dir, image_file + "_desp.txt")
                 with open(tmp_image_txt_path, "w+", encoding="utf8") as f:
                     f.write(picture_discription)
             except Exception as ex:

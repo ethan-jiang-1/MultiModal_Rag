@@ -89,7 +89,7 @@ if __name__ == "__main__":
 
     #doc_pathname = "datasrc/test/raw_docs/AIGC时代的人力资源管理进化(徐刚).pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
-    doc_pathname = "datasrc/test/raw_docs/1. 座椅STO间隙 P1.pptx"
+    #doc_pathname = "datasrc/test/raw_docs/1. 座椅STO间隙 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/2. 座垫与钢丝间隙 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/3. 头枕杆圆角定义 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/4. 前后排座椅间距定义 P1.pptx"
@@ -104,7 +104,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/Long-Context LLMs Meet RAG_compressed.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/0530-大模型微调培训-VisualGLM.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/ai602-波士顿咨询：银行业生成式AI应用报告（2023）.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/ai602-波士顿咨询：银行业生成式AI应用报告（2023）.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/AI未来十年_大模型产业落地的机遇与挑战_大数据研究院.pptx"
 
     out_dir = None
