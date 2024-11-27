@@ -40,7 +40,7 @@ def _move_aux_files_pages(md_info, out_dir, aux_dir):
         dst_pathname = os.path.join(aux_dir, fname_page)
         if os.path.isfile(src_pathname):
             shutil.move(src_pathname, dst_pathname)
-            dst_fname = dst_pathname.replace(dst_pathname, out_dir + "/")
+            dst_fname = dst_pathname.replace(out_dir + "/", "")
             fnames_pages_aux.append(dst_fname)
 
     md_info[MIFN.FNAMES_PAGES] = fnames_pages_aux
@@ -62,7 +62,7 @@ def _move_aux_files_images(md_info, out_dir, aux_dir):
         dst_pathname = os.path.join(aux_dir, fname_img)
         if os.path.isfile(src_pathname):
             shutil.move(src_pathname, dst_pathname)
-            dst_fname = dst_pathname.replace(dst_pathname, out_dir + "/")
+            dst_fname = dst_pathname.replace(out_dir + "/", "")
             fnames_images[ndx] = dst_fname
 
 def _move_aux_files_tables(md_info, out_dir, aux_dir):
@@ -79,9 +79,8 @@ def _move_aux_files_tables(md_info, out_dir, aux_dir):
         dst_pathname = os.path.join(aux_dir, fname_tbl)
         if os.path.isfile(src_pathname):
             shutil.move(src_pathname, dst_pathname)
-            dst_fname = dst_pathname.replace(dst_pathname, out_dir + "/")
+            dst_fname = dst_pathname.replace(out_dir + "/", "")
             fnames_tbls[ndx] = dst_fname
-
 
 def _move_aux_files(md_info):
     out_dir = md_info.get_out_dir()
