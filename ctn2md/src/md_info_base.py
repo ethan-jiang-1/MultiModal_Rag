@@ -53,14 +53,14 @@ class MIFN:  # Markdown Field Name
     MD_SECTIONS = "md_sections"
     FNAMES_SECS = "fnames_secs"
 
-    OFM.INFO = "ofm_info"
+    OFM_INFO = "ofm_info"
     FNAME_FINAL_MD = "fname_final_md"
     FNAME_FINAL_SUM = "fname_final_sum"
 
 _DEFAULT_MDCONTROL = {
-    "mcl_ofm": OFM.BY_AUTO,
-    "mcl_min_img_relevance_score": 0.2,
-    "mcl_move_aux_files": True,
+    "mctl_ofm": OFM.BY_AUTO,
+    "mctl_min_img_relevance_score": 0.2,
+    "mctl_move_aux_files": True,
 }
 
 class MdInfo:
