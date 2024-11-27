@@ -54,7 +54,12 @@ def _do_content2md_convert_core(ctn_pathname,
         logging.error(f"DCC: failed {md_info_path} @fix_headings_plc_by_gpt")
         return None, None 
 
-    md_info_path = fix_img_reference_by_lvlm(md_info_path, src_step_num=2)
+    md_info_path = fix_headings_plc_by_gpt(md_info_path, src_step_num=2)
+    if md_info_path is None:
+        logging.error(f"DCC: failed {md_info_path} @fix_headings_plc_by_gpt")
+        return None, None
+
+    md_info_path = fix_img_reference_by_lvlm(md_info_path, src_step_num=3)
     if md_info_path is None:
         logging.error(f"DCC: failed {md_info_path} @fix_img_reference_by_lvlm")
         return None, None 
