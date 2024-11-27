@@ -87,12 +87,12 @@ def _find_ofm_and_reason(md_text, md_info):
     mp_is_num_tokens_over_llm_output_limit = (total_tokens > MAX_OUTPUT_TOKEN)
     md_info.set_md_params("mp_is_num_tokens_over_llm_output_limit", mp_is_num_tokens_over_llm_output_limit)
 
-    ofm = md_info.get_md_control("mc_ofm", None)
+    ofm = md_info.get_md_control("mcl_ofm", None)
     ofm_reason = ""
-    if ofm is None or ofm == OFM.BY_UNKNOWN:
+    if ofm is None or ofm == OFM.BY_AUTO:
         ofm, ofm_reason = get_llm_ocr_fix_method_from_scan_info(md_info)
     else:
-        ofm_reason = "mc_control"
+        ofm_reason = "mcl_control"
     return ofm, ofm_reason
 
 def fix_content_ocr_by_gpt(md_info_path, src_step_num=None, dst_step_num=None, ofm=None):

@@ -90,9 +90,10 @@ def _move_aux_files(md_info):
     _move_aux_files_tables(md_info, out_dir, aux_dir)
 
 
-def make_final_md(md_info_path, move_aux_files=True):
+def make_final_md(md_info_path):
     md_info = MdInfo(md_info_path)
 
+    move_aux_files = md_info.get_md_control("mcl_move_aux_files", True)
     if move_aux_files:
         _move_aux_files(md_info)
 

@@ -23,7 +23,7 @@ class OFM:  # OCR Fix Mothod
     BY_SKIP = "ofm_skip"
     BY_CONTENT = "ofm_content"
     BY_PAGE = "ofm_page"
-    BY_UNKNOWN = "ofm_unknown"
+    BY_AUTO = "ofm_auto"
 
 class MIFN:  # Markdown Field Name
     VERSION = "version"
@@ -54,6 +54,12 @@ class MIFN:  # Markdown Field Name
     OFM.INFO = "ofm_info"
     FNAME_FINAL_MD = "fname_final_md"
     FNAME_FINAL_SUM = "fname_final_sum"
+
+_DEFAULT_MDCONTROL = {
+    "mcl_ofm": OFM.BY_AUTO,
+    "mcl_min_img_relevance_score": 0.2,
+    "mcl_move_aux_files": True,
+}
 
 class MdInfo:
     def __init__(self, md_info_path_or_out_dir):
@@ -148,10 +154,15 @@ class MdInfo:
         if MIFN.MDFLOW not in self._info:
             self._info[MIFN.MDFLOW] = {}
         if MIFN.MDCONTROL not in self._info:
-            self._info[MIFN.MDCONTROL] = {"mc_min_img_relevance_score": 0.2,
-                                          "mc_ofm": OFM.BY_UNKNOWN,}
+            self._info[MIFN.MDCONTROL] = _DEFAULT_MDCONTROL
         if MIFN.MDPARAMS not in self._info:
             self._info[MIFN.MDPARAMS] = {}
+        self.save()
+
+    def update_mdcontrols(self, mdcontrols):
+        if isinstance(mdcontrols, dict):
+            for key, val in mdcontrols.items():
+                self._info[MIFN.MDCONTROL][key] = val
         self.save()
 
     def get_out_dir(self):

@@ -26,7 +26,7 @@ from ctn2md.src.make_final_md import make_final_md
 def _do_content2md_convert_core(ctn_pathname, 
                                 out_dir=None, 
                                 skip_gen=False, 
-                                move_aux_files=True):
+                                mdcontrols=None):
     if out_dir is None:
         out_dir = MdInfo.get_suggested_out_dir(ctn_pathname)
     logging.warning(f"work out_dir: {out_dir}")
@@ -43,6 +43,8 @@ def _do_content2md_convert_core(ctn_pathname,
         pathname_s0_md = md_info.name_step_pathname(0)
         if (pathname_s0_md is None) or (not os.path.exists(pathname_s0_md)):
             raise ValueError(f"{pathname_s0_md} not exist, you have to generate it first")
+    if mdcontrols is not None:
+        md_info.update_mdcontrols(mdcontrols)
 
     md_info_path = fix_content_ocr_by_gpt(md_info_path, src_step_num=0)
     if md_info_path is None:
@@ -74,17 +76,17 @@ def _do_content2md_convert_core(ctn_pathname,
         logging.error(f"DCC: failed {md_info_path} @summarize_content_by_gpt")
         return None, None          
 
-    final_md_path = make_final_md(md_info_path, move_aux_files=move_aux_files)
+    final_md_path = make_final_md(md_info_path)
 
     return final_md_path
 
-def do_content2md_convert(ctn_pathname, out_dir=None, skip_gen=False, move_aux_files=True):
+def do_content2md_convert(ctn_pathname, out_dir=None, skip_gen=False, mdcontrols=None):
     final_md_path = None
     try:
         final_md_path = _do_content2md_convert_core(ctn_pathname,
                                                     out_dir=out_dir,
                                                     skip_gen=skip_gen,
-                                                    move_aux_files=move_aux_files)
+                                                    mdcontrols=mdcontrols)
     except Exception as ex:
         logging.exception(ex)
     return final_md_path
@@ -114,9 +116,9 @@ if __name__ == "__main__":
 
     out_dir = None
     skip_gen = False 
-    move_aux_files = True
+    mdcontrols = None  
 
-    final_md_path = _do_content2md_convert_core(doc_pathname, out_dir=out_dir, skip_gen=skip_gen, move_aux_files=move_aux_files)
+    final_md_path = _do_content2md_convert_core(doc_pathname, out_dir=out_dir, skip_gen=skip_gen,  mdcontrols=mdcontrols)
     print(final_md_path)
 
     md_info = MdInfo(final_md_path)

@@ -83,7 +83,7 @@ def _analyze_image_content(md_info, md_page_file=None, pathname_org_doc=None, im
         picture_discription = resp_json.get("PictureDescription")
         if relevance_score is not None:
             relevance_score = float(relevance_score)
-            if relevance_score < md_info.get_md_control("mc_min_img_relevance_score", MIN_IMG_RELEVANCE_SCORE): 
+            if relevance_score < md_info.get_md_control("mcl_min_img_relevance_score", MIN_IMG_RELEVANCE_SCORE): 
                 logging.warning(f"AIC: relevance_score: {relevance_score}")
                 return None, None 
         if figure_name is not None:
