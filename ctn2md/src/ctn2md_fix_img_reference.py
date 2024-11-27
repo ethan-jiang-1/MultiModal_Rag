@@ -15,7 +15,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, MDFN
+from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.utils_llm.llm_fix_vl_instruction import get_vllm_instruction
 from ctn2md.utils_llm.vllm_description import generate_image_description
 
@@ -168,7 +168,7 @@ def _filter_markdown_images(md_src_str, md_info):
     
     out_dir = md_info.get_out_dir()
     #aux_dir = md_info.get_aux_dir()
-    md_info[MDFN.IMG_FIGURES] = {}
+    md_info[MIFN.IMG_FIGURES] = {}
 
     def replace_image_reference(match):
         # 原始图像引用
@@ -179,7 +179,7 @@ def _filter_markdown_images(md_src_str, md_info):
         
         if relevance_score and figure_name_n_picture_discription:
             figure_name, picture_discription = figure_name_n_picture_discription
-            md_info[MDFN.IMG_FIGURES][image_file] = (relevance_score, figure_name, picture_discription)
+            md_info[MIFN.IMG_FIGURES][image_file] = (relevance_score, figure_name, picture_discription)
 
             try:
                 tmp_image_txt_path = os.path.join(out_dir, image_file + "_desp.txt")

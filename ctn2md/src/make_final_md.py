@@ -13,7 +13,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, MDFN
+from ctn2md.src.md_info_base import MdInfo, MIFN
 
 def _copy_last_step_as_final(md_info):
     last_step_num = md_info.get_last_step_num()
@@ -42,11 +42,11 @@ def _move_aux_files_pages(md_info, out_dir, aux_dir):
             shutil.move(src_pathname, dst_pathname)
             fnames_pages_aux.append(dst_pathname)
 
-    md_info[MDFN.FNAMES_PAGES] = fnames_pages_aux
+    md_info[MIFN.FNAMES_PAGES] = fnames_pages_aux
 
 def _move_aux_files_images(md_info, out_dir, aux_dir):
     os.makedirs(aux_dir, exist_ok=True)
-    fnames_images = md_info.get(MDFN.FNAMES_IMGS, [])
+    fnames_images = md_info.get(MIFN.FNAMES_IMGS, [])
     if len(fnames_images) == 0:
         return False 
     
@@ -54,7 +54,7 @@ def _move_aux_files_images(md_info, out_dir, aux_dir):
         if aux_dir in fnames_images:
             return 
         
-        if fname_img in md_info[MDFN.IMG_FIGURES]:
+        if fname_img in md_info[MIFN.IMG_FIGURES]:
             continue
 
         src_pathname = os.path.join(out_dir, fname_img)
@@ -65,7 +65,7 @@ def _move_aux_files_images(md_info, out_dir, aux_dir):
 
 def _move_aux_files_tables(md_info, out_dir, aux_dir):
     os.makedirs(aux_dir, exist_ok=True)
-    fnames_tbls = md_info.get(MDFN.FNAMES_TBLS, [])
+    fnames_tbls = md_info.get(MIFN.FNAMES_TBLS, [])
     if len(fnames_tbls) == 0:
         return False 
     
@@ -97,7 +97,7 @@ def make_final_md(md_info_path, move_aux_files=True):
         _move_aux_files(md_info)
 
     pathname_final_md = _copy_last_step_as_final(md_info)
-    md_info[MDFN.FNAME_FINAL_MD] = os.path.basename(pathname_final_md)
+    md_info[MIFN.FNAME_FINAL_MD] = os.path.basename(pathname_final_md)
     md_info.save()
     return pathname_final_md
 

@@ -11,12 +11,8 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from ctn2md.utils.util_ctn_type import CtnType
-from ctn2md.src.md_info_base import MDFN
-
-OFM_BY_SKIP = "ofm_skip"
-OFM_BY_CONTENT = "ofm_content"
-OFM_BY_PAGE = "ofm_page"
+from ctn2md.utils.util_ctn_type import CTN_TYPE
+from ctn2md.src.md_info_base import MIFN, OFM
 
 def analyze_lp_scan_info(json_result0_pages, doc_type):
     """
@@ -114,19 +110,19 @@ def analyze_lp_scan_info(json_result0_pages, doc_type):
 
 
 def get_llm_ocr_fix_method_from_scan_info(md_info):
-    scan_info = md_info.get(MDFN.LP_SCAN_INFO, None)
+    scan_info = md_info.get(MIFN.LP_SCAN_INFO, None)
     if scan_info is None:
-        return OFM_BY_SKIP, "scan_info=None"
+        return OFM.BY_SKIP, "scan_info=None"
 
     ctn_type = md_info.get_ctn_type()
-    if ctn_type == CtnType.UNKNOWN or ctn_type == CtnType.XLS:
-        return OFM_BY_SKIP, f"ctn_type={ctn_type}"
+    if ctn_type == CTN_TYPE.UNKNOWN or ctn_type == CTN_TYPE.XLS:
+        return OFM.BY_SKIP, f"ctn_type={ctn_type}"
 
     doc_type = scan_info.get("doc_type", None)
     if doc_type is None:
         raise ValueError("no doc_type in scan_info")
 
-    mc_is_num_tokens_over_llm_output_limit = md_info.get_md_control("mc_is_num_tokens_over_llm_output_limit", False)
+    mp_is_num_tokens_over_llm_output_limit = md_info.get_md_params("mp_is_num_tokens_over_llm_output_limit", False)
  
     total_pages = scan_info.get("total_pages", 1)
     scanned_pages = scan_info.get("scanned_pages", 0) 
@@ -134,26 +130,26 @@ def get_llm_ocr_fix_method_from_scan_info(md_info):
     ocrimg_pages = scan_info.get("ocrimg_pages", 0)
 
     if structured_pages == total_pages:
-        return OFM_BY_SKIP, "structured_pages=tp"
+        return OFM.BY_SKIP, "structured_pages=tp"
 
     if scanned_pages == 0:
-        return OFM_BY_SKIP, "scanned_pages=0" 
+        return OFM.BY_SKIP, "scanned_pages=0" 
 
     if ocrimg_pages == 0:
-        return OFM_BY_SKIP, "ocrimg_pages=0"
+        return OFM.BY_SKIP, "ocrimg_pages=0"
     
     # TODO: ethan_llm_ocr_fix  need to support llm_ocr_fix multiple pages (>=5) or too many tokens 
     # as llm fix only can support limited output tokens
     if total_pages >= 5:
         if structured_pages / total_pages >= 0.8:
-            return OFM_BY_SKIP, "stp>=0.8"
-        if not mc_is_num_tokens_over_llm_output_limit:
-            return OFM_BY_CONTENT, "llm_tklimit<(L)"
-        return OFM_BY_PAGE, "??P0??" 
+            return OFM.BY_SKIP, "stp>=0.8"
+        if not mp_is_num_tokens_over_llm_output_limit:
+            return OFM.BY_CONTENT, "llm_tklimit<(L)"
+        return OFM.BY_PAGE, "??P0??" 
     else:
-        if ctn_type == CtnType.PPT:
-            return OFM_BY_CONTENT, f"ppt@tp={total_pages}"
-        if not mc_is_num_tokens_over_llm_output_limit:
-            return OFM_BY_CONTENT, "llm_tklimit<(S)"
-        return OFM_BY_PAGE, "??P1??"
+        if ctn_type == CTN_TYPE.PPT:
+            return OFM.BY_CONTENT, f"ppt@tp={total_pages}"
+        if not mp_is_num_tokens_over_llm_output_limit:
+            return OFM.BY_CONTENT, "llm_tklimit<(S)"
+        return OFM.BY_PAGE, "??P1??"
 

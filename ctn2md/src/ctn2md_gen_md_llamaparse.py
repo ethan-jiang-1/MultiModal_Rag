@@ -13,7 +13,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, MDFN
+from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.src.md_info_scan import analyze_lp_scan_info
 from ctn2md.src.md_process_plc import inject_plc_comment_to_page
 
@@ -99,9 +99,9 @@ def _dump_md_content_from_lp_json_result(out_dir, json_result, md_info):
             fname_page = _save_md_page(out_dir, job_id, page_ndx, md_page_modified, md_imgs)
             fnames_pages.append(fname_page)
     
-    info_extra = {MDFN.LP_JOB_ID: job_ids_set.pop(),
-                  MDFN.LP_JOB_METADATA: job_metadata,
-                  MDFN.FNAMES_PAGES: fnames_pages}
+    info_extra = {MIFN.LP_JOB_ID: job_ids_set.pop(),
+                  MIFN.LP_JOB_METADATA: job_metadata,
+                  MIFN.FNAMES_PAGES: fnames_pages}
     
     md_info.update_info(info_extra)
     return md_full_content
@@ -148,19 +148,19 @@ def _dump_page_scan_info(json_result, md_info):
             doc_pathname = md_info.get_doc_pathname()
             doc_type = doc_pathname.split(".")[-1].lower()
             lp_scan_info = analyze_lp_scan_info(json_result0_pages, doc_type)
-        md_info[MDFN.LP_SCAN_INFO] = lp_scan_info
+        md_info[MIFN.LP_SCAN_INFO] = lp_scan_info
 
 def _dump_images(parser, json_result, md_info):
     out_dir = md_info.get_out_dir()
     images = parser.get_images(json_result, out_dir)
     fnames_imgs = [os.path.basename(item["path"]) for item in images]
-    md_info[MDFN.FNAMES_IMGS] = fnames_imgs
+    md_info[MIFN.FNAMES_IMGS] = fnames_imgs
 
 def _dump_tables(parser, json_result, md_info):
     out_dir = md_info.get_out_dir()
     tables = parser.get_xlsx(json_result, out_dir)
     fnames_tbls = [os.path.basename(item["path"]) for item in tables]
-    md_info[MDFN.FNAMES_TBLS] = fnames_tbls    
+    md_info[MIFN.FNAMES_TBLS] = fnames_tbls    
 
 def gen_md_llamaparse(doc_pathname, out_dir):
     parser = _get_llamaparse()

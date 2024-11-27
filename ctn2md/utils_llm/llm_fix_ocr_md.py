@@ -12,7 +12,7 @@ from ctn2md.utils_llm.llm_fix_ocr_md_prompt import SYSTEM_PROMPT_MD_SELF_CORRECT
 from ctn2md.utils_llm.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_PDF 
 from ctn2md.utils_llm.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_PPT 
 from ctn2md.utils_llm.llm_fix_ocr_md_prompt import USER_PROMPT_MD_SELF_CORRECT_DOC 
-from ctn2md.utils.util_ctn_type import CtnType
+from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from ctn2md.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
 
@@ -26,18 +26,18 @@ def fix_ocr_self_correct_markdown(md_text, doc_type, model="gpt-4o-mini", questi
             raise ValueError(f"f{model} not supporst")
 
         logging.info(f"start to correct ocr content from doc_type:{doc_type} by {model} as questoin_number:{question_num}")
-        ctn_type = CtnType.get_ctn_type(doc_type)
+        ctn_type = CTN_TYPE.get_ctn_type(doc_type)
 
-        if ctn_type not in [CtnType.PDF, CtnType.PPT, CtnType.DOC]:
+        if ctn_type not in [CTN_TYPE.PDF, CTN_TYPE.PPT, CTN_TYPE.DOC]:
             raise ValueError(f"unknown ctn_type {ctn_type}")   
         # if model != "gpt-4o":
         #     raise ValueError(f" ocr is hard, need gpt-4o model only.")
         system_prompt = SYSTEM_PROMPT_MD_SELF_CORRECT
-        if ctn_type == CtnType.PDF:
+        if ctn_type == CTN_TYPE.PDF:
             user_prompt = USER_PROMPT_MD_SELF_CORRECT_PDF
-        elif ctn_type == CtnType.PPT:
+        elif ctn_type == CTN_TYPE.PPT:
             user_prompt = USER_PROMPT_MD_SELF_CORRECT_PPT
-        elif ctn_type == CtnType.DOC:
+        elif ctn_type == CTN_TYPE.DOC:
             user_prompt = USER_PROMPT_MD_SELF_CORRECT_DOC
 
         user_prompt = user_prompt.replace("{markdown}", md_text)

@@ -15,7 +15,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, MDFN
+from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.utils.util_markdown import remove_comment
 
 class HeadingStack:
@@ -112,7 +112,7 @@ def _filter_headings_for_hierarchy_comments(md_text, md_info):
     processed_lines = []
     stack = HeadingStack()  # 使用堆栈对象
     #doc_title = None  # 当前的一级标题
-    md_info[MDFN.MD_SECTIONS] = []  # 初始化列表
+    md_info[MIFN.MD_SECTIONS] = []  # 初始化列表
 
     for line in lines:
         # 移除 <!-- ... --> 注释
@@ -131,7 +131,7 @@ def _filter_headings_for_hierarchy_comments(md_text, md_info):
                 hierarchy_desc = stack.get_hierarchy_desc()
 
                 # 记录到 md_info
-                md_info[MDFN.MD_SECTIONS].append({
+                md_info[MIFN.MD_SECTIONS].append({
                     "hierarchy_desc": hierarchy_desc,
                     "ordered_name": ordered_name
                 })
@@ -142,7 +142,7 @@ def _filter_headings_for_hierarchy_comments(md_text, md_info):
                 hierarchy_desc = stack.get_hierarchy_desc()
 
                 # 记录到 md_info
-                md_info[MDFN.MD_SECTIONS].append({
+                md_info[MIFN.MD_SECTIONS].append({
                     "hierarchy_desc": hierarchy_desc,
                     "ordered_name": ordered_name
                 })
@@ -352,7 +352,7 @@ def fix_section_heirarchy(md_info_path, src_step_num=None, dst_step_num=None):
     output_dir = md_info.get_out_dir()
     _clear_section_files(output_dir)
     sdsec_names = _split_sections_to_files_with_desc_and_sequence(md_text_new, output_dir)
-    md_info[MDFN.FNAMES_SECS] = sdsec_names
+    md_info[MIFN.FNAMES_SECS] = sdsec_names
     
     md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_section_heirarchy")
     md_info_path = md_info.save()

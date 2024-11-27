@@ -15,7 +15,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, MDFN
+from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.utils_llm.llm_fix_heading_lvl import fix_heading_lvl_markdown
 #from ctn2md.utils.util_markdown import extract_pure_text_from_markdown
 from ctn2md.src.md_process_plc import inject_plc_comment_to_page, separate_heading_and_plc_comment, PLC_COMMENT
@@ -75,7 +75,7 @@ def _filter_markdown_heading_plc(md_text, md_info):
     if first_line_no_heading is not None and len(first_line_no_heading) > 0:
         heading_first_line, plc_comment_first_line = separate_heading_and_plc_comment(normalized_line)
 
-    md_info[MDFN.FHL_ORG] = {"org_doc_title": md_info.get_doc_title(),
+    md_info[MIFN.FHL_ORG] = {"org_doc_title": md_info.get_doc_title(),
                              "org_doc_type": md_info.get_ctn_type(),
                              "org_first_line": (heading_first_line, plc_comment_first_line),
                              "org_heading_lines": heading_lines}
@@ -159,12 +159,12 @@ def fix_headings_plc_by_gpt(md_info_path, src_step_num=None):
 
     md_text_new = _filter_markdown_heading_plc(md_text, md_info)
 
-    fhl_org = md_info[MDFN.FHL_ORG]
+    fhl_org = md_info[MIFN.FHL_ORG]
     org_heading_lines = fhl_org["org_heading_lines"]
     if len(org_heading_lines) == 0:
         md_text_new = _fix_markdown_with_no_heading(md_text_new, md_info)
         md_text_new = _filter_markdown_heading_plc(md_text_new, md_info)
-        fhl_org = md_info[MDFN.FHL_ORG]
+        fhl_org = md_info[MIFN.FHL_ORG]
     
     #rich.print(fhl)
     # TODO： ethan_heading_recover gpt-4o-mini not able to handle yet
@@ -186,7 +186,7 @@ def fix_headings_plc_by_gpt(md_info_path, src_step_num=None):
     with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_new1)
     
-    md_info[MDFN.FHL_MAP_O2N] = o2n_map
+    md_info[MIFN.FHL_MAP_O2N] = o2n_map
     md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_headings_llamaparse")
     md_info_path = md_info.save()
     return md_info_path 

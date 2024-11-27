@@ -1,4 +1,4 @@
-class CtnType:
+class CTN_TYPE:
     PDF = "pdf"
     PPT = "ppt"
     DOC = "doc"

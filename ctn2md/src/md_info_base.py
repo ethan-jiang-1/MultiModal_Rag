@@ -12,21 +12,27 @@ _load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-MD_INFO_VER = "0.0.6"
+from ctn2md.utils.util_ctn_type import CTN_TYPE
 
-MD_SEP_FNAME_EXT = "___"
-MD_FNAME_MD_INFO = "_info.json"
-MD_DEFAULT_OUT_ROOT = "_work"
+_MIB_INFO_VER = "0.0.7"
+_MIB_SEP_FNAME_EXT = "___"
+_MIB_FNAME_MD_INFO = "_info.json"
+_MIB_DEFAULT_OUT_ROOT = "_work"
 
-from ctn2md.utils.util_ctn_type import CtnType
+class OFM:  # OCR Fix Mothod
+    BY_SKIP = "ofm_skip"
+    BY_CONTENT = "ofm_content"
+    BY_PAGE = "ofm_page"
+    BY_UNKNOWN = "ofm_unknown"
 
-class MDFN:
+class MIFN:  # Markdown Field Name
     VERSION = "version"
 
     PATHNAME_ORG_DOC = "pathname_org_doc"
 
     MDFLOW = "mdflow"
     MDCONTROL = "mdcontrol"
+    MDPARAMS = "mdparams"
 
     FNAMES_PAGES = "fnames_pages"
     FNAMES_IMGS = "fnames_imgs"
@@ -45,7 +51,7 @@ class MDFN:
     MD_SECTIONS = "md_sections"
     FNAMES_SECS = "fnames_secs"
 
-    OFM_INFO = "ofm_info"
+    OFM.INFO = "ofm_info"
     FNAME_FINAL_MD = "fname_final_md"
     FNAME_FINAL_SUM = "fname_final_sum"
 
@@ -53,9 +59,9 @@ class MdInfo:
     def __init__(self, md_info_path_or_out_dir):
         last_chat = md_info_path_or_out_dir[-1]
         if (last_chat in ["/", "\\"]) or os.path.isdir(md_info_path_or_out_dir):
-            self._md_info_path = os.path.join(md_info_path_or_out_dir, MD_FNAME_MD_INFO)
+            self._md_info_path = os.path.join(md_info_path_or_out_dir, _MIB_FNAME_MD_INFO)
         else:
-            self._md_info_path = os.path.join(os.path.dirname(md_info_path_or_out_dir), MD_FNAME_MD_INFO)
+            self._md_info_path = os.path.join(os.path.dirname(md_info_path_or_out_dir), _MIB_FNAME_MD_INFO)
 
         self._out_dir = os.path.dirname(self._md_info_path)
         os.makedirs(self._out_dir, exist_ok=True)
@@ -81,7 +87,7 @@ class MdInfo:
         else:
             return None
     
-        md_info_path = os.path.join(dir_name, MD_FNAME_MD_INFO)
+        md_info_path = os.path.join(dir_name, _MIB_FNAME_MD_INFO)
         if os.path.isfile(md_info_path):
             return md_info_path
         return None
@@ -115,7 +121,7 @@ class MdInfo:
     @classmethod
     def get_suggested_out_dir(cls, pathname_org_doc):
         doc_title = cls.extract_doc_title(pathname_org_doc)
-        out_dir = f"{MD_DEFAULT_OUT_ROOT}/ctn2md_{doc_title}"
+        out_dir = f"{_MIB_DEFAULT_OUT_ROOT}/ctn2md_{doc_title}"
         return out_dir
 
     def load(self):
@@ -135,15 +141,17 @@ class MdInfo:
     def _migrate(self):
         if os.path.isfile(self._md_info_path):
             self._info = self.load()
-            self._info[MDFN.VERSION] = MD_INFO_VER
+            self._info[MIFN.VERSION] = _MIB_INFO_VER
         else:
-            self._info = {MDFN.VERSION: MD_INFO_VER}
+            self._info = {MIFN.VERSION: _MIB_INFO_VER}
 
-        if MDFN.MDFLOW not in self._info:
-            self._info[MDFN.MDFLOW] = {}
-        if MDFN.MDCONTROL not in self._info:
-            self._info[MDFN.MDCONTROL] = {"mc_min_img_relevance_score": 0.2,
-                                          "mc_ofm": None,}
+        if MIFN.MDFLOW not in self._info:
+            self._info[MIFN.MDFLOW] = {}
+        if MIFN.MDCONTROL not in self._info:
+            self._info[MIFN.MDCONTROL] = {"mc_min_img_relevance_score": 0.2,
+                                          "mc_ofm": OFM.BY_UNKNOWN,}
+        if MIFN.MDPARAMS not in self._info:
+            self._info[MIFN.MDPARAMS] = {}
         self.save()
 
     def get_out_dir(self):
@@ -156,40 +164,49 @@ class MdInfo:
         return self._md_info_path
 
     def set_doc_pathname(self, doc_pathname):
-        if MDFN.PATHNAME_ORG_DOC not in self._info:
-            self._info[MDFN.PATHNAME_ORG_DOC] = doc_pathname
+        if MIFN.PATHNAME_ORG_DOC not in self._info:
+            self._info[MIFN.PATHNAME_ORG_DOC] = doc_pathname
         return self.save()
     
     def set_gen_engine(self, gen_engine_name):
-        self._info[MDFN.GEN_ENGINE] = gen_engine_name
+        self._info[MIFN.GEN_ENGINE] = gen_engine_name
 
     def get_gen_engine(self):
-        return self._info.get(MDFN.GEN_ENGINE, None)
+        return self._info.get(MIFN.GEN_ENGINE, None)
 
     def get_doc_pathname(self):
-        return self.get(MDFN.PATHNAME_ORG_DOC)
+        return self.get(MIFN.PATHNAME_ORG_DOC)
     
     def get_doc_title(self):
-        return self.extract_doc_title(self.get(MDFN.PATHNAME_ORG_DOC))
+        return self.extract_doc_title(self.get(MIFN.PATHNAME_ORG_DOC))
 
     def set_md_contrl(self, mdctrl_name, val):
         if isinstance(mdctrl_name, str):
-            self._info[MDFN.MDCONTROL][mdctrl_name] = val
+            self._info[MIFN.MDCONTROL][mdctrl_name] = val
             return val 
         return None 
     
     def get_md_control(self, mdctrl_name, default_val):
-        return self._info[MDFN.MDCONTROL].get(mdctrl_name, default_val)
+        return self._info[MIFN.MDCONTROL].get(mdctrl_name, default_val)
+
+    def set_md_params(self, mdparam_name, val):
+        if isinstance(mdparam_name, str):
+            self._info[MIFN.MDPARAMS][mdparam_name] = val
+            return val 
+        return None 
+    
+    def get_md_params(self, mdparam_name, default_val):
+        return self._info[MIFN.MDPARAMS].get(mdparam_name, default_val)
 
     def name_step_pathname(self, step_num):
-        pathname_org_doc = self._info.get(MDFN.PATHNAME_ORG_DOC, None)
+        pathname_org_doc = self._info.get(MIFN.PATHNAME_ORG_DOC, None)
         if pathname_org_doc is not None:
             basename = os.path.basename(pathname_org_doc)
             ext_name = basename.split(".")[-1]
             if step_num == -1:
-                fname_step_md = basename.replace(f".{ext_name}", f"{MD_SEP_FNAME_EXT}{ext_name}.md")
+                fname_step_md = basename.replace(f".{ext_name}", f"{_MIB_SEP_FNAME_EXT}{ext_name}.md")
             else:
-                fname_step_md = basename.replace(f".{ext_name}", f"{MD_SEP_FNAME_EXT}{ext_name}_s{step_num}.md")
+                fname_step_md = basename.replace(f".{ext_name}", f"{_MIB_SEP_FNAME_EXT}{ext_name}_s{step_num}.md")
             pathname_step_md = os.path.join(self._out_dir, fname_step_md)
             return pathname_step_md
         return None
@@ -204,7 +221,7 @@ class MdInfo:
         return pathname_src_step_md, pathname_dst_step_md 
 
     def get_last_step_num(self):
-        mdflow = self._info.get(MDFN.MDFLOW, None)
+        mdflow = self._info.get(MIFN.MDFLOW, None)
         if mdflow is None:
             raise ValueError("no mdflow in MdInfo")
         sorted_keys = sorted(mdflow.keys())
@@ -223,31 +240,31 @@ class MdInfo:
         basename = os.path.basename(pathname_step_md)
         step_num = self.get_step_num_from_pathname(pathname_step_md)
         if isinstance(step_num, int):
-            mdflow = self._info.get(MDFN.MDFLOW, None)
+            mdflow = self._info.get(MIFN.MDFLOW, None)
             if mdflow is None:
-                self._info[MDFN.MDFLOW] = {}
+                self._info[MIFN.MDFLOW] = {}
 
             flow = {"fname": basename, 
                     "actor": actor}
             if extra is not None:
                 flow["extra"] = extra
 
-            self._info[MDFN.MDFLOW][str(step_num)] = flow
+            self._info[MIFN.MDFLOW][str(step_num)] = flow
             return self.save()
         return None
 
     def get_doc_type(self):
-        pathname_org_doc = self._info.get(MDFN.PATHNAME_ORG_DOC, None)
+        pathname_org_doc = self._info.get(MIFN.PATHNAME_ORG_DOC, None)
         if pathname_org_doc is not None:
             return pathname_org_doc.split(".")[-1].lower()
         return ""
 
     def get_ctn_type(self):
         doc_type = self.get_doc_type()
-        return CtnType.get_ctn_type(doc_type)
+        return CTN_TYPE.get_ctn_type(doc_type)
 
     def get_fnames_pages(self):
-        return self.get(MDFN.FNAMES_PAGES, {})
+        return self.get(MIFN.FNAMES_PAGES, {})
 
     def update_info(self, dict_info):
         if isinstance(dict_info, dict):

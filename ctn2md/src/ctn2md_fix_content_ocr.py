@@ -13,8 +13,8 @@ if "./" not in sys.path:
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.utils_llm.llm_fix_ocr_md import fix_ocr_self_correct_markdown
-from ctn2md.src.md_info_base import MdInfo, MDFN
-from ctn2md.src.md_info_scan import get_llm_ocr_fix_method_from_scan_info, OFM_BY_CONTENT, OFM_BY_PAGE, OFM_BY_SKIP
+from ctn2md.src.md_info_base import MdInfo, MIFN, OFM
+from ctn2md.src.md_info_scan import get_llm_ocr_fix_method_from_scan_info
 from ctn2md.utils.util_tokenizer import get_token_encoding
 
 #TODO: ethan_output_token check if we are able to make GPTo output more then 3*1024 token. and how
@@ -84,12 +84,12 @@ def _fix_ocr_by_proc_whole(md_text, md_info):
 
 def _find_ofm_and_reason(md_text, md_info):
     total_tokens = _calculate_tokens_large_text(md_text, stop_check_over_max=True)
-    mc_is_num_tokens_over_llm_output_limit = (total_tokens > MAX_OUTPUT_TOKEN)
-    md_info.set_md_contrl("mc_is_num_tokens_over_llm_output_limit", mc_is_num_tokens_over_llm_output_limit)
+    mp_is_num_tokens_over_llm_output_limit = (total_tokens > MAX_OUTPUT_TOKEN)
+    md_info.set_md_params("mp_is_num_tokens_over_llm_output_limit", mp_is_num_tokens_over_llm_output_limit)
 
     ofm = md_info.get_md_control("mc_ofm", None)
     ofm_reason = ""
-    if ofm is None:
+    if ofm is None or ofm == OFM.BY_UNKNOWN:
         ofm, ofm_reason = get_llm_ocr_fix_method_from_scan_info(md_info)
     else:
         ofm_reason = "mc_control"
@@ -108,14 +108,14 @@ def fix_content_ocr_by_gpt(md_info_path, src_step_num=None, dst_step_num=None, o
     ofm, ofm_reason = _find_ofm_and_reason(md_text, md_info)
     ofm_info = {"ofm": ofm,
                 "ofm_reason": ofm_reason}
-    md_info[MDFN.OFM_INFO] = ofm_info
+    md_info[MIFN.OFM.INFO] = ofm_info
 
     logging.info(f"OFM: ofm:{ofm} ofm_reason: {ofm_reason}")
-    if ofm == OFM_BY_CONTENT:
+    if ofm == OFM.BY_CONTENT:
         md_text_fixed = _fix_ocr_by_proc_whole(md_text, md_info)
-    elif ofm == OFM_BY_PAGE:
+    elif ofm == OFM.BY_PAGE:
         md_text_fixed = _fix_ocr_by_stiche_pages(md_text, md_info)
-    elif ofm == OFM_BY_SKIP:
+    elif ofm == OFM.BY_SKIP:
         md_text_fixed = md_text
     else:
         raise ValueError(f"unknown ofm: {ofm}")
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     src_step_num = 0
     #md_info_path = "_work/ctn2md_exam5/info.json"
 
-    #ofm = OFM_BY_PAGE
+    #ofm = OFM.BY_PAGE
     #md_info_path = "_work/ctn2md_stream1/info.json"
 
     #md_info_path = "_work/ctn2md_时代的人力资源管理进化(徐刚)/_info.json"

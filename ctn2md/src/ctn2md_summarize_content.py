@@ -12,7 +12,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, MDFN
+from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.utils_llm.llm_summarize_content import summarize_doc_keywords
 from ctn2md.utils.util_markdown import remove_comment
 
@@ -39,7 +39,7 @@ def summarize_content_by_gpt(md_info_path, src_step_num=None):
     with open(pathname_final_json_fname, 'w+', encoding='utf8') as f:
         f.write(json_str)
 
-    md_info[MDFN.FNAME_FINAL_SUM] = os.path.basename(pathname_final_json_fname)
+    md_info[MIFN.FNAME_FINAL_SUM] = os.path.basename(pathname_final_json_fname)
     md_info_path = md_info.save()
     return md_info_path
 
