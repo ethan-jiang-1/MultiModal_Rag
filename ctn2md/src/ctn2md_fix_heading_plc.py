@@ -182,12 +182,12 @@ def fix_headings_plc_by_gpt(md_info_path, src_step_num=None):
     md_text_new1, unprocessed_heading_lines_map = _update_markdown_heading_content(md_text_new, md_info, fhl_map)
     rich.print(unprocessed_heading_lines_map)
 
-    logging.warning(f"fix_headings_llamaparse: pathname_dst_step_md: {pathname_dst_step_md}")
+    logging.warning(f"fix_headings_plc_by_gpt: pathname_dst_step_md: {pathname_dst_step_md}")
     with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_new1)
     
     md_info[MIFN.FHL_MAP_O2N] = o2n_map
-    md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_headings_llamaparse")
+    md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_headings_plc_by_gpt")
     md_info_path = md_info.save()
     return md_info_path 
 
