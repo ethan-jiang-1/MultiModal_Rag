@@ -128,12 +128,18 @@ def _process_image_reference(image_file, md_info):
         return None, None
 
     # 3. 获取页号和对应的 MD 文件名
-    page_match = re.search(r'_p(\d+)_', image_file)
-    if not page_match:
+    page_number = None
+    page_match = re.search(r'-img_p(\d+)_', image_file)
+    if page_match:
+        page_number = int(page_match.group(1)) + 1 # image_ndx starts from 0, but page starts from 1
+    else:
+        page_match = re.search(r'-page_(\d+)', image_file)
+        if page_match:
+            page_number = int(page_match.group(1)) # page_ndx starts from 1 same as page
+    if page_number is None:
         logging.error(f"PIR: 无法读取图像 {os.path.basename(image_path)} 页号")
         return None, None  # 未找到页号
 
-    page_number = int(page_match.group(1)) + 1 # image_ndx starts from 0, but page starts from 1
     md_page_file = next(
         (fname for fname in md_info.get_fnames_pages() if f'_p{page_number}' in fname),
         None
@@ -170,30 +176,43 @@ def _filter_markdown_images(md_src_str, md_info):
     #aux_dir = md_info.get_aux_dir()
     md_info[MIFN.IMG_FIGURES] = {}
 
+    #TODO: as we have cached copy in md_info, cache...BlockingIOError
     def replace_image_reference(match):
         # 原始图像引用
         image_file = match.group(1)
         
-        # 调用外部处理函数
-        relevance_score, figure_name_n_picture_discription = _process_image_reference(image_file, md_info)
-        
-        if relevance_score and figure_name_n_picture_discription:
-            figure_name, picture_discription = figure_name_n_picture_discription
-            md_info[MIFN.IMG_FIGURES][image_file] = (relevance_score, figure_name, picture_discription)
+        sel = False
+        desp_txt_fname = os.path.join(out_dir, image_file + "_desp.txt")
+        if os.path.isfile(desp_txt_fname):
+            img_figures = md_info.get(MIFN.IMG_FIGURES, None)
+            if img_figures is not None:
+                rfp = img_figures.get(image_file, None)
+                if rfp is not None:
+                    relevance_score, figure_name, picture_discription = rfp
+                    sel = True
 
-            try:
-                tmp_image_txt_path = os.path.join(out_dir, image_file + "_desp.txt")
-                with open(tmp_image_txt_path, "w+", encoding="utf8") as f:
-                    f.write(picture_discription)
-            except Exception as ex:
-                logging.exception(ex)
+        if not sel:
+            # 调用外部处理函数
+            relevance_score, figure_name_n_picture_discription = _process_image_reference(image_file, md_info)
             
+            if relevance_score and figure_name_n_picture_discription:
+                figure_name, picture_discription = figure_name_n_picture_discription
+                md_info[MIFN.IMG_FIGURES][image_file] = (relevance_score, figure_name, picture_discription)
+
+                try:
+                    with open(desp_txt_fname, "w+", encoding="utf8") as f:
+                        f.write(picture_discription)
+                    sel = True
+                except Exception as ex:
+                    logging.exception(ex)
+        if sel:
             if FEATURE_PIC_DESP_IN_MD:
                 pic_desp = picture_discription.replace('"', '\"')
                 md_pic = f"![{figure_name}]({image_file} \"{pic_desp}\")\n"
             else:
                 md_pic = f"![{figure_name}]({image_file})\n"
             return md_pic
+            
         else:
             # 返回空字符串表示移除不合适的图像引用
             return ""
@@ -201,6 +220,7 @@ def _filter_markdown_images(md_src_str, md_info):
     # 使用 re.sub 替换所有匹配的图像引用
     md_dst_str = re.sub(image_pattern, replace_image_reference, md_src_str)
     rich.print(md_dst_str)
+    md_info.save()
     return md_dst_str
 
 
@@ -230,8 +250,8 @@ if __name__ == "__main__":
 
     src_step_num = 2
     #md_info_path = "_work/ctn2md_stream1/info.json"
-    md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
-    #src_step_num = 1
+    #md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
+    md_info_path = "_work/ctn2md_业绩案例、上汽内外饰DRE外包框架服务合同/_info.json"
 
     md_info_path = fix_img_reference_by_lvlm(md_info_path, src_step_num=src_step_num)
 
