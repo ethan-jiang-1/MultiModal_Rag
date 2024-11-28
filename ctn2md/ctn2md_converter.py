@@ -116,8 +116,9 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/AI未来十年_大模型产业落地的机遇与挑战_大数据研究院.pptx"
 
     out_dir = None
-    skip_gen = True 
-    mdcontrols = None  
+    mdcontrols = None
+
+    skip_gen = False   
 
     final_md_path = _do_content2md_convert_core(doc_pathname, out_dir=out_dir, skip_gen=skip_gen,  mdcontrols=mdcontrols)
     print(final_md_path)

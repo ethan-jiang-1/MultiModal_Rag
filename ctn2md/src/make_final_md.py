@@ -68,6 +68,28 @@ def _move_aux_files_images(md_info, out_dir, aux_dir):
             dst_fname = dst_pathname.replace(out_dir + "/", "")
             fnames_images[ndx] = dst_fname
 
+def _move_aux_files_snpsts(md_info, out_dir, aux_dir):
+    os.makedirs(aux_dir, exist_ok=True)
+    fnames_snps = md_info.get(MIFN.FNAMES_SNPS, [])
+    if len(fnames_snps) == 0:
+        return False 
+    
+    for ndx, fname_img in enumerate(fnames_snps):
+        if aux_dir in fname_img:
+            continue 
+        if len(os.path.dirname(fname_img)) != 0:
+            continue
+        
+        if fname_img in md_info[MIFN.IMG_FIGURES]:
+            continue
+
+        src_pathname = os.path.join(out_dir, fname_img)
+        dst_pathname = os.path.join(aux_dir, fname_img)
+        if os.path.isfile(src_pathname):
+            shutil.move(src_pathname, dst_pathname)
+            dst_fname = dst_pathname.replace(out_dir + "/", "")
+            fnames_snps[ndx] = dst_fname
+
 def _move_aux_files_tables(md_info, out_dir, aux_dir):
     os.makedirs(aux_dir, exist_ok=True)
     fnames_tbls = md_info.get(MIFN.FNAMES_TBLS, [])
@@ -94,6 +116,7 @@ def _move_aux_files(md_info):
     os.makedirs(aux_dir, exist_ok=True)
     _move_aux_files_pages(md_info, out_dir, aux_dir)
     _move_aux_files_images(md_info, out_dir, aux_dir)
+    _move_aux_files_snpsts(md_info, out_dir, aux_dir)
     _move_aux_files_tables(md_info, out_dir, aux_dir)
 
 

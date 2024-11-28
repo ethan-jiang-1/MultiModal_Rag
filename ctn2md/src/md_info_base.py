@@ -38,6 +38,7 @@ class MIFN:  # Markdown Field Name
     FNAMES_PAGES = "fnames_pages"
     FNAMES_IMGS = "fnames_imgs"
     FNAMES_TBLS = "fnames_tbls"
+    FNAMES_SNPS = "fnames_snps"
 
     GEN_ENGINE = "parse_engine"
 
