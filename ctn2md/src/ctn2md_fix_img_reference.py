@@ -174,7 +174,8 @@ def _filter_markdown_images(md_src_str, md_info):
     
     out_dir = md_info.get_out_dir()
     #aux_dir = md_info.get_aux_dir()
-    md_info[MIFN.IMG_FIGURES] = {}
+    if MIFN.IMG_FIGURES not in md_info:
+        md_info[MIFN.IMG_FIGURES] = {}
 
     #TODO: as we have cached copy in md_info, cache...BlockingIOError
     def replace_image_reference(match):
