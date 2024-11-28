@@ -72,7 +72,7 @@ _DEFAULT_MDCONTROL = {
     "mctl_lp_langauge": Language.SIMPLIFIED_CHINESE,
     "mctl_lp_take_screenshot": False,
     "mctl_lp_disable_ocr": False,
-    "mctl_lp_premium_pages": ""
+    "mctl_lp_premium_pages": "" # The target pages to extract text from documents. Describe as a comma separated list of page numbers. The first page of the document is page 0
 }
 
 class MdInfo:

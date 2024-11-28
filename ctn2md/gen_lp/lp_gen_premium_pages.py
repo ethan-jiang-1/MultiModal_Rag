@@ -103,7 +103,8 @@ def gen_preminum_pages(md_info):
     _dump_tables(parser, json_result, md_info)
     cur_job_id = _dump_preminum_md_page_content_from_lp_json_result(json_result, md_info)
     n2u_restore_unique_name_premium(md_info, cur_job_id)
-    return md_info.save()
+    return json_result
+
 
 if __name__ == "__main__":
     setup_logger_handlers()

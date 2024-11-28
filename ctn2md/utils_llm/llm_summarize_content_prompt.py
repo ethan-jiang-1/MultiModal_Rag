@@ -32,8 +32,8 @@ USER_PROMPT_SUMMARIZE = """
 ```json
 {
   "summary": "<内容的知识性总结，描述角度注重帮助用户进行知识查询>",
-  "keywords_top": "<按重要性排序的关键词最关键的头几个，用`，`分隔, 适合BM25搜索>"
-  "keywords_remain": "<按重要性排序的关键词剩余的关键词，用`，`分隔, 适合BM25搜索>"
+  "keywords_top": "<按重要性排序的关键词最关键的头几个，用`,`分隔, 适合BM25搜索>"
+  "keywords_remain": "<按重要性排序的关键词剩余的关键词，用`,`分隔, 适合BM25搜索>"
 }
 
 ### Your Answer:

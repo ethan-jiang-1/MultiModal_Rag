@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 #import os
 import sys
-#import logging
+import logging
 import rich
 #import random
 #import json
@@ -206,7 +206,11 @@ def _revisit_pages(md_info):
     fnames_pages = md_info[MIFN.FNAMES_PAGES]
     fnames_snps = md_info[MIFN.FNAMES_SNPS]
     lp_scan_info = md_info[MIFN.LP_SCAN_INFO]
-    pages = lp_scan_info["pages"]
+
+    pages = lp_scan_info.get("pages", None)
+    if pages is None:
+        logging.warning("lp_scan_info['pages'] is None?!")
+        return False
     for page in pages:
         page_no = page["page_number"]
         fname_page = fnames_pages[page_no - 1]

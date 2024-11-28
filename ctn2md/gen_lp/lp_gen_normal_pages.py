@@ -156,9 +156,8 @@ def gen_normal_pages(md_info):
     md_info.save()
     n2u_restore_unique_name_normal_full(md_info)
     md_info.save()
-    
-    md_info_path = md_info.save()
-    return md_info_path
+
+    return json_result
 
 if __name__ == "__main__":
     setup_logger_handlers()
