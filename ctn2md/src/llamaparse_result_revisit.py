@@ -19,8 +19,8 @@ from ctn2md.utils.util_tokenizer import get_token_encoding
 #MAX_OUTPUT_TOKEN = 8*1024
 MAX_OUTPUT_TOKEN = 8*1024
 
-def _analyse_page_from_lp_page(page, result):
-    result_pages = result["pages"]
+def _analyse_page_from_lp_page(page, lp_scan_info):
+    lp_scan_info_pages = lp_scan_info["pages"]
 
     # 提取页面级信息
     width = page.get("width", 0)
@@ -51,6 +51,8 @@ def _analyse_page_from_lp_page(page, result):
                 heading_blocks += 1
             if (item_width is not None) and (item_height is not None):
                 total_text_area += item_width * item_height
+        else:
+            print(item_type) # item_type = "table"
 
     # 遍历 images
     total_ocr_images = 0
@@ -61,7 +63,7 @@ def _analyse_page_from_lp_page(page, result):
             total_image_area += img_width * img_height
         ocr = image.get("ocr", None)
         if isinstance(ocr, list) and len(ocr) > 0:
-            total_ocr_images += len(ocr)
+            total_ocr_images += len(ocr) # [ {'x': 661, 'y': 14, 'w': 59, 'h': 50, 'confidence': '0.2615117255774045', 'text': '3)'},..] text out of image 
 
     # 判断页面是否是结构化页面或扫描页面
     is_structured = (
@@ -73,14 +75,14 @@ def _analyse_page_from_lp_page(page, result):
 
     # 累计全局计数
     if is_structured:
-        result["structured_pages"] += 1
+        lp_scan_info["structured_pages"] += 1
     if is_scanned:
-        result["scanned_pages"] += 1
+        lp_scan_info["scanned_pages"] += 1
     if total_ocr_images > 0:
-        result["ocrimg_pages"] += 1
+        lp_scan_info["ocrimg_pages"] += 1
 
     # 保存当前页的详细数据
-    result_pages.append({
+    lp_scan_info_pages.append({
         "page_number": page.get("page", 0),
         "width": round(width, 2),
         "height": round(height,2),
@@ -88,7 +90,7 @@ def _analyse_page_from_lp_page(page, result):
         "heading_blocks": heading_blocks,
         "total_text_area": round(total_text_area, 2),
         "total_image_area": round(total_image_area, 2),
-        "total_ocr_images": total_ocr_images,
+        "total_ocr_images": total_ocr_images,  # text out of ocr img does not contribute to md_text ?!
         "page_area": round(page_area, 2),
         "is_structured": is_structured,
         "is_scanned": is_scanned,
@@ -200,6 +202,23 @@ def _get_llm_ocr_fix_method_from_scan_info(md_info):
             return OFM.BY_CONTENT, "llm_tklimit<(S)"
         return OFM.BY_PAGE, "??P1??"
 
+def _revisit_pages(md_info):
+    fnames_pages = md_info[MIFN.FNAMES_PAGES]
+    fnames_snps = md_info[MIFN.FNAMES_SNPS]
+    lp_scan_info = md_info[MIFN.LP_SCAN_INFO]
+    pages = lp_scan_info["pages"]
+    for page in pages:
+        page_no = page["page_number"]
+        fname_page = fnames_pages[page_no - 1]
+        fname_snp = None
+        if fnames_snps is not None and len(fnames_snps) > page_no:
+            fname_snp = fnames_snps[page_no -1]
+        
+        print(fname_page)
+        print(fname_snp)
+
+        rich.print(page)
+    return True
 
 def post_scan_llamaparse_result(md_info, json_result=None):
     pathname_step0 = md_info.name_step_pathname(0)
@@ -218,7 +237,7 @@ def post_scan_llamaparse_result(md_info, json_result=None):
     _cal_recommended_ofm_mode(md_info, md_text)
 
     #TODO, ethan_ocr_at_gen if a page found have strong ocr trace, we should rebuild the content by stitching 
-    pass
+    _revisit_pages(md_info)
 
 
 if __name__ == "__main__":

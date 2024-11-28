@@ -15,6 +15,7 @@ if "./" not in sys.path:
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.src.llamaparse_result_revisit import post_scan_llamaparse_result
+from ctn2md.src.llamaparse_base import dump_images_ref_by_page, save_md_page
 from ctn2md.src.md_process_plc import inject_plc_comment_to_page
 
 
@@ -40,18 +41,6 @@ def _get_llamaparse(md_info):
         disable_ocr=disable_ocr,
     )
     return parser
-
-def _save_md_page(out_dir, job_id, ndx, md_page, md_imgs):
-    try:
-        md_page_all = md_page + md_imgs
-        fname_page = f"{job_id}-content_p{ndx}.md"
-        fname_page_md = os.path.join(out_dir, fname_page)
-        with open(fname_page_md, "w", encoding="utf8") as f:
-            f.write(md_page_all)
-        return fname_page
-    except Exception as ex:
-        logging.exception(ex)
-    return None
 
 def _n2u_replace_fnames(md_info, mifn_fnames, unique_job_id, new_job_id):
     out_dir = md_info.get_out_dir()
@@ -98,22 +87,6 @@ def _n2u_restore_unique_name(md_info):
     unique_job_id = md_info.get_unique_job_id()
     _n2u_stick_with_old_names(md_info, unique_job_id, cur_job_id)
 
-def _dump_images_ref_by_page(page):
-    md_imgs = ""
-    images = page.get("images", None)
-    if images is not None:
-        img_refs = []
-        for image in images:
-            path = image.get("path")
-            if path is not None and os.path.isfile(path):
-                basename = os.path.basename(path)
-                img_refs.append(f"![]({basename})")
-            else:
-                logging.warning(f"image file {path} not found.")
-        if len(img_refs) > 0:
-            md_imgs = "\n\n" + "\n".join(img_refs) + "\n"
-    return md_imgs 
-
 def _dump_md_content_from_lp_json_result(out_dir, json_result, md_info):
     os.makedirs(out_dir, exist_ok=True)
     md_full_content = ""
@@ -144,10 +117,10 @@ def _dump_md_content_from_lp_json_result(out_dir, json_result, md_info):
                         md_full_content += "\n"
                     md_full_content += md_page_modified
 
-            md_imgs = _dump_images_ref_by_page(page)
+            md_imgs = dump_images_ref_by_page(page)
             md_full_content += md_imgs
 
-            fname_page = _save_md_page(out_dir, job_id, page_ndx, md_page_modified, md_imgs)
+            fname_page = save_md_page(out_dir, job_id, page_ndx + 1, md_page_modified, md_imgs)
             fnames_pages.append(fname_page)
     
     cur_job_id = job_ids_set.pop()
@@ -198,7 +171,7 @@ def _dump_images(parser, json_result, md_info):
     out_dir = md_info.get_out_dir()
     images = parser.get_images(json_result, out_dir)
     fnames_imgs = [os.path.basename(item["path"]) for item in images if item["name"].startswith("img_")]
-    fnames_snps = [os.path.basename(item["path"]) for item in images if item["name"].statswith("pages_")]
+    fnames_snps = [os.path.basename(item["path"]) for item in images if item["name"].startswith("pages_")]
     md_info[MIFN.FNAMES_IMGS] = fnames_imgs
     md_info[MIFN.FNAMES_SNPS] = fnames_snps
 
