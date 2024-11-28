@@ -16,7 +16,7 @@ def dump_images_ref_by_page(page, ensure_exist=False):
     if images is not None:
         img_refs = []
         for image in images:
-            path = image.get("path")
+            path = image.get("path", None) or image.get("name", None)
             if path is not None:
                 basename = os.path.basename(path)
                 img_refs.append(f"![]({basename})")

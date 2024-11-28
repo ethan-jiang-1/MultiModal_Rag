@@ -15,7 +15,7 @@ from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.src.md_process_plc import inject_plc_comment_to_page
 from ctn2md.gen_lp.lp_base import dump_images_ref_by_page, save_md_page
-from ctn2md.gen_lp.lp_unique_job import n2u_restore_unique_name_premium
+from ctn2md.gen_lp.lp_unique_job import n2u_replace_fnames, n2u_update_md_content
 
 def _get_llamaparse_premium(md_info):
     from llama_parse import LlamaParse
@@ -81,11 +81,34 @@ def _dump_preminum_md_page_content_from_lp_json_result(json_result, md_info):
     cur_job_id = job_ids_set.pop()
     return cur_job_id
 
-def _dump_tables(parser, json_result, md_info):
+def _dump_images_premium(parser, json_result, md_info):
+    out_dir = md_info.get_out_dir()
+    images = parser.get_images(json_result, out_dir)
+    fnames_imgs = [os.path.basename(item["path"]) for item in images if item["name"].startswith("img_")]
+    fnames_snps = [os.path.basename(item["path"]) for item in images if item["name"].startswith("page_")]
+    md_info[MIFN.FNAMES_P_IMGS] = fnames_imgs
+    md_info[MIFN.FNAMES_P_SNPS] = fnames_snps
+
+def _dump_tables_premium(parser, json_result, md_info):
     out_dir = md_info.get_out_dir()
     tables = parser.get_xlsx(json_result, out_dir)
     fnames_tbls = [os.path.basename(item["path"]) for item in tables]
     md_info[MIFN.FNAMES_P_TBLS] = fnames_tbls 
+
+def n2u_restore_unique_name_premium(md_info, new_job_id):
+    unique_job_id = md_info.get_unique_job_id()
+    if unique_job_id == new_job_id:
+        return 
+
+    out_dir = md_info.get_out_dir()
+    n2u_replace_fnames(md_info, MIFN.FNAMES_P_PAGES, unique_job_id, new_job_id)
+    n2u_replace_fnames(md_info, MIFN.FNAMES_P_IMGS, unique_job_id, new_job_id)
+    n2u_replace_fnames(md_info, MIFN.FNAMES_P_TBLS, unique_job_id, new_job_id)
+    n2u_replace_fnames(md_info, MIFN.FNAMES_P_SNPS, unique_job_id, new_job_id)
+
+    for fname_md_page in md_info[MIFN.FNAMES_P_PAGES]:
+        pathname_page = os.path.join(out_dir, fname_md_page)
+        n2u_update_md_content(md_info, pathname_page, unique_job_id, new_job_id)
 
 def gen_preminum_pages(md_info):
     doc_pathname = md_info.get_doc_pathname()
@@ -100,7 +123,8 @@ def gen_preminum_pages(md_info):
     if json_result is None or len(json_result) == 0:
         raise ValueError(f"json_result is empty for {doc_pathname}")
 
-    _dump_tables(parser, json_result, md_info)
+    _dump_tables_premium(parser, json_result, md_info)
+    _dump_images_premium(parser, json_result, md_info)
     cur_job_id = _dump_preminum_md_page_content_from_lp_json_result(json_result, md_info)
     n2u_restore_unique_name_premium(md_info, cur_job_id)
     return json_result

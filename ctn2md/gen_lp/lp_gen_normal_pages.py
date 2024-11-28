@@ -16,8 +16,7 @@ from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.src.md_process_plc import inject_plc_comment_to_page
 from ctn2md.gen_lp.lp_base import dump_images_ref_by_page, save_md_page
-from ctn2md.gen_lp.lp_unique_job import n2u_restore_unique_name_normal_full
-
+from ctn2md.gen_lp.lp_unique_job import n2u_replace_fnames, n2u_update_md_content
 
 def _get_llamaparse_normal(md_info):
     from llama_parse import LlamaParse
@@ -125,7 +124,7 @@ def _dump_images(parser, json_result, md_info):
     out_dir = md_info.get_out_dir()
     images = parser.get_images(json_result, out_dir)
     fnames_imgs = [os.path.basename(item["path"]) for item in images if item["name"].startswith("img_")]
-    fnames_snps = [os.path.basename(item["path"]) for item in images if item["name"].startswith("pages_")]
+    fnames_snps = [os.path.basename(item["path"]) for item in images if item["name"].startswith("page_")]
     md_info[MIFN.FNAMES_IMGS] = fnames_imgs
     md_info[MIFN.FNAMES_SNPS] = fnames_snps
 
@@ -133,7 +132,24 @@ def _dump_tables(parser, json_result, md_info):
     out_dir = md_info.get_out_dir()
     tables = parser.get_xlsx(json_result, out_dir)
     fnames_tbls = [os.path.basename(item["path"]) for item in tables]
-    md_info[MIFN.FNAMES_TBLS] = fnames_tbls    
+    md_info[MIFN.FNAMES_TBLS] = fnames_tbls   
+
+
+def _n2u_restore_unique_name_normal_full(md_info):
+    new_job_id = md_info.get(MIFN.LP_CUR_JOB_ID)
+    unique_job_id = md_info.get_unique_job_id()
+    if unique_job_id == new_job_id:
+        return 
+    
+    out_dir = md_info.get_out_dir()
+    n2u_replace_fnames(md_info, MIFN.FNAMES_PAGES, unique_job_id, new_job_id)
+    n2u_replace_fnames(md_info, MIFN.FNAMES_IMGS, unique_job_id, new_job_id)
+    n2u_replace_fnames(md_info, MIFN.FNAMES_TBLS, unique_job_id, new_job_id)
+    n2u_replace_fnames(md_info, MIFN.FNAMES_SNPS, unique_job_id, new_job_id)
+
+    for fname_md_page in md_info[MIFN.FNAMES_PAGES]:
+        pathname_page = os.path.join(out_dir, fname_md_page)
+        n2u_update_md_content(md_info, pathname_page, unique_job_id, new_job_id)
 
 def gen_normal_pages(md_info):
     parser = _get_llamaparse_normal(md_info)
@@ -154,7 +170,7 @@ def gen_normal_pages(md_info):
     _dump_normal_md_page_from_lp_json_result(json_result, md_info)
 
     md_info.save()
-    n2u_restore_unique_name_normal_full(md_info)
+    _n2u_restore_unique_name_normal_full(md_info)
     md_info.save()
 
     return json_result

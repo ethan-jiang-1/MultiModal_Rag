@@ -130,16 +130,16 @@ def _process_image_reference(image_file, md_info):
     # 3. 获取页号和对应的 MD 文件名
     page_match = re.search(r'_p(\d+)_', image_file)
     if not page_match:
-        logging.warning(f"PIR: 无法读取图像 {os.path.basename(image_path)} 页号")
+        logging.error(f"PIR: 无法读取图像 {os.path.basename(image_path)} 页号")
         return None, None  # 未找到页号
 
-    page_number = page_match.group(1)
+    page_number = int(page_match.group(1)) + 1 # image_ndx starts from 0, but page starts from 1
     md_page_file = next(
         (fname for fname in md_info.get_fnames_pages() if f'_p{page_number}' in fname),
         None
     )
     if not md_page_file:
-        logging.warning(f"PIR: 无法找到  {os.path.basename(image_path)} 页号对应的页md")
+        logging.error(f"PIR: 无法找到  {os.path.basename(image_path)} 页号对应的页md")
         return None, None  # 未找到对应的 MD 文件
 
     # 4. 调用多模态处理逻辑
