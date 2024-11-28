@@ -26,7 +26,7 @@ def fix_heading_lvl_markdown(fhl_org, model="gpt-4o",  question_num=None):
         if not isinstance(fhl_org, dict):
             raise ValueError("fhl_heading need to be dict")
 
-        logging.info(f"start to correct heading level by {model} as questoin_number:{question_num}")
+        logging.info(f"start to correct heading level by {model} as question_num:{question_num}")
 
         fhl_org_json_str = json.dumps(fhl_org, ensure_ascii=False, indent=4)
 

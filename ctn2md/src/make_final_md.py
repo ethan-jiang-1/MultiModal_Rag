@@ -34,8 +34,9 @@ def _move_aux_files_pages(md_info, out_dir, aux_dir):
     fnames_pages_aux = []
     for fname_page in fnames_pages:
         if aux_dir in fname_page:
-            return 
-        
+            continue 
+        if len(os.path.dirname(fname_page)) != 0:
+            continue
         src_pathname = os.path.join(out_dir, fname_page)
         dst_pathname = os.path.join(aux_dir, fname_page)
         if os.path.isfile(src_pathname):
@@ -52,8 +53,10 @@ def _move_aux_files_images(md_info, out_dir, aux_dir):
         return False 
     
     for ndx, fname_img in enumerate(fnames_images):
-        if aux_dir in fnames_images:
-            return 
+        if aux_dir in fname_img:
+            continue 
+        if len(os.path.dirname(fname_img)) != 0:
+            continue
         
         if fname_img in md_info[MIFN.IMG_FIGURES]:
             continue
@@ -73,7 +76,9 @@ def _move_aux_files_tables(md_info, out_dir, aux_dir):
     
     for ndx, fname_tbl in enumerate(fnames_tbls):
         if aux_dir in fname_tbl:
-            return 
+            continue 
+        if len(os.path.dirname(fname_tbl)) != 0:
+            continue
         
         src_pathname = os.path.join(out_dir, fname_tbl)
         dst_pathname = os.path.join(aux_dir, fname_tbl)

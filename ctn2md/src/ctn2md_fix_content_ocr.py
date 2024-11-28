@@ -14,40 +14,6 @@ if "./" not in sys.path:
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.utils_llm.llm_fix_ocr_md import fix_ocr_self_correct_markdown
 from ctn2md.src.md_info_base import MdInfo, MIFN, OFM
-from ctn2md.src.md_info_scan import get_llm_ocr_fix_method_from_scan_info
-from ctn2md.utils.util_tokenizer import get_token_encoding
-
-#TODO: ethan_output_token check if we are able to make GPTo output more then 3*1024 token. and how
-#MAX_OUTPUT_TOKEN = 8*1024
-MAX_OUTPUT_TOKEN = 8*1024
-
-#import tiktoken
-
-def _calculate_tokens_large_text(text, chunk_size=2048, stop_check_over_max=False):
-    """
-    针对超长文本的 Token 数量计算，分块处理。
-    
-    :param text: 输入的长字符串
-    :param chunk_size: 每块的最大字符数
-    :param encoding_name: 编码器名称
-    :return: Token 数量
-    """
-    # 获取编码器
-    encoding = get_token_encoding()
-    
-    # 初始化 Token 计数器
-    total_tokens = 0
-    
-    # 分块处理
-    for i in range(0, len(text), chunk_size):
-        chunk = text[i:i + chunk_size]
-        tokens = encoding.encode(chunk)
-        total_tokens += len(tokens)
-
-        if total_tokens > MAX_OUTPUT_TOKEN:
-            return total_tokens
-    
-    return total_tokens
 
 def _fix_ocr_by_stiche_pages(md_text, md_info):
     fnames_pages = md_info.get_fnames_pages()
@@ -83,14 +49,11 @@ def _fix_ocr_by_proc_whole(md_text, md_info):
     return md_text_fixed
 
 def _find_ofm_and_reason(md_text, md_info):
-    total_tokens = _calculate_tokens_large_text(md_text, stop_check_over_max=True)
-    mp_is_num_tokens_over_llm_output_limit = (total_tokens > MAX_OUTPUT_TOKEN)
-    md_info.set_md_params("mp_is_num_tokens_over_llm_output_limit", mp_is_num_tokens_over_llm_output_limit)
-
     ofm = md_info.get_md_control("mctl_ofm", None)
     ofm_reason = ""
     if ofm is None or ofm == OFM.BY_AUTO:
-        ofm, ofm_reason = get_llm_ocr_fix_method_from_scan_info(md_info)
+        ofm = md_info.get_md_params("mp_ofm", OFM.BY_SKIP)
+        ofm_reason = md_info.get_md_params("mp_ofm_reason", "skip ?unknown")
     else:
         ofm_reason = "mctl_control"
     return ofm, ofm_reason

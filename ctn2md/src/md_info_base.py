@@ -13,6 +13,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_ctn_type import CTN_TYPE
+from llama_parse.utils import Language
 
 _MIB_INFO_VER = "0.1.0"
 _MIB_SEP_FNAME_EXT = "___"
@@ -61,6 +62,9 @@ _DEFAULT_MDCONTROL = {
     "mctl_ofm": OFM.BY_AUTO,
     "mctl_min_img_relevance_score": 0.2,
     "mctl_move_aux_files": True,
+    "mctl_lp_langauge": Language.SIMPLIFIED_CHINESE,
+    "mctl_take_screenshot": False,
+    "mctl_lp_disable_ocr": False,
 }
 
 class MdInfo:

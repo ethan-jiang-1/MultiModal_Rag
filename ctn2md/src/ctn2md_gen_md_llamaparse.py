@@ -14,24 +14,30 @@ if "./" not in sys.path:
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
-from ctn2md.src.md_info_scan import analyze_lp_scan_info
+from ctn2md.src.llamaparse_result_revisit import post_scan_llamaparse_result
 from ctn2md.src.md_process_plc import inject_plc_comment_to_page
 
-def _get_llamaparse():
+
+def _get_llamaparse(md_info):
     from llama_parse import LlamaParse
     from llama_parse.utils import Language
 
-    #TODO: ethan_llamaparse parameters
+    language = md_info.get_md_control("mctl_lp_langauge", Language.SIMPLIFIED_CHINESE)
+    take_screenshot = md_info.get_md_control("mctl_take_screenshot", False)
+    disable_ocr = md_info.get_md_control("mctl_lp_disable_ocr", False)
+
     LLAMAPARSE_API_KEY = os.environ.get("LLAMAPARSE_API_KEY")
     parser = LlamaParse(
         api_key=LLAMAPARSE_API_KEY,  # 替换为您的 API 密钥
         result_type="markdown",  # 选择 "markdown" 格式输出
         verbose=True,
-        language=Language.SIMPLIFIED_CHINESE,  # "ch_sim",
+        language=language,  # "ch_sim",
         #page_suffix="mark_page_separator_{page_number}"
         invalidate_cache=True,
         check_interval=3,
         max_timeout=30*60,
+        take_screenshot=take_screenshot,
+        disable_ocr=disable_ocr,
     )
     return parser
 
@@ -188,16 +194,6 @@ def _remove_misc_files(md_info):
                 except Exception as e:
                     logging.exception(f"删除失败: {src_path}, 错误: {e}")
 
-def _dump_page_scan_info(json_result, md_info):
-    if json_result is not None and len(json_result) > 0:
-        json_result0_pages = json_result[0].get("pages", None)
-        lp_scan_info = {}
-        if json_result0_pages is not None:
-            doc_pathname = md_info.get_doc_pathname()
-            doc_type = doc_pathname.split(".")[-1].lower()
-            lp_scan_info = analyze_lp_scan_info(json_result0_pages, doc_type)
-        md_info[MIFN.LP_SCAN_INFO] = lp_scan_info
-
 def _dump_images(parser, json_result, md_info):
     out_dir = md_info.get_out_dir()
     images = parser.get_images(json_result, out_dir)
@@ -211,12 +207,13 @@ def _dump_tables(parser, json_result, md_info):
     md_info[MIFN.FNAMES_TBLS] = fnames_tbls    
 
 def gen_md_llamaparse(doc_pathname, out_dir):
-    parser = _get_llamaparse()
     #logging.info(parser)
 
     md_info = MdInfo(out_dir)
     md_info.set_gen_engine("llamaparse:lp")
     md_info.set_doc_pathname(doc_pathname)
+
+    parser = _get_llamaparse(md_info)
 
     documents = parser.load_data(doc_pathname)
     if documents is None or len(documents) == 0:
@@ -229,8 +226,7 @@ def gen_md_llamaparse(doc_pathname, out_dir):
     _remove_misc_files(md_info)
     _dump_images(parser, json_result, md_info)
     _dump_tables(parser, json_result, md_info)
-    _dump_page_scan_info(json_result, md_info)
-
+ 
     pathname_step0 = md_info.name_step_pathname(0)
     with open(pathname_step0, "w+") as f: 
         md_text = _dump_md_content_from_lp_json_result(out_dir, json_result, md_info)
@@ -239,6 +235,9 @@ def gen_md_llamaparse(doc_pathname, out_dir):
 
     md_info.save()
     _n2u_restore_unique_name(md_info)
+    md_info.save()
+
+    post_scan_llamaparse_result(md_info, json_result=json_result)
 
     logging.info(f"original doc: {doc_pathname}")
     logging.info(f"fname_output: {os.path.basename(pathname_step0)}")
