@@ -15,7 +15,7 @@ if "./" not in sys.path:
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from llama_parse.utils import Language
 
-_MIB_INFO_VER = "0.1.2"
+_MIB_INFO_VER = "0.2.0"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_DEFAULT_OUT_ROOT = "_work"
