@@ -141,11 +141,11 @@ def gen_normal_pages(md_info):
 
     documents = parser.load_data(doc_pathname)
     if documents is None or len(documents) == 0:
-        raise ValueError(f"document is empty for {doc_pathname}")
+        raise ValueError(f"llamaparse documents is empty for {doc_pathname}")
 
     json_result = parser.get_json_result(doc_pathname)
     if json_result is None or len(json_result) == 0:
-        raise ValueError(f"json_result is empty for {doc_pathname}")
+        raise ValueError(f"llamaparse json_result is empty for {doc_pathname}")
 
     _remove_misc_files(md_info)
     _dump_images(parser, json_result, md_info)
