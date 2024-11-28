@@ -15,7 +15,7 @@ if "./" not in sys.path:
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from llama_parse.utils import Language
 
-_MIB_INFO_VER = "0.1.1"
+_MIB_INFO_VER = "0.1.2"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_DEFAULT_OUT_ROOT = "_work"
@@ -39,7 +39,11 @@ class MIFN:  # Markdown Field Name
     FNAMES_IMGS = "fnames_imgs"
     FNAMES_TBLS = "fnames_tbls"
     FNAMES_SNPS = "fnames_snps"
-    FNAMES_PMNS = "fnames_pmns"
+
+    FNAMES_P_PAGES = "fnames_p_pages"
+    FNAMES_P_IMGS = "fnames_p_imgs"
+    FNAMES_P_TBLS = "fnames_p_tbls"
+    FNAMES_P_SNPS = "fnames_p_snps"
 
     GEN_ENGINE = "parse_engine"
 
@@ -168,7 +172,10 @@ class MdInfo:
         if MIFN.MDPARAMS not in self._info:
             self._info[MIFN.MDPARAMS] = {}
 
-        for fnames in [MIFN.FNAMES_PAGES, MIFN.FNAMES_IMGS, MIFN.FNAMES_TBLS,MIFN.FNAMES_SNPS, MIFN.FNAMES_PMNS]:
+        for fnames in [MIFN.FNAMES_PAGES, MIFN.FNAMES_IMGS, MIFN.FNAMES_TBLS,MIFN.FNAMES_SNPS]:
+            if fnames not in self._info:
+                self._info[fnames] = []
+        for fnames in [MIFN.FNAMES_P_PAGES, MIFN.FNAMES_P_IMGS, MIFN.FNAMES_P_TBLS,MIFN.FNAMES_P_SNPS]:
             if fnames not in self._info:
                 self._info[fnames] = []
         self.save()

@@ -32,7 +32,7 @@ def n2u_replace_fnames(md_info, mifn_fnames, unique_job_id, new_job_id):
             changed += 1
     return changed
 
-def n2u_update_md_content(md_info, pathname_md, unique_job_id, new_job_id):
+def _n2u_update_md_content(md_info, pathname_md, unique_job_id, new_job_id):
     with open(pathname_md, "r") as f: 
         md_text = f.read()
 
@@ -51,12 +51,9 @@ def _n2u_stick_with_old_names_full(md_info, unique_job_id, new_job_id):
 
     for fname_md_page in md_info[MIFN.FNAMES_PAGES]:
         pathname_page = os.path.join(out_dir, fname_md_page)
-        n2u_update_md_content(md_info, pathname_page, unique_job_id, new_job_id)
+        _n2u_update_md_content(md_info, pathname_page, unique_job_id, new_job_id)
 
-    pathname_step0 = md_info.name_step_pathname(0)
-    n2u_update_md_content(md_info, pathname_step0, unique_job_id, new_job_id)
-
-def n2u_restore_unique_name_naormal_full(md_info):
+def n2u_restore_unique_name_normal_full(md_info):
     cur_job_id = md_info.get(MIFN.LP_CUR_JOB_ID)
     unique_job_id = md_info.get_unique_job_id()
     _n2u_stick_with_old_names_full(md_info, unique_job_id, cur_job_id)
@@ -67,8 +64,9 @@ def n2u_restore_unique_name_premium(md_info, cur_job_id):
         return 
 
     out_dir = md_info.get_out_dir()
-    n2u_replace_fnames(md_info, MIFN.FNAMES_PMNS, unique_job_id, cur_job_id)
+    n2u_replace_fnames(md_info, MIFN.FNAMES_P_PAGES, unique_job_id, cur_job_id)
+    n2u_replace_fnames(md_info, MIFN.FNAMES_P_TBLS, unique_job_id, cur_job_id)
 
-    for fname_md_page in md_info[MIFN.FNAMES_PMNS]:
+    for fname_md_page in md_info[MIFN.FNAMES_P_PAGES]:
         pathname_page = os.path.join(out_dir, fname_md_page)
-        n2u_update_md_content(md_info, pathname_page, unique_job_id, cur_job_id)
+        _n2u_update_md_content(md_info, pathname_page, unique_job_id, cur_job_id)

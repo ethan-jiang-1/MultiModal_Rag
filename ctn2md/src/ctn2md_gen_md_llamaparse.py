@@ -23,9 +23,8 @@ def gen_md_llamaparse(doc_pathname, out_dir):
     md_info.set_gen_engine("llamaparse:lp")
     md_info.set_doc_pathname(doc_pathname)
 
-    generate_markdown_llamaparse(doc_pathname)
-    
-    md_info_path = md_info.save()
+    md_info_path = generate_markdown_llamaparse(md_info)
+
     return md_info_path
 
 if __name__ == "__main__":

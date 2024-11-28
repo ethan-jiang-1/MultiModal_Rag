@@ -77,10 +77,15 @@ def _dump_preminum_md_page_content_from_lp_json_result(json_result, md_info):
             else:
                 raise ValueError("what?")
     
-    md_info[MIFN.FNAMES_PMNS] = fnames_pages
+    md_info[MIFN.FNAMES_P_PAGES] = fnames_pages
     cur_job_id = job_ids_set.pop()
     return cur_job_id
 
+def _dump_tables(parser, json_result, md_info):
+    out_dir = md_info.get_out_dir()
+    tables = parser.get_xlsx(json_result, out_dir)
+    fnames_tbls = [os.path.basename(item["path"]) for item in tables]
+    md_info[MIFN.FNAMES_P_TBLS] = fnames_tbls 
 
 def gen_preminum_pages(md_info):
     doc_pathname = md_info.get_doc_pathname()
@@ -95,6 +100,7 @@ def gen_preminum_pages(md_info):
     if json_result is None or len(json_result) == 0:
         raise ValueError(f"json_result is empty for {doc_pathname}")
 
+    _dump_tables(parser, json_result, md_info)
     cur_job_id = _dump_preminum_md_page_content_from_lp_json_result(json_result, md_info)
     n2u_restore_unique_name_premium(md_info, cur_job_id)
     return md_info.save()

@@ -16,7 +16,7 @@ from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.src.md_process_plc import inject_plc_comment_to_page
 from ctn2md.gen_lp.lp_base import dump_images_ref_by_page, save_md_page
-from ctn2md.gen_lp.lp_unique_job import n2u_restore_unique_name_naormal_full
+from ctn2md.gen_lp.lp_unique_job import n2u_restore_unique_name_normal_full
 
 
 def _get_llamaparse_normal(md_info):
@@ -154,7 +154,7 @@ def gen_normal_pages(md_info):
     _dump_normal_md_page_from_lp_json_result(json_result, md_info)
 
     md_info.save()
-    n2u_restore_unique_name_naormal_full(md_info)
+    n2u_restore_unique_name_normal_full(md_info)
     md_info.save()
     
     md_info_path = md_info.save()
