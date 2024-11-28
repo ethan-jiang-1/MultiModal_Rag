@@ -12,16 +12,18 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo
-from ctn2md.src.llamaparse_base import dump_images_ref_by_page, save_md_page
+from ctn2md.src.md_info_base import MdInfo, MIFN
+from ctn2md.src.md_process_plc import inject_plc_comment_to_page
+from ctn2md.gen_lp.lp_base import dump_images_ref_by_page, save_md_page
+from ctn2md.gen_lp.lp_unique_job import n2u_restore_unique_name_premium
 
 def _get_llamaparse_premium(md_info):
     from llama_parse import LlamaParse
     from llama_parse.utils import Language
 
     language = md_info.get_md_control("mctl_lp_langauge", Language.SIMPLIFIED_CHINESE)
-    take_screenshot = md_info.get_md_control("mctl_take_screenshot", False)
-    disable_ocr = md_info.get_md_control("mctl_lp_disable_ocr", False)
+    take_screenshot = False  # md_info.get_md_control("mctl_lp_take_screenshot", False)
+    disable_ocr = False  # md_info.get_md_control("mctl_lp_disable_ocr", False)
 
     target_pages = md_info.get_md_control("mctl_lp_premium_pages", None)
     if target_pages is None or len(target_pages) == 0:
@@ -44,8 +46,6 @@ def _get_llamaparse_premium(md_info):
     )
     return parser
 
-from ctn2md.src.md_process_plc import inject_plc_comment_to_page
-
 def _dump_preminum_md_page_content_from_lp_json_result(json_result, md_info):
     out_dir = md_info.get_out_dir()
     job_ids_set = set()
@@ -62,23 +62,27 @@ def _dump_preminum_md_page_content_from_lp_json_result(json_result, md_info):
         if pages is None:
             continue
 
-        total_pages = len(pages)
+        total_pages = len(md_info[MIFN.FNAMES_PAGES])
         for page_ndx, page in enumerate(pages):
             rich.print(page)
+            page_no = page.get("page", None)
             md_page = page.get("md", None)
             if md_page is not None:
-                md_page_modified = inject_plc_comment_to_page(md_page, page_ndx, total_pages, md_info)
+                md_page_modified = inject_plc_comment_to_page(md_page, page_no, total_pages, md_info)
 
-            md_imgs = dump_images_ref_by_page(page)
+                md_imgs = dump_images_ref_by_page(page)
 
-            fname_page = save_md_page(out_dir, job_id, page_ndx + 1, md_page_modified, md_imgs)
-            fnames_pages.append(fname_page)
+                fname_page = save_md_page(out_dir, job_id, page_no, md_page_modified, md_imgs)
+                fnames_pages.append(fname_page)
+            else:
+                raise ValueError("what?")
     
+    md_info[MIFN.FNAMES_PMNS] = fnames_pages
     cur_job_id = job_ids_set.pop()
     return cur_job_id
 
 
-def gen_md_preminum(md_info):
+def gen_preminum_pages(md_info):
     doc_pathname = md_info.get_doc_pathname()
 
     parser = _get_llamaparse_premium(md_info)
@@ -91,7 +95,9 @@ def gen_md_preminum(md_info):
     if json_result is None or len(json_result) == 0:
         raise ValueError(f"json_result is empty for {doc_pathname}")
 
-    _dump_preminum_md_page_content_from_lp_json_result(json_result, md_info)
+    cur_job_id = _dump_preminum_md_page_content_from_lp_json_result(json_result, md_info)
+    n2u_restore_unique_name_premium(md_info, cur_job_id)
+    return md_info.save()
 
 if __name__ == "__main__":
     setup_logger_handlers()
@@ -99,5 +105,5 @@ if __name__ == "__main__":
     md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
     md_info = MdInfo(md_info_path)
 
-    ret = gen_md_preminum(md_info)
+    ret = gen_preminum_pages(md_info)
     rich.print(ret)

@@ -89,7 +89,7 @@ def extract_plc_comment(line):
     return ""
 
 
-def inject_plc_comment_to_page(md_page, page_ndx, total_pages, md_info):
+def inject_plc_comment_to_page(md_page, page_number, total_pages, md_info):
     """
     注入统计信息到 Markdown 文档标题行。
     :param md_page: str, 当前页面的 Markdown 内容
@@ -146,13 +146,13 @@ def inject_plc_comment_to_page(md_page, page_ndx, total_pages, md_info):
         # 注释信息
         line_number = lines.index(title) + 1
         injected_title = f"{title} "
-        injected_title += PLC_COMMENT.format(current_page=page_ndx+1,
+        injected_title += PLC_COMMENT.format(current_page=page_number,
                                              total_pages=total_pages,
                                              line_number=line_number,
                                              total_lines=total_lines,
                                              content_char_count=content_char_count,
                                              total_char_count=total_char_count)
-        ##<!-- PLC: Page:{page_ndx + 1}/{total_pages}, Line:{line_number}/{total_lines}, Chars:{content_char_count}/{total_char_count} -->"
+        ##<!-- PLC: Page:{page_number}/{total_pages}, Line:{line_number}/{total_lines}, Chars:{content_char_count}/{total_char_count} -->"
         result_lines.append(injected_title)
         result_lines.extend(content_lines)
 

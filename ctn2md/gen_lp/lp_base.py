@@ -10,14 +10,14 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-def dump_images_ref_by_page(page):
+def dump_images_ref_by_page(page, ensure_exist=False):
     md_imgs = ""
     images = page.get("images", None)
     if images is not None:
         img_refs = []
         for image in images:
             path = image.get("path")
-            if path is not None and os.path.isfile(path):
+            if path is not None:
                 basename = os.path.basename(path)
                 img_refs.append(f"![]({basename})")
             else:

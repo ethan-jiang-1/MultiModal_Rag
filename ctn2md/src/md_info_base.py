@@ -15,7 +15,7 @@ if "./" not in sys.path:
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from llama_parse.utils import Language
 
-_MIB_INFO_VER = "0.1.0"
+_MIB_INFO_VER = "0.1.1"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_DEFAULT_OUT_ROOT = "_work"
@@ -39,6 +39,7 @@ class MIFN:  # Markdown Field Name
     FNAMES_IMGS = "fnames_imgs"
     FNAMES_TBLS = "fnames_tbls"
     FNAMES_SNPS = "fnames_snps"
+    FNAMES_PMNS = "fnames_pmns"
 
     GEN_ENGINE = "parse_engine"
 
@@ -63,9 +64,11 @@ _DEFAULT_MDCONTROL = {
     "mctl_ofm": OFM.BY_AUTO,
     "mctl_min_img_relevance_score": 0.2,
     "mctl_move_aux_files": True,
+
     "mctl_lp_langauge": Language.SIMPLIFIED_CHINESE,
-    "mctl_take_screenshot": False,
+    "mctl_lp_take_screenshot": False,
     "mctl_lp_disable_ocr": False,
+    "mctl_lp_premium_pages": ""
 }
 
 class MdInfo:
@@ -164,6 +167,10 @@ class MdInfo:
             self._info[MIFN.MDCONTROL] = _DEFAULT_MDCONTROL
         if MIFN.MDPARAMS not in self._info:
             self._info[MIFN.MDPARAMS] = {}
+
+        for fnames in [MIFN.FNAMES_PAGES, MIFN.FNAMES_IMGS, MIFN.FNAMES_TBLS,MIFN.FNAMES_SNPS, MIFN.FNAMES_PMNS]:
+            if fnames not in self._info:
+                self._info[fnames] = []
         self.save()
 
     def update_mdcontrols(self, mdcontrols):
