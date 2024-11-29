@@ -22,7 +22,7 @@ from ctn2md.src.ctn2md_fix_section_hierarchy import fix_section_heirarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_gpt
 from ctn2md.src.make_final_md import make_final_md
 
-def _initial_gen_md_by_llamaparse(ctn_pathname, 
+def initial_gen_md_by_llamaparse(ctn_pathname, 
                     out_dir=None, 
                     enforced_gen=False, 
                     mdcontrols=None):
@@ -55,35 +55,35 @@ def _do_content2md_convert_core(ctn_pathname,
     logging.warning(f"work out_dir: {out_dir}")
     os.makedirs(out_dir, exist_ok=True)
 
-    md_info_path = _initial_gen_md_by_llamaparse(ctn_pathname, out_dir=out_dir, enforced_gen=enforced_gen, mdcontrols=mdcontrols)
+    md_info_path = initial_gen_md_by_llamaparse(ctn_pathname, out_dir=out_dir, enforced_gen=enforced_gen, mdcontrols=mdcontrols)
     if md_info_path is None:
-        logging.error(f"DCCC: failed {md_info_path} @_initial_gen_md_by_llamaparse")
-        return None, None 
+        logging.error(f"DCCC: failed {md_info_path} @initial_gen_md_by_llamaparse")
+        return None
 
     md_info_path = fix_content_ocr_by_gpt(md_info_path, src_step_num=0)
     if md_info_path is None:
         logging.error(f"DCCC: failed {md_info_path} @fix_content_ocr_by_gpt")
-        return None, None 
+        return None
 
     md_info_path = fix_headings_plc_by_gpt(md_info_path, src_step_num=1)
     if md_info_path is None:
         logging.error(f"DCCC: failed {md_info_path} @fix_headings_plc_by_gpt")
-        return None, None 
+        return None 
 
     md_info_path = fix_img_reference_by_lvlm(md_info_path, src_step_num=2)
     if md_info_path is None:
         logging.error(f"DCCC: failed {md_info_path} @fix_img_reference_by_lvlm")
-        return None, None 
+        return None 
 
     md_info_path = fix_section_heirarchy(md_info_path, src_step_num=3)
     if md_info_path is None:
         logging.error(f"DCCC: failed {md_info_path} @fix_section_heirarchy")
-        return None, None
+        return None
 
     md_info_path = summarize_content_by_gpt(md_info_path, src_step_num=4)
     if md_info_path is None:
         logging.error(f"DCCC: failed {md_info_path} @summarize_content_by_gpt")
-        return None, None          
+        return None       
 
     final_md_path = make_final_md(md_info_path)
 
@@ -98,6 +98,7 @@ def do_content2md_convert(ctn_pathname, out_dir=None, enforced_gen=False, mdcont
                                                     mdcontrols=mdcontrols)
     except Exception as ex:
         logging.exception(ex)
+        raise ex
     return final_md_path
 
 if __name__ == "__main__":
@@ -106,7 +107,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/AIGC时代的人力资源管理进化(徐刚).pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰部CAD外包框架服务合同.pdf"
-    doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
+    #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪ST2H项目低压线束设计技术服务合同（电子电器）.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪车架总成技术服务合同.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪铝大梁式车架及副车架设计外包中标通知书.pdf"
@@ -119,12 +120,11 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/6. 前后排座椅H点距离要求 P1.pptx"
     #doc_pathname = "datasrc/test/raw_docs/管理者角色定位与认知课程大纲.docx"
     #doc_pathname = "datasrc/test/raw_docs/考勤修改统一规则.xlsx"
-    #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
     #doc_pathname = "datasrc/test/raw_docs/高效沟通之黄金三角模型课程大纲.docx"
 
+    doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/ChatGPT intimates a tantalizing future_compressed.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/Long-Context LLMs Meet RAG_compressed.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/0530-大模型微调培训-VisualGLM.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/ai602-波士顿咨询：银行业生成式AI应用报告（2023）.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/AI未来十年_大模型产业落地的机遇与挑战_大数据研究院.pptx"
