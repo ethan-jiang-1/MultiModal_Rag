@@ -187,7 +187,8 @@ def _get_llm_ocr_fix_method_from_scan_info(md_info):
     if ocrimg_pages == 0:
         return OFM.BY_SKIP, "ocrimg_pages=0"
     
-    # TODO: ethan_llm_ocr_fix  need to support llm_ocr_fix multiple pages (>=5) or too many tokens 
+    # TODO: ethan_llm_ocr_recommendation  need to support llm_ocr_fix multiple pages (>=5) or too many tokens 
+    # as we push ocr into gen proc, so the best result here seeems we just recommend which page need premium ocr
     # as llm fix only can support limited output tokens
     if total_pages >= 5:
         if structured_pages / total_pages >= 0.8:

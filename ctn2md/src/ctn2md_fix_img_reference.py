@@ -54,7 +54,7 @@ def _gen_figure_info(md_info, doc_title, page_content, image_path):
     return resp_json
 
 # TODO: ethan_page_extraction,  we should forget the original page, but the find where the page is in current markdown (we better keep PL information)
-def _analyze_image_content(md_info, md_page_file=None, pathname_org_doc=None, image_path=None):
+def _analyze_image_content(md_info, page_content="", pathname_org_doc=None, image_path=None):
     """
     模拟多模态处理函数，分析图像的内容是否有意义。
     
@@ -66,14 +66,6 @@ def _analyze_image_content(md_info, md_page_file=None, pathname_org_doc=None, im
     # 1. 提取文档标题 (doc_title)
     # 从 pathname_org_doc 中去除目录和最后的扩展名
     doc_title = MdInfo.extract_doc_title(pathname_org_doc)
-
-    # 2. 读取当前页的 Markdown 内容 (md_page)
-    try:
-        with open(md_page_file, 'r', encoding='utf-8') as md_file:
-            page_content = md_file.read()
-    except Exception as e:
-        logging.error(f"AIC: 无法读取 Markdown 文件 {md_page_file}，错误: {e}")
-        return None, None
 
     # 3. 多模态分析逻辑
     try:
@@ -96,6 +88,38 @@ def _analyze_image_content(md_info, md_page_file=None, pathname_org_doc=None, im
         return None, None
 
     return relevance_score, (figure_name, picture_discription)
+
+def _get_page_no_from_image_filename(image_file):
+    page_number = None
+    page_match = re.search(r'-img_p(\d+)_', image_file)
+    if page_match:
+        page_number = int(page_match.group(1)) + 1 # image_ndx starts from 0, but page starts from 1
+    else:
+        page_match = re.search(r'-page_(\d+)', image_file)
+        if page_match:
+            page_number = int(page_match.group(1)) # page_ndx starts from 1 same as page
+    return page_number
+
+
+def _find_page_md_content(page_number, md_info):
+    matching_files = [fname for fname in md_info.get_fnames_pages() if f'_p{page_number}' in fname]
+    md_page_filename = matching_files[0] if matching_files else None
+    
+    if not md_page_filename:
+        logging.error(f"PIR: 无法找到  {os.path.basename(md_page_filename)} 页号对应的页md")
+        return None
+
+    try:
+        filenames = [os.path.join(md_info.get_out_dir(), md_page_filename),
+                     os.path.join(md_info.get_aux_dir(), md_page_filename)]
+        for filename in filenames:
+            if os.path.isfile(filename):
+                with open(filename, 'r', encoding='utf-8') as md_file:
+                    page_content = md_file.read()
+                return page_content
+    except Exception as e:
+        logging.error(f"AIC: 无法读取 Markdown 文件 {md_page_filename}，错误: {e}")
+        return None
 
 def _process_image_reference(image_file, md_info):
     """
@@ -128,29 +152,19 @@ def _process_image_reference(image_file, md_info):
         return None, None
 
     # 3. 获取页号和对应的 MD 文件名
-    page_number = None
-    page_match = re.search(r'-img_p(\d+)_', image_file)
-    if page_match:
-        page_number = int(page_match.group(1)) + 1 # image_ndx starts from 0, but page starts from 1
-    else:
-        page_match = re.search(r'-page_(\d+)', image_file)
-        if page_match:
-            page_number = int(page_match.group(1)) # page_ndx starts from 1 same as page
+    page_number = _get_page_no_from_image_filename(image_file)
     if page_number is None:
         logging.error(f"PIR: 无法读取图像 {os.path.basename(image_path)} 页号")
         return None, None  # 未找到页号
 
-    md_page_file = next(
-        (fname for fname in md_info.get_fnames_pages() if f'_p{page_number}' in fname),
-        None
-    )
-    if not md_page_file:
-        logging.error(f"PIR: 无法找到  {os.path.basename(image_path)} 页号对应的页md")
-        return None, None  # 未找到对应的 MD 文件
+    page_content = _find_page_md_content(page_number, md_info)
+    if page_content is None:
+        logging.error(f"PIR: 无法读取图像 {os.path.basename(image_path)} 页号对应的MD文件的内容")
+        return None, None  # 未找到页号对应的内容        
 
     # 4. 调用多模态处理逻辑
     relevance_score, figure_name_n_picture_discription = _analyze_image_content(md_info,
-        md_page_file=os.path.join(out_dir, md_page_file),
+        page_content=page_content,
         pathname_org_doc=md_info.get_doc_pathname(),
         image_path=image_path
     )
@@ -252,8 +266,8 @@ if __name__ == "__main__":
 
     src_step_num = 2
     #md_info_path = "_work/ctn2md_stream1/info.json"
-    #md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
-    md_info_path = "_work/ctn2md_业绩案例、上汽内外饰DRE外包框架服务合同/_info.json"
+    md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
+    #md_info_path = "_work/ctn2md_业绩案例、上汽内外饰DRE外包框架服务合同/_info.json"
 
     md_info_path = fix_img_reference_by_lvlm(md_info_path, src_step_num=src_step_num)
 
