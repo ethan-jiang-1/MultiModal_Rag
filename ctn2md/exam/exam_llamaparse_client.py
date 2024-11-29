@@ -11,7 +11,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.utils_llm.llamaparse_converter import convert_doc_to_md_by_llamaparse
+from ctn2md.ctn2md_converter import do_content2md_convert
 
 if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/AIGC时代的人力资源管理进化(徐刚).pdf"
@@ -26,6 +26,6 @@ if __name__ == "__main__":
 
     setup_logger_handlers()
     os.makedirs(out_dir, exist_ok=True)
-    fname_output_fixed_md, md_info = convert_doc_to_md_by_llamaparse(doc_pathname, out_dir)
+    fname_output_fixed_md, md_info = do_content2md_convert(doc_pathname, out_dir)
     print(fname_output_fixed_md)
     rich.print(md_info)
