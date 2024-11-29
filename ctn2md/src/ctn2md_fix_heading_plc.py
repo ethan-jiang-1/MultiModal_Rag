@@ -179,6 +179,7 @@ def fix_headings_plc_by_gpt(md_info_path, src_step_num=None, dst_step_num=None):
                "new_heading_lines": [item["mapped_line"] for item in optimized_heading_lines_map]}
     rich.print(o2n_map)
 
+    #TODO: ethan_finial_md we need fix the page_md as well, as the final one are come from page_md
     md_text_new1, unprocessed_heading_lines_map = _update_markdown_heading_content(md_text_new, md_info, fhl_map)
     rich.print(unprocessed_heading_lines_map)
 

@@ -132,6 +132,7 @@ def make_final_md(md_info_path):
     if move_aux_files:
         _move_aux_files(md_info)
 
+    #TODO: ethan_finial_md ??
     pathname_final_md = _copy_last_step_as_final(md_info)
     md_info[MIFN.FNAME_FINAL_MD] = os.path.basename(pathname_final_md)
     md_info.save()
