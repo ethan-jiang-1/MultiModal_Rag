@@ -51,8 +51,10 @@ def _analyse_page_from_lp_page(page, lp_scan_info):
                 heading_blocks += 1
             if (item_width is not None) and (item_height is not None):
                 total_text_area += item_width * item_height
-        else:
+        elif item_type == "table":
             print(item_type) # item_type = "table"
+        else:
+            print(item_type)
 
     # 遍历 images
     total_ocr_images = 0

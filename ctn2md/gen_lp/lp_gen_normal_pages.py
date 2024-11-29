@@ -67,6 +67,7 @@ def _dump_normal_md_page_from_lp_json_result(json_result, md_info):
             rich.print(page)
             page_no = page.get("page", None)
             md_page = page.get("md", None)
+            #images = page.get("images", None)
             if md_page is not None:
                 md_page_modified = inject_plc_comment_to_page(md_page, page_no, total_pages, md_info)
 

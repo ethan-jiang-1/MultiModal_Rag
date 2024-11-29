@@ -133,11 +133,15 @@ class MdInfo:
         if last_dot_index != -1:
             file_name = file_name[:last_dot_index]
         
-        # 去掉文件名开头的 Markdown 符号和顺序标记
-        file_name = re.sub(r"^\s*[#\*\-·‘’“”\"\'、。，\.]?[\dA-Za-z]*[\.\。\·、\"\'‘’“”]?\s*", "", file_name)
-    
-        # 移除多余空白并保持文件名紧凑
-        doc_title = re.sub(r"\s+", " ", file_name).strip()
+        # 定义要替换的标点符号集合，包括中文标点符号
+        punctuation = r'[#\*\-·‘’“”\"\'、。，\.，,.?!;:]|[\u3000-\u303F]'  # 包括了常见的中文标点符号
+
+        # 定义要替换的空白字符集合
+        whitespace = r'[\u3000\s]'  # 匹配所有空白字符，包括全角空格和半角空格
+
+        # 替换文件名中的标点符号和空白字符为下划线
+        doc_title = re.sub(punctuation, '_', file_name)  # 替换标点符号
+        doc_title = re.sub(whitespace, '_', doc_title)  # 替换空白字符
         
         return doc_title
 
