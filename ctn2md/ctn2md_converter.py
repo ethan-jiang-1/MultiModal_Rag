@@ -23,10 +23,11 @@ from ctn2md.src.ctn2md_summarize_content import summarize_content_by_gpt
 from ctn2md.src.make_final_md import make_final_md
 
 def initial_gen_md_by_llamaparse(ctn_pathname, 
-                    out_dir=None, 
-                    enforced_gen=False, 
-                    mdcontrols=None):
+                                 out_dir=None, 
+                                 enforced_gen=False, 
+                                 mdcontrols=None):
     md_info_path = None
+    gen_needed = False
     if not enforced_gen:
         md_info = MdInfo(out_dir)
         md_info_path = md_info.get_md_info_path()
