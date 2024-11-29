@@ -77,6 +77,9 @@ _DEFAULT_MDCONTROL = {
 
 class MdInfo:
     def __init__(self, md_info_path_or_out_dir):
+        if not isinstance(md_info_path_or_out_dir, str):
+            raise ValueError(f"MdInfo.init: expect string as path here: {md_info_path_or_out_dir}")
+
         last_chat = md_info_path_or_out_dir[-1]
         if (last_chat in ["/", "\\"]) or os.path.isdir(md_info_path_or_out_dir):
             self._md_info_path = os.path.join(md_info_path_or_out_dir, _MIB_FNAME_MD_INFO)

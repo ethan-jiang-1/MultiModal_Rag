@@ -22,29 +22,43 @@ from ctn2md.src.ctn2md_fix_section_hierarchy import fix_section_heirarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_gpt
 from ctn2md.src.make_final_md import make_final_md
 
+def _initial_gen_md_by_llamaparse(ctn_pathname, 
+                    out_dir=None, 
+                    enforced_gen=False, 
+                    mdcontrols=None):
+    md_info_path = None
+    if not enforced_gen:
+        md_info = MdInfo(out_dir)
+        md_info_path = md_info.get_md_info_path()
+        pathname_s0_md = md_info.name_step_pathname(0)
+        if (pathname_s0_md is None) or (not os.path.exists(pathname_s0_md)):
+            gen_needed = True
+    else:
+        gen_needed = True
+
+    if gen_needed:
+        md_info_path = gen_md_llamaparse(ctn_pathname, out_dir)
+        if md_info_path is None:
+            return None
+
+    if mdcontrols is not None:
+        md_info.update_mdcontrols(mdcontrols)
+    return md_info_path
+
 
 def _do_content2md_convert_core(ctn_pathname, 
                                 out_dir=None, 
-                                skip_gen=False, 
+                                enforced_gen=False, 
                                 mdcontrols=None):
     if out_dir is None:
         out_dir = MdInfo.get_suggested_out_dir(ctn_pathname)
     logging.warning(f"work out_dir: {out_dir}")
     os.makedirs(out_dir, exist_ok=True)
 
-    if not skip_gen:
-        md_info_path = gen_md_llamaparse(ctn_pathname, out_dir)
-        if md_info_path is None:
-            logging.error(f"DCCC: failed {md_info_path} @convert_doc_to_md_by_llamaparse")
-            return None, None 
-    else:
-        md_info = MdInfo(out_dir)
-        md_info_path = md_info.get_md_info_path()
-        pathname_s0_md = md_info.name_step_pathname(0)
-        if (pathname_s0_md is None) or (not os.path.exists(pathname_s0_md)):
-            raise ValueError(f"{pathname_s0_md} not exist, you have to generate it first")
-    if mdcontrols is not None:
-        md_info.update_mdcontrols(mdcontrols)
+    md_info_path = _initial_gen_md_by_llamaparse(ctn_pathname, out_dir=out_dir, enforced_gen=enforced_gen, mdcontrols=mdcontrols)
+    if md_info_path is None:
+        logging.error(f"DCCC: failed {md_info_path} @_initial_gen_md_by_llamaparse")
+        return None, None 
 
     md_info_path = fix_content_ocr_by_gpt(md_info_path, src_step_num=0)
     if md_info_path is None:
@@ -75,12 +89,12 @@ def _do_content2md_convert_core(ctn_pathname,
 
     return final_md_path
 
-def do_content2md_convert(ctn_pathname, out_dir=None, skip_gen=False, mdcontrols=None):
+def do_content2md_convert(ctn_pathname, out_dir=None, enforced_gen=False, mdcontrols=None):
     final_md_path = None
     try:
         final_md_path = _do_content2md_convert_core(ctn_pathname,
                                                     out_dir=out_dir,
-                                                    skip_gen=skip_gen,
+                                                    enforced_gen=enforced_gen,
                                                     mdcontrols=mdcontrols)
     except Exception as ex:
         logging.exception(ex)
@@ -90,9 +104,9 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     #doc_pathname = "datasrc/test/raw_docs/AIGC时代的人力资源管理进化(徐刚).pdf"
-    doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
+    #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰部CAD外包框架服务合同.pdf"
-    #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
+    doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪ST2H项目低压线束设计技术服务合同（电子电器）.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪车架总成技术服务合同.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪铝大梁式车架及副车架设计外包中标通知书.pdf"
@@ -117,10 +131,9 @@ if __name__ == "__main__":
 
     out_dir = None
     mdcontrols = None
+    enforced_gen = False   
 
-    skip_gen = False   
-
-    final_md_path = do_content2md_convert(doc_pathname, out_dir=out_dir, skip_gen=skip_gen,  mdcontrols=mdcontrols)
+    final_md_path = do_content2md_convert(doc_pathname, out_dir=out_dir, enforced_gen=enforced_gen,  mdcontrols=mdcontrols)
     print(final_md_path)
 
     md_info = MdInfo(final_md_path)

@@ -36,15 +36,18 @@ def _save_final_md_from_pages(md_info):
         f.write(full_md_text)
     return pathname_step0
 
-def generate_markdown_llamaparse(md_info):
+def generate_markdown_llamaparse(md_info, need_normal_step=True, need_preminum_step=True):
     out_dir = md_info.get_out_dir()
     os.makedirs(out_dir, exist_ok=True)
 
-    json_result = gen_normal_pages(md_info)
+    json_result = None
+    if need_normal_step:
+        json_result = gen_normal_pages(md_info)
 
-    target_pages = md_info.get_md_control("mctl_lp_premium_pages", None)
-    if (target_pages is not None) and (len(target_pages) != 0):
-        gen_preminum_pages(md_info)
+    if need_preminum_step:
+        target_pages = md_info.get_md_control("mctl_lp_premium_pages", None)
+        if (target_pages is not None) and (len(target_pages) != 0):
+            gen_preminum_pages(md_info)
 
     pathname_step0 = _save_final_md_from_pages(md_info)
     md_info.add_step_into_md_info_mdflow(pathname_step0, actor="gen_md_llamaparse")
@@ -61,10 +64,13 @@ def generate_markdown_llamaparse(md_info):
 
 if __name__ == "__main__":
     setup_logger_handlers()
+
+    need_normal_step=True
+    need_preminum_step=True
     
     md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
 
     md_info = MdInfo(md_info_path)
 
-    ret = generate_markdown_llamaparse(md_info)
+    ret = generate_markdown_llamaparse(md_info, need_normal_step=need_normal_step, need_preminum_step=need_preminum_step)
     rich.print(ret)
