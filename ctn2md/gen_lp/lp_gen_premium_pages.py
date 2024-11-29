@@ -110,6 +110,12 @@ def n2u_restore_unique_name_premium(md_info, new_job_id):
         pathname_page = os.path.join(out_dir, fname_md_page)
         n2u_update_md_content(md_info, pathname_page, unique_job_id, new_job_id)
 
+    # update to reflex the new permium file
+    for ndx, fname_page in enumerate(md_info[MIFN.FNAMES_PAGES]):
+        for fname_p_page in md_info[MIFN.FNAMES_P_PAGES]:
+            if fname_page in fname_p_page:
+                md_info[ndx] = fname_p_page
+
 def gen_preminum_pages(md_info):
     doc_pathname = md_info.get_doc_pathname()
 

@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 import sys
-#import logging
+import logging
 import rich
 #import random
 import json
@@ -16,10 +16,11 @@ from ctn2md.utils_llm.llm_summarize_content import summarize_doc_keywords
 from ctn2md.utils.util_markdown import remove_comment
 from ctn2md.src.md_info_base import MdInfo, MIFN
 
-def summarize_content_by_gpt(md_info_path, src_step_num=None):
+def summarize_content_by_gpt(md_info_path, src_step_num=None, dst_step_num=None):
+    logging.info(f"##MDFLOW##: summarize_content_by_gpt started src_step_num:{src_step_num} dst_step_num:{dst_step_num}...")
     md_info = MdInfo(md_info_path)
 
-    pathname_src_step_md, _ = md_info.name_src_n_dst_step_pathname(src_step_num)
+    pathname_src_step_md, _ = md_info.name_src_n_dst_step_pathname(src_step_num, dst_step_num=dst_step_num)
     if pathname_src_step_md is None:
         raise ValueError(f"no {pathname_src_step_md}")
 
@@ -40,6 +41,7 @@ def summarize_content_by_gpt(md_info_path, src_step_num=None):
 
     md_info[MIFN.FNAME_FINAL_SUM] = os.path.basename(pathname_final_json_fname)
     md_info_path = md_info.save()
+    logging.info(f"##MDFLOW##: summarize_content_by_gpt ended.")
     return md_info_path
 
 if __name__ == "__main__":

@@ -146,10 +146,11 @@ def _update_markdown_heading_content(md_text, md_info, fhl_map):
     return new_md_text, unprocessed_heading_lines_map
 
 
-def fix_headings_plc_by_gpt(md_info_path, src_step_num=None):
+def fix_headings_plc_by_gpt(md_info_path, src_step_num=None, dst_step_num=None):
+    logging.info(f"##MDFLOW##: fix_headings_plc_by_gpt started src_step_num:{src_step_num} dst_step_num:{dst_step_num}...")
     md_info = MdInfo(md_info_path)
 
-    pathname_src_step_md, pathname_dst_step_md = md_info.name_src_n_dst_step_pathname(src_step_num)
+    pathname_src_step_md, pathname_dst_step_md = md_info.name_src_n_dst_step_pathname(src_step_num, dst_step_num=dst_step_num)
     if pathname_src_step_md is None or pathname_dst_step_md is None:
         raise ValueError(f"no {pathname_src_step_md} and {pathname_dst_step_md}")
 
@@ -188,6 +189,7 @@ def fix_headings_plc_by_gpt(md_info_path, src_step_num=None):
     md_info[MIFN.FHL_MAP_O2N] = o2n_map
     md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_headings_plc_by_gpt")
     md_info_path = md_info.save()
+    logging.info(f"##MDFLOW##: fix_headings_plc_by_gpt ended: model: {model}")
     return md_info_path 
 
 if __name__ == "__main__":

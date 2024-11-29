@@ -59,6 +59,7 @@ def _find_ofm_and_reason(md_text, md_info):
     return ofm, ofm_reason
 
 def fix_content_ocr_by_gpt(md_info_path, src_step_num=None, dst_step_num=None, ofm=None):
+    logging.info(f"##MDFLOW##: fix_content_ocr_by_gpt started src_step_num:{src_step_num} dst_step_num:{dst_step_num}...")
     md_info = MdInfo(md_info_path)
 
     pathname_src_step_md, pathname_dst_step_md = md_info.name_src_n_dst_step_pathname(src_step_num, dst_step_num=dst_step_num)
@@ -72,7 +73,6 @@ def fix_content_ocr_by_gpt(md_info_path, src_step_num=None, dst_step_num=None, o
     ofm_info = {"ofm": ofm,
                 "ofm_reason": ofm_reason}
     md_info[MIFN.OFM_INFO] = ofm_info
-
     logging.info(f"OFM: ofm:{ofm} ofm_reason: {ofm_reason}")
     if ofm == OFM.BY_CONTENT:
         md_text_fixed = _fix_ocr_by_proc_whole(md_text, md_info)
@@ -89,6 +89,7 @@ def fix_content_ocr_by_gpt(md_info_path, src_step_num=None, dst_step_num=None, o
     
     md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_content_ocr_by_gpt", extra=f"{ofm}:{ofm_reason}")
     md_info_path = md_info.save()
+    logging.info(f"##MDFLOW##: fix_content_ocr_by_gpt ended:  ofm:{ofm} ofm_reason: {ofm_reason}")
     return md_info_path
 
 if __name__ == "__main__":

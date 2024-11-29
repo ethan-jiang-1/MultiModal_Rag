@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 import sys
-#import logging
+import logging
 import rich
 #import random
 #import re
@@ -17,7 +17,7 @@ from ctn2md.src.md_info_base import MdInfo
 from ctn2md.gen_lp.gen_markdown_llamaparse import generate_markdown_llamaparse
 
 def gen_md_llamaparse(doc_pathname, out_dir):
-    #logging.info(parser)
+    logging.info(f"##MDFLOW##: gen_md_llamaparse started...")
 
     md_info = MdInfo(out_dir)
     md_info.set_gen_engine("llamaparse:lp")
@@ -25,6 +25,7 @@ def gen_md_llamaparse(doc_pathname, out_dir):
 
     md_info_path = generate_markdown_llamaparse(md_info)
 
+    logging.info(f"##MDFLOW##: gen_md_llamaparse end")
     return md_info_path
 
 if __name__ == "__main__":

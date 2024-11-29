@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 import sys
-#import logging
+import logging
 import rich
 #import random
 #import json
@@ -44,7 +44,11 @@ def _move_aux_files_pages(md_info, out_dir, aux_dir):
             dst_fname = dst_pathname.replace(out_dir + "/", "")
             fnames_pages_aux.append(dst_fname)
 
-    md_info[MIFN.FNAMES_PAGES] = fnames_pages_aux
+    # update to reflex the move
+    for ndx, fname_page in enumerate(md_info[MIFN.FNAMES_PAGES]):
+        for fname_page_aux in fnames_pages_aux:
+            if fname_page in fname_page_aux:
+                md_info[ndx] = fname_page_aux
 
 def _move_aux_files_images(md_info, out_dir, aux_dir):
     os.makedirs(aux_dir, exist_ok=True)
@@ -121,6 +125,7 @@ def _move_aux_files(md_info):
 
 
 def make_final_md(md_info_path):
+    logging.info(f"##MDFLOW##: make_final_md started...")
     md_info = MdInfo(md_info_path)
 
     move_aux_files = md_info.get_md_control("mctl_move_aux_files", True)
@@ -130,6 +135,7 @@ def make_final_md(md_info_path):
     pathname_final_md = _copy_last_step_as_final(md_info)
     md_info[MIFN.FNAME_FINAL_MD] = os.path.basename(pathname_final_md)
     md_info.save()
+    logging.info(f"##MDFLOW##: make_final_md ended: move_aux_files: {move_aux_files}.")
     return pathname_final_md
 
 if __name__ == "__main__":

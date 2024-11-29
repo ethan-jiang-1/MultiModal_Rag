@@ -21,6 +21,8 @@ from ctn2md.gen_lp.lp_gen_premium_pages import gen_preminum_pages
 def _save_final_md_from_pages(md_info):
     out_dir = md_info.get_out_dir()
     fnames_pages = md_info[MIFN.FNAMES_PAGES]
+    if len(fnames_pages) == 0:
+        raise ValueError(f"{MIFN.FNAMES_PAGES} is empty")
     pathname_step0 = md_info.name_step_pathname(0)
 
     full_md_text = ""

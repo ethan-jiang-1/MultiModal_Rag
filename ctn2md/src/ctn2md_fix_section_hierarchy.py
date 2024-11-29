@@ -334,6 +334,7 @@ def _extract_ordered_and_desc(line):
         return None, None
 
 def fix_section_heirarchy(md_info_path, src_step_num=None, dst_step_num=None):
+    logging.info(f"##MDFLOW##: fix_section_heirarchy started src_step_num:{src_step_num} dst_step_num:{dst_step_num}...")
     md_info = MdInfo(md_info_path)
 
     pathname_src_step_md, pathname_dst_step_md = md_info.name_src_n_dst_step_pathname(src_step_num, dst_step_num=dst_step_num)
@@ -357,6 +358,7 @@ def fix_section_heirarchy(md_info_path, src_step_num=None, dst_step_num=None):
     
     md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_section_heirarchy")
     md_info_path = md_info.save()
+    logging.info(f"##MDFLOW##: fix_section_heirarchy ended.")
     return md_info_path    
 
 
