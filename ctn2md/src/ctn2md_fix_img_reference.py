@@ -15,10 +15,9 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.utils_llm.llm_fix_vl_instruction import get_vllm_instruction
 from ctn2md.utils_llm.vllm_description import generate_image_description
-
+from ctn2md.src.md_info_base import MdInfo, MIFN
 
 # 常量定义
 MIN_WIDTH = 198   # 图像最小宽度（像素）

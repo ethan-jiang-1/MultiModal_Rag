@@ -1,7 +1,7 @@
 from whoosh.analysis import Tokenizer, Token
 import tiktoken
 
-class ChineseTokenizer(Tokenizer):
+class _ChineseTokenizer(Tokenizer):
     def __call__(self, value, positions=False, chars=False,
                  keeporiginal=False, removestops=True,
                  start_pos=0, start_char=0, mode='', **kwargs):
@@ -23,8 +23,8 @@ class ChineseTokenizer(Tokenizer):
             yield t
 
 
-def ChineseAnalyzer():
-    return ChineseTokenizer()
+def get_chinese_analyzer():
+    return _ChineseTokenizer()
 
 g_tk_encoding = None
 

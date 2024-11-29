@@ -12,10 +12,9 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.utils_llm.llm_summarize_content import summarize_doc_keywords
 from ctn2md.utils.util_markdown import remove_comment
-
+from ctn2md.src.md_info_base import MdInfo, MIFN
 
 def summarize_content_by_gpt(md_info_path, src_step_num=None):
     md_info = MdInfo(md_info_path)

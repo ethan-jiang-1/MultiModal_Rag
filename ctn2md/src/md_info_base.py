@@ -12,8 +12,8 @@ _load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from ctn2md.utils.util_ctn_type import CTN_TYPE
 from llama_parse.utils import Language
+from ctn2md.utils.util_ctn_type import CTN_TYPE
 
 _MIB_INFO_VER = "0.2.0"
 _MIB_SEP_FNAME_EXT = "___"
