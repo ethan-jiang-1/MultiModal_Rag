@@ -65,7 +65,7 @@ def generate_markdown_llamaparse(md_info, need_normal_step=True, need_preminum_s
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    need_normal_step=True
+    need_normal_step=False
     need_preminum_step=True
     
     md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
