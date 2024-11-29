@@ -53,6 +53,7 @@ def _gen_figure_info(md_info, doc_title, page_content, image_path):
     rich.print(resp_json)
     return resp_json
 
+# TODO: ethan_page_extraction,  we should forget the original page, but the find where the page is in current markdown (we better keep PL information)
 def _analyze_image_content(md_info, md_page_file=None, pathname_org_doc=None, image_path=None):
     """
     模拟多模态处理函数，分析图像的内容是否有意义。
@@ -176,7 +177,6 @@ def _filter_markdown_images(md_src_str, md_info):
     if MIFN.IMG_FIGURES not in md_info:
         md_info[MIFN.IMG_FIGURES] = {}
 
-    #TODO: as we have cached copy in md_info, cache...BlockingIOError
     def replace_image_reference(match):
         # 原始图像引用
         image_file = match.group(1)

@@ -13,10 +13,9 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.src.ctn2md_gen_md_llamaparse import gen_md_llamaparse
 from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_gpt
-from ctn2md.src.ctn2md_fix_content_ocr import fix_content_ocr_by_gpt
 from ctn2md.src.ctn2md_fix_img_reference import fix_img_reference_by_lvlm
 from ctn2md.src.ctn2md_fix_section_hierarchy import fix_section_heirarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_gpt
@@ -46,6 +45,13 @@ def initial_gen_md_by_llamaparse(ctn_pathname,
         md_info.update_mdcontrols(mdcontrols)
     return md_info_path
 
+def _reset_md_flow(md_info_path):
+    md_info = MdInfo(md_info_path)
+    dict_md_flow = md_info[MIFN.MDFLOW]
+    for key in list(dict_md_flow.keys()): 
+        if key != "0":
+            del dict_md_flow[key]
+    md_info.save()
 
 def _do_content2md_convert_core(ctn_pathname, 
                                 out_dir=None, 
@@ -61,27 +67,24 @@ def _do_content2md_convert_core(ctn_pathname,
         logging.error(f"DCCC: failed {md_info_path} @initial_gen_md_by_llamaparse")
         return None
 
-    md_info_path = fix_content_ocr_by_gpt(md_info_path, src_step_num=0)
-    if md_info_path is None:
-        logging.error(f"DCCC: failed {md_info_path} @fix_content_ocr_by_gpt")
-        return None
+    _reset_md_flow(md_info_path)
 
-    md_info_path = fix_headings_plc_by_gpt(md_info_path, src_step_num=1)
+    md_info_path = fix_headings_plc_by_gpt(md_info_path, src_step_num=0)
     if md_info_path is None:
         logging.error(f"DCCC: failed {md_info_path} @fix_headings_plc_by_gpt")
         return None 
 
-    md_info_path = fix_img_reference_by_lvlm(md_info_path, src_step_num=2)
+    md_info_path = fix_img_reference_by_lvlm(md_info_path, src_step_num=1)
     if md_info_path is None:
         logging.error(f"DCCC: failed {md_info_path} @fix_img_reference_by_lvlm")
         return None 
 
-    md_info_path = fix_section_heirarchy(md_info_path, src_step_num=3)
+    md_info_path = fix_section_heirarchy(md_info_path, src_step_num=2)
     if md_info_path is None:
         logging.error(f"DCCC: failed {md_info_path} @fix_section_heirarchy")
         return None
 
-    md_info_path = summarize_content_by_gpt(md_info_path, src_step_num=4)
+    md_info_path = summarize_content_by_gpt(md_info_path, src_step_num=3)
     if md_info_path is None:
         logging.error(f"DCCC: failed {md_info_path} @summarize_content_by_gpt")
         return None       

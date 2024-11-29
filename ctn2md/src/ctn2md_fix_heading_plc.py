@@ -180,6 +180,7 @@ def fix_headings_plc_by_gpt(md_info_path, src_step_num=None, dst_step_num=None):
     rich.print(o2n_map)
 
     #TODO: ethan_finial_md we need fix the page_md as well, as the final one are come from page_md
+    # do we really need make dependence on page_md? better get rid of such dependence
     md_text_new1, unprocessed_heading_lines_map = _update_markdown_heading_content(md_text_new, md_info, fhl_map)
     rich.print(unprocessed_heading_lines_map)
 
@@ -196,7 +197,7 @@ def fix_headings_plc_by_gpt(md_info_path, src_step_num=None, dst_step_num=None):
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    src_step_num = 1
+    src_step_num = 0
     md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
     #md_info_path = "_work/ctn2md_座椅STO间隙 P1/_info.json"
 
