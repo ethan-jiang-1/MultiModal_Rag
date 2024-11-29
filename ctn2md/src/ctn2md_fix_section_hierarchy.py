@@ -162,9 +162,10 @@ def _clear_section_files(output_dir):
     if not os.path.isdir(output_dir):
         return 
 
-    # 正则模式：匹配以 sec 开头，后跟 4 位或 5 位数字的文件名，并以 .md 结尾
-    pattern = re.compile(r'^xcs\d{4,5}\.md$')
-    
+    # 正则模式：匹配以 xcs 开头，接着后跟 4 位或 5 位数字的文件名，然后跟任何字符串，最后.md 结尾的文件名
+    #pattern = re.compile(r'^xcs\d{4,5}\.md$')
+    pattern = re.compile(r'^xcs\d{4,5}.*\.md$')
+
     names = os.listdir(output_dir)
     for name in names:
         # 检查是否符合正则模式
