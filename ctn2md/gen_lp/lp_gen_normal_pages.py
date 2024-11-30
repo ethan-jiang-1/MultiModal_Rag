@@ -65,6 +65,7 @@ def _dump_normal_md_page_from_lp_json_result(json_result, md_info):
         total_pages = len(pages)
         for page_ndx, page in enumerate(pages):
             p2m = Page2Markdown(job_id, page, total_pages, md_info)
+            p2m.analyse()
             fname_page = p2m.save_page_markdown()
             fnames_pages.append(fname_page)
     
@@ -147,8 +148,8 @@ def _dump_json_result(json_result, md_info):
     aux_folder = md_info.get_aux_dir()
     fname_json_result = os.path.join(aux_folder, "json_result_normal.json")
 
-    with open(fname_json_result, 'w', encoding="utf8") as f:
-        json.dump(json_result, f, indent=4)
+    with open(fname_json_result, 'w', encoding='utf-8') as f:
+        json.dump(json_result, f, ensure_ascii=False, indent=4)
     md_info[MIFN.LP_FNAME_JSON_RESULT_NORMAL] = fname_json_result
 
 def gen_normal_pages(md_info):

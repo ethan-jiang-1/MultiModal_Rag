@@ -106,7 +106,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰部CAD外包框架服务合同.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
-    #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪ST2H项目低压线束设计技术服务合同（电子电器）.pdf"
+    doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪ST2H项目低压线束设计技术服务合同（电子电器）.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪车架总成技术服务合同.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪铝大梁式车架及副车架设计外包中标通知书.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪驻场线束设计技术服务合同（电子电器）.pdf"
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/ai602-波士顿咨询：银行业生成式AI应用报告（2023）.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/AI未来十年_大模型产业落地的机遇与挑战_大数据研究院.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/YOU ONLY 2409.13695v1.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/LongRAG.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/LongRAG.pdf"
 
     out_dir = None
     mdcontrols = None
