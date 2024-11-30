@@ -13,9 +13,8 @@ if "./" not in sys.path:
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
-from ctn2md.src.md_process_plc import inject_plc_comment_to_page
-from ctn2md.gen_lp.lp_base import dump_images_ref_by_page, save_md_page
 from ctn2md.gen_lp.lp_unique_job import n2u_replace_fnames, n2u_update_md_content
+from ctn2md.gen_lp.lp_page2markdown import Page2Markdown
 
 def _get_llamaparse_premium(md_info):
     from llama_parse import LlamaParse
@@ -48,6 +47,8 @@ def _get_llamaparse_premium(md_info):
 
 def _dump_preminum_md_page_content_from_lp_json_result(json_result, md_info):
     out_dir = md_info.get_out_dir()
+    os.makedirs(out_dir, exist_ok=True)
+
     job_ids_set = set()
     file_paths_set = set()
     fnames_pages = []
@@ -64,18 +65,9 @@ def _dump_preminum_md_page_content_from_lp_json_result(json_result, md_info):
 
         total_pages = len(md_info[MIFN.FNAMES_PAGES])
         for page_ndx, page in enumerate(pages):
-            rich.print(page)
-            page_no = page.get("page", None)
-            md_page = page.get("md", None)
-            if md_page is not None:
-                md_page_modified = inject_plc_comment_to_page(md_page, page_no, total_pages, md_info)
-
-                md_imgs = dump_images_ref_by_page(page)
-
-                fname_page = save_md_page(out_dir, job_id, page_no, md_page_modified, md_imgs)
-                fnames_pages.append(fname_page)
-            else:
-                raise ValueError("what?")
+            p2m = Page2Markdown(job_id, page, total_pages, md_info)
+            fname_page = p2m.save_page_markdown()                
+            fnames_pages.append(fname_page)
     
     md_info[MIFN.FNAMES_P_PAGES] = fnames_pages
     cur_job_id = job_ids_set.pop()
