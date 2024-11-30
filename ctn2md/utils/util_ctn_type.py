@@ -3,6 +3,7 @@ class CTN_TYPE:
     PPT = "ppt"
     DOC = "doc"
     XLS = "xls"
+    AUTO = "auto"
     UNKNOWN = "unknown"
 
     @classmethod

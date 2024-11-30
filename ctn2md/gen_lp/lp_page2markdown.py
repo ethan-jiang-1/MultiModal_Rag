@@ -42,6 +42,7 @@ def save_md_page(out_dir, job_id, page_no, md_page, md_imgs):
         logging.exception(ex)
     return None
 
+# TODO: ethan_img_ref:   we removed fix_img_ref node,  and these logics should be absorb by Page2Markdown where the best place to have knowledge to get it right
 class Page2Markdown():
     def __init__(self, job_id, page, total_pages, md_info):
         self.job_id = job_id
@@ -57,7 +58,10 @@ class Page2Markdown():
 
         md_page_modified = inject_plc_comment_to_page(self.md_page, self.page_no, self.total_pages, self.md_info)
 
-        md_imgs = dump_images_ref_by_page(self.page)
+        md_imgs = ""
+        mctl_need_image_ref = self.md_info.get_md_control("mctl_need_image_ref", True)
+        if mctl_need_image_ref:
+            md_imgs = dump_images_ref_by_page(self.page)
 
         out_dir = self.md_info.get_out_dir()
         fname_page = save_md_page(out_dir, self.job_id, self.page_no, md_page_modified, md_imgs)

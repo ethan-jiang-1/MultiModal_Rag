@@ -194,13 +194,13 @@ def _filter_markdown_images(md_src_str, md_info):
     def replace_image_reference(match):
         # 原始图像引用
         image_file = match.group(1)
-        
+
+        md_info_figures = md_info.get(MIFN.IMG_FIGURES, None)        
         sel = False
         desp_txt_fname = os.path.join(out_dir, image_file + "_desp.txt")
         if os.path.isfile(desp_txt_fname):
-            img_figures = md_info.get(MIFN.IMG_FIGURES, None)
-            if img_figures is not None:
-                rfp = img_figures.get(image_file, None)
+            if md_info_figures is not None:
+                rfp = md_info_figures.get(image_file, None)
                 if rfp is not None:
                     relevance_score, figure_name, picture_discription = rfp
                     sel = True
@@ -211,7 +211,8 @@ def _filter_markdown_images(md_src_str, md_info):
             
             if relevance_score and figure_name_n_picture_discription:
                 figure_name, picture_discription = figure_name_n_picture_discription
-                md_info[MIFN.IMG_FIGURES][image_file] = (relevance_score, figure_name, picture_discription)
+                if md_info_figures is not None:
+                    md_info_figures[image_file] = (relevance_score, figure_name, picture_discription)
 
                 try:
                     with open(desp_txt_fname, "w+", encoding="utf8") as f:

@@ -60,14 +60,15 @@ class MIFN:  # Markdown Field Name
     MD_SECTIONS = "md_sections"
     FNAMES_SECS = "fnames_secs"
 
-    OFM_INFO = "ofm_info"
+    OFM_INFO = "ofm_info"  # TODO: should be removed later
     FNAME_FINAL_MD = "fname_final_md"
     FNAME_FINAL_SUM = "fname_final_sum"
 
 _DEFAULT_MDCONTROL = {
-    "mctl_ofm": OFM.BY_AUTO,
     "mctl_min_img_relevance_score": 0.2,
     "mctl_move_aux_files": True,
+    "mctl_need_image_ref": True,
+    "mctl_treat_doc_as_ctntype": "auto",
 
     "mctl_lp_langauge": Language.SIMPLIFIED_CHINESE,
     "mctl_lp_take_screenshot": False,

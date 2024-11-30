@@ -16,8 +16,7 @@ from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.src.ctn2md_gen_md_llamaparse import gen_md_llamaparse
 from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_gpt
-from ctn2md.src.ctn2md_fix_img_reference import fix_img_reference_by_lvlm
-from ctn2md.src.ctn2md_fix_section_hierarchy import fix_section_heirarchy
+from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_heirarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_gpt
 from ctn2md.src.make_final_md import make_final_md
 
@@ -74,17 +73,12 @@ def _do_content2md_convert_core(ctn_pathname,
         logging.error(f"DCCC: failed {md_info_path} @fix_headings_plc_by_gpt")
         return None 
 
-    md_info_path = fix_img_reference_by_lvlm(md_info_path, src_step_num=1)
+    md_info_path = inject_section_heirarchy(md_info_path, src_step_num=1)
     if md_info_path is None:
-        logging.error(f"DCCC: failed {md_info_path} @fix_img_reference_by_lvlm")
-        return None 
-
-    md_info_path = fix_section_heirarchy(md_info_path, src_step_num=2)
-    if md_info_path is None:
-        logging.error(f"DCCC: failed {md_info_path} @fix_section_heirarchy")
+        logging.error(f"DCCC: failed {md_info_path} @inject_section_heirarchy")
         return None
 
-    md_info_path = summarize_content_by_gpt(md_info_path, src_step_num=3)
+    md_info_path = summarize_content_by_gpt(md_info_path, src_step_num=2)
     if md_info_path is None:
         logging.error(f"DCCC: failed {md_info_path} @summarize_content_by_gpt")
         return None       

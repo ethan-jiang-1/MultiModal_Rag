@@ -47,7 +47,7 @@ def summarize_content_by_gpt(md_info_path, src_step_num=None, dst_step_num=None)
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    src_step_num = 4
+    src_step_num = 2
 
     #md_info_path = "_work/ctn2md_前后排座椅间距定义 P1/_info.json"
     md_info_path = "_work/ctn2md_高效沟通之黄金三角模型课程大纲/_info.json"
