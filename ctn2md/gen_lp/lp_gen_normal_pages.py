@@ -5,6 +5,7 @@ import logging
 import rich
 #import random
 import re
+import json
 import shutil
 
 load_dotenv()
@@ -141,6 +142,15 @@ def _n2u_restore_unique_name_normal_full(md_info):
         pathname_page = os.path.join(out_dir, fname_md_page)
         n2u_update_md_content(md_info, pathname_page, unique_job_id, new_job_id)
 
+def _dump_json_result(json_result, md_info):
+    #md_info[MIFN.LP_SCAN_INFO] = lp_scan_info
+    aux_folder = md_info.get_aux_dir()
+    fname_json_result = os.path.join(aux_folder, "json_result_normal.json")
+
+    with open(fname_json_result, 'w', encoding="utf8") as f:
+        json.dump(json_result, f, indent=4)
+    md_info[MIFN.LP_FNAME_JSON_RESULT_NORMAL] = fname_json_result
+
 def gen_normal_pages(md_info):
     parser = _get_llamaparse_normal(md_info)
     doc_pathname = md_info.get_doc_pathname()
@@ -154,6 +164,7 @@ def gen_normal_pages(md_info):
         raise ValueError(f"llamaparse json_result is empty for {doc_pathname}")
 
     _remove_misc_files(md_info)
+    _dump_json_result(json_result, md_info)
     _dump_images(parser, json_result, md_info)
     _dump_tables(parser, json_result, md_info)
  

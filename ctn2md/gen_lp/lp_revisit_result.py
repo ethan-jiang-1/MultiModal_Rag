@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 #import os
 import sys
-import logging
+#import logging
 import rich
 #import random
 #import json
@@ -205,27 +205,6 @@ def _get_llm_ocr_fix_method_from_scan_info(md_info):
             return OFM.BY_CONTENT, "llm_tklimit<(S)"
         return OFM.BY_PAGE, "??P1??"
 
-def _revisit_pages(md_info):
-    fnames_pages = md_info[MIFN.FNAMES_PAGES]
-    fnames_snps = md_info[MIFN.FNAMES_SNPS]
-    lp_scan_info = md_info[MIFN.LP_SCAN_INFO]
-
-    pages = lp_scan_info.get("pages", None)
-    if pages is None:
-        logging.warning("lp_scan_info['pages'] is None?!")
-        return False
-    for page in pages:
-        page_no = page["page_number"]
-        fname_page = fnames_pages[page_no - 1]
-        fname_snp = None
-        if fnames_snps is not None and len(fnames_snps) > page_no:
-            fname_snp = fnames_snps[page_no -1]
-        
-        print(fname_page)
-        print(fname_snp)
-
-        rich.print(page)
-    return True
 
 def post_scan_llamaparse_result(md_info, json_result=None):
     pathname_step0 = md_info.name_step_pathname(0)
@@ -234,17 +213,15 @@ def post_scan_llamaparse_result(md_info, json_result=None):
 
     if json_result is not None and len(json_result) > 0:
         json_result0_pages = json_result[0].get("pages", None)
-        lp_scan_info = {}
         if json_result0_pages is not None:
             doc_pathname = md_info.get_doc_pathname()
             doc_type = doc_pathname.split(".")[-1].lower()
-            lp_scan_info = _analyze_lp_scan_info(md_info, json_result0_pages, doc_type)
-        md_info[MIFN.LP_SCAN_INFO] = lp_scan_info
+            _analyze_lp_scan_info(md_info, json_result0_pages, doc_type)
 
     _cal_recommended_ofm_mode(md_info, md_text)
 
     #TODO, ethan_ocr_at_gen if a page found have strong ocr trace, we should rebuild the content by stitching 
-    _revisit_pages(md_info)
+    pass
 
 
 if __name__ == "__main__":

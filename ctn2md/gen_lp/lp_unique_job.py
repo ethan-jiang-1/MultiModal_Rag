@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 import sys
-#import logging
+import logging
 #import rich
 #import random
 #import re
@@ -24,11 +24,14 @@ def n2u_replace_fnames(md_info, mifn_fnames, unique_job_id, new_job_id):
 
             src_fname = os.path.join(out_dir, new_fname)
             dst_fname = os.path.join(out_dir, unique_fname)
-            if os.path.isfile(dst_fname):
-                os.unlink(dst_fname)
-    
-            shutil.move(src_fname, dst_fname)
-            md_info_mifn_fnames[ndx] = unique_fname
+            
+            if os.path.isfile(src_fname):
+                if os.path.isfile(dst_fname):
+                    os.unlink(dst_fname)
+                shutil.move(src_fname, dst_fname)
+                md_info_mifn_fnames[ndx] = unique_fname
+            else:
+                logging.error(f"NRF: {src_fname} not exist?")
             changed += 1
     return changed
 

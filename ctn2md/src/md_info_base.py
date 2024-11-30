@@ -15,7 +15,7 @@ if "./" not in sys.path:
 from llama_parse.utils import Language
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 
-_MIB_INFO_VER = "0.2.0"
+_MIB_INFO_VER = "0.3.0"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_DEFAULT_OUT_ROOT = "_work"
@@ -50,7 +50,9 @@ class MIFN:  # Markdown Field Name
     LP_JOB_ID_HISTORY = "lp_job_ids"
     LP_CUR_JOB_ID = "lp_cur_job_id"
     LP_CUR_JOB_METADATA = "lp_cur_job_metadata"
-    LP_SCAN_INFO = "lp_scan_info"
+    LP_SCAN_INFO = "lp_scan_info" # TODO: should be removed later
+    LP_FNAME_JSON_RESULT_NORMAL = "lp_fname_json_result_normal"
+    LP_FNAME_JSON_RESULT_PREMIUM = "lp_fname_json_result_premium"
 
     FHL_ORG = "fhl_org"
     FHL_MAP_O2N = "fhl_map_o2n"
@@ -195,10 +197,13 @@ class MdInfo:
         self.save()
 
     def get_out_dir(self):
+        os.makedirs(self._out_dir, exist_ok=True)
         return self._out_dir
 
     def get_aux_dir(self):
-        return os.path.join(self._out_dir, "_aux")
+        aux_dir = os.path.join(self._out_dir, "_aux")
+        os.makedirs(aux_dir, exist_ok=True)
+        return aux_dir
 
     def get_md_info_path(self):
         return self._md_info_path

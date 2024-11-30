@@ -4,7 +4,7 @@ import sys
 import logging
 import rich
 #import random
-#import json
+import json
 
 load_dotenv()
 
@@ -87,6 +87,15 @@ def _dump_tables_premium(parser, json_result, md_info):
     fnames_tbls = [os.path.basename(item["path"]) for item in tables]
     md_info[MIFN.FNAMES_P_TBLS] = fnames_tbls 
 
+def _dump_json_result_premium(json_result, md_info):
+    #md_info[MIFN.LP_SCAN_INFO] = lp_scan_info
+    aux_folder = md_info.get_aux_dir()
+    fname_json_result = os.path.join(aux_folder, "json_result_premium.json")
+
+    with open(fname_json_result, 'w', encoding="utf8") as f:
+        json.dump(json_result, f, indent=4)
+    md_info[MIFN.LP_FNAME_JSON_RESULT_PREMIUM] = fname_json_result
+
 def n2u_restore_unique_name_premium(md_info, new_job_id):
     unique_job_id = md_info.get_unique_job_id()
     if unique_job_id == new_job_id:
@@ -121,6 +130,7 @@ def gen_preminum_pages(md_info):
     if json_result is None or len(json_result) == 0:
         raise ValueError(f"json_result is empty for {doc_pathname}")
 
+    _dump_json_result_premium(json_result, md_info)
     _dump_tables_premium(parser, json_result, md_info)
     _dump_images_premium(parser, json_result, md_info)
     cur_job_id = _dump_preminum_md_page_content_from_lp_json_result(json_result, md_info)
