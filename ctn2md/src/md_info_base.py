@@ -50,9 +50,14 @@ class MIFN:  # Markdown Field Name
     LP_JOB_ID_HISTORY = "lp_job_ids"
     LP_CUR_JOB_ID = "lp_cur_job_id"
     LP_CUR_JOB_METADATA = "lp_cur_job_metadata"
+    
     LP_SCAN_INFO = "lp_scan_info" # TODO: should be removed later
+    OFM_INFO = "ofm_info"  # TODO: should be removed later
+
     LP_FNAME_JSON_RESULT_NORMAL = "lp_fname_json_result_normal"
     LP_FNAME_JSON_RESULT_PREMIUM = "lp_fname_json_result_premium"
+
+    LP_P2M_INFO = "lp_p2m_info"
 
     FHL_ORG = "fhl_org"
     FHL_MAP_O2N = "fhl_map_o2n"
@@ -62,7 +67,6 @@ class MIFN:  # Markdown Field Name
     MD_SECTIONS = "md_sections"
     FNAMES_SECS = "fnames_secs"
 
-    OFM_INFO = "ofm_info"  # TODO: should be removed later
     FNAME_FINAL_MD = "fname_final_md"
     FNAME_FINAL_SUM = "fname_final_sum"
 

@@ -155,6 +155,13 @@ class Page2Markdown():
 
         self.images_selected_embd = []
         self.images_selected_page = []
+        self.images_unselected_page = []
+
+        if MIFN.LP_P2M_INFO not in md_info:
+            md_info[MIFN.LP_P2M_INFO] = {}
+        if self.page_no not in md_info[MIFN.LP_P2M_INFO]:
+            md_info[MIFN.LP_P2M_INFO][self.page_no] = {}
+        self.md_info_cur_page = md_info[MIFN.LP_P2M_INFO][self.page_no] 
 
         self.analysed = False
         self.analyse()
@@ -189,6 +196,11 @@ class Page2Markdown():
         if self.is_ocr_page() and (self.ocr_all_confidence < 0.6):
             logging.warning(f"P2M: is_ocr_page: {self.is_ocr_page()} with low ocr_all_confidence:{self.ocr_all_confidence}")
 
+        self.md_info_cur_page["ocr_all_confidence"] = self.ocr_all_confidence
+        self.md_info_cur_page["ocr_text_ratio"] = self.ocr_text_ratio
+        self.md_info_cur_page["ocr_len_orc"] = len(self.ocr_all_text)
+        self.md_info_cur_page["ocr_len_full"] = len(all_page_text)
+
     def is_ocr_page(self):
         if self.ocr_text_ratio > 0.90:
             return True
@@ -197,20 +209,28 @@ class Page2Markdown():
     def analyse_images(self):
         self.images_selected_embd = []
         self.images_selected_page = []
+        self.images_unselected_page = []
         images = self.page.get("images", None)
         for image in images:
             name = image.get("name", None)
+            image_copy = image.copy()
+            ocr = image_copy.get("ocr", None)
+            if ocr is not None:
+                del image_copy["ocr"]
             full_name = f"{self.job_id}-{name}"
             val, reason = _select_meanful_image_by_size(full_name, self.md_info)
             if val:
-                image_copy = image.copy()
                 image_copy["name"] = full_name 
                 if name.find("img_p") != -1:
                     self.images_selected_embd.append(image_copy)
                 else:
                     self.images_selected_page.append(image_copy)
+            else:
+                image_copy["reason"] = reason
+                self.images_unselected_page.append(image_copy)
         logging.info(f"P2M: images_selected_embd: {len(self.images_selected_embd)}")
         logging.info(f"P2M: images_selected_page: {len(self.images_selected_page)}")
+        logging.info(f"P2M: images_unselected_page: {len(self.images_unselected_page)}")
 
     def analyse_images_embd(self):
         found = 0
@@ -222,7 +242,11 @@ class Page2Markdown():
             if closest_heading is not None:
                 image["closest_heading"] = closest_heading
                 found +=1 
-        logging.info(f"P2M: closet_heading founded: {found}")        
+        logging.info(f"P2M: closet_heading founded: {found}")
+
+        self.md_info_cur_page["images_selected_embd"] = self.images_selected_embd
+        self.md_info_cur_page["images_selected_page"] = self.images_selected_page
+        self.md_info_cur_page["images_unselected_page"] = self.images_unselected_page
 
     def save_page_markdown(self):
         #rich.print(self.page)
@@ -283,8 +307,8 @@ class Page2Markdown():
     def composite_all_not_positioned_ref_as_markdown(self):
         img_refs = []
         for image in self.images_selected_embd:
-            closed_heading = image.get("closed_heading", None)
-            if closed_heading is None or closed_heading["md"].startswith("#"):
+            closest_heading = image.get("closest_heading", None)
+            if closest_heading is None or closest_heading["md"].startswith("#"):
                 fname = image.get("name", None)
                 if fname is not None:
                     img_ref = self.get_img_ref_markdown(fname)
@@ -306,16 +330,19 @@ class Page2Markdown():
         # 2. 逐行加工处理
         processed_lines = []
         for line in lines:
+            new_line = None
             if line.startswith("#"):
                 for image in self.images_selected_embd:
-                    closed_heading = image.get("closed_heading", None)
-                    if closed_heading is not None:
-                        if line.startswith(closed_heading["md"]):
+                    closest_heading = image.get("closest_heading", None)
+                    if closest_heading is not None:
+                        if line.startswith(closest_heading["md"]):
                             fname = image.get("name", None)
                             if fname is not None:
-                                closed_heading["md"] = "* " + closed_heading["md"]
-                                line += " " + self.get_img_ref_markdown(fname)
-
+                                closest_heading["md"] = "* " + closest_heading["md"]
+                                new_line = line +" " + self.get_img_ref_markdown(fname)
+                                break
+            if new_line is not None:
+                line = new_line
             processed_lines.append(line)
 
         # 3. 将加工后的行重新合并为 Markdown 字符串
@@ -328,7 +355,9 @@ if __name__ == "__main__":
 
     #md_info_path = "_work/ctn2md_LongRAG/_info.json"
     #md_info_path = "_work/ctn2md_业绩案例_上汽内外饰DRE外包框架服务合同/_info.json"
-    md_info_path = "_work/ctn2md_业绩案例_上汽内外饰部CAD外包框架服务合同/_info.json"
+    #md_info_path = "_work/ctn2md_业绩案例_上汽内外饰部CAD外包框架服务合同/_info.json"
+    md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
+    page_ndx = 3
 
 
     md_info = MdInfo(md_info_path)
@@ -341,10 +370,12 @@ if __name__ == "__main__":
     json_result0 = json_result[0]
     job_id = md_info.get_unique_job_id()
     pages = json_result0["pages"]
-    page = pages[0]
+    page = pages[page_ndx]
     total_pages = len(pages)
 
     p2m = Page2Markdown(job_id, page, total_pages, md_info)
     p2m.analyse()
     fname_page = p2m.save_page_markdown()
+    md_info.save()
+    
     rich.print(fname_page)
