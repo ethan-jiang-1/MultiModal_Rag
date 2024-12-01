@@ -45,6 +45,7 @@ def _filter_markdown_heading_plc(md_text, md_info):
         if len(line.strip()) != 0:
             if first_line_no_heading is None:
                 if not match:
+                    #TODO: ethan_plc has to be get down in gen pharse
                     plc_comment = PLC_COMMENT.format(current_page=1,
                                                      total_pages=-1,
                                                      line_number=ndx+1,

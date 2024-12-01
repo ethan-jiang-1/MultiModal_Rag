@@ -70,6 +70,7 @@ class MIFN:  # Markdown Field Name
     FNAME_FINAL_MD = "fname_final_md"
     FNAME_FINAL_SUM = "fname_final_sum"
 
+#TODO: ethan_mdctrl goes to different .jso and load into _info.json 
 _DEFAULT_MDCONTROL = {
     "mctl_min_img_relevance_score": 0.2,
     "mctl_move_aux_files": True,
