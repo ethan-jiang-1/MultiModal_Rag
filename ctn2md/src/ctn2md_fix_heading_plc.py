@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import sys
 import logging
 import rich
-import re
+#import re
 #import random
 #import json
 #import json_repair
@@ -17,7 +17,7 @@ if "./" not in sys.path:
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.utils_llm.llm_fix_heading_lvl import fix_heading_lvl_markdown
 from ctn2md.src.md_info_base import MdInfo, MIFN
-from ctn2md.src.md_process_plc import inject_plc_comment_to_page, separate_heading_and_plc_comment, PLC_COMMENT
+from ctn2md.src.md_process_plc import inject_plc_comment_to_page, separate_heading_and_plc_comment, get_all_normalized_headings_with_plc_info
 
 def _filter_markdown_heading_plc(md_text, md_info):
     """
@@ -31,54 +31,19 @@ def _filter_markdown_heading_plc(md_text, md_info):
         str: 规整化后的 Markdown 字符串。
     """
 
-    #out_dir = md_info.get_out_dir()
-    # 定义正则匹配 Markdown Heading 的模式
-    heading_pattern = r"^(#{1,6})(\s*)(.+)$"
-    
-    heading_lines = []
-    # 规整化处理 Markdown 文本
-    normalized_lines = []
-    org_lines = md_text.splitlines()
-    first_line_no_heading = None
-    for ndx, line in enumerate(org_lines):
-        match = re.match(heading_pattern, line)
-        if len(line.strip()) != 0:
-            if first_line_no_heading is None:
-                if not match:
-                    #TODO: ethan_plc has to be get down in gen pharse
-                    plc_comment = PLC_COMMENT.format(current_page=1,
-                                                     total_pages=-1,
-                                                     line_number=ndx+1,
-                                                     total_lines=-1,
-                                                     content_char_count=-1,
-                                                     total_char_count=-1)
-                    first_line_no_heading = "## " + first_line_no_heading + " " + plc_comment
-                    match = re.match(heading_pattern, line)
-
-        if match:
-            first_line_no_heading = ""
-            # 提取 # 符号 和 heading 的内容
-            hashes = match.group(1)
-            content = match.group(3).strip()  # 去掉多余的空格
-            normalized_line = f"{hashes} {content}"
-            normalized_lines.append(normalized_line)
-
-            heading_line, plc_comment = separate_heading_and_plc_comment(normalized_line)
-            heading_lines.append((heading_line, plc_comment))
-        else:
-            normalized_lines.append(line)
+    normalized_lines, heading_n_plc_lines, first_line_no_heading = get_all_normalized_headings_with_plc_info(md_text)
 
     # 生成规整化的 Markdown 内容
     normalized_md = "\n".join(normalized_lines)
 
     heading_first_line, plc_comment_first_line = "", ""
     if first_line_no_heading is not None and len(first_line_no_heading) > 0:
-        heading_first_line, plc_comment_first_line = separate_heading_and_plc_comment(normalized_line)
+        heading_first_line, plc_comment_first_line = separate_heading_and_plc_comment(first_line_no_heading)
 
     md_info[MIFN.FHL_ORG] = {"org_doc_title": md_info.get_doc_title(),
                              "org_doc_type": md_info.get_ctn_type(),
                              "org_first_line": (heading_first_line, plc_comment_first_line),
-                             "org_heading_lines": heading_lines}
+                             "org_heading_lines": heading_n_plc_lines}
     md_info.save()
                 
     return normalized_md

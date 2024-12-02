@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 #import os
 import sys
 #import logging
-#import rich
+import rich
 #import random
 import re
 
@@ -24,28 +24,29 @@ if "./" not in sys.path:
         - X: 当前标题以下、下一个标题以上的字符数。
         - Y: 当前页面的总字符数，包含所有非图片内容。
 """
-PLC_COMMENT = """<!-- PLC: Page:{current_page}/{total_pages}, Line:{line_number}/{total_lines}, Chars:{content_char_count}/{total_char_count} -->"""
+
+# TODO ethan_plc: no exposure 
+_PLC_COMMENT = """<!-- PLC: Page:{current_page}/{total_pages}, Line:{line_number}/{total_lines}, Chars:{content_char_count}/{total_char_count} -->"""
 
 
-def remove_plc_comment(line):
+def _extract_plc_comment(line):
     """
-    移除行中的 <!-- PLC: ... --> 注释。
-    """
-    return re.sub(r'<!-- PLC: .*? -->', '', line).strip()
-
-def extract_plc_str_comment(line):
-    """
-    提取 Markdown 行中 <!-- PLC: XXX --> 的字符串内容。
+    提取 Markdown 行中 <!-- PLC: ... --> 的结构化内容。
 
     参数:
         line (str): Markdown 文本行。
 
     返回:
-        str or None: 提取的字符串内容 (XXX)，如果没有 PLC 注释，返回 None。
+        dict or None: 提取的内容，返回字典包含 `Page`、`Line` 和 `Chars` 信息。
+                      如果行中没有 PLC 注释，返回 None。
     """
-    match = re.search(r'<!-- PLC: (.*?) -->', line)
+    match = re.search(r'<!-- PLC: Page:(\d+)/(\d+), Line:(\d+)/(\d+), Chars:(\d+)/(\d+) -->', line)
     if match:
-        return match.group(1).strip()
+        return {
+            "Page": {"current": int(match.group(1)), "total": int(match.group(2))},
+            "Line": {"current": int(match.group(3)), "total": int(match.group(4))},
+            "Chars": {"current": int(match.group(5)), "total": int(match.group(6))}
+        }
     return None
 
 def separate_heading_and_plc_comment(line):
@@ -68,27 +69,6 @@ def separate_heading_and_plc_comment(line):
         plc_comment = match.group(3).strip() if match.group(3) else None  # 提取 PLC 注释内容
         return heading, plc_comment
     return line, ""  # 如果不匹配，返回原始行和 None
-
-def extract_plc_comment(line):
-    """
-    提取 Markdown 行中 <!-- PLC: ... --> 的结构化内容。
-
-    参数:
-        line (str): Markdown 文本行。
-
-    返回:
-        dict or None: 提取的内容，返回字典包含 `Page`、`Line` 和 `Chars` 信息。
-                      如果行中没有 PLC 注释，返回 None。
-    """
-    match = re.search(r'<!-- PLC: Page:(\d+)/(\d+), Line:(\d+)/(\d+), Chars:(\d+)/(\d+) -->', line)
-    if match:
-        return {
-            "Page": {"current": int(match.group(1)), "total": int(match.group(2))},
-            "Line": {"current": int(match.group(3)), "total": int(match.group(4))},
-            "Chars": {"current": int(match.group(5)), "total": int(match.group(6))}
-        }
-    return ""
-
 
 def inject_plc_comment_to_page(md_page, page_number, total_pages, md_info):
     """
@@ -147,7 +127,7 @@ def inject_plc_comment_to_page(md_page, page_number, total_pages, md_info):
         # 注释信息
         line_number = lines.index(title) + 1
         injected_title = f"{title} "
-        injected_title += PLC_COMMENT.format(current_page=page_number,
+        injected_title += _PLC_COMMENT.format(current_page=page_number,
                                              total_pages=total_pages,
                                              line_number=line_number,
                                              total_lines=total_lines,
@@ -158,3 +138,60 @@ def inject_plc_comment_to_page(md_page, page_number, total_pages, md_info):
         result_lines.extend(content_lines)
 
     return '\n'.join(result_lines)
+
+
+def get_all_normalized_headings_with_plc_info(md_text):
+    # 定义正则匹配 Markdown Heading 的模式
+    heading_pattern = r"^(#{1,6})(\s*)(.+)$"
+
+    heading_n_plc_lines = []
+    # 规整化处理 Markdown 文本
+    normalized_lines = []
+
+    org_lines = md_text.splitlines()
+    first_line_no_heading = None
+    for ndx, line in enumerate(org_lines):
+        match = re.match(heading_pattern, line)
+        if len(line.strip()) != 0:
+            if first_line_no_heading is None:
+                if not match:
+                    plc_comment = _PLC_COMMENT.format(current_page=1,
+                                                      total_pages=-1,
+                                                      line_number=-1,
+                                                      total_lines=-1,
+                                                      content_char_count=-1,
+                                                      total_char_count=-1)
+                    first_line_no_heading = "## " + line.strip() + " " + plc_comment
+                    match = re.match(heading_pattern, line)
+
+        if match:
+            if first_line_no_heading is None:
+                first_line_no_heading = ""
+
+            # 提取 # 符号 和 heading 的内容
+            hashes = match.group(1)
+            content = match.group(3).strip()  # 去掉多余的空格
+            normalized_line = f"{hashes} {content}"
+            normalized_lines.append(normalized_line)
+
+            heading_line, plc_comment = separate_heading_and_plc_comment(normalized_line)
+            heading_n_plc_lines.append((heading_line, plc_comment))
+        else:
+            normalized_lines.append(line)
+
+    return normalized_lines, heading_n_plc_lines, first_line_no_heading
+
+
+if __name__ == "__main__":
+    md_path_name = "_work/md_samples/深度学习在视电阻率快速反演中的研究___pdf_s0.md"
+
+    with open(md_path_name, 'r') as f:
+        md_text = f.read()
+
+    #md_text_plc = inject_plc_comment_to_page()
+    #print(md_text)
+
+    normalized_lines, heading_n_plc_lines, first_line_no_heading = get_all_normalized_headings_with_plc_info(md_text)
+    rich.print("heading_n_plc_lines", heading_n_plc_lines)
+    rich.print("first_line_no_heading", first_line_no_heading)
+
