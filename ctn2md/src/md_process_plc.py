@@ -70,6 +70,16 @@ def separate_heading_and_plc_comment(line):
         return heading, plc_comment
     return line, ""  # 如果不匹配，返回原始行和 None
 
+def _count_chars(text):
+    """
+    统计文本中的字符数，忽略 Markdown 特殊符号和图片引用。
+    """
+    # 移除 Markdown 特殊符号和图片引用
+    text = re.sub(r'[>#*_\-`~\[\]]', '', text)  # 去掉 Markdown 符号
+    text = re.sub(r'!\[.*?\]\(.*?\)', '', text)  # 去掉图片引用
+    text = re.sub(r'\s+', '', text)             # 去掉空白符
+    return len(text)
+
 def inject_plc_comment_to_page(md_page, page_number, total_pages, md_info):
     """
     注入统计信息到 Markdown 文档标题行。
@@ -79,15 +89,6 @@ def inject_plc_comment_to_page(md_page, page_number, total_pages, md_info):
     :param md_info: dict, 包含整个文档的信息（例如标题等，暂未使用）
     :return: str, 注入统计信息后的 Markdown 文档内容
     """
-    def count_chars(text):
-        """
-        统计文本中的字符数，忽略 Markdown 特殊符号和图片引用。
-        """
-        # 移除 Markdown 特殊符号和图片引用
-        text = re.sub(r'[>#*_\-`~\[\]]', '', text)  # 去掉 Markdown 符号
-        text = re.sub(r'!\[.*?\]\(.*?\)', '', text)  # 去掉图片引用
-        text = re.sub(r'\s+', '', text)             # 去掉空白符
-        return len(text)
 
     # 分割 Markdown 文档为行，并确定总行数
     lines = md_page.split('\n')
@@ -114,7 +115,7 @@ def inject_plc_comment_to_page(md_page, page_number, total_pages, md_info):
 
     # 计算总字符数
     total_char_count = sum(
-        count_chars(line) for line in lines
+        _count_chars(line) for line in lines
     )
 
     # 结果行列表
@@ -122,7 +123,7 @@ def inject_plc_comment_to_page(md_page, page_number, total_pages, md_info):
     for section in sections:
         title = section["title"]
         content_lines = section["lines"]
-        content_char_count = sum(count_chars(line) for line in content_lines)
+        content_char_count = sum(_count_chars(line) for line in content_lines)
 
         # 注释信息
         line_number = lines.index(title) + 1
@@ -140,7 +141,26 @@ def inject_plc_comment_to_page(md_page, page_number, total_pages, md_info):
     return '\n'.join(result_lines)
 
 
-def get_all_normalized_headings_with_plc_info(md_text):
+def _find_first_plc_info_no_heading(heading_pattern, org_lines):
+    lines_without_heading = []
+    first_plc_line_ndx = None
+    first_plc_info_no_heading = None
+    for ndx, line in enumerate(org_lines):
+        match = re.match(heading_pattern, line)
+        if not match:
+            lines_without_heading.append(line)
+            if len(line.strip()) != 0:
+                if first_plc_line_ndx is None:
+                    first_plc_line_ndx = ndx
+        else:
+            first_plc_info = _extract_plc_comment(line)
+            first_plc_info_no_heading = first_plc_info.copy()
+            first_plc_info_no_heading["Line"] = {"current": first_plc_line_ndx, "total":len(lines_without_heading)}
+            first_plc_info_no_heading["Chars"] = {"current": _count_chars("".join(lines_without_heading)), "total":_count_chars("".join(lines_without_heading))}
+            return first_plc_info_no_heading
+    return None 
+
+def get_all_normalized_headings_with_plc_info(md_text, fix_first_line_no_heading=True):
     # 定义正则匹配 Markdown Heading 的模式
     heading_pattern = r"^(#{1,6})(\s*)(.+)$"
 
@@ -149,20 +169,27 @@ def get_all_normalized_headings_with_plc_info(md_text):
     normalized_lines = []
 
     org_lines = md_text.splitlines()
+
+    first_plc_info_nh = None
+    if fix_first_line_no_heading:
+        first_plc_info_nh = _find_first_plc_info_no_heading(heading_pattern, org_lines)
+  
     first_line_no_heading = None
     for ndx, line in enumerate(org_lines):
         match = re.match(heading_pattern, line)
         if len(line.strip()) != 0:
             if first_line_no_heading is None:
                 if not match:
-                    plc_comment = _PLC_COMMENT.format(current_page=1,
-                                                      total_pages=-1,
-                                                      line_number=-1,
-                                                      total_lines=-1,
-                                                      content_char_count=-1,
-                                                      total_char_count=-1)
-                    first_line_no_heading = "## " + line.strip() + " " + plc_comment
-                    match = re.match(heading_pattern, line)
+                    if first_plc_info_nh is not None:
+                        plc_comment = _PLC_COMMENT.format(current_page=1,
+                                                          total_pages=first_plc_info_nh["Page"]["total"],
+                                                          line_number=first_plc_info_nh["Line"]["current"],
+                                                          total_lines=first_plc_info_nh["Line"]["total"],
+                                                          content_char_count=first_plc_info_nh["Chars"]["total"],
+                                                          total_char_count=first_plc_info_nh["Chars"]["total"])
+                        first_line_no_heading = "## " + line.strip() + " " + plc_comment
+                        line = first_line_no_heading
+                        match = re.match(heading_pattern, line)
 
         if match:
             if first_line_no_heading is None:
@@ -192,6 +219,7 @@ if __name__ == "__main__":
     #print(md_text)
 
     normalized_lines, heading_n_plc_lines, first_line_no_heading = get_all_normalized_headings_with_plc_info(md_text)
+    rich.print(normalized_lines[:20])
     rich.print("heading_n_plc_lines", heading_n_plc_lines)
     rich.print("first_line_no_heading", first_line_no_heading)
 
