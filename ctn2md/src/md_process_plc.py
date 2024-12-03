@@ -100,21 +100,30 @@ def inject_plc_comment_to_page(md_page, page_number, total_pages, md_info):
     # 使用正则提取标题和其内容范围
     sections = []
     current_section = {"title": None, "lines": []}
+    first_section_no_heading = None 
 
+    has_heading = False
     for line in lines:
         if re.match(r'^#+\s', line):  # 如果是标题行
+            has_heading = True
             # 如果当前有积累的标题范围，保存
             if current_section["title"]:
                 sections.append(current_section)
+
+            if current_section["title"] is None:
+                if len(current_section["lines"]) > 0:
+                    first_section_no_heading = current_section
             # 开始一个新的标题范围
             current_section = {"title": line, "lines": []}
         else:
             # 非标题行，归属于当前标题范围
             current_section["lines"].append(line)
-
     # 最后一个标题范围
     if current_section["title"]:
         sections.append(current_section)
+
+    if not has_heading:
+        first_section_no_heading = current_section
 
     # 计算总字符数
     total_char_count = sum(
@@ -123,6 +132,9 @@ def inject_plc_comment_to_page(md_page, page_number, total_pages, md_info):
 
     # 结果行列表
     result_lines = []
+    if first_section_no_heading is not None:
+        result_lines.extend(first_section_no_heading["lines"])
+
     for sec_ndx, section in enumerate(sections):
         title = section["title"]
         content_lines = section["lines"]

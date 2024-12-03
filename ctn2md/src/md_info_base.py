@@ -6,6 +6,7 @@ import rich
 #import random
 import json
 import re
+import json_repair
 
 _load_dotenv()
 
@@ -18,6 +19,7 @@ from ctn2md.utils.util_ctn_type import CTN_TYPE
 _MIB_INFO_VER = "0.4.0"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
+_MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
 _MIB_DEFAULT_OUT_ROOT = "_work"
 
 
@@ -64,7 +66,6 @@ class MIFN:  # Markdown Field Name
     FNAME_FINAL_MD = "fname_final_md"
     FNAME_FINAL_SUM = "fname_final_sum"
 
-#TODO: ethan_mdctrl goes to different .jso and load into _info.json 
 _DEFAULT_MDCONTROL = {
     "mctl_min_img_relevance_score": 0.2,
     "mctl_move_aux_files": True,
@@ -87,6 +88,7 @@ class MdInfo:
             self._md_info_path = os.path.join(md_info_path_or_out_dir, _MIB_FNAME_MD_INFO)
         else:
             self._md_info_path = os.path.join(os.path.dirname(md_info_path_or_out_dir), _MIB_FNAME_MD_INFO)
+        self._md_info_control_path = os.path.join(os.path.dirname(self._md_info_path), _MIB_FNAME_MD_CONTROL_INFO)
 
         self._out_dir = os.path.dirname(self._md_info_path)
         os.makedirs(self._out_dir, exist_ok=True)
@@ -155,7 +157,6 @@ class MdInfo:
 
     def load(self):
         if os.path.isfile(self._md_info_path):
-            import json_repair
             with open(self._md_info_path, 'r', encoding='utf-8') as file:
                 data = file.read()
             self._info= json_repair.repair_json(data, return_objects=True, ensure_ascii=True)
@@ -176,8 +177,6 @@ class MdInfo:
 
         if MIFN.MDFLOW not in self._info:
             self._info[MIFN.MDFLOW] = {}
-        if MIFN.MDCONTROL not in self._info:
-            self._info[MIFN.MDCONTROL] = _DEFAULT_MDCONTROL
         if MIFN.MDPARAMS not in self._info:
             self._info[MIFN.MDPARAMS] = {}
 
@@ -187,12 +186,25 @@ class MdInfo:
         for fnames in [MIFN.FNAMES_P_PAGES, MIFN.FNAMES_P_IMGS, MIFN.FNAMES_P_TBLS,MIFN.FNAMES_P_SNPS]:
             if fnames not in self._info:
                 self._info[fnames] = []
+
+        self._md_control = self._load_md_control()
         self.save()
+
+    def _load_md_control(self):
+        if not os.path.isfile(self._md_info_control_path):
+            json_str = json.dumps(_DEFAULT_MDCONTROL, indent=4, ensure_ascii=False)
+            with open(self._md_info_control_path, 'w+', encoding='utf8') as f:
+                f.write(json_str) 
+
+        with open(self._md_info_control_path, 'r', encoding='utf-8') as file:
+            data = file.read()
+        md_control = json_repair.repair_json(data, return_objects=True, ensure_ascii=False)    
+        return md_control
 
     def update_mdcontrols(self, mdcontrols):
         if isinstance(mdcontrols, dict):
             for key, val in mdcontrols.items():
-                self._info[MIFN.MDCONTROL][key] = val
+                self._md_control[key] = val
         self.save()
 
     def get_out_dir(self):
@@ -229,15 +241,9 @@ class MdInfo:
     
     def get_doc_title(self):
         return self.extract_doc_title(self.get(MIFN.PATHNAME_ORG_DOC))
-
-    def set_md_contrl(self, mdctrl_name, val):
-        if isinstance(mdctrl_name, str):
-            self._info[MIFN.MDCONTROL][mdctrl_name] = val
-            return val 
-        return None 
     
     def get_md_control(self, mdctrl_name, default_val):
-        return self._info[MIFN.MDCONTROL].get(mdctrl_name, default_val)
+        return self._md_control.get(mdctrl_name, default_val)
 
     def set_md_params(self, mdparam_name, val):
         if isinstance(mdparam_name, str):

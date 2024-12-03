@@ -16,6 +16,10 @@ from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lp.lp_unique_job import n2u_replace_fnames, n2u_update_md_content
 from ctn2md.gen_lp.lp_page2markdown import Page2Markdown
 
+LP_PARSE_INSTRUCT = """The output needs to be formatted as Markdown, with required heading lines. 
+The output should be in the original language of the article (Chinese or English). 
+If tables are detected, they should be distinctly identified within the Markdown flow."""
+
 def _get_llamaparse_premium(md_info):
     from llama_parse import LlamaParse
     from llama_parse.utils import Language
@@ -41,7 +45,9 @@ def _get_llamaparse_premium(md_info):
         take_screenshot=take_screenshot,
         disable_ocr=disable_ocr,
         premium_mode=True,
-        target_pages=target_pages
+        target_pages=target_pages,
+        parsing_instruction=LP_PARSE_INSTRUCT,
+        is_formatting_instruction=True
     )
     return parser
 
