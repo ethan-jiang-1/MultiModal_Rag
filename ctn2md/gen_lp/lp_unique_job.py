@@ -31,7 +31,10 @@ def n2u_replace_fnames(md_info, mifn_fnames, unique_job_id, new_job_id):
                 shutil.move(src_fname, dst_fname)
                 md_info_mifn_fnames[ndx] = unique_fname
             else:
-                logging.error(f"NRF: {src_fname} not exist?")
+                if not os.path.isfile(dst_fname):
+                    logging.error(f"NRF: {src_fname} not exist? and {dst_fname} not exist")
+                else:
+                    logging.error(f"NRF: {src_fname} not exist")
             changed += 1
     return changed
 

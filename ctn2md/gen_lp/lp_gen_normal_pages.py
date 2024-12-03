@@ -73,9 +73,11 @@ def _dump_normal_md_page_from_lp_json_result(json_result, md_info):
     md_info[MIFN.LP_CUR_JOB_ID] = cur_job_id
     md_info[MIFN.LP_CUR_JOB_METADATA] = job_metadata
     md_info[MIFN.FNAMES_PAGES] = fnames_pages
+
     if MIFN.LP_JOB_ID_HISTORY not in md_info:
         md_info[MIFN.LP_JOB_ID_HISTORY] = []
-    md_info[MIFN.LP_JOB_ID_HISTORY].append(cur_job_id)
+    if cur_job_id not in md_info[MIFN.LP_JOB_ID_HISTORY]:
+        md_info[MIFN.LP_JOB_ID_HISTORY].append(cur_job_id)
     md_info.save()
 
 def _remove_misc_files(md_info):
@@ -105,7 +107,16 @@ def _remove_misc_files(md_info):
         files = sorted(files)
         for file_name in files:
             src_path = os.path.join(root, file_name)
-            if uuid_pattern.match(file_name) or xcs_pattern.match(file_name):  # 匹配任意一个模式
+            move = False
+            if xcs_pattern.match(file_name):  # 匹配任意一个模式
+                move = True 
+            elif uuid_pattern.match(file_name):
+                move = True
+                if file_name in md_info[MIFN.FNAMES_IMGS]:
+                    move = False
+                elif file_name in md_info[MIFN.FNAMES_SNPS]:
+                    move = False
+            if move:
                 try:
                     dst_path = os.path.join(aux_dir, os.path.basename(src_path))
                     shutil.move(src_path, dst_path)
@@ -153,21 +164,27 @@ def _dump_json_result(json_result, md_info):
 
 def gen_normal_pages(md_info):
     parser = _get_llamaparse_normal(md_info)
-    doc_pathname = md_info.get_doc_pathname()
 
-    documents = parser.load_data(doc_pathname)
-    if documents is None or len(documents) == 0:
-        raise ValueError(f"llamaparse documents is empty for {doc_pathname}")
+    fname_json_result = md_info.get(MIFN.LP_FNAME_JSON_RESULT_NORMAL, None)
+    if fname_json_result is not None and os.path.isfile(fname_json_result):
+        with open(fname_json_result, "r", encoding="utf-8") as f:
+            json_result = json.load(f)
+    else:
+        doc_pathname = md_info.get_doc_pathname()
+        documents = parser.load_data(doc_pathname)
+        if documents is None or len(documents) == 0:
+            raise ValueError(f"llamaparse documents is empty for {doc_pathname}")
 
-    json_result = parser.get_json_result(doc_pathname)
-    if json_result is None or len(json_result) == 0:
-        raise ValueError(f"llamaparse json_result is empty for {doc_pathname}")
+        json_result = parser.get_json_result(doc_pathname)
+        if json_result is None or len(json_result) == 0:
+            raise ValueError(f"llamaparse json_result is empty for {doc_pathname}")
+        
+        _dump_images(parser, json_result, md_info)
+        _dump_tables(parser, json_result, md_info)
 
     _remove_misc_files(md_info)
     _dump_json_result(json_result, md_info)
-    _dump_images(parser, json_result, md_info)
-    _dump_tables(parser, json_result, md_info)
- 
+
     _dump_normal_md_page_from_lp_json_result(json_result, md_info)
 
     md_info.save()

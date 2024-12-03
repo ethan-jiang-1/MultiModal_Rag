@@ -16,7 +16,7 @@ from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lp.lp_revisit_result import post_scan_llamaparse_result
 from ctn2md.gen_lp.lp_gen_normal_pages import gen_normal_pages
-from ctn2md.gen_lp.lp_gen_premium_pages import gen_preminum_pages
+from ctn2md.gen_lp.lp_gen_premium_pages import gen_premium_pages
    
 def _save_final_md_from_pages(md_info):
     out_dir = md_info.get_out_dir()
@@ -49,7 +49,7 @@ def generate_markdown_llamaparse(md_info, need_normal_step=True, need_preminum_s
     if need_preminum_step:
         target_pages = md_info.get_md_control("mctl_lp_premium_pages", None)
         if (target_pages is not None) and (len(target_pages) != 0):
-            gen_preminum_pages(md_info)
+            gen_premium_pages(md_info)
 
     pathname_step0 = _save_final_md_from_pages(md_info)
     md_info.add_step_into_md_info_mdflow(pathname_step0, actor="gen_md_llamaparse")

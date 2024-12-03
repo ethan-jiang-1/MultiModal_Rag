@@ -315,14 +315,10 @@ Reason: 一级标题“单词1”无实际引导意义且孤立存在，降级�
 ### 输出要求
 
 #### 分步处理：
-reasoning, initial_reasoning_summary 和 optimized_reasoning_summary 填充用简短的英语。 其他字段按合理的符合预期的语言文字。
-初步阶段填充 initial_heading_lines_map 和 initial_reasoning_summary。
-优化阶段填充 optimized_heading_lines_map 和 optimized_reasoning_summary。
-一体化输出：
-输出包含初步结果和优化结果，便于追溯和检查每步的逻辑。
+先输出包含初步结果，然后再输出优化结果。
 #### 逻辑一致性：
 确保 initial_heading_lines_map 的结果能够合理引导优化阶段的调整。
-optimized_heading_lines_map 是在初步结果基础上的优化。
+确保 optimized_heading_lines_map 是在初步结果 initial_heading_lines_map 基础上的优化。
 
 ### 输出格式，生成结果需符合以下JSON 结构：
 
@@ -335,7 +331,6 @@ optimized_heading_lines_map 是在初步结果基础上的优化。
     },
     "... (more optimized heading lines mapping)"
   ],
-  "initial_reasoning_summary": "string",
   "optimized_heading_lines_map": [
     {
       "original_line": "string",
@@ -343,7 +338,6 @@ optimized_heading_lines_map 是在初步结果基础上的优化。
     },
     "... (more optimized heading lines mapping)"
   ],
-  "optimized_reasoning_summary": "string"
 }
 
 ### Your Answer:

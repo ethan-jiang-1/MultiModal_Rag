@@ -123,24 +123,32 @@ def n2u_restore_unique_name_premium(md_info, new_job_id):
             if fname_page in fname_p_page:
                 md_info[ndx] = fname_p_page
 
-def gen_preminum_pages(md_info):
-    doc_pathname = md_info.get_doc_pathname()
-
+def gen_premium_pages(md_info):
     parser = _get_llamaparse_premium(md_info)
 
-    documents = parser.load_data(doc_pathname)
-    if documents is None or len(documents) == 0:
-        raise ValueError(f"document is empty for {doc_pathname}")
+    fname_json_result = md_info.get(MIFN.LP_FNAME_JSON_RESULT_PREMIUM, None)
+    if fname_json_result is not None and os.path.isfile(fname_json_result):
+        with open(fname_json_result, "r", encoding="utf-8") as f:
+            json_result = json.load(f)
+    else:
+        doc_pathname = md_info.get_doc_pathname()
+        documents = parser.load_data(doc_pathname)
+        if documents is None or len(documents) == 0:
+            raise ValueError(f"document is empty for {doc_pathname}")
 
-    json_result = parser.get_json_result(doc_pathname)
-    if json_result is None or len(json_result) == 0:
-        raise ValueError(f"json_result is empty for {doc_pathname}")
+        json_result = parser.get_json_result(doc_pathname)
+        if json_result is None or len(json_result) == 0:
+            raise ValueError(f"json_result is empty for {doc_pathname}")
+        
+        _dump_tables_premium(parser, json_result, md_info)
+        _dump_images_premium(parser, json_result, md_info)
 
     _dump_json_result_premium(json_result, md_info)
-    _dump_tables_premium(parser, json_result, md_info)
-    _dump_images_premium(parser, json_result, md_info)
+
     cur_job_id = _dump_preminum_md_page_content_from_lp_json_result(json_result, md_info)
+   
     n2u_restore_unique_name_premium(md_info, cur_job_id)
+    md_info.save()
     return json_result
 
 
@@ -150,5 +158,5 @@ if __name__ == "__main__":
     md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
     md_info = MdInfo(md_info_path)
 
-    ret = gen_preminum_pages(md_info)
+    ret = gen_premium_pages(md_info)
     rich.print(ret)
