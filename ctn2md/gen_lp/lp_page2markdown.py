@@ -133,7 +133,7 @@ def _find_closest_heading(image, headings, page, y_threshold_ratio=None, x_toler
     return closest_heading
 
 
-# TODO: ethan_img_ref:   we removed fix_img_ref node,  and these logics should be absorb by Page2Markdown where the best place to have knowledge to get it right
+# TODO: ethan_img_ref: img_ref logics should be absorbed by Page2Markdown where the best place to have knowledge to get it right
 class Page2Markdown():
     def __init__(self, job_id, page, total_pages, md_info):
         self.job_id = job_id
@@ -155,7 +155,7 @@ class Page2Markdown():
 
         self.images_selected_embd = []
         self.images_selected_page = []
-        self.images_unselected_page = []
+        self.images_unselected = []
 
         if MIFN.LP_P2M_INFO not in md_info:
             md_info[MIFN.LP_P2M_INFO] = {}
@@ -171,7 +171,6 @@ class Page2Markdown():
             return
         self.analyse_ocr()
         self.analyse_images()
-        self.analyse_images_embd()
         self.analysed = True
 
     def analyse_ocr(self):
@@ -209,7 +208,23 @@ class Page2Markdown():
     def analyse_images(self):
         self.images_selected_embd = []
         self.images_selected_page = []
-        self.images_unselected_page = []
+        self.images_unselected = []
+
+        self.analyse_images_filter_scan()
+        self.analyse_images_filter_content()
+        self.analyse_images_embd_control()
+        self.analyse_images_embd_auto()
+
+        logging.info(f"P2M: images_selected_embd: {len(self.images_selected_embd)}")
+        logging.info(f"P2M: images_selected_page: {len(self.images_selected_page)}")
+        logging.info(f"P2M: images_unselected: {len(self.images_unselected)}")
+
+        self.md_info_cur_page["images_selected_embd"] = self.images_selected_embd
+        self.md_info_cur_page["images_selected_page"] = self.images_selected_page
+        self.md_info_cur_page["images_unselected"] = self.images_unselected
+
+    def analyse_images_filter_scan(self):
+        #if the image is too small to query (no relance content to query)
         images = self.page.get("images", None)
         for image in images:
             name = image.get("name", None)
@@ -227,12 +242,18 @@ class Page2Markdown():
                     self.images_selected_page.append(image_copy)
             else:
                 image_copy["reason"] = reason
-                self.images_unselected_page.append(image_copy)
-        logging.info(f"P2M: images_selected_embd: {len(self.images_selected_embd)}")
-        logging.info(f"P2M: images_selected_page: {len(self.images_selected_page)}")
-        logging.info(f"P2M: images_unselected_page: {len(self.images_unselected_page)}")
+                self.images_unselected.append(image_copy)
 
-    def analyse_images_embd(self):
+    def analyse_images_filter_content(self):
+        #TODO: ethan_img_ref: if the image has relvance content to query
+        pass
+
+    def analyse_images_embd_control(self):
+        #TODO: ethan_img_ref: if the image has control info to know where to position it
+        pass
+
+    def analyse_images_embd_auto(self):
+        # find where to position the image if there is not position control
         found = 0
         headings = [item.copy() for item in self.items if item["type"] == "heading"]
         rich.print(headings)
@@ -243,10 +264,6 @@ class Page2Markdown():
                 image["closest_heading"] = closest_heading
                 found +=1 
         logging.info(f"P2M: closet_heading founded: {found}")
-
-        self.md_info_cur_page["images_selected_embd"] = self.images_selected_embd
-        self.md_info_cur_page["images_selected_page"] = self.images_selected_page
-        self.md_info_cur_page["images_unselected_page"] = self.images_unselected_page
 
     def save_page_markdown(self):
         #rich.print(self.page)
