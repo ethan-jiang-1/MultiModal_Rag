@@ -153,7 +153,7 @@ def _locate_matched_src_doc_names(source_filenames_from_citation, kb_name):
                     lst_matched_fullpathnames.append(fpath)
     return lst_matched_fullpathnames
 
-# TODO: ethan_images - new structure 
+# TODO: ethan_hiqa_new_image - wait for new structure (discard the old appoach of HiQA later)
 def _locate_matched_image_names(image_filenames_from_citation, kb_name):
     #from pathlib import Path
     dir_root = get_root_dir()

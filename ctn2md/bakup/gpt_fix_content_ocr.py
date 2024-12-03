@@ -22,7 +22,6 @@ from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.utils_llm.llm_fix_ocr_md import fix_ocr_self_correct_markdown
 from ctn2md.src.md_info_base import MdInfo, MIFN
 
-#TODO: ethan_ocr_in_gen_only: we should get rid of OCR in the flow -- push to when it generate the markdown, otherwise the logic is way to complicated to handle
 def _fix_ocr_by_stiche_pages(md_text, md_info):
     fnames_pages = md_info.get_fnames_pages()
     if not fnames_pages:

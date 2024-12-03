@@ -212,7 +212,7 @@ def rebuild_img_index_from_pdf(kb_name, reforced=False):
         file_names = os.listdir(f'./datasets/{kb_name}/src_docs')
         file_names = sorted(file_names)
         for pdf_filename in tqdm.tqdm(file_names):
-            # TODO: why we need such hack? bug_fix we have hard time to extract image from scanned file
+            # TODO: ethan_hiqa_new_doc why we need such hack? bug_fix we have hard time to extract image from scanned file
             if pdf_filename.find("业绩案例") != -1:
                 continue
             load_imgs_from_pdf(kb_name, pdf_filename)

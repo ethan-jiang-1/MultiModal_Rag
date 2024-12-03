@@ -13,38 +13,36 @@ if "./" not in sys.path:
 
 from ctn2md.utils.util_ctn_type import CTN_TYPE # noqa
 from ctn2md.src.md_info_base import MdInfo, MIFN  # noqa
-from ctn2md.utils.util_tokenizer import get_token_encoding
-
-#TODO: ethan_output_token check if we are able to make GPTo output more then 3*1024 token. and how
-#MAX_OUTPUT_TOKEN = 8*1024
-MAX_OUTPUT_TOKEN = 8*1024
 
 
-def _calculate_tokens_large_text(text, chunk_size=2048, stop_check_over_max=False):
-    """
-    针对超长文本的 Token 数量计算，分块处理。
-    
-    :param text: 输入的长字符串
-    :param chunk_size: 每块的最大字符数
-    :param encoding_name: 编码器名称
-    :return: Token 数量
-    """
-    # 获取编码器
-    encoding = get_token_encoding()
-    
-    # 初始化 Token 计数器
-    total_tokens = 0
-    
-    # 分块处理
-    for i in range(0, len(text), chunk_size):
-        chunk = text[i:i + chunk_size]
-        tokens = encoding.encode(chunk)
-        total_tokens += len(tokens)
+# MAX_OUTPUT_TOKEN = 8*1024
 
-        if total_tokens > MAX_OUTPUT_TOKEN:
-            return total_tokens
+# def _calculate_tokens_large_text(text, chunk_size=2048, stop_check_over_max=False):
+#     from ctn2md.utils.util_tokenizer import get_token_encoding
+#     """
+#     针对超长文本的 Token 数量计算，分块处理。
     
-    return total_tokens
+#     :param text: 输入的长字符串
+#     :param chunk_size: 每块的最大字符数
+#     :param encoding_name: 编码器名称
+#     :return: Token 数量
+#     """
+#     # 获取编码器
+#     encoding = get_token_encoding()
+    
+#     # 初始化 Token 计数器
+#     total_tokens = 0
+    
+#     # 分块处理
+#     for i in range(0, len(text), chunk_size):
+#         chunk = text[i:i + chunk_size]
+#         tokens = encoding.encode(chunk)
+#         total_tokens += len(tokens)
+
+#         if total_tokens > MAX_OUTPUT_TOKEN:
+#             return total_tokens
+    
+#     return total_tokens
 
 def _assign_ctn_type(md_info, json_result):
     doc_type = md_info.get_doc_type()

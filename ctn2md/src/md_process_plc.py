@@ -10,7 +10,7 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-#TODO: ethan_plc:  introduce id so that manual patch around heading makes easy
+
 """
     注释中参数解释 <!-- PLC: ... -->:
     1. Page:X/Y
@@ -23,6 +23,7 @@ if "./" not in sys.path:
         - X: 当前标题以下、下一个标题以上的字符数。
         - Y: 当前页面的总字符数，包含所有非图片内容。
     4. PlcId: 
+        "p{page_number}s{section_number}"
 """
 
 _PLC_COMMENT = """<!-- PLC: Page:{current_page}/{total_pages}, Line:{line_number}/{total_lines}, Chars:{content_char_count}/{total_char_count}, PlcId:{plc_id} -->"""
