@@ -1,13 +1,13 @@
 class CTN_TYPE:
-    PDF = "pdf"
-    PPT = "ppt"
-    DOC = "doc"
-    XLS = "xls"
-    AUTO = "auto"
-    UNKNOWN = "unknown"
+    PDF = "PDF"
+    PPT = "PPT"
+    DOC = "DOC"
+    XLS = "XLS"
+    AUTO = "AUTO"
+    UNKNOWN = "UNKNOWN"
 
     @classmethod
-    def get_ctn_type(cls, doc_type):
+    def get_ctn_type_by_doc_type(cls, doc_type):
         if isinstance(doc_type, str):
             doc_type = doc_type.replace(".", "")
             doc_type = doc_type.lower()
@@ -21,3 +21,6 @@ class CTN_TYPE:
                 return cls.XLS
         
         return cls.UNKNOWN
+
+
+    

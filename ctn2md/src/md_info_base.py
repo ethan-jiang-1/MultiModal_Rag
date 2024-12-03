@@ -15,16 +15,11 @@ if "./" not in sys.path:
 from llama_parse.utils import Language
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 
-_MIB_INFO_VER = "0.3.0"
+_MIB_INFO_VER = "0.4.0"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_DEFAULT_OUT_ROOT = "_work"
 
-class OFM:  # OCR Fix Mothod
-    BY_SKIP = "ofm_skip"
-    BY_CONTENT = "ofm_content"
-    BY_PAGE = "ofm_page"
-    BY_AUTO = "ofm_auto"
 
 class MIFN:  # Markdown Field Name
     VERSION = "version"
@@ -45,14 +40,13 @@ class MIFN:  # Markdown Field Name
     FNAMES_P_TBLS = "fnames_p_tbls"
     FNAMES_P_SNPS = "fnames_p_snps"
 
+    CTN_TYPE = "content_type"
+
     GEN_ENGINE = "parse_engine"
 
     LP_JOB_ID_HISTORY = "lp_job_ids"
     LP_CUR_JOB_ID = "lp_cur_job_id"
     LP_CUR_JOB_METADATA = "lp_cur_job_metadata"
-    
-    LP_SCAN_INFO = "lp_scan_info" # TODO: should be removed later
-    OFM_INFO = "ofm_info"  # TODO: should be removed later
 
     LP_FNAME_JSON_RESULT_NORMAL = "lp_fname_json_result_normal"
     LP_FNAME_JSON_RESULT_PREMIUM = "lp_fname_json_result_premium"
@@ -318,7 +312,10 @@ class MdInfo:
 
     def get_ctn_type(self):
         doc_type = self.get_doc_type()
-        return CTN_TYPE.get_ctn_type(doc_type)
+        ctn_type = CTN_TYPE.get_ctn_type_by_doc_type(doc_type)
+        # if we have ctn_type defined, using ctn_type
+        ctn_type = self._info.get(MIFN.CTN_TYPE, ctn_type)
+        return ctn_type
 
     def get_fnames_pages(self):
         return self.get(MIFN.FNAMES_PAGES, {})

@@ -45,10 +45,11 @@ def _move_aux_files_pages(md_info, out_dir, aux_dir):
             fnames_pages_aux.append(dst_fname)
 
     # update to reflex the move
-    for ndx, fname_page in enumerate(md_info[MIFN.FNAMES_PAGES]):
+    md_info_fanems_pages = md_info[MIFN.FNAMES_PAGES]
+    for ndx, fname_page in enumerate(md_info_fanems_pages):
         for fname_page_aux in fnames_pages_aux:
             if fname_page in fname_page_aux:
-                md_info[ndx] = fname_page_aux
+                md_info_fanems_pages[ndx] = fname_page_aux
 
 def _move_aux_files_images(md_info, out_dir, aux_dir):
     os.makedirs(aux_dir, exist_ok=True)

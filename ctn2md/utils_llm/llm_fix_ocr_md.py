@@ -17,16 +17,13 @@ from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num,
 from ctn2md.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
 
 
-def fix_ocr_self_correct_markdown(md_text, doc_type, model="gpt-4o-mini", question_num=None):
+def fix_ocr_self_correct_markdown(md_text, ctn_type, model="gpt-4o-mini", question_num=None):
     if question_num is None:
         question_num = get_next_question_num()
 
     try:
         if model not in ["gpt-4o-mini", "gpt-4o"]: 
             raise ValueError(f"f{model} not supporst")
-
-        logging.info(f"start to correct ocr content from doc_type:{doc_type} by {model} as question_num:{question_num}")
-        ctn_type = CTN_TYPE.get_ctn_type(doc_type)
 
         if ctn_type not in [CTN_TYPE.PDF, CTN_TYPE.PPT, CTN_TYPE.DOC]:
             raise ValueError(f"unknown ctn_type {ctn_type}")   
@@ -70,11 +67,11 @@ if __name__ == "__main__":
 
     md_old = "_work/md_samples/5. back panel 与环境匹配工程校核_P2___pptx_s3.md"
     md_new = "_work/md_samples/5. back panel 与环境匹配工程校核_P2___pptx_s3-new.md"
-    doc_type = "pptx"
+    ctn_type = CTN_TYPE.PDF
 
     with open(md_old, 'r', encoding='utf-8') as f:
         md_text = f.read()
 
-    md_text_fixed = fix_ocr_self_correct_markdown(md_text, doc_type)
+    md_text_fixed = fix_ocr_self_correct_markdown(md_text, ctn_type)
     with open(md_new, "w+", encoding='utf-8') as f:
         f.write(md_text_fixed)

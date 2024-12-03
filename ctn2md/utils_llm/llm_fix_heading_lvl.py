@@ -14,8 +14,9 @@ load_dotenv()
 from ctn2md.utils_llm.llm_fix_heading_lvl_prompt import SYSTEM_PROMPT_FIX_HEADING_LVL, USER_PROMPT_FIX_HEADING_LVL 
 from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from ctn2md.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
+from ctn2md.utils.util_ctn_type import CTN_TYPE
 
-def fix_heading_lvl_markdown(fhl_org, model="gpt-4o",  question_num=None):
+def fix_heading_lvl_markdown(fhl_org, ctn_type=CTN_TYPE.PDF, model="gpt-4o",  question_num=None):
     if question_num is None:
         question_num = get_next_question_num()
 
@@ -30,7 +31,7 @@ def fix_heading_lvl_markdown(fhl_org, model="gpt-4o",  question_num=None):
 
         fhl_org_json_str = json.dumps(fhl_org, ensure_ascii=False, indent=4)
 
-        prompt = USER_PROMPT_FIX_HEADING_LVL.replace("{fhl_org_json_str}", fhl_org_json_str)      
+        prompt = USER_PROMPT_FIX_HEADING_LVL.replace("{fhl_org_json_str}", fhl_org_json_str).replace("{ctn_type}", ctn_type)      
 
         temperature = 0.1
         top_p = 0.95
@@ -63,31 +64,31 @@ if __name__ == "__main__":
         "org_heading_lines": [
             [
                 "# 技术服务合同",
-                0
+                "Page:1/3, Line:1/7, Chars:0/25"
             ],
             [
                 "# 比亚迪汽车工业有限公司",
-                7
+                "Page:1/3, Line:3/7, Chars:0/25"
             ],
             [
                 "# 上海适途汽车技术有限公司",
-                194
+                "Page:2/3, Line:2/7, Chars:0/25"
             ],
             [
                 "# 技术服务合同V5.0",
-                705
+                "Page:2/3, Line:4/7, Chars:0/25"
             ],
             [
                 "# 1 工作划分",
-                149
+                "Page:3/3, Line:1/7, Chars:0/25"
             ],
             [
                 "# 2 合同工作的执行",
-                1135
+                "Page:3/3, Line:1/7, Chars:0/25"
             ],
             [
                 "# 技术服务合同V5.0",
-                705
+                "Page:3/3, Line:1/7, Chars:0/25"
             ]
         ]
     }

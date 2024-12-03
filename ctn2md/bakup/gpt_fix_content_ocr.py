@@ -11,9 +11,16 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
+
+class OFM:  # OCR Fix Mothod
+    BY_SKIP = "ofm_skip"
+    BY_CONTENT = "ofm_content"
+    BY_PAGE = "ofm_page"
+    BY_AUTO = "ofm_auto"
+
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.utils_llm.llm_fix_ocr_md import fix_ocr_self_correct_markdown
-from ctn2md.src.md_info_base import MdInfo, MIFN, OFM
+from ctn2md.src.md_info_base import MdInfo, MIFN
 
 #TODO: ethan_ocr_in_gen_only: we should get rid of OCR in the flow -- push to when it generate the markdown, otherwise the logic is way to complicated to handle
 def _fix_ocr_by_stiche_pages(md_text, md_info):
@@ -35,18 +42,18 @@ def _fix_ocr_by_stiche_pages(md_text, md_info):
         pathname = os.path.join(out_dir, fname_page)
         with open(pathname, 'r', encoding='utf8') as f:
             md_page = f.read()
-        doc_type = md_info.get_doc_type()
+        ctn_type = md_info.get_ctn_type()
 
         logging.info(f"_fix_ocr_by_stiche_pages: current_page: {ndx+1} / total_pages: {total_pages}...")
-        md_page_fixed = fix_ocr_self_correct_markdown(md_page, doc_type, model=model, question_num=question_num) 
+        md_page_fixed = fix_ocr_self_correct_markdown(md_page, ctn_type, model=model, question_num=question_num) 
         md_text_fixed += md_page_fixed + "\n"
         question_num += 1
 
     return md_text_fixed      
 
 def _fix_ocr_by_proc_whole(md_text, md_info):
-    doc_type = md_info.get_doc_type()
-    md_text_fixed = fix_ocr_self_correct_markdown(md_text, doc_type)  
+    ctn_type = md_info.get_ctn_type()
+    md_text_fixed = fix_ocr_self_correct_markdown(md_text, ctn_type)  
     return md_text_fixed
 
 def _find_ofm_and_reason(md_text, md_info):

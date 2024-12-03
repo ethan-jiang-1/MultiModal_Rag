@@ -89,7 +89,6 @@ def _dump_tables_premium(parser, json_result, md_info):
     md_info[MIFN.FNAMES_P_TBLS] = fnames_tbls 
 
 def _dump_json_result_premium(json_result, md_info):
-    #md_info[MIFN.LP_SCAN_INFO] = lp_scan_info
     aux_folder = md_info.get_aux_dir()
     fname_json_result = os.path.join(aux_folder, "json_result_premium.json")
 

@@ -3,7 +3,6 @@ from dotenv import load_dotenv
 import sys
 #import logging
 import rich
-#import random
 import re
 
 load_dotenv()
@@ -23,13 +22,13 @@ if "./" not in sys.path:
     3. Chars:X/Y
         - X: 当前标题以下、下一个标题以上的字符数。
         - Y: 当前页面的总字符数，包含所有非图片内容。
+    4. PlcId: 
 """
 
-# TODO ethan_plc: no exposure 
-_PLC_COMMENT = """<!-- PLC: Page:{current_page}/{total_pages}, Line:{line_number}/{total_lines}, Chars:{content_char_count}/{total_char_count} -->"""
+_PLC_COMMENT = """<!-- PLC: Page:{current_page}/{total_pages}, Line:{line_number}/{total_lines}, Chars:{content_char_count}/{total_char_count}, PlcId:{plc_id} -->"""
+_PLC_ID = "p{pid}s{sid}"
 
-
-def _extract_plc_comment(line):
+def _extract_plc_info_from_comment(line):
     """
     提取 Markdown 行中 <!-- PLC: ... --> 的结构化内容。
 
@@ -40,12 +39,13 @@ def _extract_plc_comment(line):
         dict or None: 提取的内容，返回字典包含 `Page`、`Line` 和 `Chars` 信息。
                       如果行中没有 PLC 注释，返回 None。
     """
-    match = re.search(r'<!-- PLC: Page:(\d+)/(\d+), Line:(\d+)/(\d+), Chars:(\d+)/(\d+) -->', line)
+    match = re.search(r'<!-- PLC: Page:(\d+)/(\d+), Line:(\d+)/(\d+), Chars:(\d+)/(\d+), PlcId:p(\d+)s(\d+) -->', line)
     if match:
         return {
             "Page": {"current": int(match.group(1)), "total": int(match.group(2))},
             "Line": {"current": int(match.group(3)), "total": int(match.group(4))},
-            "Chars": {"current": int(match.group(5)), "total": int(match.group(6))}
+            "Chars": {"current": int(match.group(5)), "total": int(match.group(6))},
+            "Plcid": f"p{match.group(7)}s{match.group(8)}"
         }
     return None
 
@@ -63,10 +63,13 @@ def separate_heading_and_plc_comment(line):
                                         如果没有 PLC 注释，则为 None。
     """
     # 使用正则分解标题部分和 PLC 注释
-    match = re.match(r'^(.*?)(<!-- PLC: (.*?) -->)?$', line.strip())
+    # pattern = r'^(.*?)(<!-- PLC: (.*?) -->)?$',
+    pattern = r'^(.*?)<!-- PLC: (Page:\d+/\d+, Line:\d+/\d+, Chars:\d+/\d+).*?-->'
+
+    match = re.match(pattern, line.strip())
     if match:
         heading = match.group(1).strip()  # 提取标题部分
-        plc_comment = match.group(3).strip() if match.group(3) else None  # 提取 PLC 注释内容
+        plc_comment = match.group(2).strip() if match.group(2) else None  # 提取 PLC 注释内容
         return heading, plc_comment
     return line, ""  # 如果不匹配，返回原始行和 None
 
@@ -120,21 +123,24 @@ def inject_plc_comment_to_page(md_page, page_number, total_pages, md_info):
 
     # 结果行列表
     result_lines = []
-    for section in sections:
+    for sec_ndx, section in enumerate(sections):
         title = section["title"]
         content_lines = section["lines"]
         content_char_count = sum(_count_chars(line) for line in content_lines)
+
+        plc_id = _PLC_ID.format(pid=page_number, sid=sec_ndx+1)
 
         # 注释信息
         line_number = lines.index(title) + 1
         injected_title = f"{title} "
         injected_title += _PLC_COMMENT.format(current_page=page_number,
-                                             total_pages=total_pages,
-                                             line_number=line_number,
-                                             total_lines=total_lines,
-                                             content_char_count=content_char_count,
-                                             total_char_count=total_char_count)
-        ##<!-- PLC: Page:{page_number}/{total_pages}, Line:{line_number}/{total_lines}, Chars:{content_char_count}/{total_char_count} -->"
+                                              total_pages=total_pages,
+                                              line_number=line_number,
+                                              total_lines=total_lines,
+                                              content_char_count=content_char_count,
+                                              total_char_count=total_char_count,
+                                              plc_id=plc_id)
+        ##<!-- PLC: Page:{page_number}/{total_pages}, Line:{line_number}/{total_lines}, Chars:{content_char_count}/{total_char_count} PlcId:{} -->"
         result_lines.append(injected_title)
         result_lines.extend(content_lines)
 
@@ -146,18 +152,27 @@ def _find_first_plc_info_no_heading(heading_pattern, org_lines):
     first_plc_line_ndx = None
     first_plc_info_no_heading = None
     for ndx, line in enumerate(org_lines):
+        line = line.strip()
+        if len(line) == 0:
+            continue
+        if first_plc_line_ndx is None:
+            first_plc_line_ndx = ndx
+
         match = re.match(heading_pattern, line)
         if not match:
             lines_without_heading.append(line)
-            if len(line.strip()) != 0:
-                if first_plc_line_ndx is None:
-                    first_plc_line_ndx = ndx
         else:
-            first_plc_info = _extract_plc_comment(line)
-            first_plc_info_no_heading = first_plc_info.copy()
-            first_plc_info_no_heading["Line"] = {"current": first_plc_line_ndx, "total":len(lines_without_heading)}
-            first_plc_info_no_heading["Chars"] = {"current": _count_chars("".join(lines_without_heading)), "total":_count_chars("".join(lines_without_heading))}
-            return first_plc_info_no_heading
+            if len(lines_without_heading) != 0:
+                parts = line.split("<!--")
+                if len(parts) == 2:
+                    plc_comment = "<!--" + parts[1]
+                    first_plc_info = _extract_plc_info_from_comment(plc_comment)
+                    if first_plc_info is not None:
+                        first_plc_info_no_heading = first_plc_info.copy()
+                        first_plc_info_no_heading["Line"] = {"current": first_plc_line_ndx, "total":len(lines_without_heading)}
+                        first_plc_info_no_heading["Chars"] = {"current": _count_chars("".join(lines_without_heading)), "total":_count_chars("".join(lines_without_heading))}
+                        return first_plc_info_no_heading
+            break
     return None 
 
 def get_all_normalized_headings_with_plc_info(md_text, fix_first_line_no_heading=True):
@@ -186,7 +201,8 @@ def get_all_normalized_headings_with_plc_info(md_text, fix_first_line_no_heading
                                                           line_number=first_plc_info_nh["Line"]["current"],
                                                           total_lines=first_plc_info_nh["Line"]["total"],
                                                           content_char_count=first_plc_info_nh["Chars"]["total"],
-                                                          total_char_count=first_plc_info_nh["Chars"]["total"])
+                                                          total_char_count=first_plc_info_nh["Chars"]["total"],
+                                                          plc_id=_PLC_ID.format(pid=0, sid=0))
                         first_line_no_heading = "## " + line.strip() + " " + plc_comment
                         line = first_line_no_heading
                         match = re.match(heading_pattern, line)

@@ -111,13 +111,7 @@ USER_PROMPT_FIX_HEADING_LVL = """
       - 辅助确定标题间的层级关系。
 
 ---
-
-### 用户提供的文档数据**fhl_org**如下：
-<fhl_org>
-{fhl_org_json_str}
-</fhl_org>
-
----
+### 用户提供的文档类型 **doc_type**是： {ctn_type}
 
 ### 用户提供的文档数据**fhl_org**如下：
 <fhl_org>
@@ -193,7 +187,8 @@ USER_PROMPT_FIX_HEADING_LVL = """
   - **一般情况**：若标题仅作为正文补充说明（且正文内容少或无展开），降级为对应章节的加粗正文（如 `**图表 1**`）。
   - **特殊情况**：若附属信息有清晰的标题内容，且关联的正文内容丰富（如数据表、图表描述较长），可保留为对应章节的子标题（如 `### 图表 1. 实验对比数据`）。
   - **无明确隶属章节时**：直接降级为加粗正文，避免成为标题以干扰主要章节结构。
-
+- **doc_type**为PPT类型文档非一级标题的内容降级：
+  - **无标题内内容**： PPT类型文档如果标题下无内容，同时多个兄弟标题也有类似情况的情况， 所有兄弟标题都应该降级为黑体
 
 #### 2.5 **无意义标题清理**
 - 利用 `PLC` 信息及标题内容判断：
@@ -337,7 +332,6 @@ optimized_heading_lines_map 是在初步结果基础上的优化。
     {
       "original_line": "string",
       "mapped_line": "string",
-      "reasoning": "string"
     },
     "... (more optimized heading lines mapping)"
   ],
@@ -346,7 +340,6 @@ optimized_heading_lines_map 是在初步结果基础上的优化。
     {
       "original_line": "string",
       "mapped_line": "string",
-      "reasoning": "string"
     },
     "... (more optimized heading lines mapping)"
   ],
