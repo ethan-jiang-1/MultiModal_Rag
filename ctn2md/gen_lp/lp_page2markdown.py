@@ -14,9 +14,10 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from ctn2md.src.md_process_plc import inject_plc_comment_to_page
+from ctn2md.src.md_process_plc import inject_plc_comment_to_page, has_injected_plc_comment, separate_heading_and_plc_comment, extract_plc_info_from_comment
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.utils.util_logging import setup_logger_handlers
+from ctn2md.gen_lp.lp_base import get_page_images, PAGE_IMG_STATUS
 
 # 常量定义
 MIN_WIDTH = 198   # 图像最小宽度（像素）
@@ -135,11 +136,12 @@ def _find_closest_heading(image, headings, page, y_threshold_ratio=None, x_toler
 
 # TODO: ethan_img_ref: img_ref logics should be absorbed by Page2Markdown where the best place to have knowledge to get it right
 class Page2Markdown():
-    def __init__(self, job_id, page, total_pages, md_info):
+    def __init__(self, job_id, page, total_pages, md_info, pages_images):
         self.job_id = job_id
         self.page = page 
         self.total_pages = total_pages
         self.md_info = md_info
+        self.pages_images = pages_images
 
         self.page_no = page.get("page", None)
         self.page_width = page.get("width", None)
@@ -147,7 +149,6 @@ class Page2Markdown():
 
         self.md_page = page.get("md", None)
         self.items = page.get("items", None)
-        self.images = page.get("images", None)
 
         self.ocr_all_text = " "
         self.ocr_all_confidence = 0
@@ -163,12 +164,17 @@ class Page2Markdown():
             md_info[MIFN.LP_P2M_INFO][self.page_no] = {}
         self.md_info_cur_page = md_info[MIFN.LP_P2M_INFO][self.page_no] 
 
+        self.md_page_plc_init = None 
+        self.md_page_plc_init_lines = None
+
         self.analysed = False
         self.analyse()
 
     def analyse(self):
         if self.analysed:
             return
+        self.md_page_plc_init = inject_plc_comment_to_page(self.md_page, self.page_no, self.total_pages, self.md_info)
+
         self.analyse_ocr()
         self.analyse_images()
         self.analysed = True
@@ -176,7 +182,8 @@ class Page2Markdown():
     def analyse_ocr(self):
         self.ocr_all_text = " "
         tmc = 0
-        for image in self.images:
+        images_at_cur_page = self.page.get("images", None)
+        for image in images_at_cur_page:
             ocr = image.get("ocr", None)
             if ocr is None:
                 continue 
@@ -225,32 +232,73 @@ class Page2Markdown():
 
     def analyse_images_filter_scan(self):
         #if the image is too small to query (no relance content to query)
-        images = self.page.get("images", None)
+        images = get_page_images(self.pages_images, self.page_no, self.total_pages)
         for image in images:
             name = image.get("name", None)
-            image_copy = image.copy()
-            ocr = image_copy.get("ocr", None)
-            if ocr is not None:
-                del image_copy["ocr"]
-            full_name = f"{self.job_id}-{name}"
+            full_name = name
+            if not name.startswith(self.job_id):
+                full_name = f"{self.job_id}-{name}"
             val, reason = _select_meanful_image_by_size(full_name, self.md_info)
             if val:
-                image_copy["name"] = full_name 
+                image["name"] = full_name 
                 if name.find("img_p") != -1:
-                    self.images_selected_embd.append(image_copy)
+                    self.images_selected_embd.append(image)
                 else:
-                    self.images_selected_page.append(image_copy)
+                    self.images_selected_page.append(image)
             else:
-                image_copy["reason"] = reason
-                self.images_unselected.append(image_copy)
+                image["pi_status"] = f"{PAGE_IMG_STATUS.REMOVED}: {reason}"
+                self.images_unselected.append(image)
 
     def analyse_images_filter_content(self):
         #TODO: ethan_img_ref: if the image has relvance content to query
         pass
 
+    def _find_heading_for_plc_id(self, plc_id):
+        if plc_id.find(":") != -1:
+            plc_id = plc_id.split(":")[1]
+        if self.md_page_plc_init_lines is None:
+            if self.md_page_plc_init is None:
+                raise ValueError("what happened?")
+            self.md_page_plc_init_lines = self.md_page_plc_init.splitlines()
+
+        for line in self.md_page_plc_init_lines:
+            if not line.startswith("#"):
+                continue
+            if not has_injected_plc_comment(line):
+                continue
+
+            heading, plc_comment = separate_heading_and_plc_comment(line, with_plc_id=True)
+            if len(plc_comment) == 0:
+                continue
+
+            plc_info = extract_plc_info_from_comment(plc_comment)
+            if plc_info is None:
+                continue
+
+            if plc_info["PlcId"] == plc_id:
+                return heading 
+        return None
+
     def analyse_images_embd_control(self):
-        #TODO: ethan_img_ref: if the image has control info to know where to position it
-        pass
+        images = get_page_images(self.pages_images, self.page_no, self.total_pages)
+        for image in images:
+            if image.get("pi_status", None):
+                continue
+
+            plc_id = image.get("plc_id", None)
+            if plc_id is None:
+                continue
+            
+            if plc_id.startswith("*"):
+                continue
+
+            #find heading for the image as we know the plc_id
+            heading = self._find_heading_for_plc_id(plc_id)
+            if heading is None:
+                continue
+
+            image["closest_heading"] = {"md": heading.strip()}
+            image["i2h"] = "mctl"
 
     def analyse_images_embd_auto(self):
         # find where to position the image if there is not position control
@@ -258,10 +306,14 @@ class Page2Markdown():
         headings = [item.copy() for item in self.items if item["type"] == "heading"]
         rich.print(headings)
         for image in self.images_selected_embd:
+            if image.get("plc_id", None):
+                continue
             rich.print(image)
             closest_heading = _find_closest_heading(image, headings, self.page)
             if closest_heading is not None:
                 image["closest_heading"] = closest_heading
+                closest_heading["md"] = closest_heading["md"].strip()
+                image["i2h"] = "auto"
                 found +=1 
         logging.info(f"P2M: closet_heading founded: {found}")
 
@@ -269,17 +321,13 @@ class Page2Markdown():
         #rich.print(self.page)
 
         mctl_need_image_ref = self.md_info.get_md_control("mctl_need_image_ref", True)
-        md_page_plc = inject_plc_comment_to_page(self.md_page, self.page_no, self.total_pages, self.md_info)
 
         md_imgs_ref_at_end = ""
         if mctl_need_image_ref:
-            # if self.is_ocr_page():
-            #     md_imgs_ref_at_end = self.composite_all_images_ref_as_markdown()
-            # else:
-            md_page_plc = self.inject_images_at_right_position(md_page_plc)
+            md_page_plc_with_embed_img_ref = self.inject_images_at_right_position(self.md_page_plc_init)
             md_imgs_ref_at_end = self.composite_all_not_positioned_ref_as_markdown()
 
-        md_page_all = md_page_plc + md_imgs_ref_at_end
+        md_page_all = md_page_plc_with_embed_img_ref + md_imgs_ref_at_end
         fname_page = self.save_md_page(md_page_all)
 
         return fname_page
@@ -304,37 +352,32 @@ class Page2Markdown():
         basename = os.path.basename(path_image)
         return f"![]({basename})"    
 
-    def composite_all_images_ref_as_markdown(self):
-        img_refs = []
-        for image in self.images_selected_embd:
-            fname = image.get("name", None)
-            if fname is not None:
-                img_ref = self.get_img_ref_markdown(fname)
-                img_refs.append(img_ref)
-        for image in self.images_selected_page:
-            fname = image.get("name", None)
-            if fname is not None:
-                img_ref = self.get_img_ref_markdown(fname)
-                img_refs.append(img_ref)
-        md_imgs = ""
-        if len(img_refs) > 0:
-            md_imgs = "\n\n" + "\n".join(img_refs) + "\n"
-        return md_imgs 
-
     def composite_all_not_positioned_ref_as_markdown(self):
         img_refs = []
         for image in self.images_selected_embd:
+            if image.get("pi_status", None):
+                continue
+            if image.get("plc_id", None):
+                continue
             closest_heading = image.get("closest_heading", None)
             if closest_heading is None or closest_heading["md"].startswith("#"):
                 fname = image.get("name", None)
                 if fname is not None:
                     img_ref = self.get_img_ref_markdown(fname)
                     img_refs.append(img_ref)
+                    image["pi_status"] = PAGE_IMG_STATUS.POSITIONED
+    
         for image in self.images_selected_page:
+            if image.get("pi_status", None):
+                continue
+            if image.get("plc_id", None):
+                continue
             fname = image.get("name", None)
             if fname is not None:
                 img_ref = self.get_img_ref_markdown(fname)
                 img_refs.append(img_ref)
+                image["pi_status"] = PAGE_IMG_STATUS.POSITIONED
+
         md_imgs = ""
         if len(img_refs) > 0:
             md_imgs = "\n\n" + "\n".join(img_refs) + "\n"
@@ -350,13 +393,16 @@ class Page2Markdown():
             new_line = None
             if line.startswith("#"):
                 for image in self.images_selected_embd:
+                    if image.get("pi_status", None):
+                        continue
                     closest_heading = image.get("closest_heading", None)
                     if closest_heading is not None:
                         if line.startswith(closest_heading["md"]):
                             fname = image.get("name", None)
                             if fname is not None:
                                 closest_heading["md"] = "* " + closest_heading["md"]
-                                new_line = line +" " + self.get_img_ref_markdown(fname)
+                                new_line = line + "\n" + self.get_img_ref_markdown(fname) + "\n"
+                                image["pi_status"] = f"{PAGE_IMG_STATUS.POSITIONED}: embeded"
                                 break
             if new_line is not None:
                 line = new_line

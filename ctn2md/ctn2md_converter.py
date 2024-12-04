@@ -105,7 +105,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/AIGC时代的人力资源管理进化(徐刚).pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰部CAD外包框架服务合同.pdf"
-    doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
+    #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪ST2H项目低压线束设计技术服务合同（电子电器）.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪车架总成技术服务合同.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪铝大梁式车架及副车架设计外包中标通知书.pdf"
@@ -120,7 +120,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/考勤修改统一规则.xlsx"
     #doc_pathname = "datasrc/test/raw_docs/高效沟通之黄金三角模型课程大纲.docx"
 
-    #doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/ChatGPT intimates a tantalizing future_compressed.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/Long-Context LLMs Meet RAG_compressed.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/0530-大模型微调培训-VisualGLM.pdf"

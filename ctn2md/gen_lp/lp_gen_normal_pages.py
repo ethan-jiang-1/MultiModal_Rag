@@ -17,6 +17,7 @@ from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lp.lp_unique_job import n2u_replace_fnames, n2u_update_md_content
 from ctn2md.gen_lp.lp_page2markdown import Page2Markdown
+from ctn2md.gen_lp.lp_base import prepare_pages_images
 
 def _get_llamaparse_normal(md_info):
     from llama_parse import LlamaParse
@@ -62,12 +63,14 @@ def _dump_normal_md_page_from_lp_json_result(json_result, md_info):
         if pages is None:
             continue
 
+        pages_images = prepare_pages_images(pages, md_info)
         total_pages = len(pages)
         for page_ndx, page in enumerate(pages):
-            p2m = Page2Markdown(job_id, page, total_pages, md_info)
+            p2m = Page2Markdown(job_id, page, total_pages, md_info, pages_images)
             p2m.analyse()
             fname_page = p2m.save_page_markdown()
             fnames_pages.append(fname_page)
+        md_info[MIFN.LP_I2H_NORMAL] = pages_images
     
     cur_job_id = job_ids_set.pop()
     md_info[MIFN.LP_CUR_JOB_ID] = cur_job_id

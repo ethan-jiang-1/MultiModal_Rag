@@ -29,7 +29,7 @@ if "./" not in sys.path:
 _PLC_COMMENT = """<!-- PLC: Page:{current_page}/{total_pages}, Line:{line_number}/{total_lines}, Chars:{content_char_count}/{total_char_count}, PlcId:{plc_id} -->"""
 _PLC_ID = "p{pid}s{sid}"
 
-def _extract_plc_info_from_comment(line):
+def extract_plc_info_from_comment(line):
     """
     提取 Markdown 行中 <!-- PLC: ... --> 的结构化内容。
 
@@ -46,11 +46,19 @@ def _extract_plc_info_from_comment(line):
             "Page": {"current": int(match.group(1)), "total": int(match.group(2))},
             "Line": {"current": int(match.group(3)), "total": int(match.group(4))},
             "Chars": {"current": int(match.group(5)), "total": int(match.group(6))},
-            "Plcid": f"p{match.group(7)}s{match.group(8)}"
+            "PlcId": f"p{match.group(7)}s{match.group(8)}"
+        }
+    match = re.search(r'Page:(\d+)/(\d+), Line:(\d+)/(\d+), Chars:(\d+)/(\d+), PlcId:p(\d+)s(\d+)', line)
+    if match:
+        return {
+            "Page": {"current": int(match.group(1)), "total": int(match.group(2))},
+            "Line": {"current": int(match.group(3)), "total": int(match.group(4))},
+            "Chars": {"current": int(match.group(5)), "total": int(match.group(6))},
+            "PlcId": f"p{match.group(7)}s{match.group(8)}"
         }
     return None
 
-def separate_heading_and_plc_comment(line):
+def separate_heading_and_plc_comment(line, with_plc_id=False):
     """
     分解 Markdown 标题行，提取前半部分的标题和后续的 PLC 注释。
 
@@ -65,7 +73,12 @@ def separate_heading_and_plc_comment(line):
     """
     # 使用正则分解标题部分和 PLC 注释
     # pattern = r'^(.*?)(<!-- PLC: (.*?) -->)?$',
-    pattern = r'^(.*?)<!-- PLC: (Page:\d+/\d+, Line:\d+/\d+, Chars:\d+/\d+).*?-->'
+    pattern_no_plc_id = r'^(.*?)<!-- PLC: (Page:\d+/\d+, Line:\d+/\d+, Chars:\d+/\d+).*?-->'
+    pattern_with_plc_id = r'^(.*?)<!-- PLC: (Page:\d+/\d+, Line:\d+/\d+, Chars:\d+/\d+, PlcId:p\d+s\d+).*?-->'
+    if not with_plc_id:
+        pattern = pattern_no_plc_id
+    else:
+        pattern = pattern_with_plc_id 
 
     match = re.match(pattern, line.strip())
     if match:
@@ -83,6 +96,13 @@ def _count_chars(text):
     text = re.sub(r'!\[.*?\]\(.*?\)', '', text)  # 去掉图片引用
     text = re.sub(r'\s+', '', text)             # 去掉空白符
     return len(text)
+
+def has_injected_plc_comment(line):
+    if line is None:
+        return False 
+    if line.find("<!-- PLC:") != -1:
+        return True 
+    return False
 
 def inject_plc_comment_to_page(md_page, page_number, total_pages, md_info):
     """
@@ -179,7 +199,7 @@ def _find_first_plc_info_no_heading(heading_pattern, org_lines):
                 parts = line.split("<!--")
                 if len(parts) == 2:
                     plc_comment = "<!--" + parts[1]
-                    first_plc_info = _extract_plc_info_from_comment(plc_comment)
+                    first_plc_info = extract_plc_info_from_comment(plc_comment)
                     if first_plc_info is not None:
                         first_plc_info_no_heading = first_plc_info.copy()
                         first_plc_info_no_heading["Line"] = {"current": first_plc_line_ndx, "total":len(lines_without_heading)}

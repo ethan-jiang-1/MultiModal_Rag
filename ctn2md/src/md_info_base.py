@@ -53,6 +53,9 @@ class MIFN:  # Markdown Field Name
     LP_FNAME_JSON_RESULT_NORMAL = "lp_fname_json_result_normal"
     LP_FNAME_JSON_RESULT_PREMIUM = "lp_fname_json_result_premium"
 
+    LP_I2H_NORMAL = "lp_img2hd_normal"
+    LP_I2H_PREMIUM = "lp_img2hd_premium"
+
     LP_P2M_INFO = "lp_p2m_info"
 
     FHL_ORG = "fhl_org"
@@ -187,7 +190,7 @@ class MdInfo:
             if fnames not in self._info:
                 self._info[fnames] = []
 
-        self._md_control = self._load_md_control()
+        self._load_md_control()
         self.save()
 
     def _load_md_control(self):
@@ -198,8 +201,9 @@ class MdInfo:
 
         with open(self._md_info_control_path, 'r', encoding='utf-8') as file:
             data = file.read()
-        md_control = json_repair.repair_json(data, return_objects=True, ensure_ascii=False)    
-        return md_control
+        md_control = json_repair.repair_json(data, return_objects=True, ensure_ascii=False)
+
+        self._md_control = md_control
 
     def update_mdcontrols(self, mdcontrols):
         if isinstance(mdcontrols, dict):
