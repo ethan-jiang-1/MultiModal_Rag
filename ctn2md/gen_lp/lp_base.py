@@ -7,6 +7,7 @@ import rich
 import shutil
 import re
 import json_repair
+import json
 
 load_dotenv()
 
@@ -19,7 +20,8 @@ from ctn2md.utils_llm.llm_fix_vl_instruction import get_vllm_instruction
 from ctn2md.utils_llm.vllm_description import generate_image_description
 from ctn2md.src.md_info_base import MIFN
 
-MIN_IMG_RELEVANCE_SCORE = 2.0  # 0 - 10
+g_question_num = 6000
+
 IMG_DESP_EXT = "_desp.txt"
 
 class PAGE_IMG_STATUS:
@@ -115,21 +117,10 @@ def remove_misc_files_previous_round(md_info):
                 except Exception as e:
                     logging.exception(f"删除失败: {src_path}, 错误: {e}")
 
-
-g_page2inst = {}
-
-g_question_num = 6000
-
 def _get_page_instruction(doc_title, content_around):
-    global g_page2inst
     global g_question_num
-    key = f"{doc_title}##{content_around}"
-    if key in g_page2inst:
-        return g_page2inst[key]
-
     instruction = get_vllm_instruction(doc_title, content_around, question_num=g_question_num)
     g_question_num += 1
-    g_page2inst[key] = instruction
     return instruction
 
 def _gen_figure_info(md_info, doc_title, content_around, image_path):
@@ -141,7 +132,7 @@ def _gen_figure_info(md_info, doc_title, content_around, image_path):
     rich.print(resp_json)
     return resp_json
 
-def analyze_image_content(md_info, image_path, content_around=""):
+def _analyse_image_content_core(md_info, image_path, content_around=""):
     """
     模拟多模态处理函数，分析图像的内容是否有意义。
     
@@ -162,16 +153,35 @@ def analyze_image_content(md_info, image_path, content_around=""):
         picture_discription = resp_json.get("PictureDescription")
         if relevance_score is not None:
             relevance_score = float(relevance_score)
-            if relevance_score < md_info.get_md_control("mctl_min_img_relevance_score", MIN_IMG_RELEVANCE_SCORE): 
-                logging.warning(f"AIC: relevance_score: {relevance_score}")
-                return None, None, None 
         if figure_name is not None:
             if figure_name == "None":
                 logging.warning(f"AIC: figure_name: {figure_name}")
-                return None, None, None
     except Exception as e:
         logging.error(f"AIC: 处理多模态异常，错误: {e}")
         logging.exception(e)
         return None, None, None
 
     return relevance_score, figure_name, picture_discription
+
+def analyse_image_content(md_info, image_path, content_around=""):
+    pathname_img2desp = os.path.join(md_info.get_aux_dir(), "json_image_desp.json")
+    json_cache = {}
+    if os.path.isfile(pathname_img2desp):
+        with open(pathname_img2desp, 'r', encoding='utf-8') as f:
+            try:
+                json_cache = json.load(f)
+            except Exception as ex:
+                logging.exception(ex)
+
+    doc_title = md_info.get_doc_title()
+    key = f"{os.path.basename(image_path)}@{doc_title}>>>{content_around}"
+    info = json_cache.get(key, None)
+    if info is not None:
+        return info[0], info[1], info[2],
+
+    relevance_score, figure_name, picture_discription = _analyse_image_content_core(md_info, image_path, content_around=content_around)
+
+    json_cache[key] = (relevance_score, figure_name, picture_discription)
+    with open(pathname_img2desp, 'w', encoding="utf-8") as f:
+        json.dump(json_cache, f, indent=4, ensure_ascii=False)
+    return relevance_score, figure_name, picture_discription 

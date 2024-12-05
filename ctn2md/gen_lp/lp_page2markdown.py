@@ -17,12 +17,14 @@ if "./" not in sys.path:
 from ctn2md.src.md_process_plc import inject_plc_comment_to_page, has_injected_plc_comment, separate_heading_and_plc_comment, extract_plc_info_from_comment
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.gen_lp.lp_base import get_page_images, PAGE_IMG_STATUS, analyze_image_content
+from ctn2md.gen_lp.lp_base import get_page_images, PAGE_IMG_STATUS, analyse_image_content
 
 # 常量定义
 MIN_WIDTH = 198   # 图像最小宽度（像素）
 MIN_HEIGHT = 198  # 图像最小高度（像素）
 MIN_AREA = 128 * 128 # 图像最小面积（像素）
+
+MIN_IMG_RELEVANCE_SCORE = 2.0  # 0 - 10
 
 def _select_meanful_image_by_size(fname_image, md_info):
     """
@@ -359,9 +361,11 @@ class Page2Markdown():
         else:
             content_around = f"在文档标题 '{doc_title}' 中，在页面内容：{self.page['md'][:200]}... 里："
 
-        relevance_score, figure_name, picture_discription = analyze_image_content(self.md_info, pname_image, content_around=content_around)
+        relevance_score, figure_name, picture_discription = analyse_image_content(self.md_info, pname_image, content_around=content_around)
         if relevance_score is None:
             return None, "not_relevance"
+        if relevance_score < self.md_info.get_md_control("mctl_min_img_relevance_score", MIN_IMG_RELEVANCE_SCORE): 
+            return None, "low_relevance"
 
         picture_discription = picture_discription.replace("\"", "\'")
 
