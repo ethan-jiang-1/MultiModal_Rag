@@ -120,7 +120,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/考勤修改统一规则.xlsx"
     #doc_pathname = "datasrc/test/raw_docs/高效沟通之黄金三角模型课程大纲.docx"
 
-    doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/ChatGPT intimates a tantalizing future_compressed.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/Long-Context LLMs Meet RAG_compressed.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/0530-大模型微调培训-VisualGLM.pdf"
@@ -129,6 +129,8 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/YOU ONLY 2409.13695v1.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/LongRAG.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/DIFFERENTIAL TRANSFORMER 2410.05258v1.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/Winning Solution For Meta KDD Cup’ 24 2410.00005v1.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/attention_is_all_you_need.pdf"
 
     out_dir = None
     mdcontrols = None
