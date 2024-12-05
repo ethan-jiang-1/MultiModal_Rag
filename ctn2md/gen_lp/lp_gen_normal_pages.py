@@ -4,9 +4,9 @@ import sys
 import logging
 import rich
 #import random
-import re
+#import re
 import json
-import shutil
+#import shutil
 
 load_dotenv()
 
@@ -17,7 +17,7 @@ from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lp.lp_unique_job import n2u_replace_fnames, n2u_update_md_content
 from ctn2md.gen_lp.lp_page2markdown import Page2Markdown
-from ctn2md.gen_lp.lp_base import prepare_pages_images
+from ctn2md.gen_lp.lp_base import prepare_pages_images, remove_misc_files_previous_round
 
 def _get_llamaparse_normal(md_info):
     from llama_parse import LlamaParse
@@ -83,49 +83,6 @@ def _dump_normal_md_page_from_lp_json_result(json_result, md_info):
         md_info[MIFN.LP_JOB_ID_HISTORY].append(cur_job_id)
     md_info.save()
 
-def _remove_misc_files(md_info):
-    """
-    清理指定目录及其子目录下，以特定规则命名的文件：
-    1. 以类似 UUID 前缀命名的文件。
-    2. 以 xcs0000_（四位数字）前缀命名的 .md 文件。
-
-    Args:
-        md_info: 提供输出目录的对象，需实现 get_out_dir 方法。
-    """
-    # 获取输出目录
-    out_dir = md_info.get_out_dir()
-    aux_dir = md_info.get_aux_dir()
-    os.makedirs(aux_dir, exist_ok=True)
-
-    if not out_dir or not os.path.exists(out_dir):
-        print(f"目录不存在或无效: {out_dir}")
-        return
-
-    # 正则模式
-    uuid_pattern = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
-    xcs_pattern = re.compile(r"^xcs\d{4}_.*\.md$")  # 匹配 xcs0000_ 开头的 .md 文件
-
-    # 遍历目录及其子目录
-    for root, _, files in os.walk(out_dir):
-        files = sorted(files)
-        for file_name in files:
-            src_path = os.path.join(root, file_name)
-            move = False
-            if xcs_pattern.match(file_name):  # 匹配任意一个模式
-                move = True 
-            elif uuid_pattern.match(file_name):
-                move = True
-                if file_name in md_info[MIFN.FNAMES_IMGS]:
-                    move = False
-                elif file_name in md_info[MIFN.FNAMES_SNPS]:
-                    move = False
-            if move:
-                try:
-                    dst_path = os.path.join(aux_dir, os.path.basename(src_path))
-                    shutil.move(src_path, dst_path)
-                except Exception as e:
-                    logging.exception(f"删除失败: {src_path}, 错误: {e}")
-
 def _dump_images(parser, json_result, md_info):
     out_dir = md_info.get_out_dir()
     images = parser.get_images(json_result, out_dir)
@@ -185,7 +142,7 @@ def gen_normal_pages(md_info):
         _dump_images(parser, json_result, md_info)
         _dump_tables(parser, json_result, md_info)
 
-    _remove_misc_files(md_info)
+    remove_misc_files_previous_round(md_info)
     _dump_json_result(json_result, md_info)
 
     _dump_normal_md_page_from_lp_json_result(json_result, md_info)

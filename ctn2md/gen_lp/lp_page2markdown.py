@@ -17,7 +17,7 @@ if "./" not in sys.path:
 from ctn2md.src.md_process_plc import inject_plc_comment_to_page, has_injected_plc_comment, separate_heading_and_plc_comment, extract_plc_info_from_comment
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.gen_lp.lp_base import get_page_images, PAGE_IMG_STATUS
+from ctn2md.gen_lp.lp_base import get_page_images, PAGE_IMG_STATUS, analyze_image_content
 
 # 常量定义
 MIN_WIDTH = 198   # 图像最小宽度（像素）
@@ -347,10 +347,26 @@ class Page2Markdown():
             logging.exception(ex)
         return None
 
-    def get_img_ref_markdown(self, path_image):
-        # TODO: ethan_img_desc need description here
-        basename = os.path.basename(path_image)
-        return f"![]({basename})"    
+    def get_img_ref_markdown(self, fname_image, closest_heading=None):
+        dir_out = self.md_info.get_out_dir()
+        pname_image = os.path.join(dir_out, fname_image)
+        if not os.path.isfile(pname_image):
+            return None, "not_exist"
+
+        doc_title = self.md_info.get_doc_title()
+        if closest_heading is not None:
+            content_around = f"在文档标题 '{doc_title}' 中，在页面内容：{self.page['md'][:200]}... 里, 围绕标题：{closest_heading['md']}  下:"
+        else:
+            content_around = f"在文档标题 '{doc_title}' 中，在页面内容：{self.page['md'][:200]}... 里："
+
+        relevance_score, figure_name, picture_discription = analyze_image_content(self.md_info, pname_image, content_around=content_around)
+        if relevance_score is None:
+            return None, "not_relevance"
+
+        picture_discription = picture_discription.replace("\"", "\'")
+
+        basename = os.path.basename(pname_image)
+        return f"![{figure_name}]({basename} \"{picture_discription}\")\n", None  
 
     def composite_all_not_positioned_ref_as_markdown(self):
         img_refs = []
@@ -363,10 +379,12 @@ class Page2Markdown():
             if closest_heading is None or closest_heading["md"].startswith("#"):
                 fname = image.get("name", None)
                 if fname is not None:
-                    img_ref = self.get_img_ref_markdown(fname)
-                    img_refs.append(img_ref)
-                    image["pi_status"] = PAGE_IMG_STATUS.POSITIONED
-    
+                    img_ref, reason = self.get_img_ref_markdown(fname)
+                    if img_ref is not None:
+                        img_refs.append(img_ref)
+                        image["pi_status"] = PAGE_IMG_STATUS.POSITIONED
+                    else:
+                        image["pi_status"] = f"{PAGE_IMG_STATUS.REF_FILTERED}: {reason}"    
         for image in self.images_selected_page:
             if image.get("pi_status", None):
                 continue
@@ -374,9 +392,12 @@ class Page2Markdown():
                 continue
             fname = image.get("name", None)
             if fname is not None:
-                img_ref = self.get_img_ref_markdown(fname)
-                img_refs.append(img_ref)
-                image["pi_status"] = PAGE_IMG_STATUS.POSITIONED
+                img_ref, reason = self.get_img_ref_markdown(fname)
+                if img_ref is not None:
+                    img_refs.append(img_ref)
+                    image["pi_status"] = PAGE_IMG_STATUS.POSITIONED
+                else:
+                    image["pi_status"] = f"{PAGE_IMG_STATUS.REF_FILTERED}: {reason}"  
 
         md_imgs = ""
         if len(img_refs) > 0:
@@ -401,8 +422,12 @@ class Page2Markdown():
                             fname = image.get("name", None)
                             if fname is not None:
                                 closest_heading["md"] = "* " + closest_heading["md"]
-                                new_line = line + "\n" + self.get_img_ref_markdown(fname) + "\n"
-                                image["pi_status"] = f"{PAGE_IMG_STATUS.POSITIONED}: embeded"
+                                img_ref, reason = self.get_img_ref_markdown(fname, closest_heading=closest_heading)
+                                if img_ref is not None:
+                                    new_line = line + "\n" + img_ref + "\n"
+                                    image["pi_status"] = f"{PAGE_IMG_STATUS.POSITIONED}: embeded"
+                                else:
+                                    image["pi_status"] = f"{PAGE_IMG_STATUS.REF_FILTERED}: {reason}@embed"
                                 break
             if new_line is not None:
                 line = new_line
