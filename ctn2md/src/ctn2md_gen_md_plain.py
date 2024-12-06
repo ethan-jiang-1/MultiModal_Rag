@@ -82,6 +82,23 @@ def gen_md_plain(doc_pathname, md_info):
 
 class GenMd_Plain:
     @classmethod
+    def _does_gen_needed(cls, doc_pathname, out_dir, enforced_gen):
+        if out_dir is not None:
+            out_dir = MdInfo.get_suggested_out_dir(doc_pathname)
+        md_info = MdInfo(out_dir)
+
+        #md_info_path = None
+        gen_needed = False
+        if not enforced_gen:
+            #md_info_path = md_info.get_md_info_path()
+            pathname_s0_md = md_info.name_step_pathname(0)
+            if (pathname_s0_md is None) or (not os.path.exists(pathname_s0_md)):
+                gen_needed = True
+        else:
+            gen_needed = True
+        return md_info, gen_needed
+
+    @classmethod
     def generate_markdown(cls,
                           doc_pathname, 
                           out_dir=None, 
@@ -90,24 +107,17 @@ class GenMd_Plain:
         if not cls.does_support_doc_type(doc_pathname):
             raise ValueError(f"GenMd_Plain does not support {doc_pathname}")
 
-        md_info_path = None
-        gen_needed = False
-        if not enforced_gen:
-            md_info = MdInfo(out_dir)
-            md_info_path = md_info.get_md_info_path()
-            pathname_s0_md = md_info.name_step_pathname(0)
-            if (pathname_s0_md is None) or (not os.path.exists(pathname_s0_md)):
-                gen_needed = True
-        else:
-            gen_needed = True
+        md_info, gen_needed = cls._does_gen_needed(doc_pathname, out_dir, enforced_gen)
+
+        if isinstance(mdcontrols, dict):
+            md_info.update_mdcontrols(mdcontrols)
+            md_info.save()
 
         if gen_needed:
             md_info_path = gen_md_plain(doc_pathname, md_info)
             if md_info_path is None:
                 return None
 
-        if mdcontrols is not None:
-            md_info.update_mdcontrols(mdcontrols)
         return md_info_path
 
     @classmethod
