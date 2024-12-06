@@ -26,8 +26,17 @@ USER_PROMPT_SUMMARIZE = """
 ## 请按照以下要求完成任务：
 1. 阅读上述文档内容**original_markdown**。
 2. 从文档中提取核心知识点，生成**知识性总结**（summary）。
-3. 提取与文档内容相关的**关键词列表**（keywords），确保关键词有助于基于 BM25 或 FTS 算法的有效搜索。
-4. 严格按照以下 JSON 格式输出结果：
+3. 提取与文档内容相关的**关键词列表**（keywords_top， keywords_remain），确保关键词有助于基于 BM25 或 FTS 算法的有效搜索。
+4. 输出内容（summary， keywords_top， keywords_remain）的语言类型沿用输入的**original_markdown** 使用的语言类型（如中文，English），要保持一致。
+5. 严格按照以下 JSON 格式输出结果：
+
+```json
+{
+  "summary": "<内容的知识性总结，描述角度注重帮助用户进行知识查询>",
+  "keywords_top": "<按重要性排序的关键词最关键的头几个，用`,`分隔, 适合BM25搜索>"
+  "keywords_remain": "<按重要性排序的关键词剩余的关键词，用`,`分隔, 适合BM25搜索>"
+}
+
 
 ```json
 {

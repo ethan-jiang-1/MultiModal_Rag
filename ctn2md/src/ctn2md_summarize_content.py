@@ -50,7 +50,8 @@ if __name__ == "__main__":
     src_step_num = 2
 
     #md_info_path = "_work/ctn2md_前后排座椅间距定义 P1/_info.json"
-    md_info_path = "_work/ctn2md_高效沟通之黄金三角模型课程大纲/_info.json"
+    #md_info_path = "_work/ctn2md_高效沟通之黄金三角模型课程大纲/_info.json"
+    md_info_path = "_work/ctn2md_attention_is_all_you_need/_info.json"
 
     md_info_path = summarize_content_by_gpt(md_info_path, src_step_num=src_step_num)
     print(md_info_path)

@@ -357,9 +357,9 @@ class Page2Markdown():
 
         doc_title = self.md_info.get_doc_title()
         if closest_heading is not None:
-            content_around = f"在文档标题 '{doc_title}' 中，在页面内容：{self.page['md'][:200]}... 里, 围绕标题：{closest_heading['md']}  下:"
+            content_around = f"#document title: '{doc_title}'\n, ## content in current page: {self.page['md'][:400]}...\n ##around heading: {closest_heading['md']}:\n"
         else:
-            content_around = f"在文档标题 '{doc_title}' 中，在页面内容：{self.page['md'][:200]}... 里："
+            content_around = f"#document title: '{doc_title}'\n, ## content in current page: {self.page['md'][:400]}:\n"
 
         relevance_score, figure_name, picture_discription = analyse_image_content(self.md_info, pname_image, content_around=content_around)
         if relevance_score is None:

@@ -74,10 +74,11 @@ def generate_image_description(image_url, instruction=None, retries=5, backoff_i
             response = dashscope.MultiModalConversation.call(
                 model='qwen-vl-max-0809', 
                 messages=messages)
-            choice = response["output"]["choices"][0]
-            content = choice["message"]["content"]
-            answer_text = content[0]["text"]
-            return answer_text
+            if response is not None: 
+                choice = response["output"]["choices"][0]
+                content = choice["message"]["content"]
+                answer_text = content[0]["text"]
+                return answer_text
         except Exception as e:
             logging.exception(e)
             if attempt == retries - 1:

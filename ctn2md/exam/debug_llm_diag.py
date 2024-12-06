@@ -47,7 +47,9 @@ def do_diag_reproduce(llm_diag_pathname):
 if __name__ == "__main__":
     setup_logger_handlers()
     
-    debug_filename = "_work/md_samples/llm_fhl_heading_q11.txt"
+    #debug_filename = "_work/md_samples/llm_fhl_heading_q11.txt"
+    #debug_filename = "_work/md_samples/llm_gvi_vllminst_q6000.txt"
+    debug_filename = "_work/md_samples/llm_gvi_vllminst_q31.txt"
 
     dir_root = get_root_dir()
     llm_diag_pathname = os.path.join(dir_root, debug_filename)
