@@ -52,7 +52,7 @@ def generate_markdown_llamaparse(md_info, need_normal_step=True, need_preminum_s
             gen_premium_pages(md_info)
 
     pathname_step0 = _save_final_md_from_pages(md_info)
-    md_info.add_step_into_md_info_mdflow(pathname_step0, actor="gen_md_llamaparse")
+    md_info.add_step_into_md_info_mdflow(pathname_step0, actor="generate_markdown_llamaparse")
     md_info.save()
 
     post_scan_llamaparse_result(md_info, json_result=json_result)
