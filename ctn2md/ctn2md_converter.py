@@ -14,35 +14,20 @@ if "./" not in sys.path:
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
-from ctn2md.src.ctn2md_gen_md_llamaparse import gen_md_llamaparse
 from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_gpt
 from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_heirarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_gpt
 from ctn2md.src.make_final_md import make_final_md
+from ctn2md.utils.util_ctn_type import CTN_TYPE
 
-def initial_gen_md_by_llamaparse(ctn_pathname, 
-                                 out_dir=None, 
-                                 enforced_gen=False, 
-                                 mdcontrols=None):
-    md_info_path = None
-    gen_needed = False
-    if not enforced_gen:
-        md_info = MdInfo(out_dir)
-        md_info_path = md_info.get_md_info_path()
-        pathname_s0_md = md_info.name_step_pathname(0)
-        if (pathname_s0_md is None) or (not os.path.exists(pathname_s0_md)):
-            gen_needed = True
+def select_md_generator(doc_pathname):
+    ctn_type = CTN_TYPE.get_ctn_type_by_doc_pathname(doc_pathname)
+    if ctn_type == CTN_TYPE.MD:
+        from ctn2md.src.ctn2md_gen_md_plain import GenMd_Plain
+        return GenMd_Plain
     else:
-        gen_needed = True
-
-    if gen_needed:
-        md_info_path = gen_md_llamaparse(ctn_pathname, out_dir)
-        if md_info_path is None:
-            return None
-
-    if mdcontrols is not None:
-        md_info.update_mdcontrols(mdcontrols)
-    return md_info_path
+        from ctn2md.src.ctn2md_gen_md_llamaparse import GenMd_LlamaParse
+        return GenMd_LlamaParse
 
 def _reset_md_flow(md_info_path):
     md_info = MdInfo(md_info_path)
@@ -52,33 +37,42 @@ def _reset_md_flow(md_info_path):
             del dict_md_flow[key]
     md_info.save()
 
-def _do_content2md_convert_core(ctn_pathname, 
+def _do_content2md_convert_core(doc_pathname, 
                                 out_dir=None, 
                                 enforced_gen=False, 
                                 mdcontrols=None):
     if out_dir is None:
-        out_dir = MdInfo.get_suggested_out_dir(ctn_pathname)
+        out_dir = MdInfo.get_suggested_out_dir(doc_pathname)
     logging.warning(f"work out_dir: {out_dir}")
     os.makedirs(out_dir, exist_ok=True)
 
-    md_info_path = initial_gen_md_by_llamaparse(ctn_pathname, out_dir=out_dir, enforced_gen=enforced_gen, mdcontrols=mdcontrols)
+    md_generator = select_md_generator(doc_pathname)
+    if md_generator is None:
+        logging.error("")
+        return None 
+
+    md_info_path = md_generator.generate_markdown(doc_pathname, out_dir=out_dir, enforced_gen=enforced_gen, mdcontrols=mdcontrols)
     if md_info_path is None:
         logging.error(f"DCCC: failed {md_info_path} @initial_gen_md_by_llamaparse")
         return None
 
     _reset_md_flow(md_info_path)
 
-    md_info_path = fix_headings_plc_by_gpt(md_info_path, src_step_num=0)
-    if md_info_path is None:
-        logging.error(f"DCCC: failed {md_info_path} @fix_headings_plc_by_gpt")
-        return None 
+    src_step_num = 0
+    if md_generator.need_followup_step("fix_headings_plc_by_gpt"):
+        md_info_path = fix_headings_plc_by_gpt(md_info_path, src_step_num=src_step_num)
+        if md_info_path is None:
+            logging.error(f"DCCC: failed {md_info_path} @fix_headings_plc_by_gpt")
+            return None 
 
-    md_info_path = inject_section_heirarchy(md_info_path, src_step_num=1)
+    src_step_num += 1
+    md_info_path = inject_section_heirarchy(md_info_path, src_step_num=src_step_num)
     if md_info_path is None:
         logging.error(f"DCCC: failed {md_info_path} @inject_section_heirarchy")
         return None
 
-    md_info_path = summarize_content_by_gpt(md_info_path, src_step_num=2)
+    src_step_num += 1
+    md_info_path = summarize_content_by_gpt(md_info_path, src_step_num=src_step_num)
     if md_info_path is None:
         logging.error(f"DCCC: failed {md_info_path} @summarize_content_by_gpt")
         return None       
@@ -87,10 +81,10 @@ def _do_content2md_convert_core(ctn_pathname,
 
     return final_md_path
 
-def do_content2md_convert(ctn_pathname, out_dir=None, enforced_gen=False, mdcontrols=None):
+def do_content2md_convert(doc_pathname, out_dir=None, enforced_gen=False, mdcontrols=None):
     final_md_path = None
     try:
-        final_md_path = _do_content2md_convert_core(ctn_pathname,
+        final_md_path = _do_content2md_convert_core(doc_pathname,
                                                     out_dir=out_dir,
                                                     enforced_gen=enforced_gen,
                                                     mdcontrols=mdcontrols)
@@ -130,8 +124,10 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/LongRAG.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/DIFFERENTIAL TRANSFORMER 2410.05258v1.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/Winning Solution For Meta KDD Cup’ 24 2410.00005v1.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/attention_is_all_you_need.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/attention_is_all_you_need.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/Regioselective hydroxylation of cholecalciferol.pdf"
+
+    doc_pathname = "_work/ctn2md_attention_is_all_you_need/attention_is_all_you_need___pdf_s0.md"
 
     out_dir = None
     mdcontrols = None

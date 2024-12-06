@@ -3,6 +3,8 @@ class CTN_TYPE:
     PPT = "PPT"
     DOC = "DOC"
     XLS = "XLS"
+    MD = "MD"
+
     AUTO = "AUTO"
     UNKNOWN = "UNKNOWN"
 
@@ -19,8 +21,15 @@ class CTN_TYPE:
                 return cls.DOC
             elif doc_type in ["xls", "xlsx"]:
                 return cls.XLS
+            elif doc_type in ["md"]:
+                return cls.MD
         
         return cls.UNKNOWN
+
+    @classmethod
+    def get_ctn_type_by_doc_pathname(cls, doc_pathname):
+        ext_name = doc_pathname.split(".")[-1]
+        return cls.get_ctn_type_by_doc_type(ext_name)
 
 
     
