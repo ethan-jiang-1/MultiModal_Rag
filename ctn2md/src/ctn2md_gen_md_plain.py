@@ -4,7 +4,7 @@ import sys
 import logging
 import rich
 #import random
-#import re
+import re
 import shutil
 
 load_dotenv()
@@ -13,19 +13,66 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 
-def gen_md_plain(doc_pathname, out_dir):
+
+def _copy_img_files_in_markdown(doc_pathname, out_dir):
+    """
+    Scans the Markdown file for image references, copies the images from `src_dir` to `out_dir`.
+
+    :param doc_pathname: Path to the Markdown file
+    :param out_dir: Output directory where images will be copied
+    """
+    # Get the source directory of the Markdown file
+    src_dir = os.path.dirname(doc_pathname)
+
+    # Ensure the output directory exists
+    os.makedirs(out_dir, exist_ok=True)
+
+    # Read the content of the Markdown file
+    with open(doc_pathname, 'r', encoding='utf-8') as md_file:
+        content = md_file.read()
+
+    # Find all image URLs in the Markdown file (ignoring tooltips or labels)
+    image_refs = re.findall(r'!\[.*?\]\(([^\)]+?)\s*(?:\".*?\")?\)', content)
+
+    # Process each image reference
+    for ref_url in image_refs:
+        # Resolve the full source path of the image
+        src_path = os.path.join(src_dir, ref_url)
+
+        # If the source path exists, copy it to the output directory
+        if os.path.exists(src_path):
+            # Compute the destination path
+            dest_path = os.path.join(out_dir, ref_url)
+
+            # Create directories for the destination path if necessary
+            os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+
+            # Copy the file
+            shutil.copy2(src_path, dest_path)
+            logging.info(f"Copied: {src_path} -> {dest_path}")
+        else:
+            logging.info(f"Warning: File not found - {src_path}")
+    return image_refs
+    
+
+def gen_md_plain(doc_pathname, md_info):
     logging.info(f"##MDFLOW##: gen_md_plain started...")
 
-    md_info = MdInfo(out_dir)
+    out_dir = md_info.get_out_dir()
     md_info.set_gen_engine("llamaparse:plain")
     md_info.set_doc_pathname(doc_pathname)
 
     pathname_s0_md = md_info.name_step_pathname(0)
     shutil.copy(doc_pathname, pathname_s0_md)
-    #TODO: referenced images should be copied over as well
+    md_info.add_step_into_md_info_mdflow(pathname_s0_md, actor="gen_md_plain")
+    md_info.save()
+
+    img_refs = _copy_img_files_in_markdown(doc_pathname, out_dir)
+    md_info[MIFN.FNAMES_IMGS] = img_refs
+    md_info.save()
 
     md_info_path = md_info.get_md_info_path()
 
@@ -55,7 +102,7 @@ class GenMd_Plain:
             gen_needed = True
 
         if gen_needed:
-            md_info_path = gen_md_plain(doc_pathname, out_dir)
+            md_info_path = gen_md_plain(doc_pathname, md_info)
             if md_info_path is None:
                 return None
 
@@ -78,21 +125,15 @@ class GenMd_Plain:
 
 
 if __name__ == "__main__":
-    #doc_pathname = "datasrc/test/raw_docs/AIGC时代的人力资源管理进化(徐刚).pdf"
-    #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
-    #doc_pathname = "datasrc/test/raw_docs/1. 座椅STO间隙 P1.pptx"
-    #doc_pathname = "datasrc/test/raw_docs/管理者角色定位与认知课程大纲.docx"
-    #doc_pathname = "datasrc/test/raw_docs/考勤修改统一规则.xlsx"
-    #doc_pathname = "datasrc/test/raw_docs/5. back panel 与环境匹配工程校核_P2.pptx"
-    
-    #doc_pathname = "datasrc/exam/raw_docs/ChatGPT intimates a tantalizing future_compressed.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
+    #doc_pathname = "_work/ctn2md_attention_is_all_you_need/attention_is_all_you_need___pdf_s0.md"
+    doc_pathname = "_work/ctn2md_attention_is_all_you_need/attention_is_all_you_need___pdf.md"
 
     out_dir = MdInfo.get_suggested_out_dir(doc_pathname)
+    md_info = MdInfo(out_dir)
 
     setup_logger_handlers()
     os.makedirs(out_dir, exist_ok=True)
-    md_info_path = gen_md_plain(doc_pathname, out_dir)
+    md_info_path = gen_md_plain(doc_pathname, md_info)
     print(md_info_path)
 
     md_info = MdInfo(md_info_path)
