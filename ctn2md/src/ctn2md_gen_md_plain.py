@@ -25,6 +25,8 @@ def gen_md_plain(doc_pathname, out_dir):
 
     pathname_s0_md = md_info.name_step_pathname(0)
     shutil.copy(doc_pathname, pathname_s0_md)
+    #TODO: referenced images should be copied over as well
+
     md_info_path = md_info.get_md_info_path()
 
     logging.info(f"##MDFLOW##: gen_md_plain end")
