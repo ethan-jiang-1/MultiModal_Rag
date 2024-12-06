@@ -22,7 +22,7 @@ _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
 _MIB_DEFAULT_OUT_ROOT = "_work"
 
-
+# Names of the field in _info.json  (read_write)
 class MIFN:  # Markdown Field Name
     VERSION = "version"
 
@@ -69,6 +69,8 @@ class MIFN:  # Markdown Field Name
     FNAME_FINAL_MD = "fname_final_md"
     FNAME_FINAL_SUM = "fname_final_sum"
 
+# Names of the field in _info_ctrl.json (read_only)
+# dictionary used to control inner flow...
 _DEFAULT_MDCONTROL = {
     "mctl_min_img_relevance_score": 0.2,
     "mctl_move_aux_files": True,
