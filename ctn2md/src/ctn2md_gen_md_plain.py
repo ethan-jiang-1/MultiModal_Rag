@@ -15,7 +15,7 @@ if "./" not in sys.path:
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.utils.util_ctn_type import CTN_TYPE
-
+from ctn2md.src.ctn2md_gen_md_base import GenMd_Base
 
 def _copy_img_files_in_markdown(doc_pathname, out_dir):
     """
@@ -80,23 +80,8 @@ def gen_md_plain(doc_pathname, md_info):
     return md_info_path
 
 
-class GenMd_Plain:
-    @classmethod
-    def _does_gen_needed(cls, doc_pathname, out_dir, enforced_gen):
-        if out_dir is not None:
-            out_dir = MdInfo.get_suggested_out_dir(doc_pathname)
-        md_info = MdInfo(out_dir)
-
-        #md_info_path = None
-        gen_needed = False
-        if not enforced_gen:
-            #md_info_path = md_info.get_md_info_path()
-            pathname_s0_md = md_info.name_step_pathname(0)
-            if (pathname_s0_md is None) or (not os.path.exists(pathname_s0_md)):
-                gen_needed = True
-        else:
-            gen_needed = True
-        return md_info, gen_needed
+class GenMd_Plain(GenMd_Base):
+    _supported_cnt_types = [CTN_TYPE.MD]
 
     @classmethod
     def generate_markdown(cls,
@@ -107,7 +92,7 @@ class GenMd_Plain:
         if not cls.does_support_doc_type(doc_pathname):
             raise ValueError(f"GenMd_Plain does not support {doc_pathname}")
 
-        md_info, gen_needed = cls._does_gen_needed(doc_pathname, out_dir, enforced_gen)
+        md_info, gen_needed = cls.does_gen_needed(doc_pathname, out_dir, enforced_gen)
 
         if isinstance(mdcontrols, dict):
             md_info.update_mdcontrols(mdcontrols)
@@ -117,21 +102,8 @@ class GenMd_Plain:
             md_info_path = gen_md_plain(doc_pathname, md_info)
             if md_info_path is None:
                 return None
-
-        return md_info_path
-
-    @classmethod
-    def need_followup_step(cls, step_name):
-        if step_name == "fix_headings_plc_by_gpt":
-            return True 
-        return True
-
-    @classmethod
-    def does_support_doc_type(cls, doc_pathname):
-        ctn_type = CTN_TYPE.get_ctn_type_by_doc_pathname(doc_pathname)
-        if ctn_type in [CTN_TYPE.MD]:
-            return True
-        return False
+        
+        return md_info.get_md_info_path()
 
 
 if __name__ == "__main__":
