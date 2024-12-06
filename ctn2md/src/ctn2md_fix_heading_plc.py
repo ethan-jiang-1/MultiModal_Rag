@@ -133,7 +133,7 @@ def fix_headings_plc_by_gpt(md_info_path, src_step_num=None, dst_step_num=None):
         fhl_org = md_info[MIFN.FHL_ORG]
     
     #rich.print(fhl)
-    # TODO： ethan_heading_recover gpt-4o-mini not able to handle yet
+    # TODO: ethan_heading_recover gpt-4o-mini not able to handle yet
     #model = "gpt-4o-mini"  
     model = "gpt-4o"
     fhl_map = fix_heading_lvl_markdown(fhl_org, ctn_type=md_info.get_ctn_type(), model=model)
@@ -145,7 +145,7 @@ def fix_headings_plc_by_gpt(md_info_path, src_step_num=None, dst_step_num=None):
                "new_heading_lines": [item["mapped_line"] for item in optimized_heading_lines_map]}
     rich.print(o2n_map)
 
-    #TODO: ethan_finial_md we need fix the page_md as well, as the final one are come from page_md
+    # TODO: ethan_finial_md we need fix the page_md as well, as the final one are come from page_md
     # do we really need make dependence on page_md? better get rid of such dependence
     md_text_new1, unprocessed_heading_lines_map = _update_markdown_heading_content(md_text_new, md_info, fhl_map)
     rich.print(unprocessed_heading_lines_map)

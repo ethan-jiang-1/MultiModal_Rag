@@ -135,8 +135,6 @@ def _find_closest_heading(image, headings, page, y_threshold_ratio=None, x_toler
 
     return closest_heading
 
-
-# TODO: ethan_img_ref: img_ref logics should be absorbed by Page2Markdown where the best place to have knowledge to get it right
 class Page2Markdown():
     def __init__(self, job_id, page, total_pages, md_info, pages_images):
         self.job_id = job_id
@@ -252,7 +250,7 @@ class Page2Markdown():
                 self.images_unselected.append(image)
 
     def analyse_images_filter_content(self):
-        #TODO: ethan_img_ref: if the image has relvance content to query
+        # TODO: ethan_img_ref: if the image has relvance content to query
         pass
 
     def _find_heading_for_plc_id(self, plc_id):

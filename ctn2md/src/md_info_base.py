@@ -296,7 +296,6 @@ class MdInfo:
             return int(match.group(1))
         return None
 
-    #TODO： ethan_last_node, should let converter know which node is the final one, but not last one, as we do not clear up the flow.
     def add_step_into_md_info_mdflow(self, pathname_step_md, actor=None, extra=None):
         basename = os.path.basename(pathname_step_md)
         step_num = self.get_step_num_from_pathname(pathname_step_md)

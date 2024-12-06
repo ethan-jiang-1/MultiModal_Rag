@@ -114,7 +114,7 @@ def load_imgs_from_pdf(kb_name,
                 # try:
                 bbox = block['bbox']
                 # skip image that width=398 and hight=137 -> Typically LOGO
-                # TODO ? skip some special case
+                # TODO: ignore: ethan_hiqa_new_doc? skip some special case
                 # if (bbox[2] - bbox[0])*scale - LOGO_WIDTH <= 10 and (bbox[3] - bbox[1])*scale - LOGO_HEIGHT <= 10:
                 #     continue
                 # Scale the bbox coordinates
@@ -212,7 +212,7 @@ def rebuild_img_index_from_pdf(kb_name, reforced=False):
         file_names = os.listdir(f'./datasets/{kb_name}/src_docs')
         file_names = sorted(file_names)
         for pdf_filename in tqdm.tqdm(file_names):
-            # TODO: ethan_hiqa_new_doc why we need such hack? bug_fix we have hard time to extract image from scanned file
+            # TODO: ignore: ethan_hiqa_new_doc? why we need such hack? bug_fix we have hard time to extract image from scanned file
             if pdf_filename.find("业绩案例") != -1:
                 continue
             load_imgs_from_pdf(kb_name, pdf_filename)
