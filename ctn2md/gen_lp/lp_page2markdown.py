@@ -218,7 +218,6 @@ class Page2Markdown():
         self.images_unselected = []
 
         self.analyse_images_filter_scan()
-        self.analyse_images_filter_content()
         self.analyse_images_embd_control()
         self.analyse_images_embd_auto()
 
@@ -248,10 +247,6 @@ class Page2Markdown():
             else:
                 image["pi_status"] = f"{PAGE_IMG_STATUS.REMOVED}: {reason}"
                 self.images_unselected.append(image)
-
-    def analyse_images_filter_content(self):
-        # TODO: ethan_img_ref: if the image has relvance content to query
-        pass
 
     def _find_heading_for_plc_id(self, plc_id):
         if plc_id.find(":") != -1:
