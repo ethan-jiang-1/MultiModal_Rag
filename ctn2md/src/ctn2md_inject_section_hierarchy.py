@@ -367,8 +367,8 @@ if __name__ == "__main__":
 
     src_step_num = 1
     dst_step_num = 21
-    md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
-    #md_info_path = "_work/ctn2md_-波士顿咨询：银行业生成式AI应用报告（2023）/_info.json"
+    md_info_path = "_output/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
+    #md_info_path = "_output/ctn2md_-波士顿咨询：银行业生成式AI应用报告（2023）/_info.json"
 
     md_info_path = inject_section_heirarchy(md_info_path, src_step_num=src_step_num, dst_step_num=dst_step_num)
 

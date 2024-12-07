@@ -73,7 +73,7 @@ if __name__ == "__main__":
     need_normal_step=False
     need_preminum_step=True
     
-    md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
+    md_info_path = "_output/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
 
     md_info = MdInfo(md_info_path)
 

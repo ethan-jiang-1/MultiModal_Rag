@@ -112,8 +112,8 @@ class GenMd_Plain(GenMd_Base):
 
 
 if __name__ == "__main__":
-    #doc_pathname = "_work/ctn2md_attention_is_all_you_need/attention_is_all_you_need___pdf_s0.md"
-    doc_pathname = "_work/ctn2md_attention_is_all_you_need/attention_is_all_you_need___pdf.md"
+    #doc_pathname = "_output/ctn2md_attention_is_all_you_need/attention_is_all_you_need___pdf_s0.md"
+    doc_pathname = "_output/ctn2md_attention_is_all_you_need/attention_is_all_you_need___pdf.md"
 
     out_dir = MdInfo.get_suggested_out_dir(doc_pathname, GenMd_Plain.od_suffix)
     md_info = MdInfo(out_dir)

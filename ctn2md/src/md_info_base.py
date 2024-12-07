@@ -20,7 +20,7 @@ _MIB_INFO_VER = "0.5.0"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
-_MIB_DEFAULT_OUT_ROOT = "_work"
+_MIB_DEFAULT_OUT_ROOT = "_output"
 
 # Names of the field in _info.json  (read_write)
 class MIFN:  # Markdown Field Name
@@ -380,9 +380,9 @@ if __name__ == "__main__":
     import random
 
     pathnames = []
-    pathnames.append("_work/ctn2md_23/AIGC时代的人力资源管理进化(徐刚)___pdf_s0.md")
-    pathnames.append("_work/ctn2md_23/AIGC时代的人力资源管理进化(徐刚)___pdf_s10.md")
-    pathnames.append("_work/ctn2md_23/AIGC时代的人力资源管理进化(徐刚)___pdf_s.md")
+    pathnames.append("_output/ctn2md_23/AIGC时代的人力资源管理进化(徐刚)___pdf_s0.md")
+    pathnames.append("_output/ctn2md_23/AIGC时代的人力资源管理进化(徐刚)___pdf_s10.md")
+    pathnames.append("_output/ctn2md_23/AIGC时代的人力资源管理进化(徐刚)___pdf_s.md")
     pathnames.append("AIGC时代的人力资源管理进化(徐刚)___pdf_s100.md")
  
     for ndx, pathname in enumerate(pathnames):
@@ -390,7 +390,7 @@ if __name__ == "__main__":
         print(ndx, num)
         print(MdInfo.extract_doc_title(pathname))
 
-    out_dir = f"_work/ctn2md_{random.randint(10,99)}"
+    out_dir = f"_output/ctn2md_{random.randint(10,99)}"
     os.makedirs(out_dir, exist_ok=True)
     print(out_dir)
     md_info = MdInfo(out_dir)
@@ -398,14 +398,14 @@ if __name__ == "__main__":
     print(md_info["hi"])
     md_info.save()
 
-    md_info_path = "_work/ctn2md_21/info.json"
+    md_info_path = "_output/ctn2md_21/info.json"
     md_info = MdInfo(md_info_path)
     rich.print(md_info)
 
-    md_info_path = "_work/ctn2md_21/AIGC时代的人力资源管理进化(徐刚)___pdf_s0.md"
+    md_info_path = "_output/ctn2md_21/AIGC时代的人力资源管理进化(徐刚)___pdf_s0.md"
     md_info = MdInfo(md_info_path)
     rich.print(md_info)
 
-    md_info_path = "_work/ctn2md_21"
+    md_info_path = "_output/ctn2md_21"
     md_info = MdInfo(md_info_path)
     rich.print(md_info)

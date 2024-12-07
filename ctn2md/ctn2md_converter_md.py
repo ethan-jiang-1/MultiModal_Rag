@@ -79,7 +79,7 @@ def do_content2md_convert(doc_pathname, out_dir=None, enforced_gen=False, mdcont
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    doc_pathname = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lp/深度学习在视电阻率快速反演中的研究___pdf.md"
+    doc_pathname = "_output/ctn2md_深度学习在视电阻率快速反演中的研究_lp/深度学习在视电阻率快速反演中的研究___pdf.md"
 
     out_dir = None
     mdcontrols = None

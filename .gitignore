@@ -125,8 +125,10 @@ venvx
 
 _work/
 _work
-_ctn2md_output/
-_ctn2md_output
+_output/
+_output
+_*
+_*/
 
 share_url.txt
 *.orig

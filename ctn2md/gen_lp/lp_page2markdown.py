@@ -438,10 +438,10 @@ class Page2Markdown():
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    #md_info_path = "_work/ctn2md_LongRAG/_info.json"
-    #md_info_path = "_work/ctn2md_业绩案例_上汽内外饰DRE外包框架服务合同/_info.json"
-    #md_info_path = "_work/ctn2md_业绩案例_上汽内外饰部CAD外包框架服务合同/_info.json"
-    md_info_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
+    #md_info_path = "_output/ctn2md_LongRAG/_info.json"
+    #md_info_path = "_output/ctn2md_业绩案例_上汽内外饰DRE外包框架服务合同/_info.json"
+    #md_info_path = "_output/ctn2md_业绩案例_上汽内外饰部CAD外包框架服务合同/_info.json"
+    md_info_path = "_output/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
     page_ndx = 3
 
 
