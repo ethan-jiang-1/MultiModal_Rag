@@ -82,29 +82,7 @@ def _adsorb_rects_to_rects(source_rects: List[BaseGeometry], target_rects: List[
     return new_source_rects, target_rects
 
 
-def _parse_rects(page: fitz.Page) -> List[Tuple[float, float, float, float]]:
-    """
-    Parse drawings in the page and merge adjacent rectangles.
-    """
-
-    # 提取画的内容
-    drawings = page.get_drawings()
-
-    # 忽略掉长度小于30的水平直线
-    is_short_line = lambda x: abs(x['rect'][3] - x['rect'][1]) < 1 and abs(x['rect'][2] - x['rect'][0]) < 30 # noqa
-    drawings = [drawing for drawing in drawings if not is_short_line(drawing)]
-
-    # 转换为shapely的矩形
-    rect_list = [sg.box(*drawing['rect']) for drawing in drawings]
-
-    # 提取图片区域
-    images = page.get_image_info()
-    image_rects = [sg.box(*image['bbox']) for image in images]
-
-    # 合并drawings和images
-    # HF0: ethan leave image alone (here)
-    #rect_list += image_rects
-
+def _merge_all_rects(page, rect_list):
     merged_rects = _merge_rects(rect_list, distance=10, horizontal_distance=100)
     merged_rects = [rect for rect in merged_rects if explain_validity(rect) == 'Valid Geometry']
 
@@ -120,9 +98,35 @@ def _parse_rects(page: fitz.Page) -> List[Tuple[float, float, float, float]]:
 
     # 过滤比较小的矩形
     merged_rects = [rect for rect in merged_rects if rect.bounds[2] - rect.bounds[0] > 20 and rect.bounds[3] - rect.bounds[1] > 20]
+    return merged_rects
+
+def _parse_rects(page: fitz.Page) -> List[Tuple[float, float, float, float]]:
+    """
+    Parse drawings in the page and merge adjacent rectangles.
+    """
+
+    # 提取画的内容
+    drawings = page.get_drawings()
+
+    # 忽略掉长度小于30的水平直线
+    is_short_line = lambda x: abs(x['rect'][3] - x['rect'][1]) < 1 and abs(x['rect'][2] - x['rect'][0]) < 30 # noqa
+    drawings = [drawing for drawing in drawings if not is_short_line(drawing)]
+
+    # 转换为shapely的矩形
+    rect_list_drawing = [sg.box(*drawing['rect']) for drawing in drawings]
+
+    # 提取图片区域
+    images = page.get_image_info()
+    rect_list_image = [sg.box(*image['bbox']) for image in images]
+
+    # 合并drawings和images
+    # HF0: ethan leave image alone (here)
+    #rect_list += image_rects
+    merged_rects_drawing = _merge_all_rects(page, rect_list_drawing)
+    merged_rects_image = _merge_all_rects(page, rect_list_image)
 
     #HF0: ethan add image here (image will not be merged)
-    merged_rects += image_rects
+    merged_rects = merged_rects_drawing + merged_rects_image
 
     return [rect.bounds for rect in merged_rects]
 
@@ -151,17 +155,23 @@ def parse_pdf_to_images(pdf_path: str, output_dir: str = './', job_id: str = "")
         logging.info(f"cal rects for {page_index} done.")
 
         page_image = page.get_pixmap(matrix=fitz.Matrix(3, 3))
-        fname_page_name = f'{job_id}-page_{page_index}.png'
-        page_image.save(os.path.join(output_dir, fname_page_name))
+        try:
+            fname_page_name = f'{job_id}-page_{page_index}.png'
+            page_image.save(os.path.join(output_dir, fname_page_name))
+        except Exception as ex:
+            logging.exception(ex)
 
         for index, rect in enumerate(rects):
             index += 1
             fitz_rect = fitz.Rect(rect)
             # 保存页面为图片
             pix = page.get_pixmap(clip=fitz_rect, matrix=fitz.Matrix(4, 4))
-            fname_rect_name = f'{job_id}-img_{page_index}_{index}.png'
-            pix.save(os.path.join(output_dir, fname_rect_name))
-            fname_rect_images.append(fname_rect_name)
+            try:
+                fname_rect_name = f'{job_id}-img_{page_index}_{index}.png'
+                pix.save(os.path.join(output_dir, fname_rect_name))
+                fname_rect_images.append(fname_rect_name)
+            except Exception as ex:
+                logging.exception(ex)
 
             # # 在页面上绘制红色矩形
             big_fitz_rect = fitz.Rect(fitz_rect.x0 - 1, fitz_rect.y0 - 1, fitz_rect.x1 + 1, fitz_rect.y1 + 1)
@@ -179,8 +189,12 @@ def parse_pdf_to_images(pdf_path: str, output_dir: str = './', job_id: str = "")
             page.insert_text((text_x, text_y), fname_rect_name, fontsize=10, color=(1, 0, 0))
 
         page_image_with_rects = page.get_pixmap(matrix=fitz.Matrix(3, 3))
-        fname_page_rect_name = f'{job_id}-page_{page_index}_rects.png'
-        page_image_with_rects.save(os.path.join(output_dir, fname_page_rect_name))
+        try:
+            fname_page_rect_name = f'{job_id}-page_{page_index}_rects.png'
+            page_image_with_rects.save(os.path.join(output_dir, fname_page_rect_name))
+        except Exception as ex:
+            logging.exception(ex)
+
         image_infos.append((fname_page_name, fname_page_rect_name, fname_rect_images))
 
     pdf_document.close()
