@@ -171,9 +171,11 @@ class MdInfo:
         return doc_title
 
     @classmethod
-    def get_suggested_out_dir(cls, pathname_org_doc):
+    def get_suggested_out_dir(cls, pathname_org_doc, suffix=""):
         doc_title = cls.extract_doc_title(pathname_org_doc)
         out_dir = f"{_MIB_DEFAULT_OUT_ROOT}/ctn2md_{doc_title}"
+        if len(suffix) != 0:
+            out_dir += f"_{suffix}"
         return out_dir
 
     def load(self):

@@ -19,11 +19,12 @@ from ctn2md.utils.util_ctn_type import CTN_TYPE
 
 class GenMd_Base:
     _supported_cnt_types = []
+    od_suffix = ""
 
     @classmethod
     def does_gen_needed(cls, doc_pathname, out_dir, enforced_gen):
         if out_dir is not None:
-            out_dir = MdInfo.get_suggested_out_dir(doc_pathname)
+            out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=cls.od_suffix)
         md_info = MdInfo(out_dir)
 
         #md_info_path = None

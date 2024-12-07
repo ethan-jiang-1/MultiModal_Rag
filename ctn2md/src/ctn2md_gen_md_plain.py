@@ -82,6 +82,7 @@ def _gen_md_plain(doc_pathname, md_info):
 
 class GenMd_Plain(GenMd_Base):
     _supported_cnt_types = [CTN_TYPE.MD]
+    od_suffix = ""
 
     @classmethod
     def generate_markdown(cls,
@@ -110,7 +111,7 @@ if __name__ == "__main__":
     #doc_pathname = "_work/ctn2md_attention_is_all_you_need/attention_is_all_you_need___pdf_s0.md"
     doc_pathname = "_work/ctn2md_attention_is_all_you_need/attention_is_all_you_need___pdf.md"
 
-    out_dir = MdInfo.get_suggested_out_dir(doc_pathname)
+    out_dir = MdInfo.get_suggested_out_dir(doc_pathname, GenMd_Plain.od_suffix)
     md_info = MdInfo(out_dir)
 
     setup_logger_handlers()

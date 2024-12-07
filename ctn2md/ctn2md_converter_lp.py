@@ -19,6 +19,7 @@ from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_heirarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_gpt
 from ctn2md.src.make_final_md import make_final_md
 from ctn2md.utils.util_ctn_type import CTN_TYPE
+from ctn2md.src.ctn2md_gen_md_llamaparse import GenMd_LlamaParse
 
 def select_md_generator(doc_pathname):
     ctn_type = CTN_TYPE.get_ctn_type_by_doc_pathname(doc_pathname)
@@ -26,7 +27,6 @@ def select_md_generator(doc_pathname):
         from ctn2md.src.ctn2md_gen_md_plain import GenMd_Plain
         return GenMd_Plain
     else:
-        from ctn2md.src.ctn2md_gen_md_llamaparse import GenMd_LlamaParse
         return GenMd_LlamaParse
 
 def _reset_md_flow(md_info_path):
@@ -42,7 +42,7 @@ def _do_content2md_convert_core(doc_pathname,
                                 enforced_gen=False, 
                                 mdcontrols=None):
     if out_dir is None:
-        out_dir = MdInfo.get_suggested_out_dir(doc_pathname)
+        out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=GenMd_LlamaParse.od_suffix)
     logging.warning(f"work out_dir: {out_dir}")
     os.makedirs(out_dir, exist_ok=True)
 

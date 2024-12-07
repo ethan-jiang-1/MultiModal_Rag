@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
     #doc_pathname = "datasrc/exam/raw_docs/attention_is_all_you_need.pdf"
     doc_pathname = "datasrc/exam/raw_docs/LongRAG.pdf"
-    output_dir = MdInfo.get_suggested_out_dir(doc_pathname)
+    output_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix='lvlm')
 
     job_id = get_job_id(doc_pathname)
 
