@@ -14,6 +14,7 @@ if "./" not in sys.path:
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
+from ctn2md.gen_lvlm.lvlm_gen_pages import gen_pages_lvlm
 
    
 def _save_final_md_from_pages(md_info):
@@ -37,15 +38,20 @@ def _save_final_md_from_pages(md_info):
     return pathname_step0
 
 def generate_markdown_lvlm(md_info, lvlm_model="gpt-4o"):
+    doc_pathname = md_info.get_doc_pathname()
+    if (doc_pathname is None) or (not os.path.isfile(doc_pathname)):
+        raise ValueError(f"doc_pathname is not valid {doc_pathname}")
+
     out_dir = md_info.get_out_dir()
     os.makedirs(out_dir, exist_ok=True)
 
+    gen_pages_lvlm(md_info)
 
     pathname_step0 = _save_final_md_from_pages(md_info)
     md_info.add_step_into_md_info_mdflow(pathname_step0, actor=f"generate_markdown_lvlm@{lvlm_model}")
     md_info.save()
 
-    doc_pathname = md_info.get_doc_pathname()
+
     logging.info(f"original doc: {doc_pathname}")
     logging.info(f"fname_output: {os.path.basename(pathname_step0)}")
     

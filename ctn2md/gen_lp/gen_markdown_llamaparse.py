@@ -39,6 +39,10 @@ def _save_final_md_from_pages(md_info):
     return pathname_step0
 
 def generate_markdown_llamaparse(md_info, need_normal_step=True, need_preminum_step=True):
+    doc_pathname = md_info.get_doc_pathname()
+    if (doc_pathname is None) or (not os.path.isfile(doc_pathname)):
+        raise ValueError(f"doc_pathname is not valid {doc_pathname}")
+
     out_dir = md_info.get_out_dir()
     os.makedirs(out_dir, exist_ok=True)
 
@@ -57,7 +61,6 @@ def generate_markdown_llamaparse(md_info, need_normal_step=True, need_preminum_s
 
     post_scan_llamaparse_result(md_info, json_result=json_result)
 
-    doc_pathname = md_info.get_doc_pathname()
     logging.info(f"original doc: {doc_pathname}")
     logging.info(f"fname_output: {os.path.basename(pathname_step0)}")
     
