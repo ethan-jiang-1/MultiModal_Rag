@@ -18,7 +18,7 @@ from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src.ctn2md_gen_md_base import GenMd_Base
 
 
-def gen_md_lvlm(doc_pathname, out_dir, lvlm_model="gpt-4o"):
+def _gen_md_lvlm(doc_pathname, out_dir, lvlm_model="gpt-4o"):
     from ctn2md.gen_lvlm.gen_markdown_lvml import generate_markdown_lvlm
     logging.info(f"##MDFLOW##: gen_md_lvlm started...")
 
@@ -33,7 +33,7 @@ def gen_md_lvlm(doc_pathname, out_dir, lvlm_model="gpt-4o"):
 
 
 class GenMd_Lvlm(GenMd_Base):
-    _supported_cnt_types = [CTN_TYPE.PDF, CTN_TYPE.PPT, CTN_TYPE.DOC]
+    _supported_cnt_types = [CTN_TYPE.PDF, CTN_TYPE.DOC]
 
     @classmethod
     def generate_markdown(cls,
@@ -51,7 +51,7 @@ class GenMd_Lvlm(GenMd_Base):
             md_info.save()
 
         if gen_needed:
-            md_info_path = gen_md_lvlm(doc_pathname, out_dir)
+            md_info_path = _gen_md_lvlm(doc_pathname, out_dir)
             if md_info_path is None:
                 return None
 
@@ -64,16 +64,16 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/1. 座椅STO间隙 P1.pptx"
     #doc_pathname = "datasrc/test/raw_docs/管理者角色定位与认知课程大纲.docx"
     #doc_pathname = "datasrc/test/raw_docs/考勤修改统一规则.xlsx"
-    #doc_pathname = "datasrc/test/raw_docs/5. back panel 与环境匹配工程校核_P2.pptx"
+    doc_pathname = "datasrc/test/raw_docs/5. back panel 与环境匹配工程校核_P2.pptx"
     
     #doc_pathname = "datasrc/exam/raw_docs/ChatGPT intimates a tantalizing future_compressed.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
 
     out_dir = MdInfo.get_suggested_out_dir(doc_pathname)
 
     setup_logger_handlers()
     os.makedirs(out_dir, exist_ok=True)
-    md_info_path = gen_md_lvlm(doc_pathname, out_dir)
+    md_info_path = GenMd_Lvlm.generate_markdown(doc_pathname, out_dir=out_dir)
     print(md_info_path)
 
     md_info = MdInfo(md_info_path)

@@ -17,7 +17,7 @@ from ctn2md.src.md_info_base import MdInfo
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src.ctn2md_gen_md_base import GenMd_Base
 
-def gen_md_llamaparse(doc_pathname, out_dir):
+def _gen_md_llamaparse(doc_pathname, out_dir):
     from ctn2md.gen_lp.gen_markdown_llamaparse import generate_markdown_llamaparse
 
     logging.info(f"##MDFLOW##: gen_md_llamaparse started...")
@@ -51,7 +51,7 @@ class GenMd_LlamaParse(GenMd_Base):
             md_info.save()
 
         if gen_needed:
-            md_info_path = gen_md_llamaparse(doc_pathname, out_dir)
+            md_info_path = _gen_md_llamaparse(doc_pathname, out_dir)
             if md_info_path is None:
                 return None
 
@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
     setup_logger_handlers()
     os.makedirs(out_dir, exist_ok=True)
-    md_info_path = gen_md_llamaparse(doc_pathname, out_dir)
+    md_info_path = GenMd_LlamaParse.generate_markdown(doc_pathname, out_dir=out_dir)
     print(md_info_path)
 
     md_info = MdInfo(md_info_path)

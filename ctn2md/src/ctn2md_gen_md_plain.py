@@ -58,7 +58,7 @@ def _copy_img_files_in_markdown(doc_pathname, out_dir):
     return image_refs
     
 
-def gen_md_plain(doc_pathname, md_info):
+def _gen_md_plain(doc_pathname, md_info):
     logging.info(f"##MDFLOW##: gen_md_plain started...")
 
     out_dir = md_info.get_out_dir()
@@ -99,7 +99,7 @@ class GenMd_Plain(GenMd_Base):
             md_info.save()
 
         if gen_needed:
-            md_info_path = gen_md_plain(doc_pathname, md_info)
+            md_info_path = _gen_md_plain(doc_pathname, md_info)
             if md_info_path is None:
                 return None
         
@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
     setup_logger_handlers()
     os.makedirs(out_dir, exist_ok=True)
-    md_info_path = gen_md_plain(doc_pathname, md_info)
+    md_info_path = GenMd_Plain.generate_markdown(doc_pathname, out_dir=out_dir)
     print(md_info_path)
 
     md_info = MdInfo(md_info_path)
