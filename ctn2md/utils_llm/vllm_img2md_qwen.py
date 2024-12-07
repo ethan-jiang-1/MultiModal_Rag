@@ -38,7 +38,7 @@ def _retry_dashscope_get_response(messages, retries=5, backoff_in_seconds=1):
             time.sleep(sleep_time)
 
 
-def generate_full_mds_from_image(pname_image, rects_img=None, retries=5, backoff_in_seconds=1):
+def generate_full_mds_from_image_qwen(pname_image, rects_img=None, retries=5, backoff_in_seconds=1):
          
     inst_img_rects = ""
     if rects_img is not None and len(rects_img) > 0:
@@ -97,5 +97,5 @@ if __name__ == '__main__':
     #text = generate_long_mds_from_image(full_path)
     #rich.print(text)
 
-    text = generate_full_mds_from_image(full_path, rects_img=rects_img)
+    text = generate_full_mds_from_image_qwen(full_path, rects_img=rects_img)
     rich.print(text)

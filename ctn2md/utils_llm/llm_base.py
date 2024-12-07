@@ -9,8 +9,9 @@ import requests
 import logging
 import time
 import csv
-import datetime
 import rich 
+import re
+from datetime import datetime
 #import json
 
 if "./" not in sys.path:
@@ -42,6 +43,71 @@ def get_gpt_messages(system_prompt, user_prompt):
     #messages_str = json.dumps(messages)
     #messages_loaded = json.loads(messages_str)
     return messages
+
+def _generate_unique_name(image_path):
+    # 将路径中的文件名提取出来
+    filename = re.search(r'[^/\\]*$', image_path).group()
+    
+    # 替换掉文件名中的特殊字符
+    safe_filename = re.sub(r'[^\w\-_.]', '', filename)
+    
+    # 获取当前日期并格式化为YYYYMMDD格式
+    current_date = datetime.now().strftime('%Y%m%d')
+    
+    # 将日期添加到文件名中
+    unique_name = f"{current_date}_{safe_filename}"
+    
+    # 返回URL安全的名称
+    return unique_name
+
+
+def _upload_image(image_path):
+    import oss2
+    access_key_id = os.environ["OSS_ACCESS_KEY_ID"]
+    access_key_secret = os.environ["OSS_ACCESS_KEY_SECRET"]
+    endpoint = os.environ["OSS_ENDPOINT"]   # 例如：'https://oss-cn-hangzhou.aliyuncs.com'
+    bucket_name = os.environ["OSS_BUCKET_NAME"]  # '<your-bucket-name>'
+
+    logging.info(f"upload {image_path} to oss")
+    # 初始化OSS存储
+    auth = oss2.Auth(access_key_id, access_key_secret)
+    bucket = oss2.Bucket(auth, endpoint, bucket_name)
+
+    # 上传文件
+    def upload_file(file_path, object_name):
+        with open(file_path, 'rb') as file:
+            # 设置Content-Disposition为inline，使得文件在浏览器中直接打开
+            bucket.put_object(object_name, file, headers={'Content-Disposition': 'inline'})
+
+    # 调用示例
+    object_name = _generate_unique_name(image_path)
+    upload_file(image_path, object_name)
+
+    url = bucket.sign_url('GET', object_name, 3600)
+
+    logging.info(f"url:{url} to access upload {image_path} in oss")
+    return url
+
+def get_gpt_messages_multimodal(system_prompt, user_prompt, image_path):
+    """生成支持多模态的消息结构"""
+    img_url = _upload_image(image_path)
+    
+    # 构造多模态消息
+    messages = [
+        {
+            "role": "system",
+            "content": [{"type": "text", "text": str(system_prompt)}] 
+        },
+        {
+            "role": "user",
+            "content": [{"type": "text", "text": str(user_prompt)},
+                        {"type": "image_url",  # 明确指定类型为 image
+                         "image_url": {"url": img_url}}]
+        }
+    ]
+    
+    return messages
+
 
 def get_azure_gpt_client():
     client = AzureOpenAI(api_key=os.getenv("OPENAI_API_KEY"),
@@ -85,7 +151,7 @@ def _monitor_call(d0, messages, response, track_id=None):
         dt = round(dt, 2)
         d0 = round(d0, 2)
 
-        ts0 = datetime.datetime.fromtimestamp(d0).strftime("%Y%m%d:%H:%M:%S")
+        ts0 = datetime.fromtimestamp(d0).strftime("%Y%m%d:%H:%M:%S")
 
         choice0 = response.choices[0]
         finish_reason = choice0.finish_reason

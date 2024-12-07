@@ -15,10 +15,12 @@ if "./" not in sys.path:
 from ctn2md.gen_lvlm.lvlm_pdf_to_images import get_job_id, parse_pdf_to_images
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
+from ctn2md.utils_llm.vllm_img2md_gpt import generate_full_mds_from_image_gpt
 
 def gen_pages_lvlm(md_info):
     pathname_doc = md_info.get_doc_pathname()
-    #output_dir = md_info.get_out_dir()
+    output_dir = md_info.get_out_dir()
+    aux_dir = md_info.get_aux_dir()
     job_id = get_job_id(pathname_doc)
     md_info[MIFN.LVLM_CUR_JOB_ID] = job_id
 
@@ -31,11 +33,32 @@ def gen_pages_lvlm(md_info):
     md_info[MIFN.LVLM_IMAGE_INFOS] = image_infos
     md_info.save()
 
+    pnames_page_md = []
+    fnames_imgs = []
+    fnames_snps = []
     for ndx, image_info in enumerate(image_infos):
         page_index = ndx + 1
         fname_page_name, fname_page_rect_name, fname_rect_images = image_info
         rich.print(page_index, fname_page_name, fname_page_rect_name, fname_rect_images)
-        pass
+
+        pname_image = os.path.join(output_dir, fname_page_rect_name)
+        rects_img = None 
+        if len(fname_rect_images) > 0:
+            rects_img = fname_rect_images
+
+        fnames_imgs.extend(fname_rect_images)
+        fnames_snps.append(fname_page_name)
+
+        md_page = generate_full_mds_from_image_gpt(pname_image, rects_img)
+        pname_page_md = os.path.join(aux_dir, f"page_{page_index}.md")
+        with open(pname_page_md, "w", encoding="utf-8") as f:
+            f.write(md_page)
+
+        pnames_page_md.append(pname_page_md[len(output_dir) + 1:])
+    md_info[MIFN.FNAMES_PAGES] = pnames_page_md
+    md_info[MIFN.FNAMES_IMGS] = fnames_imgs
+    md_info[MIFN.FNAMES_SNPS] = fnames_snps
+    md_info.save()
 
     return md_info.save()
 
