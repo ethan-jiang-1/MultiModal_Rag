@@ -18,16 +18,10 @@ from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_gpt
 from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_heirarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_gpt
 from ctn2md.src.make_final_md import make_final_md
-from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src.ctn2md_gen_md_llamaparse import GenMd_LlamaParse
 
 def select_md_generator(doc_pathname):
-    ctn_type = CTN_TYPE.get_ctn_type_by_doc_pathname(doc_pathname)
-    if ctn_type == CTN_TYPE.MD:
-        from ctn2md.src.ctn2md_gen_md_plain import GenMd_Plain
-        return GenMd_Plain
-    else:
-        return GenMd_LlamaParse
+    return GenMd_LlamaParse
 
 def _reset_md_flow(md_info_path):
     md_info = MdInfo(md_info_path)

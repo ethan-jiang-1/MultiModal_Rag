@@ -65,8 +65,12 @@ def _gen_md_plain(doc_pathname, md_info):
     md_info.set_gen_engine("llamaparse:plain")
     md_info.set_doc_pathname(doc_pathname)
 
+    pathname_final_md = md_info.name_step_pathname(-1)
+    if pathname_final_md == doc_pathname:
+        raise ValueError(f"src_md cannot be same as dst_md: {doc_pathname}")
     pathname_s0_md = md_info.name_step_pathname(0)
     shutil.copy(doc_pathname, pathname_s0_md)
+    logging.info(f"copy md from {doc_pathname} to {pathname_s0_md}")
     md_info.add_step_into_md_info_mdflow(pathname_s0_md, actor="gen_md_plain")
     md_info.save()
 
@@ -82,7 +86,7 @@ def _gen_md_plain(doc_pathname, md_info):
 
 class GenMd_Plain(GenMd_Base):
     _supported_cnt_types = [CTN_TYPE.MD]
-    od_suffix = ""
+    od_suffix = "md"
 
     @classmethod
     def generate_markdown(cls,

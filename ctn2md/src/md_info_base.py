@@ -167,6 +167,11 @@ class MdInfo:
         # 替换文件名中的标点符号和空白字符为下划线
         doc_title = re.sub(punctuation, '_', file_name)  # 替换标点符号
         doc_title = re.sub(whitespace, '_', doc_title)  # 替换空白字符
+
+        for ext in ["pdf", "doc", "docx", "ppt", "pptx"]:
+            dd_ext = "___" + ext 
+            if doc_title.endswith(dd_ext):
+                doc_title = doc_title[:len(doc_title) - len(dd_ext)]
         
         return doc_title
 
@@ -280,10 +285,16 @@ class MdInfo:
         if pathname_org_doc is not None:
             basename = os.path.basename(pathname_org_doc)
             ext_name = basename.split(".")[-1]
-            if step_num == -1:
-                fname_step_md = basename.replace(f".{ext_name}", f"{_MIB_SEP_FNAME_EXT}{ext_name}.md")
+            if ext_name == "md":
+                if step_num == -1:
+                    fname_step_md = basename
+                else:
+                    fname_step_md = basename.replace(f".{ext_name}", f"_s{step_num}.md")                
             else:
-                fname_step_md = basename.replace(f".{ext_name}", f"{_MIB_SEP_FNAME_EXT}{ext_name}_s{step_num}.md")
+                if step_num == -1:
+                    fname_step_md = basename.replace(f".{ext_name}", f"{_MIB_SEP_FNAME_EXT}{ext_name}.md")
+                else:
+                    fname_step_md = basename.replace(f".{ext_name}", f"{_MIB_SEP_FNAME_EXT}{ext_name}_s{step_num}.md")
             pathname_step_md = os.path.join(self._out_dir, fname_step_md)
             return pathname_step_md
         return None
