@@ -144,6 +144,14 @@ def make_final_md(md_info_path):
     logging.info(f"##MDFLOW##: make_final_md ended: move_aux_files: {move_aux_files}.")
     return pathname_final_md
 
+def reset_md_flow(md_info_path):
+    md_info = MdInfo(md_info_path)
+    dict_md_flow = md_info[MIFN.MDFLOW]
+    for key in list(dict_md_flow.keys()): 
+        if key != "0":
+            del dict_md_flow[key]
+    md_info.save()
+
 if __name__ == "__main__":
     setup_logger_handlers()
 
