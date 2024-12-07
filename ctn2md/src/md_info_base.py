@@ -16,7 +16,7 @@ if "./" not in sys.path:
 from llama_parse.utils import Language
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 
-_MIB_INFO_VER = "0.4.0"
+_MIB_INFO_VER = "0.5.0"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
@@ -37,14 +37,26 @@ class MIFN:  # Markdown Field Name
     FNAMES_TBLS = "fnames_tbls"
     FNAMES_SNPS = "fnames_snps"
 
-    FNAMES_P_PAGES = "fnames_p_pages"
-    FNAMES_P_IMGS = "fnames_p_imgs"
-    FNAMES_P_TBLS = "fnames_p_tbls"
-    FNAMES_P_SNPS = "fnames_p_snps"
-
     CTN_TYPE = "content_type"
 
     GEN_ENGINE = "parse_engine"
+
+    FHL_ORG = "fhl_org"
+    FHL_MAP_O2N = "fhl_map_o2n"
+
+    IMG_FIGURES = "img_figures"
+
+    MD_SECTIONS = "md_sections"
+    FNAMES_SECS = "fnames_secs"
+
+    FNAME_FINAL_MD = "fname_final_md"
+    FNAME_FINAL_SUM = "fname_final_sum"
+
+    # fields required by llamaparse converter
+    LP_FNAMES_P_PAGES = "lp_fnames_p_pages"
+    LP_FFNAMES_P_IMGS = "lp_fnames_p_imgs"
+    LP_FNAMES_P_TBLS = "lp_fnames_p_tbls"
+    LP_FNAMES_P_SNPS = "lp_fnames_p_snps"
 
     LP_JOB_ID_HISTORY = "lp_job_ids"
     LP_CUR_JOB_ID = "lp_cur_job_id"
@@ -58,33 +70,28 @@ class MIFN:  # Markdown Field Name
 
     LP_P2M_INFO = "lp_p2m_info"
 
-    FHL_ORG = "fhl_org"
-    FHL_MAP_O2N = "fhl_map_o2n"
-
-    IMG_FIGURES = "img_figures"
-
-    MD_SECTIONS = "md_sections"
-    FNAMES_SECS = "fnames_secs"
-
-    FNAME_FINAL_MD = "fname_final_md"
-    FNAME_FINAL_SUM = "fname_final_sum"
+    # fields required by lvlm converter
+    LVLM_IMAGE_INFOS = "lvlm_image_infos"
 
 # Names of the field in _info_ctrl.json (read_only)
 # dictionary used to control inner flow...
 _DEFAULT_MDCONTROL = {
-    "mctl_min_img_relevance_score": 0.2,
     "mctl_move_aux_files": True,
     "mctl_need_image_ref": True,
-
     "mctl_treat_doc_as_ctntype": "auto",
 
+    # controls required by llamaparse converter
+    "mctl_lp_min_img_relevance_score": 0.2,
     "mctl_lp_langauge": Language.SIMPLIFIED_CHINESE,
     "mctl_lp_take_screenshot": False,
     "mctl_lp_disable_ocr": False,
     "mctl_lp_premium_pages": "", # The target pages to extract text from documents. 
                                  # Describe as a comma separated list of page numbers. The first page of the document is page 0
 
-    "mctl_lp_img_to_heading": {} # dictionary: key: embed_img_name/page_img_name (without job_id) to val: PlcId:plc_id
+    "mctl_lp_img_to_heading": {},  # dictionary: key: embed_img_name/page_img_name (without job_id) to val: PlcId:plc_id
+
+    # controls required by lvlm convert 
+    "mctl_lvlm_image_to_content_type": {}, # dictionary: key embed_imag_name to convent type: image/table/text
 }
 
 class MdInfo:
@@ -190,9 +197,6 @@ class MdInfo:
             self._info[MIFN.MDPARAMS] = {}
 
         for fnames in [MIFN.FNAMES_PAGES, MIFN.FNAMES_IMGS, MIFN.FNAMES_TBLS,MIFN.FNAMES_SNPS]:
-            if fnames not in self._info:
-                self._info[fnames] = []
-        for fnames in [MIFN.FNAMES_P_PAGES, MIFN.FNAMES_P_IMGS, MIFN.FNAMES_P_TBLS,MIFN.FNAMES_P_SNPS]:
             if fnames not in self._info:
                 self._info[fnames] = []
 

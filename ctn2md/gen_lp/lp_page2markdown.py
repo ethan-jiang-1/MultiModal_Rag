@@ -362,7 +362,7 @@ class Page2Markdown():
         relevance_score, figure_name, picture_discription = analyse_image_content(self.md_info, pname_image, content_around=content_around)
         if relevance_score is None:
             return None, "not_relevance"
-        if relevance_score < self.md_info.get_md_control("mctl_min_img_relevance_score", MIN_IMG_RELEVANCE_SCORE): 
+        if relevance_score < self.md_info.get_md_control("mctl_lp_min_img_relevance_score", MIN_IMG_RELEVANCE_SCORE): 
             return None, "low_relevance"
 
         picture_discription = picture_discription.replace("\"", "\'")

@@ -38,6 +38,10 @@ class GenMd_Base:
         return md_info, gen_needed
 
     @classmethod
+    def migrate_md_info(cls, md_info):
+        return 
+
+    @classmethod
     def does_support_doc_type(cls, doc_pathname):
         ctn_type = CTN_TYPE.get_ctn_type_by_doc_pathname(doc_pathname)
         if ctn_type in cls._supported_cnt_types:

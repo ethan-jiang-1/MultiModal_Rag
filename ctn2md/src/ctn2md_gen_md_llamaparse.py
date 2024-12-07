@@ -13,7 +13,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src.ctn2md_gen_md_base import GenMd_Base
 
@@ -56,6 +56,17 @@ class GenMd_LlamaParse(GenMd_Base):
                 return None
 
         return md_info.get_md_info_path()
+
+    @classmethod
+    def migrate_md_info(cls, md_info):
+        if not isinstance(md_info, dict):
+            return 
+
+        for fnames in [MIFN.LP_FNAMES_P_PAGES, MIFN.LP_FFNAMES_P_IMGS, MIFN.LP_FNAMES_P_TBLS,MIFN.LP_FNAMES_P_SNPS]:
+            if fnames not in md_info._info:
+                md_info._info[fnames] = [] 
+        md_info.save()
+        return
 
 
 if __name__ == "__main__":

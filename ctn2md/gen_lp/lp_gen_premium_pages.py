@@ -79,7 +79,7 @@ def _dump_preminum_md_page_content_from_lp_json_result(json_result, md_info):
             fnames_pages.append(fname_page)
         md_info[MIFN.LP_I2H_PREMIUM] = pages_images
     
-    md_info[MIFN.FNAMES_P_PAGES] = fnames_pages
+    md_info[MIFN.LP_FNAMES_P_PAGES] = fnames_pages
     cur_job_id = job_ids_set.pop()
     return cur_job_id
 
@@ -88,14 +88,14 @@ def _dump_images_premium(parser, json_result, md_info):
     images = parser.get_images(json_result, out_dir)
     fnames_imgs = [os.path.basename(item["path"]) for item in images if item["name"].startswith("img_")]
     fnames_snps = [os.path.basename(item["path"]) for item in images if item["name"].startswith("page_")]
-    md_info[MIFN.FNAMES_P_IMGS] = fnames_imgs
-    md_info[MIFN.FNAMES_P_SNPS] = fnames_snps
+    md_info[MIFN.LP_FFNAMES_P_IMGS] = fnames_imgs
+    md_info[MIFN.LP_FNAMES_P_SNPS] = fnames_snps
 
 def _dump_tables_premium(parser, json_result, md_info):
     out_dir = md_info.get_out_dir()
     tables = parser.get_xlsx(json_result, out_dir)
     fnames_tbls = [os.path.basename(item["path"]) for item in tables]
-    md_info[MIFN.FNAMES_P_TBLS] = fnames_tbls 
+    md_info[MIFN.LP_FNAMES_P_TBLS] = fnames_tbls 
 
 def _dump_json_result_premium(json_result, md_info):
     aux_folder = md_info.get_aux_dir()
@@ -111,18 +111,18 @@ def n2u_restore_unique_name_premium(md_info, new_job_id):
         return 
 
     out_dir = md_info.get_out_dir()
-    n2u_replace_fnames(md_info, MIFN.FNAMES_P_PAGES, unique_job_id, new_job_id)
-    n2u_replace_fnames(md_info, MIFN.FNAMES_P_IMGS, unique_job_id, new_job_id)
-    n2u_replace_fnames(md_info, MIFN.FNAMES_P_TBLS, unique_job_id, new_job_id)
-    n2u_replace_fnames(md_info, MIFN.FNAMES_P_SNPS, unique_job_id, new_job_id)
+    n2u_replace_fnames(md_info, MIFN.LP_FNAMES_P_PAGES, unique_job_id, new_job_id)
+    n2u_replace_fnames(md_info, MIFN.LP_FFNAMES_P_IMGS, unique_job_id, new_job_id)
+    n2u_replace_fnames(md_info, MIFN.LP_FNAMES_P_TBLS, unique_job_id, new_job_id)
+    n2u_replace_fnames(md_info, MIFN.LP_FNAMES_P_SNPS, unique_job_id, new_job_id)
 
-    for fname_md_page in md_info[MIFN.FNAMES_P_PAGES]:
+    for fname_md_page in md_info[MIFN.LP_FNAMES_P_PAGES]:
         pathname_page = os.path.join(out_dir, fname_md_page)
         n2u_update_md_content(md_info, pathname_page, unique_job_id, new_job_id)
 
     # update to reflex the new permium file
     for ndx, fname_page in enumerate(md_info[MIFN.FNAMES_PAGES]):
-        for fname_p_page in md_info[MIFN.FNAMES_P_PAGES]:
+        for fname_p_page in md_info[MIFN.LP_FNAMES_P_PAGES]:
             if fname_page in fname_p_page:
                 md_info[ndx] = fname_p_page
 

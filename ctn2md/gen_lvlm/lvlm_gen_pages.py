@@ -14,6 +14,7 @@ if "./" not in sys.path:
 
 from ctn2md.gen_lvlm.lvlm_pdf_to_images import get_job_id, parse_pdf_to_images
 from ctn2md.utils.util_logging import setup_logger_handlers
+from ctn2md.src.md_info_base import MIFN
 
 def gen_pages_lvlm(md_info):
     pathname_doc = md_info.get_doc_pathname()
@@ -26,7 +27,8 @@ def gen_pages_lvlm(md_info):
     # image_infos.append((fname_page_name, fname_page_rect_name, fname_rect_images))
 
     rich.print(image_infos)
-
+    md_info[MIFN.LVLM_IMAGE_INFOS] = image_infos
+    md_info.save()
 
 if __name__ == "__main__":
     setup_logger_handlers()
