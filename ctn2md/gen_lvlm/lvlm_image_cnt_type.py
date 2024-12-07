@@ -15,6 +15,7 @@ class LVLM_IMG_CNT_TYPE:
     TABLE = "table"
     LIST = "list"
     TEXT = "text"
+    IGNORE = "ignore"
     UNKNOWN = "unknown"
 
 def get_image_cnt_type(md_info, pname_image):
@@ -22,12 +23,11 @@ def get_image_cnt_type(md_info, pname_image):
         return LVLM_IMG_CNT_TYPE.UNKNOWN
 
     img_name = pname_image.split("-")[1]
-    mctl_lvlm_image_to_content_type = md_info.get_md_control("mctl_lvlm_image_to_content_type", None)
-    if mctl_lvlm_image_to_content_type is None:
+    mctl_lvlm_images_ignore = md_info.get_md_control("mctl_lvlm_images_ignore", None)
+    if mctl_lvlm_images_ignore is None:
         return LVLM_IMG_CNT_TYPE.IMAGE
-    val = mctl_lvlm_image_to_content_type.get(img_name, None)
-    if val is not None:
-        return val
+    if img_name in mctl_lvlm_images_ignore:
+        return LVLM_IMG_CNT_TYPE.IGNORE
     return LVLM_IMG_CNT_TYPE.GRAPH
 
 

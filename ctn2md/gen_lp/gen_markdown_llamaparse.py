@@ -51,8 +51,8 @@ def generate_markdown_llamaparse(md_info, need_normal_step=True, need_preminum_s
         json_result = gen_normal_pages(md_info)
 
     if need_preminum_step:
-        target_pages = md_info.get_md_control("mctl_lp_premium_pages", None)
-        if (target_pages is not None) and (len(target_pages) != 0):
+        mctl_lp_premium_pages = md_info.get_md_control("mctl_lp_premium_pages", None)
+        if (mctl_lp_premium_pages is not None) and (len(mctl_lp_premium_pages) != 0):
             gen_premium_pages(md_info)
 
     pathname_step0 = _save_final_md_from_pages(md_info)

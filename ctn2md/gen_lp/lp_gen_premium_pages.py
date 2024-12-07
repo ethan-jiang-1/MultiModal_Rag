@@ -29,9 +29,12 @@ def _get_llamaparse_premium(md_info):
     take_screenshot = False  # md_info.get_md_control("mctl_lp_take_screenshot", False)
     disable_ocr = False  # md_info.get_md_control("mctl_lp_disable_ocr", False)
 
-    target_pages = md_info.get_md_control("mctl_lp_premium_pages", None)
-    if target_pages is None or len(target_pages) == 0:
+    mctl_lp_premium_pages = md_info.get_md_control("mctl_lp_premium_pages", None)
+    if mctl_lp_premium_pages is None or len(mctl_lp_premium_pages) == 0:
         raise ValueError("no parser in premium_mode if mctl_lp_premium_pages is None")
+    pages_m1 = [str(int(pp)-1) for pp in mctl_lp_premium_pages]
+    target_pages = ",".join(pages_m1)
+    print(f"target_pages required by llamaparser: {target_pages}")
 
     LLAMAPARSE_API_KEY = os.environ.get("LLAMAPARSE_API_KEY")
     parser = LlamaParse(
