@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-#import os
+import os
 import sys
 import logging
 import rich
@@ -14,7 +14,7 @@ if "./" not in sys.path:
 
 from ctn2md.gen_lvlm.lvlm_pdf_to_images import get_job_id, parse_pdf_to_images
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MIFN
+from ctn2md.src.md_info_base import MdInfo, MIFN
 
 def gen_pages_lvlm(md_info):
     pathname_doc = md_info.get_doc_pathname()
@@ -31,5 +31,29 @@ def gen_pages_lvlm(md_info):
     md_info[MIFN.LVLM_IMAGE_INFOS] = image_infos
     md_info.save()
 
+    for ndx, image_info in enumerate(image_infos):
+        page_index = ndx + 1
+        fname_page_name, fname_page_rect_name, fname_rect_images = image_info
+        rich.print(page_index, fname_page_name, fname_page_rect_name, fname_rect_images)
+        pass
+
+    return md_info.save()
+
 if __name__ == "__main__":
     setup_logger_handlers()
+
+    #doc_pathname = "datasrc/exam/raw_docs/attention_is_all_you_need.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/LongRAG.pdf"
+    output_dir = MdInfo.get_suggested_out_dir(doc_pathname)
+
+    job_id = get_job_id(doc_pathname)
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    md_info = MdInfo(output_dir)
+    md_info.set_doc_pathname(doc_pathname)
+    md_info[MIFN.LVLM_CUR_JOB_ID] = job_id
+    
+    ret = gen_pages_lvlm(md_info)
+    rich.print(ret)
+
