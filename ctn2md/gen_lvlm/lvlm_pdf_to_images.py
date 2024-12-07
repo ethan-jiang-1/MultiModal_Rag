@@ -102,7 +102,8 @@ def _parse_rects(page: fitz.Page) -> List[Tuple[float, float, float, float]]:
     image_rects = [sg.box(*image['bbox']) for image in images]
 
     # 合并drawings和images
-    rect_list += image_rects
+    # HF0: ethan leave image alone (here)
+    #rect_list += image_rects
 
     merged_rects = _merge_rects(rect_list, distance=10, horizontal_distance=100)
     merged_rects = [rect for rect in merged_rects if explain_validity(rect) == 'Valid Geometry']
@@ -120,6 +121,9 @@ def _parse_rects(page: fitz.Page) -> List[Tuple[float, float, float, float]]:
     # 过滤比较小的矩形
     merged_rects = [rect for rect in merged_rects if rect.bounds[2] - rect.bounds[0] > 20 and rect.bounds[3] - rect.bounds[1] > 20]
 
+    #HF0: ethan add image here (image will not be merged)
+    merged_rects += image_rects
+
     return [rect.bounds for rect in merged_rects]
 
 
@@ -127,6 +131,13 @@ def parse_pdf_to_images(pdf_path: str, output_dir: str = './', job_id: str = "")
     """
     Parse PDF to images and save to output_dir.
     """
+    if not os.path.isdir(output_dir):
+        raise ValueError(f"output dir does not exit {output_dir}")
+    if len(job_id) == 0:
+        raise ValueError(f"invalid job_id {job_id}")
+
+    clean_previous_images(output_dir, job_id)
+
     # 打开PDF文件
     pdf_document = fitz.open(pdf_path)
     image_infos = []
@@ -174,6 +185,20 @@ def parse_pdf_to_images(pdf_path: str, output_dir: str = './', job_id: str = "")
 
     pdf_document.close()
     return image_infos
+
+def clean_previous_images(output_dir, job_id):
+    if not os.path.isdir(output_dir):
+        return
+    names = os.listdir(output_dir)
+    for name in names:
+        if not name.endswith(".png"):
+            continue
+        if not name.startswith(job_id):
+            continue
+        pname = os.path.join(output_dir, name)
+        if os.path.isfile(pname):
+            logging.info(f"clearn image {name}")
+            os.unlink(pname)
 
 def get_job_id(unique_str):
     import binascii
