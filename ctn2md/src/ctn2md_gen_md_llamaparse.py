@@ -33,8 +33,8 @@ def _gen_md_llamaparse(doc_pathname, out_dir):
 
 
 class GenMd_LlamaParse(GenMd_Base):
-    _supported_cnt_types = [CTN_TYPE.PDF, CTN_TYPE.PPT, CTN_TYPE.DOC, CTN_TYPE.XLS]
-    od_suffix = "lp"
+    SUPPORT_CNT_TYPES = [CTN_TYPE.PDF, CTN_TYPE.PPT, CTN_TYPE.DOC, CTN_TYPE.XLS]
+    OD_SUFFIX = "lp"
     
     @classmethod
     def generate_markdown(cls,
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/ChatGPT intimates a tantalizing future_compressed.pdf"
     doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
 
-    out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=GenMd_LlamaParse.od_suffix)
+    out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=GenMd_LlamaParse.OD_SUFFIX)
 
     setup_logger_handlers()
     os.makedirs(out_dir, exist_ok=True)

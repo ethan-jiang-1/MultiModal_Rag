@@ -32,8 +32,8 @@ def _gen_md_lvlm(doc_pathname, out_dir, lvlm_model="gpt-4o"):
 
 
 class GenMd_Lvlm(GenMd_Base):
-    _supported_cnt_types = [CTN_TYPE.PDF, CTN_TYPE.DOC]
-    od_suffix = "lvlm"
+    SUPPORT_CNT_TYPES = [CTN_TYPE.PDF, CTN_TYPE.DOC]
+    OD_SUFFIX = "lvlm"
 
     @classmethod
     def generate_markdown(cls,
@@ -79,7 +79,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/attention_is_all_you_need.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/Regioselective hydroxylation of cholecalciferol.pdf"
 
-    out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=GenMd_Lvlm.od_suffix)
+    out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=GenMd_Lvlm.OD_SUFFIX)
 
     setup_logger_handlers()
     os.makedirs(out_dir, exist_ok=True)

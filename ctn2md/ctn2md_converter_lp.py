@@ -25,7 +25,7 @@ def _do_content2md_convert_core_lp(doc_pathname,
                                    enforced_gen=False, 
                                    mdcontrols=None):
     if out_dir is None:
-        out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=GenMd_LlamaParse.od_suffix)
+        out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=GenMd_LlamaParse.OD_SUFFIX)
     logging.warning(f"work out_dir: {out_dir}")
     os.makedirs(out_dir, exist_ok=True)
 
