@@ -17,7 +17,6 @@ from ctn2md.src.md_info_base import MdInfo
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src.ctn2md_gen_md_base import GenMd_Base
 
-
 def _gen_md_lvlm(doc_pathname, out_dir, lvlm_model="gpt-4o"):
     from ctn2md.gen_lvlm.gen_markdown_lvml import generate_markdown_lvlm
     logging.info(f"##MDFLOW##: gen_md_lvlm started...")

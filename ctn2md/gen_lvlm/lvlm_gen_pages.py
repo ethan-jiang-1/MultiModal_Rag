@@ -18,11 +18,12 @@ from ctn2md.src.md_info_base import MIFN
 
 def gen_pages_lvlm(md_info):
     pathname_doc = md_info.get_doc_pathname()
-    output_dir = md_info.get_out_dir()
+    #output_dir = md_info.get_out_dir()
     job_id = get_job_id(pathname_doc)
+    md_info[MIFN.LVLM_CUR_JOB_ID] = job_id
 
     logging.info(f"gen_pages_lvlm: generate image pages job_id:{job_id}")
-    image_infos = parse_pdf_to_images(pathname_doc, output_dir=output_dir, job_id=job_id)
+    image_infos = parse_pdf_to_images(md_info)
     # image_infos
     # image_infos.append((fname_page_name, fname_page_rect_name, fname_rect_images))
 

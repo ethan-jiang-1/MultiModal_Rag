@@ -58,8 +58,8 @@ class MIFN:  # Markdown Field Name
     LP_FNAMES_P_TBLS = "lp_fnames_p_tbls"
     LP_FNAMES_P_SNPS = "lp_fnames_p_snps"
 
-    LP_JOB_ID_HISTORY = "lp_job_ids"
     LP_CUR_JOB_ID = "lp_cur_job_id"
+    LP_JOB_ID_HISTORY = "lp_job_ids"
     LP_CUR_JOB_METADATA = "lp_cur_job_metadata"
 
     LP_FNAME_JSON_RESULT_NORMAL = "lp_fname_json_result_normal"
@@ -71,6 +71,7 @@ class MIFN:  # Markdown Field Name
     LP_P2M_INFO = "lp_p2m_info"
 
     # fields required by lvlm converter
+    LVLM_CUR_JOB_ID = "lvlm_cur_job_id"
     LVLM_IMAGE_INFOS = "lvlm_image_infos"
 
 # Names of the field in _info_ctrl.json (read_only)
@@ -91,7 +92,7 @@ _DEFAULT_MDCONTROL = {
     "mctl_lp_img_to_heading": {},  # dictionary: key: embed_img_name/page_img_name (without job_id) to val: PlcId:plc_id
 
     # controls required by lvlm convert 
-    "mctl_lvlm_image_to_content_type": {}, # dictionary: key embed_imag_name to convent type: image/table/text
+    "mctl_lvlm_image_to_content_type": {}, # dictionary: key embed_imag_name to convent type: image/table/text (see LVLM_IMG_CNT_TYPE)
 }
 
 class MdInfo:
