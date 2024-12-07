@@ -17,6 +17,8 @@ from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lvlm.lvlm_image_cnt_type import get_image_cnt_type, LVLM_IMG_CNT_TYPE
 
+IMG_EXT = "jpg"  # or "png"
+JPG_QUALITY = 90 # 95
 
 def _is_near(rect1: BaseGeometry, rect2: BaseGeometry, distance: float = 20) -> bool:
     """
@@ -181,8 +183,9 @@ def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None) -> List[Tuple[st
 
         page_image = page.get_pixmap(matrix=fitz.Matrix(3, 3))
         try:
-            fname_page_name = f'{job_id}-page_{page_index}.png'
-            page_image.save(os.path.join(output_dir, fname_page_name))
+            fname_page_name = f'{job_id}-page_{page_index}.{IMG_EXT}'
+            pname_page_name = os.path.join(output_dir, fname_page_name)
+            page_image.save(pname_page_name, jpg_quality=JPG_QUALITY)
         except Exception as ex:
             logging.exception(ex)
 
@@ -194,9 +197,9 @@ def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None) -> List[Tuple[st
             pix = page.get_pixmap(clip=fitz_rect, matrix=fitz.Matrix(4, 4))
             draw_red_rect = False
             try:
-                fname_rect_name = f'{job_id}-img_{page_index}_{index}.png'
+                fname_rect_name = f'{job_id}-img_{page_index}_{index}.{IMG_EXT}'
                 pname_rect_name = os.path.join(output_dir, fname_rect_name)
-                pix.save(pname_rect_name)
+                pix.save(pname_rect_name, jpg_quality=JPG_QUALITY)
 
                 ict = get_image_cnt_type(md_info, pname_rect_name)
                 if ict in [LVLM_IMG_CNT_TYPE.GRAPH, LVLM_IMG_CNT_TYPE.IMAGE, LVLM_IMG_CNT_TYPE.TABLE]:
@@ -210,8 +213,9 @@ def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None) -> List[Tuple[st
 
         page_image_with_rects = page.get_pixmap(matrix=fitz.Matrix(3, 3))
         try:
-            fname_page_rect_name = f'{job_id}-page_{page_index}_rects.png'
-            page_image_with_rects.save(os.path.join(output_dir, fname_page_rect_name))
+            fname_page_rect_name = f'{job_id}-page_{page_index}_rects.{IMG_EXT}'
+            pname_page_rect_name = os.path.join(output_dir, fname_page_rect_name)
+            page_image_with_rects.save(pname_page_rect_name, jpg_quality=JPG_QUALITY)
         except Exception as ex:
             logging.exception(ex)
 
@@ -225,7 +229,7 @@ def clean_previous_images(output_dir, job_id):
         return
     names = os.listdir(output_dir)
     for name in names:
-        if not name.endswith(".png"):
+        if not name.endswith(f".{IMG_EXT}"):
             continue
         if not name.startswith(job_id):
             continue
