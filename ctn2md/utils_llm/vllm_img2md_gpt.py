@@ -52,6 +52,7 @@ def generate_full_mds_from_image_gpt(pname_image, rects_img=None, model="gpt-4o"
             if last_backticks_pos != -1:
                 content = content[:last_backticks_pos] + content[last_backticks_pos + 3:]        
         #rich.print(content)
+        content = content.replace("```", "   ")
 
         logging.info(f"GFMFIG: convert pdf page {pname_image} to md by gpt done")
         return content
