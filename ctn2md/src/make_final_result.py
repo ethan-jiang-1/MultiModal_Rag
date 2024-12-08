@@ -146,10 +146,9 @@ def _copy_final_result_json(md_info):
         if name in md_info:
             md_final_info[name] = md_info[name]
 
-    pathname_final_md = md_info.name_step_pathname(-1)
-    pathname_final_json = pathname_final_md.replace(".md", ".final.json")
-
     output_dir = md_info.get_out_dir()
+    pathname_final_json = os.path.join(output_dir, md_info.get_fname_final_json())
+
     pname_final_sum = os.path.join(output_dir, md_info[MIFN.FNAME_FINAL_SUM])
     with open(pname_final_sum, 'r', encoding="utf-8") as f:
         sum = json.load(f)

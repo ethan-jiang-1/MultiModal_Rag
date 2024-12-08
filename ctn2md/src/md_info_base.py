@@ -21,6 +21,7 @@ _MIB_INFO_VER = "0.5.0"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
+_MIB_FNAME_FINAL_INFO = "_final.json"
 _MIB_DEFAULT_OUT_ROOT = "_output"
 
 # Names of the field in _info.json  (read_write)
@@ -184,6 +185,10 @@ class MdInfo:
         if len(suffix) != 0:
             out_dir += f"_{suffix}"
         return out_dir
+
+    @classmethod
+    def get_fname_final_json(cls):
+        return _MIB_FNAME_FINAL_INFO
 
     def load(self):
         if os.path.isfile(self._md_info_path):
