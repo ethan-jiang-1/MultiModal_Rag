@@ -105,12 +105,12 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/AI未来十年_大模型产业落地的机遇与挑战_大数据研究院.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/YOU ONLY 2409.13695v1.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/LongRAG.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/DIFFERENTIAL TRANSFORMER 2410.05258v1.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/DIFFERENTIAL TRANSFORMER 2410.05258v1.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/Winning Solution For Meta KDD Cup’ 24 2410.00005v1.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/attention_is_all_you_need.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/Regioselective hydroxylation of cholecalciferol.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/Survey of different Large Language Model Architectures.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/A Coin Has Two Sides.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/A Coin Has Two Sides.pdf"
 
     out_dir = None
     mdcontrols = None

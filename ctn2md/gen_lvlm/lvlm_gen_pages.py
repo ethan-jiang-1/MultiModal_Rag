@@ -24,7 +24,9 @@ def _is_in_repair_mode(md_info):
         return True
     return False
 
-def _does_page_need_gen(md_info, page_index):
+def _does_page_need_gen(md_info, page_index, pname_page_md):
+    if not os.path.isfile(pname_page_md):
+        return True
     if _is_in_repair_mode(md_info):
         mctl_lvlm_repair_pages = md_info.get_md_control("mctl_lvlm_repair_pages",[])
         if page_index in mctl_lvlm_repair_pages:
@@ -53,6 +55,7 @@ def gen_pages_lvlm(md_info):
     fnames_snps = []
     fnames_page_md_gen = []
     mctrl_lvlm_img2md_model = md_info.get_md_control("mctrl_lvlm_img2md_model", "gpt")
+    mctl_lvlm_notouch_pages = md_info.get_md_control_notouch("mctl_lvlm_notouch_pages",[])
     for ndx, image_info in enumerate(image_infos):
         page_index = ndx + 1
         fname_page_name, fname_page_rect_name, fname_rect_images = image_info
@@ -65,9 +68,9 @@ def gen_pages_lvlm(md_info):
 
         fname_page_md = f"page_{page_index}.md"
         pname_page_md = os.path.join(aux_dir, fname_page_md)
-        if _does_page_need_gen(md_info, page_index): 
-            mctl_lvlm_notouch_pages = md_info.get_md_control_notouch("mctl_lvlm_notouch_pages",[])
-            if page_index not in mctl_lvlm_notouch_pages and os.path.isfile(pname_page_md):
+        if _does_page_need_gen(md_info, page_index, pname_page_md): 
+
+            if page_index not in mctl_lvlm_notouch_pages:
                 logging.info(f"GPL: generate page {page_index}...")
 
                 if mctrl_lvlm_img2md_model == "qwen":

@@ -28,6 +28,7 @@ def _construct_s0_md_from_pages(md_info):
 
     full_md_text = ""
     for fname_page in fnames_pages:
+        fname_page = os.path.basename(fname_page)
         pname_page = os.path.join(out_dir, fname_page)
         if not os.path.isfile(pname_page):
             pname_page = os.path.join(aux_dir, fname_page)

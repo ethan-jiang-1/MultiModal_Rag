@@ -17,8 +17,9 @@ from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lvlm.lvlm_gen_pages import gen_pages_lvlm
 
    
-def _save_final_md_from_pages(md_info):
+def _construct_s0_md_from_pages(md_info):
     out_dir = md_info.get_out_dir()
+    aux_dir = md_info.get_aux_dir()
     fnames_pages = md_info[MIFN.FNAMES_PAGES]
     if len(fnames_pages) == 0:
         raise ValueError(f"{MIFN.FNAMES_PAGES} is empty")
@@ -26,7 +27,12 @@ def _save_final_md_from_pages(md_info):
 
     full_md_text = ""
     for fname_page in fnames_pages:
+        fname_page = os.path.basename(fname_page)
         pname_page = os.path.join(out_dir, fname_page)
+        if not os.path.isfile(pname_page):
+            pname_page = os.path.join(aux_dir, fname_page)       
+            if not os.path.isfile(pname_page):
+                raise ValueError(f"not able to find page md for {fname_page} to construct s0 document")       
         with open(pname_page, "r") as f:
             md_text = f.read()
         if len(full_md_text) != 0:
@@ -47,7 +53,7 @@ def generate_markdown_lvlm(md_info, lvlm_model="gpt-4o"):
 
     gen_pages_lvlm(md_info)
 
-    pathname_step0 = _save_final_md_from_pages(md_info)
+    pathname_step0 = _construct_s0_md_from_pages(md_info)
     md_info.add_step_into_md_info_mdflow(pathname_step0, actor=f"generate_markdown_lvlm@{lvlm_model}")
     md_info.save()
 
