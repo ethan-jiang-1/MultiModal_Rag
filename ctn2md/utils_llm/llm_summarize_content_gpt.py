@@ -8,12 +8,12 @@ if "./" not in sys.path:
     sys.path.append("./")
 load_dotenv()
 
-from ctn2md.utils_llm.llm_summarize_content_prompt import SYSTEM_PROMPT_SUMMARIZE, USER_PROMPT_SUMMARIZE
+from ctn2md.utils_llm.llm_summarize_content_gpt_prompt import SYSTEM_PROMPT_SUMMARIZE, USER_PROMPT_SUMMARIZE
 from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from ctn2md.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
 
 
-def summarize_doc_keywords(doc_title, full_content, model="gpt-4o-mini", question_num=None):
+def summarize_doc_keywords_by_gpt(doc_title, full_content, model="gpt-4o-mini", question_num=None):
     if question_num is None:
         question_num = get_next_question_num()
 
@@ -78,6 +78,6 @@ if __name__ == "__main__":
 | e | （第一排和第二排或第二排和第三排） | | 椅 |"""
 
 
-    resp= summarize_doc_keywords(doc_title, page_content)
+    resp= summarize_doc_keywords_by_gpt(doc_title, page_content)
     rich.print(resp)
 

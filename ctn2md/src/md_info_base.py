@@ -84,6 +84,7 @@ _DEFAULT_MDCONTROL = {
     "mctl_need_image_ref": True,
     "mctl_treat_doc_as_ctntype": "auto",
     "mctrl_fix_heading_model": "gpt", # gpt/qwen
+    "mctrl_summarize_model": "gpt", # gpt/qwen
 
 
     # controls required by llamaparse converter

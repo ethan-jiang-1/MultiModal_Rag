@@ -12,7 +12,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.utils_llm.llm_summarize_content import summarize_doc_keywords
+from ctn2md.utils_llm.llm_summarize_content_gpt import summarize_doc_keywords_by_gpt
 from ctn2md.utils.util_markdown import remove_comment
 from ctn2md.src.md_info_base import MdInfo, MIFN
 
@@ -30,8 +30,12 @@ def summarize_content_by_gpt(md_info_path, src_step_num=None, dst_step_num=None)
 
     doc_title = md_info.get_doc_title()
 
-    resp = summarize_doc_keywords(doc_title, full_content)
-    rich.print(resp)
+    mctrl_summarize_model = md_info.get_md_control("mctrl_summarize_model", "gpt")
+    if mctrl_summarize_model == "gpt":
+        resp = summarize_doc_keywords_by_gpt(doc_title, full_content)
+        rich.print(resp)
+    else:
+        raise ValueError(f"not implemented yet for using {mctrl_summarize_model} in sumamrize document")
 
     pathname_final_md_fname = md_info.name_step_pathname(-1)
     pathname_final_json_fname = pathname_final_md_fname.replace(".md", ".sum.json")

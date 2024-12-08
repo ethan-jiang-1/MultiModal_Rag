@@ -16,7 +16,7 @@ if "./" not in sys.path:
 
 #from ctn2md.src.md_info_base import MIFN
 #from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.utils_llm.llm_fix_vl_instruction import get_vllm_instruction
+from ctn2md.utils_llm.llm_gen_vllm_instruction_gpt import gen_vllm_instruction_by_gpt
 from ctn2md.utils_vllm.vllm_description_qwen import generate_image_description_by_qwen
 from ctn2md.src.md_info_base import MIFN
 
@@ -117,14 +117,15 @@ def remove_misc_files_previous_round(md_info):
                 except Exception as e:
                     logging.exception(f"删除失败: {src_path}, 错误: {e}")
 
-def _get_page_instruction(doc_title, content_around):
+def _get_page_instruction(md_info, doc_title, content_around):
     global g_question_num
-    instruction = get_vllm_instruction(doc_title, content_around, question_num=g_question_num)
+    # TODO: ethan vllm_instruction by qwen
+    instruction = gen_vllm_instruction_by_gpt(doc_title, content_around, question_num=g_question_num)
     g_question_num += 1
     return instruction
 
 def _gen_figure_info(md_info, doc_title, content_around, image_path):
-    instruction = _get_page_instruction(doc_title, content_around)
+    instruction = _get_page_instruction(md_info, doc_title, content_around)
     resp = generate_image_description_by_qwen(image_path, instruction=instruction)
     if resp is None:
         raise ValueError("resp is None")

@@ -15,7 +15,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.utils_llm.llm_fix_heading_lvl import fix_heading_lvl_markdown
+from ctn2md.utils_llm.llm_fix_heading_lvl_gpt import fix_heading_lvl_markdown_by_gpt
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.src.md_process_plc import inject_plc_comment_to_page, separate_heading_and_plc_comment, get_all_normalized_headings_with_plc_info
 
@@ -135,7 +135,7 @@ def fix_headings_plc_by_llm(md_info_path, src_step_num=None, dst_step_num=None):
     mctrl_fix_heading_model = md_info.get_md_control("mctrl_fix_heading_model", "gpt")
     if mctrl_fix_heading_model == "gpt":
         model = "gpt-4o" # so far, only gpt-4o can handle this well,  gpt-4o-mini does not.
-        fhl_map = fix_heading_lvl_markdown(fhl_org, ctn_type=md_info.get_ctn_type(), model=model)
+        fhl_map = fix_heading_lvl_markdown_by_gpt(fhl_org, ctn_type=md_info.get_ctn_type(), model=model)
     else:
         raise ValueError(f"not implemented yet for using {mctrl_fix_heading_model} in fix_headings_plc_by_llm")
 
