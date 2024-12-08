@@ -17,6 +17,7 @@ if "./" not in sys.path:
 #from ctn2md.src.md_info_base import MIFN
 #from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.utils_llm.llm_gen_vllm_instruction_gpt import gen_vllm_instruction_by_gpt
+from ctn2md.utils_llm.llm_gen_vllm_instruction_qwen import gen_vllm_instruction_by_qwen
 from ctn2md.utils_vllm.vllm_description_qwen import generate_image_description_by_qwen
 from ctn2md.src.md_info_base import MIFN
 
@@ -119,8 +120,11 @@ def remove_misc_files_previous_round(md_info):
 
 def _get_page_instruction(md_info, doc_title, content_around):
     global g_question_num
-    # TODO: ethan vllm_instruction by qwen
-    instruction = gen_vllm_instruction_by_gpt(doc_title, content_around, question_num=g_question_num)
+    mctrl_image_relevance = md_info.get_md_control("mctrl_image_relevance", "qwen")
+    if mctrl_image_relevance == "qwen":
+        instruction = gen_vllm_instruction_by_qwen(doc_title, content_around, question_num=g_question_num)
+    else:
+        instruction = gen_vllm_instruction_by_gpt(doc_title, content_around, question_num=g_question_num)
     g_question_num += 1
     return instruction
 
