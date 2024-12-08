@@ -4,7 +4,7 @@ import sys
 import logging
 import rich
 #import random
-#import json
+import json
 import shutil
 
 load_dotenv()
@@ -130,7 +130,28 @@ def _move_aux_files(md_info):
     _move_aux_files_tables(md_info, out_dir, aux_dir)
 
 
-def make_final_md(md_info_path):
+def _copy_final_result_json(md_info):
+    md_final_info = {}
+    names = [MIFN.FNAME_FINAL_MD, 
+             MIFN.FNAME_FINAL_SUM, 
+             MIFN.FNAMES_SECS,
+             MIFN.FNAMES_IMGS,
+             MIFN.FNAMES_SNPS,
+             MIFN.PATHNAME_ORG_DOC]
+
+    for name in names:
+        if name in md_info:
+            md_final_info[name] = md_info[name]
+
+    pathname_final_md = md_info.name_step_pathname(-1)
+    pathname_final_json = pathname_final_md.replace(".md", ".final.json")
+
+    with open(pathname_final_json, 'w', encoding="utf-8") as f:
+        json.dump(md_final_info, f, indent=4, ensure_ascii=False)
+    logging.info(f"pathname_final_json: {pathname_final_json}")
+    return pathname_final_json
+
+def make_final_json(md_info_path):
     logging.info(f"##MDFLOW##: make_final_md started...")
     md_info = MdInfo(md_info_path)
 
@@ -141,8 +162,10 @@ def make_final_md(md_info_path):
     pathname_final_md = _copy_last_step_as_final(md_info)
     md_info[MIFN.FNAME_FINAL_MD] = os.path.basename(pathname_final_md)
     md_info.save()
+
+    pathname_final_json = _copy_final_result_json(md_info)
     logging.info(f"##MDFLOW##: make_final_md ended: move_aux_files: {move_aux_files}.")
-    return pathname_final_md
+    return pathname_final_json
 
 def reset_md_flow(md_info_path):
     md_info = MdInfo(md_info_path)
@@ -155,11 +178,12 @@ def reset_md_flow(md_info_path):
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    md_info_path = "_output/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
+    #md_info_path = "_output/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
+    md_info_path = "_output/ctn2md_YOU_ONLY_2409_13695v1_lvlm/_info.json"
 
-    final_md_path = make_final_md(md_info_path)
-    print(final_md_path)
+    pathname_final_json = make_final_json(md_info_path)
+    print(pathname_final_json)
 
-    md_info = MdInfo(final_md_path)
+    md_info = MdInfo(pathname_final_json)
     rich.print(md_info)
-    print(final_md_path)
+    print(pathname_final_json)

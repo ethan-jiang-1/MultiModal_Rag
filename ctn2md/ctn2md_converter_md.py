@@ -17,7 +17,7 @@ from ctn2md.src.md_info_base import MdInfo
 from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_gpt
 from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_heirarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_gpt
-from ctn2md.src.make_final_md import make_final_md, reset_md_flow
+from ctn2md.src.make_final_result import make_final_json, reset_md_flow
 from ctn2md.src.ctn2md_gen_md_plain import GenMd_Plain
 
 def _do_content2md_convert_core_md(doc_pathname, 
@@ -60,21 +60,21 @@ def _do_content2md_convert_core_md(doc_pathname,
         logging.error(f"DCCCM: failed {md_info_path} @summarize_content_by_gpt")
         return None       
 
-    final_md_path = make_final_md(md_info_path)
+    pathname_final_json = make_final_json(md_info_path)
 
-    return final_md_path
+    return pathname_final_json
 
 def do_content2md_convert(doc_pathname, out_dir=None, enforced_gen=False, mdcontrols=None):
-    final_md_path = None
+    pathname_final_json = None
     try:
-        final_md_path = _do_content2md_convert_core_md(doc_pathname,
+        pathname_final_json = _do_content2md_convert_core_md(doc_pathname,
                                                     out_dir=out_dir,
                                                     enforced_gen=enforced_gen,
                                                     mdcontrols=mdcontrols)
     except Exception as ex:
         logging.exception(ex)
         raise ex
-    return final_md_path
+    return pathname_final_json
 
 if __name__ == "__main__":
     setup_logger_handlers()
@@ -85,9 +85,9 @@ if __name__ == "__main__":
     mdcontrols = None
     enforced_gen = False   
 
-    final_md_path = do_content2md_convert(doc_pathname, out_dir=out_dir, enforced_gen=enforced_gen,  mdcontrols=mdcontrols)
-    print(final_md_path)
+    pathname_final_json = do_content2md_convert(doc_pathname, out_dir=out_dir, enforced_gen=enforced_gen,  mdcontrols=mdcontrols)
+    print(pathname_final_json)
 
-    md_info = MdInfo(final_md_path)
+    md_info = MdInfo(pathname_final_json)
     rich.print(md_info)
-    print(final_md_path)
+    print(pathname_final_json)

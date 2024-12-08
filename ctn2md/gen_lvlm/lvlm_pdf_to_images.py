@@ -239,16 +239,8 @@ def clean_previous_images(output_dir, job_id):
             os.unlink(pname)
 
 def get_job_id(unique_str):
-    import binascii
-    # 将字符串转换为字节
-    input_bytes = unique_str.encode('utf-8')
-
-    # 计算CRC32校验和
-    crc32_checksum = binascii.crc32(input_bytes)
-
-    # 将CRC32校验和转换为十六进制字符串
-    crc32_hex = format(crc32_checksum, '08x')  # '08x'确保输出为8个字符的十六进
-    return crc32_hex
+    from ctn2md.utils.util_file import get_crc32_id
+    return get_crc32_id(unique_str)
 
 if __name__ == "__main__":
     setup_logger_handlers()

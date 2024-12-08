@@ -17,6 +17,7 @@ if "./" not in sys.path:
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.utils.util_markdown import remove_comment
 from ctn2md.src.md_info_base import MdInfo, MIFN
+from ctn2md.utils.util_file import get_crc32_id
 
 class HeadingStack:
     def __init__(self):
@@ -162,9 +163,8 @@ def _clear_section_files(output_dir):
     if not os.path.isdir(output_dir):
         return 
 
-    # 正则模式：匹配以 xcs 开头，接着后跟 4 位或 5 位数字的文件名，然后跟任何字符串，最后.md 结尾的文件名
-    #pattern = re.compile(r'^xcs\d{4,5}\.md$')
-    pattern = re.compile(r'^xcs\d{4,5}.*\.md$')
+    # 正则模式：匹配以 xcs_ 开头，然后跟任何字符串，最后.md 结尾的文件名
+    pattern = re.compile(r'^xcs_.*\.md$')
 
     names = os.listdir(output_dir)
     for name in names:
@@ -178,7 +178,7 @@ def _clear_section_files(output_dir):
                 logging.exception(f"Failed to delete {file_path}: {e}")
         
 
-def _split_sections_to_files_with_desc_and_sequence(markdown_text, output_dir):
+def _split_sections_to_files_with_desc_and_sequence(markdown_text, md_info):
     """
     将带有 `<!-- [ordered_name] ... [ordered_name] [desc] ... [desc] -->` 标记的 Markdown 文本
     切割为多个部分，保存到指定目录，并使用 `ordered_name` 作为文件名（在前面加上4位递增的数字作为前缀，再跟上一个 `_`）。
@@ -187,7 +187,10 @@ def _split_sections_to_files_with_desc_and_sequence(markdown_text, output_dir):
     :param output_dir: 输出目录路径
     :return: list[str] 所有新生成的文件名
     """
+    output_dir = md_info.get_out_dir()
     os.makedirs(output_dir, exist_ok=True)
+    
+    crc32_id = get_crc32_id(md_info.get_doc_pathname())
 
     # 分割 Markdown 行
     lines = markdown_text.strip().split('\n')
@@ -213,7 +216,8 @@ def _split_sections_to_files_with_desc_and_sequence(markdown_text, output_dir):
                 section_content="\n".join(current_section),
                 ordered_name=current_ordered_name,
                 desc=current_desc,
-                saved_no_ordered_name=saved_no_ordered_name
+                saved_no_ordered_name=saved_no_ordered_name,
+                crc32_id=crc32_id
             )
             saved_no_ordered_name = saved_no_ordered_name or not current_ordered_name
             current_section = []  # 清空段落内容
@@ -233,13 +237,14 @@ def _split_sections_to_files_with_desc_and_sequence(markdown_text, output_dir):
         section_content="\n".join(current_section),
         ordered_name=current_ordered_name,
         desc=current_desc,
-        saved_no_ordered_name=saved_no_ordered_name
+        saved_no_ordered_name=saved_no_ordered_name,
+        crc32_id=crc32_id
     )
 
     return created_filenames
 
 
-def _save_current_section(output_dir, file_index, created_filenames, section_content, ordered_name, desc, saved_no_ordered_name):
+def _save_current_section(output_dir, file_index, created_filenames, section_content, ordered_name, desc, saved_no_ordered_name, crc32_id):
     """
     保存当前段落到文件。
 
@@ -262,7 +267,8 @@ def _save_current_section(output_dir, file_index, created_filenames, section_con
             file_index=0,
             ordered_name="0_NoHeading",
             desc="NoDescription",
-            section_content=section_content
+            section_content=section_content,
+            crc32_id=crc32_id
         )
         created_filenames.append(file_name)
     elif ordered_name:
@@ -272,7 +278,8 @@ def _save_current_section(output_dir, file_index, created_filenames, section_con
             file_index=file_index,
             ordered_name=ordered_name,
             desc=desc or "NoDescription",
-            section_content=section_content
+            section_content=section_content,
+            crc32_id=crc32_id
         )
         created_filenames.append(file_name)
         file_index += 1
@@ -280,7 +287,7 @@ def _save_current_section(output_dir, file_index, created_filenames, section_con
     return file_index
 
 
-def _save_section_to_file(output_dir, file_index, ordered_name, desc, section_content):
+def _save_section_to_file(output_dir, file_index, ordered_name, desc, section_content, crc32_id):
     """
     将一个 Markdown 段落保存到文件。
     :param output_dir: 输出目录路径
@@ -294,7 +301,7 @@ def _save_section_to_file(output_dir, file_index, ordered_name, desc, section_co
         # 安全处理文件名
         safe_ordered_name = re.sub(r'\)', '-', ordered_name, count=1)
         safe_ordered_name = re.sub(r'[^\w\-]', '_', safe_ordered_name)  # 非字母、数字、下划线或连字符的字符替换为下划线
-        file_name = f"xcs{file_index:04d}_{safe_ordered_name}.md"
+        file_name = f"xcs_{crc32_id}_{file_index:04d}_{safe_ordered_name}.md"
         file_path = os.path.join(output_dir, file_name)
 
         # 写入文件
@@ -353,7 +360,7 @@ def inject_section_heirarchy(md_info_path, src_step_num=None, dst_step_num=None)
 
     output_dir = md_info.get_out_dir()
     _clear_section_files(output_dir)
-    sdsec_names = _split_sections_to_files_with_desc_and_sequence(md_text_new, output_dir)
+    sdsec_names = _split_sections_to_files_with_desc_and_sequence(md_text_new, md_info)
     md_info[MIFN.FNAMES_SECS] = sdsec_names
     
     md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_section_heirarchy")

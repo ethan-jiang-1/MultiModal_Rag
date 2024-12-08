@@ -76,7 +76,7 @@ def remove_misc_files_previous_round(md_info):
     """
     清理指定目录及其子目录下，以特定规则命名的文件：
     1. 以类似 UUID 前缀命名的文件。
-    2. 以 xcs0000_（四位数字）前缀命名的 .md 文件。
+    2. 以 xcs_前缀命名的 .md 文件。
 
     Args:
         md_info: 提供输出目录的对象，需实现 get_out_dir 方法。
@@ -92,7 +92,7 @@ def remove_misc_files_previous_round(md_info):
 
     # 正则模式
     uuid_pattern = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
-    xcs_pattern = re.compile(r"^xcs\d{4}_.*\.md$")  # 匹配 xcs0000_ 开头的 .md 文件
+    xcs_pattern = re.compile(r"^xcs_.*\.md$")  # 匹配 xcs_ 开头的 .md 文件
 
     # 遍历目录及其子目录
     for root, _, files in os.walk(out_dir):

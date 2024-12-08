@@ -17,7 +17,7 @@ from ctn2md.src.md_info_base import MdInfo
 from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_gpt
 from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_heirarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_gpt
-from ctn2md.src.make_final_md import make_final_md, reset_md_flow
+from ctn2md.src.make_final_result import make_final_json, reset_md_flow
 from ctn2md.src.ctn2md_gen_md_lvlm import GenMd_Lvlm
 
 def _do_content2md_convert_core_lvlm(doc_pathname, 
@@ -60,27 +60,27 @@ def _do_content2md_convert_core_lvlm(doc_pathname,
         logging.error(f"DCCCV: failed {md_info_path} @summarize_content_by_gpt")
         return None       
 
-    final_md_path = make_final_md(md_info_path)
+    pathname_final_json = make_final_json(md_info_path)
 
-    return final_md_path
+    return pathname_final_json
 
 def do_content2md_convert(doc_pathname, out_dir=None, enforced_gen=False, mdcontrols=None):
-    final_md_path = None
+    pathname_final_json = None
     try:
-        final_md_path = _do_content2md_convert_core_lvlm(doc_pathname,
+        pathname_final_json = _do_content2md_convert_core_lvlm(doc_pathname,
                                                     out_dir=out_dir,
                                                     enforced_gen=enforced_gen,
                                                     mdcontrols=mdcontrols)
     except Exception as ex:
         logging.exception(ex)
         raise ex
-    return final_md_path
+    return pathname_final_json
 
 if __name__ == "__main__":
     setup_logger_handlers()
 
     #doc_pathname = "datasrc/test/raw_docs/AIGC时代的人力资源管理进化(徐刚).pdf"
-    doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
+    #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、上汽内外饰部CAD外包框架服务合同.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪ST2H项目低压线束设计技术服务合同（电子电器）.pdf"
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/0530-大模型微调培训-VisualGLM.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/ai602-波士顿咨询：银行业生成式AI应用报告（2023）.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/AI未来十年_大模型产业落地的机遇与挑战_大数据研究院.pptx"
-    #doc_pathname = "datasrc/exam/raw_docs/YOU ONLY 2409.13695v1.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/YOU ONLY 2409.13695v1.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/LongRAG.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/DIFFERENTIAL TRANSFORMER 2410.05258v1.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/Winning Solution For Meta KDD Cup’ 24 2410.00005v1.pdf"
@@ -114,9 +114,9 @@ if __name__ == "__main__":
     mdcontrols = None
     enforced_gen = False   
 
-    final_md_path = do_content2md_convert(doc_pathname, out_dir=out_dir, enforced_gen=enforced_gen,  mdcontrols=mdcontrols)
-    print(final_md_path)
+    pathname_final_json = do_content2md_convert(doc_pathname, out_dir=out_dir, enforced_gen=enforced_gen,  mdcontrols=mdcontrols)
+    print(pathname_final_json)
 
-    md_info = MdInfo(final_md_path)
+    md_info = MdInfo(pathname_final_json)
     rich.print(md_info)
-    print(final_md_path)
+    print(pathname_final_json)
