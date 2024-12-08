@@ -91,8 +91,10 @@ _DEFAULT_MDCONTROL = {
     "mctl_lp_disable_ocr": False,
     "mctl_lp_premium_pages": [], # The target pages to extract text from documents in perminum mode. 
                                  # list of page numbers. The first page of the document is page 1
+    "mctl_lp_notouch_pages": [], # the target pages no need to be touched, 
+                                 # list of page numbers,  The first page of the document is page 1
 
-    "mctl_lp_img_to_heading": {},  # dictionary: key: embed_img_name/page_img_name (without job_id) to val: PlcId:plc_id
+    "mctl_lp_img_to_heading": {}, # dictionary: key: embed_img_name/page_img_name (without job_id) to val: PlcId:plc_id
 
     # controls required by lvlm convert 
     "mctl_lvlm_images_ignore": "", # list of image need to be ignore, seprated by comma

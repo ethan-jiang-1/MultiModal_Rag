@@ -61,14 +61,14 @@ def gen_pages_lvlm(md_info):
         if len(fname_rect_images) > 0:
             rects_img = fname_rect_images
 
+        fname_page_md = f"page_{page_index}.md"
+        pname_page_md = os.path.join(aux_dir, fname_page_md)
         if _does_page_need_gen(md_info, page_index): 
             logging.info(f"GPL: generate page {page_index}...")
             md_page = generate_full_mds_from_image_gpt(pname_image, rects_img)
-            fname_page_md = f"page_{page_index}.md"
 
             mctl_lvlm_notouch_pages = md_info.get_md_control("mctl_lvlm_notouch_pages",[])
             if page_index not in mctl_lvlm_notouch_pages:
-                pname_page_md = os.path.join(aux_dir, fname_page_md)
                 with open(pname_page_md, "w", encoding="utf-8") as f:
                     f.write(md_page)
             fnames_page_md_gen.append(fname_page_md)
