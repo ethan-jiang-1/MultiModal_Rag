@@ -16,6 +16,7 @@ if "./" not in sys.path:
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.utils_llm.llm_fix_heading_lvl_gpt import fix_heading_lvl_markdown_by_gpt
+from ctn2md.utils_llm.llm_fix_heading_lvl_qwen import fix_heading_lvl_markdown_by_qwen
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.src.md_process_plc import inject_plc_comment_to_page, separate_heading_and_plc_comment, get_all_normalized_headings_with_plc_info
 
@@ -136,6 +137,9 @@ def fix_headings_plc_by_llm(md_info_path, src_step_num=None, dst_step_num=None):
     if mctrl_fix_heading_model == "gpt":
         model = "gpt-4o" # so far, only gpt-4o can handle this well,  gpt-4o-mini does not.
         fhl_map = fix_heading_lvl_markdown_by_gpt(fhl_org, ctn_type=md_info.get_ctn_type(), model=model)
+    elif mctrl_fix_heading_model == "qwen":
+        model = "qwen-max"  # TODO: qwen-max is not there yet, need to revisit the prompt
+        fhl_map = fix_heading_lvl_markdown_by_qwen(fhl_org, ctn_type=md_info.get_ctn_type(), model=model)
     else:
         raise ValueError(f"not implemented yet for using {mctrl_fix_heading_model} in fix_headings_plc_by_llm")
 
