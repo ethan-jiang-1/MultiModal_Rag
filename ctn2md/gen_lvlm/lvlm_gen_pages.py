@@ -15,7 +15,7 @@ if "./" not in sys.path:
 from ctn2md.gen_lvlm.lvlm_pdf_to_images import get_job_id, parse_pdf_to_images
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
-from ctn2md.utils_llm.vllm_img2md_gpt import generate_full_mds_from_image_gpt
+from ctn2md.utils_vllm.vllm_img2md_gpt import generate_full_mds_from_image_gpt
 
 def _is_in_repair_mode(md_info):
     mctl_lvlm_repair_pages = md_info.get_md_control("mctl_lvlm_repair_pages",[])  

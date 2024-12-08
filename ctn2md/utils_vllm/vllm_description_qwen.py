@@ -15,7 +15,7 @@ if "./" not in sys.path:
 
 load_dotenv()
 
-from ctn2md.utils_llm.vllm_description_qwen_prompt import PROMPT_QUESTION_QAGEN_QWEN
+from ctn2md.utils_vllm.vllm_description_qwen_prompt import PROMPT_QUESTION_QAGEN_QWEN
 
 dashscope.api_key = os.environ["DASHSCOPE_API_KEY"]
 

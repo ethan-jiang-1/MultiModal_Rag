@@ -16,8 +16,8 @@ if "./" not in sys.path:
 
 load_dotenv()
 
-from ctn2md.utils_llm.vllm_ocr_restore_qwen_prompt import PROMPT_INSTRUCT_OCR_QWEN_START, PROMPT_INSTRUCT_OCR_QWEN_CONTINUE
-from ctn2md.utils_llm.vllm_ocr_restore_qwen_prompt import PROMPT_INSTRUCT_OCR_QWEN_SINGLE
+from ctn2md.utils_vllm.vllm_ocr_restore_qwen_prompt import PROMPT_INSTRUCT_OCR_QWEN_START, PROMPT_INSTRUCT_OCR_QWEN_CONTINUE
+from ctn2md.utils_vllm.vllm_ocr_restore_qwen_prompt import PROMPT_INSTRUCT_OCR_QWEN_SINGLE
 
 dashscope.api_key = os.environ["DASHSCOPE_API_KEY"]
 

@@ -17,7 +17,7 @@ if "./" not in sys.path:
 #from ctn2md.src.md_info_base import MIFN
 #from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.utils_llm.llm_fix_vl_instruction import get_vllm_instruction
-from ctn2md.utils_llm.vllm_description_qwen import generate_image_description_by_qwen
+from ctn2md.utils_vllm.vllm_description_qwen import generate_image_description_by_qwen
 from ctn2md.src.md_info_base import MIFN
 
 g_question_num = 6000
