@@ -27,8 +27,7 @@ def generate_long_mds_from_image_by_qwen(image_url, doc_title=None, model='qwen-
     for loop in range(4):
         logging.info(f"GLMFI: start loop:{loop}")
         response = call_mmc_qwen(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds)
-        content = response.output.choices[0].message.content
-        text_content = content[0]["text"]
+        text_content = response[0]["text"]
         text_content = text_content.replace("```markdown", "") 
         full_content += text_content
         if text_content.find("[ocr_end]") != -1:
@@ -61,9 +60,7 @@ def generate_simple_mds_from_image_by_qwen(image_url, doc_title=None, model='qwe
 
     logging.info(f"GSMFI: generate_simple_mds_from_image_by_qwen started... {image_url}")
     response = call_mmc_qwen(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds)
-    content = response.output.choices[0].message.content
-    text_content = content[0]["text"]
-    full_content = text_content.replace("```markdown", "") 
+    full_content = response.replace("```markdown", "").replace("```", "")
     logging.info(f"GSMFI: total output length {len(full_content)}")
     logging.info(f"GSMFI: generate_simple_mds_from_image_by_qwen ended. {image_url}")
 

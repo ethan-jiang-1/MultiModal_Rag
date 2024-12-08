@@ -37,8 +37,7 @@ def generate_image_description_by_qwen(image_url, instruction=None, model='qwen-
         ]
     }]
     response = call_mmc_qwen(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds)
-    content = response.output.choices[0].message.content
-    return content
+    return response
 
 if __name__ == '__main__':
     from ctn2md.utils.util_file import get_root_dir

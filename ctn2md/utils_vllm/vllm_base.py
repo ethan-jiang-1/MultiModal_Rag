@@ -71,7 +71,8 @@ def call_mmc_qwen(messages, model='qwen-vl-max-1119', retries=5, backoff_in_seco
                 model=model, 
                 messages=messages)
             _monitor_qwen_mm_call(d0, messages, response, model, track_id=track_id)
-            return response
+            #return response
+            return response.output.choices[0].message.content[0]["text"]
         except Exception as e:
             logging.exception(e)
             if attempt == retries - 1:
