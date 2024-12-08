@@ -132,12 +132,14 @@ def _move_aux_files(md_info):
 
 def _copy_final_result_json(md_info):
     md_final_info = {}
-    names = [MIFN.FNAME_FINAL_MD, 
+    names = [MIFN.VERSION,
+             MIFN.GEN_ENGINE,
+             MIFN.PATHNAME_ORG_DOC,
+             MIFN.FNAME_FINAL_MD, 
              MIFN.FNAME_FINAL_SUM, 
              MIFN.FNAMES_SECS,
              MIFN.FNAMES_IMGS,
-             MIFN.FNAMES_SNPS,
-             MIFN.PATHNAME_ORG_DOC]
+             MIFN.FNAMES_SNPS]
 
     for name in names:
         if name in md_info:
