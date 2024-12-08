@@ -8,10 +8,10 @@ if "./" not in sys.path:
     sys.path.append("./")
 load_dotenv()
 
-from ctn2md.utils_llm.llm_gen_vllm_instruction_gpt_prompt import SYSTEM_PROMPT_GEN_VLLM_CONTEXT, USER_PROMPT_GEN_VLLM_CONTEXT
-from ctn2md.utils_llm.llm_gen_vllm_instruction_gpt_prompt import TEXT_PROMPT_INST_VLLM_IMG
 from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
+from ctn2md.utils_llm.llm_gen_vllm_instruction_gpt_prompt import SYSTEM_PROMPT_GEN_VLLM_CONTEXT, USER_PROMPT_GEN_VLLM_CONTEXT
 from ctn2md.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
+from ctn2md.utils_vllm.vllm_description_qwen_prompt import TEXT_PROMPT_INST_VLLM_IMG_RELEVANCE
 
 
 def gen_vllm_instruction_by_gpt(doc_title, page_content, model="gpt-4o-mini", question_num=None):
@@ -41,7 +41,7 @@ def gen_vllm_instruction_by_gpt(doc_title, page_content, model="gpt-4o-mini", qu
         page_context = resp['page_context']
         page_content_language = resp['page_content_language']
 
-        instruction = TEXT_PROMPT_INST_VLLM_IMG.replace("{page_context}", page_context).replace("{page_content_language}",page_content_language)
+        instruction = TEXT_PROMPT_INST_VLLM_IMG_RELEVANCE.replace("{page_context}", page_context).replace("{page_content_language}",page_content_language)
         return instruction
     except Exception as ex: 
         logging.exception(ex)

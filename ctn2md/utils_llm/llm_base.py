@@ -129,9 +129,9 @@ def jsons_load_repair(content):
                                    return_objects=True)
     return resp
 
-class MonitorContextGPT:
+class MonitorContextLLM:
     c_monitor_filename = None
-    c_fname = "ctn_gpt_monitor.csv" 
+    c_fname = "ctn_llm_monitor.csv" 
 
     @classmethod
     def _get_monitor_filename(cls):
@@ -154,18 +154,18 @@ class MonitorContextGPT:
         self.response = None
 
     def __enter__(self):
-        logging.info("MonitorContextGPT enter")
+        logging.info(f"MonitorContextLLM enter model:{self.model}")
         self.d0 = time.time()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        logging.info("MonitorContextGPT enter")
+        logging.info(f"MonitorContextLLM enter model:{self.model}")
         self.d1 = time.time()
         self._monitor_call(exc_type)
 
     def _monitor_call(self, exc_type):
         try:
-            filename = self._get_monitor_gpt_filename()
+            filename = self._get_monitor_filename()
 
             # d0 = response.created
             dt = self.d1 - self.d0
@@ -213,7 +213,7 @@ def chat_gpt_json(messages,
         client = get_azure_gpt_client()
     for attempt in range(retries):
         try:
-            with MonitorContextGPT(messages, model, track_id, attempt) as mc:
+            with MonitorContextLLM(messages, model, track_id, attempt) as mc:
                 response = client.chat.completions.create(
                     model=model,
                     messages=messages,
@@ -248,7 +248,7 @@ def chat_gpt_plain(messages,
         client = get_azure_gpt_client()
     for attempt in range(retries):
         try:
-            with MonitorContextGPT(messages, model, track_id, attempt) as mc:
+            with MonitorContextLLM(messages, model, track_id, attempt) as mc:
                 response = client.chat.completions.create(
                     model=model,
                     messages=messages,

@@ -17,9 +17,9 @@ load_dotenv()
 
 dashscope.api_key = os.environ["DASHSCOPE_API_KEY"]
 
-class MonitorContextQwenMM:
+class MonitorContextLVLM:
     c_monitor_filename = None
-    c_fname = "ctn_qwen_mm_monitor.csv" 
+    c_fname = "ctn_lvlm_monitor.csv" 
 
     @classmethod
     def _get_monitor_filename(cls):
@@ -42,12 +42,12 @@ class MonitorContextQwenMM:
         self.response = None
 
     def __enter__(self):
-        logging.info("MonitorContextQwenMM enter")
+        logging.info(f"MonitorContextLVLM enter model:{self.model}")
         self.d0 = time.time()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        logging.info("MonitorContextQwenMM exit")
+        logging.info(f"MonitorContextLVLM exit model:{self.model}")
         self.d1 = time.time()
         self._monitor_call(exc_type)
 
@@ -87,7 +87,7 @@ class MonitorContextQwenMM:
 def chat_qwen_mm(messages, model='qwen-vl-max-1119', retries=5, backoff_in_seconds=1, track_id=None):
     for attempt in range(retries):
         try:
-            with MonitorContextQwenMM(messages, model, track_id, attempt) as mc:
+            with MonitorContextLVLM(messages, model, track_id, attempt) as mc:
                 response = dashscope.MultiModalConversation.call(
                     model=model, 
                     messages=messages)

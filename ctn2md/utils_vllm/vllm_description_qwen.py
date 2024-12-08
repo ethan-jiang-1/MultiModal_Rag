@@ -13,7 +13,6 @@ if "./" not in sys.path:
 
 load_dotenv()
 
-from ctn2md.utils_vllm.vllm_description_qwen_prompt import PROMPT_QUESTION_QAGEN_QWEN
 from ctn2md.utils_vllm.vllm_base import chat_qwen_mm
 
 
@@ -41,6 +40,8 @@ def generate_image_description_by_qwen(image_url, instruction=None, model='qwen-
 if __name__ == '__main__':
     from ctn2md.utils.util_file import get_root_dir
     from ctn2md.utils.util_logging import setup_logger_handlers
+    from ctn2md.utils_vllm.vllm_description_qwen_prompt import TEXT_PROMPT_INST_VLLM_GEN_QAS
+
     dir_root = get_root_dir()
     setup_logger_handlers()
 
@@ -63,7 +64,7 @@ if __name__ == '__main__':
     rich.print(ret3)
     print()
 
-    instruction = PROMPT_QUESTION_QAGEN_QWEN.replace("{container_name}", container_name)
+    instruction = TEXT_PROMPT_INST_VLLM_GEN_QAS.replace("{container_name}", container_name)
     ret4 = generate_image_description_by_qwen(full_path, instruction=instruction)
     rich.print(ret4)
     print()
