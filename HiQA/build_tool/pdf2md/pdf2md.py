@@ -15,7 +15,7 @@ if "./" not in sys.path:
 from HiQA.utils.util_file import get_root_dir
 from HiQA.utils.util_logging import setup_logger_handlers
 from HiQA.build_tool.pdf2md.llm_prompt_pdf2md import PROMPT_GET_CONTENT, PROMPT_MD_CORRECT
-from ctn2md.utils_llm.llm_fix_ocr_md import fix_ocr_self_correct_markdown
+from ctn2md.utils_llm.llm_fix_ocr_md_gpt import fix_ocr_self_correct_markdown_by_gpt
 
 load_dotenv()
 
@@ -199,7 +199,7 @@ def fix_ocr_content_step1(doc_pathname, md_file):
         logging.warning(f"{md_file} exception: {ex}, ignore")
 
     doc_type = doc_pathname.split(".")[-1].lower()
-    return fix_ocr_self_correct_markdown(md_text, doc_type)
+    return fix_ocr_self_correct_markdown_by_gpt(md_text, doc_type)
 
 
 

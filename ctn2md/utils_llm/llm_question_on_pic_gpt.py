@@ -15,12 +15,12 @@ if "./" not in sys.path:
 
 load_dotenv()
 
-from ctn2md.utils_vllm.vllm_description_qwen_prompt import SYSTEM_PROMPT_GPT4_QAGEN, USER_PROMPT_GPT4_QAGEN
+from ctn2md.utils_llm.llm_question_on_pic_gpt_prompt import SYSTEM_PROMPT_GPT4_QAGEN, USER_PROMPT_GPT4_QAGEN
 from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from ctn2md.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
 
 
-def gen_questions_on_pic_by_gpt4(container_name, img_desc, model="gpt-4o", question_num=None):
+def gen_questions_on_pic_by_gpt(container_name, img_desc, model="gpt-4o", question_num=None):
     if question_num is None:
         question_num = get_next_question_num()
 
@@ -66,6 +66,6 @@ if __name__ == '__main__':
     print()
 
     img_desc = ret3
-    ret5 = gen_questions_on_pic_by_gpt4(container_name, img_desc)
+    ret5 = gen_questions_on_pic_by_gpt(container_name, img_desc)
     rich.print(ret5)
     print()
