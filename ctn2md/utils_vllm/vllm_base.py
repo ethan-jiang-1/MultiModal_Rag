@@ -17,62 +17,82 @@ load_dotenv()
 
 dashscope.api_key = os.environ["DASHSCOPE_API_KEY"]
 
-g_monitor_filename = None 
-def _get_monitor_qwen_mm_filename():
-    global g_monitor_filename
-    if g_monitor_filename is None:
-        dir_root = os.path.dirname(find_dotenv())
-        dir_logs = os.path.join(dir_root, "logs")
-        os.makedirs(dir_logs, exist_ok=True)
-        filename = os.path.join(dir_logs, "ctn_qwen_mm_monitor.csv")
-        g_monitor_filename = filename
-    return g_monitor_filename
+class MonitorContextQwenMM:
+    c_monitor_filename = None
+    c_fname = "ctn_qwen_mm_monitor.csv" 
 
-def _monitor_qwen_mm_call(d0, messages, response, model, track_id=None):
-    d1 = time.time()
+    @classmethod
+    def _get_monitor_filename(cls):
+        if cls.c_monitor_filename is None:
+            dir_root = os.path.dirname(find_dotenv())
+            dir_logs = os.path.join(dir_root, "logs")
+            os.makedirs(dir_logs, exist_ok=True)
+            filename = os.path.join(dir_logs, cls.c_fname)
+            cls.c_monitor_filename = filename
+        return cls.c_monitor_filename
 
-    try:
-        filename = _get_monitor_qwen_mm_filename()
+    def __init__(self, messages, model, track_id, attempt):
+        self.messages = messages
+        self.model = model
+        self.track_id = track_id
+        self.attempt = attempt
 
-        # d0 = response.created
-        dt = d1 - d0
-        dt = round(dt, 2)
-        d0 = round(d0, 2)
+        self.d0 = None
+        self.d1 = None
+        self.response = None
 
-        ts0 = datetime.fromtimestamp(d0).strftime("%Y%m%d:%H:%M:%S")
+    def __enter__(self):
+        logging.info("MonitorContextQwenMM enter")
+        self.d0 = time.time()
+        return self
 
-        output = response.output
-        choice0 = output.choices[0]
-        finish_reason = choice0.finish_reason
+    def __exit__(self, exc_type, exc_value, traceback):
+        logging.info("MonitorContextQwenMM exit")
+        self.d1 = time.time()
+        self._monitor_call(exc_type)
 
-        usage = response.usage
-        input_tokens = usage.input_tokens
-        output_tokens = usage.output_tokens
-        image_tokens = usage.image_tokens
+    def _monitor_call(self, exc_type):
+        try:
+            filename = self._get_monitor_filename()
+            dt = self.d1 - self.d0
+            dt = round(dt, 2)
+            self.d0 = round(self.d0, 2)
+            sec_span = round(dt, 2)
+            ts0 = datetime.fromtimestamp(self.d0).strftime("%Y%m%d:%H:%M:%S")
 
-        sec_span = round(dt, 2)
-        output_ratio_per_sec = round(float(output_tokens) / sec_span, 2)
-        token_per_ms = round((1.0/output_ratio_per_sec) * 1000.0, 2)
+            if self.response is not None:
+                output = self.response.output
+                choice0 = output.choices[0]
+                finish_reason = choice0.finish_reason
 
-        with open(filename, 'a', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow([ts0, finish_reason, model, sec_span, input_tokens, image_tokens, output_tokens, token_per_ms, str(track_id)])
+                usage = self.response.usage
+                input_tokens = usage.input_tokens
+                output_tokens = usage.output_tokens
+                image_tokens = usage.image_tokens
 
-    except Exception as ex:  # noqa
-        print(ex)
+                output_ratio_per_sec = round(float(output_tokens) / sec_span, 2)
+                token_per_ms = round((1.0/output_ratio_per_sec) * 1000.0, 2)
 
+                with open(filename, 'a', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow([ts0, finish_reason, self.model, sec_span, input_tokens, image_tokens, output_tokens, token_per_ms, str(self.track_id), self.attempt])
+            else:
+                with open(filename, 'a', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow([ts0, str(exc_type), self.model, sec_span, 0, 0, 0, 0.0, str(self.track_id), self.attempt])
 
+        except Exception as ex:  # noqa
+            logging.exception(ex)
 
-def call_mmc_qwen(messages, model='qwen-vl-max-1119', retries=5, backoff_in_seconds=1, track_id=None):
+def chat_qwen_mm(messages, model='qwen-vl-max-1119', retries=5, backoff_in_seconds=1, track_id=None):
     for attempt in range(retries):
         try:
-            d0 = time.time()
-            response = dashscope.MultiModalConversation.call(
-                model=model, 
-                messages=messages)
-            _monitor_qwen_mm_call(d0, messages, response, model, track_id=track_id)
-            #return response
-            return response.output.choices[0].message.content[0]["text"]
+            with MonitorContextQwenMM(messages, model, track_id, attempt) as mc:
+                response = dashscope.MultiModalConversation.call(
+                    model=model, 
+                    messages=messages)
+                mc.response = response 
+                return response.output.choices[0].message.content[0]["text"]
         except Exception as e:
             logging.exception(e)
             if attempt == retries - 1:

@@ -16,7 +16,7 @@ if "./" not in sys.path:
 load_dotenv()
 
 from ctn2md.utils_vllm.vllm_img2md_qwen_prompt import PROMPT_INSTRUCT_IMG2MD_QWEN_START, PROMPT_INSTRUCT_IMG2MD_QWEN_START_IMG_RECTS, PROMPT_INSTRUCT_IMG2MD_QWEN_CONTINUE
-from ctn2md.utils_vllm.vllm_base import call_mmc_qwen
+from ctn2md.utils_vllm.vllm_base import chat_qwen_mm
 
 def generate_full_mds_from_image_qwen(pname_image, rects_img=None, model='qwen-vl-max-1119', retries=5, backoff_in_seconds=1):
          
@@ -35,7 +35,7 @@ def generate_full_mds_from_image_qwen(pname_image, rects_img=None, model='qwen-v
     full_content = ""
     for loop in range(4):
         logging.info(f"GFMFI: start loop:{loop}")
-        response = call_mmc_qwen(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds, track_id="gfmdiq")
+        response = chat_qwen_mm(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds, track_id="gfmdiq")
         text_content = response.replace("```markdown", "").replace("```", "")
         full_content += text_content
         if text_content.find("[ocr_end]") != -1:

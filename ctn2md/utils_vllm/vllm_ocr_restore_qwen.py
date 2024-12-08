@@ -14,7 +14,7 @@ load_dotenv()
 
 from ctn2md.utils_vllm.vllm_ocr_restore_qwen_prompt import PROMPT_INSTRUCT_OCR_QWEN_START, PROMPT_INSTRUCT_OCR_QWEN_CONTINUE
 from ctn2md.utils_vllm.vllm_ocr_restore_qwen_prompt import PROMPT_INSTRUCT_OCR_QWEN_SINGLE
-from ctn2md.utils_vllm.vllm_base import call_mmc_qwen
+from ctn2md.utils_vllm.vllm_base import chat_qwen_mm
 
 def generate_long_mds_from_image_by_qwen(image_url, doc_title=None, model='qwen-vl-max-1119', retries=5, backoff_in_seconds=1):
          
@@ -26,7 +26,7 @@ def generate_long_mds_from_image_by_qwen(image_url, doc_title=None, model='qwen-
     full_content = ""
     for loop in range(4):
         logging.info(f"GLMFI: start loop:{loop}")
-        response = call_mmc_qwen(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds, track_id="glmfiq")
+        response = chat_qwen_mm(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds, track_id="glmfiq")
         text_content = response[0]["text"]
         text_content = text_content.replace("```markdown", "") 
         full_content += text_content
@@ -59,7 +59,7 @@ def generate_simple_mds_from_image_by_qwen(image_url, doc_title=None, model='qwe
     # The model name 'qwen-vl-max-0809' is the identity of 'Qwen2-VL-72B'.
 
     logging.info(f"GSMFI: generate_simple_mds_from_image_by_qwen started... {image_url}")
-    response = call_mmc_qwen(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds, track_id="gsmfiq")
+    response = chat_qwen_mm(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds, track_id="gsmfiq")
     full_content = response.replace("```markdown", "").replace("```", "")
     logging.info(f"GSMFI: total output length {len(full_content)}")
     logging.info(f"GSMFI: generate_simple_mds_from_image_by_qwen ended. {image_url}")

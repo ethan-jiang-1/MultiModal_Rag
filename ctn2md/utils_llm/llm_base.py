@@ -129,51 +129,75 @@ def jsons_load_repair(content):
                                    return_objects=True)
     return resp
 
-g_monitor_filename = None 
-def _get_monitor_gpt_filename():
-    global g_monitor_filename
-    if g_monitor_filename is None:
-        dir_root = os.path.dirname(find_dotenv())
-        dir_logs = os.path.join(dir_root, "logs")
-        os.makedirs(dir_logs, exist_ok=True)
-        filename = os.path.join(dir_logs, "ctn_gpt_monitor.csv")
-        g_monitor_filename = filename
-    return g_monitor_filename
+class MonitorContextGPT:
+    c_monitor_filename = None
+    c_fname = "ctn_gpt_monitor.csv" 
 
-def _monitor_gpt_call(d0, messages, response, track_id=None):
-    d1 = time.time()
+    @classmethod
+    def _get_monitor_filename(cls):
+        if cls.c_monitor_filename is None:
+            dir_root = os.path.dirname(find_dotenv())
+            dir_logs = os.path.join(dir_root, "logs")
+            os.makedirs(dir_logs, exist_ok=True)
+            filename = os.path.join(dir_logs, cls.c_fname)
+            cls.c_monitor_filename = filename
+        return cls.c_monitor_filename
 
-    try:
-        filename = _get_monitor_gpt_filename()
+    def __init__(self, messages, model, track_id, attempt):
+        self.messages = messages
+        self.model = model
+        self.track_id = track_id
+        self.attempt = attempt
 
-        # d0 = response.created
-        dt = d1 - d0
-        dt = round(dt, 2)
-        d0 = round(d0, 2)
+        self.d0 = None
+        self.d1 = None
+        self.response = None
 
-        ts0 = datetime.fromtimestamp(d0).strftime("%Y%m%d:%H:%M:%S")
+    def __enter__(self):
+        logging.info("MonitorContextGPT enter")
+        self.d0 = time.time()
+        return self
 
-        choice0 = response.choices[0]
-        finish_reason = choice0.finish_reason
+    def __exit__(self, exc_type, exc_value, traceback):
+        logging.info("MonitorContextGPT enter")
+        self.d1 = time.time()
+        self._monitor_call(exc_type)
 
-        model = response.model
+    def _monitor_call(self, exc_type):
+        try:
+            filename = self._get_monitor_gpt_filename()
 
-        usage = response.usage
-        prompt_tokens = usage.prompt_tokens
-        total_tokens = usage.total_tokens
-        completion_tokens = usage.completion_tokens
+            # d0 = response.created
+            dt = self.d1 - self.d0
+            dt = round(dt, 2)
+            self.d0 = round(self.d0, 2)
+            sec_span = round(dt, 2)
+            ts0 = datetime.fromtimestamp(self.d0).strftime("%Y%m%d:%H:%M:%S")
+ 
+            if self.response is not None:
+                choice0 = self.response.choices[0]
+                finish_reason = choice0.finish_reason
 
-        sec_span = round(dt, 2)
-        output_ratio_per_sec = round(float(completion_tokens) / sec_span, 2)
-        token_per_ms = round((1.0/output_ratio_per_sec) * 1000.0, 2)
+                model = self.response.model
 
-        with open(filename, 'a', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow([ts0, finish_reason, model, sec_span, total_tokens, prompt_tokens, completion_tokens, token_per_ms, str(track_id)])
+                usage = self.response.usage
+                prompt_tokens = usage.prompt_tokens
+                total_tokens = usage.total_tokens
+                completion_tokens = usage.completion_tokens
 
-    except Exception as ex:  # noqa
-        print(ex) 
+                output_ratio_per_sec = round(float(completion_tokens) / sec_span, 2)
+                token_per_ms = round((1.0/output_ratio_per_sec) * 1000.0, 2)
 
+                with open(filename, 'a', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow([ts0, finish_reason, model, sec_span, total_tokens, prompt_tokens, completion_tokens, token_per_ms, str(self.track_id), self.attempt])
+            else:
+                with open(filename, 'a', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow([ts0, str(exc_type), model, sec_span, 0, 0, 0, 0.0, str(self.track_id), self.attempt])
+
+        except Exception as ex:  # noqa
+            logging.exception(ex)
 
 def chat_gpt_json(messages, 
                   model="gpt-4o-mini", 
@@ -185,27 +209,25 @@ def chat_gpt_json(messages,
                   delay_base_sec=5,
                   track_id=None,
                   client=None):
-    attempt = 0
     if client is None:
         client = get_azure_gpt_client()
-    while attempt < retries:
+    for attempt in range(retries):
         try:
-            d0 = time.time()
-            response = client.chat.completions.create(
-                model=model,
-                messages=messages,
-                temperature=temperature,
-                top_p=top_p,
-                response_format={"type": "json_object"})
-            _monitor_gpt_call(d0, messages, response, track_id=track_id)
-            resp = jsons_load_repair(response.choices[0].message.content)
-            return resp
+            with MonitorContextGPT(messages, model, track_id, attempt) as mc:
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    temperature=temperature,
+                    top_p=top_p,
+                    response_format={"type": "json_object"})
+                mc.response = response
+                resp = jsons_load_repair(response.choices[0].message.content)
+                return resp
         except (requests.exceptions.RequestException, ValueError, openai.RateLimitError) as e:
             if isinstance(e, openai.RateLimitError):
                 delay_base_sec += 10
             else:
                 logging.error(f"Error on attempt {attempt+1}: {str(e)}")
-            attempt += 1
             if attempt == retries:
                 raise
             backoff_sec = backoff_factor**attempt + delay_base_sec
@@ -222,25 +244,23 @@ def chat_gpt_plain(messages,
                   delay_base_sec=5,
                   track_id=None,
                   client=None):
-    attempt = 0
     if client is None:
         client = get_azure_gpt_client()
-    while attempt < retries:
+    for attempt in range(retries):
         try:
-            d0 = time.time()
-            response = client.chat.completions.create(
-                model=model,
-                messages=messages,
-                temperature=temperature,
-                top_p=top_p)
-            _monitor_gpt_call(d0, messages, response, track_id=track_id)
-            return response.choices[0].message.content
+            with MonitorContextGPT(messages, model, track_id, attempt) as mc:
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    temperature=temperature,
+                    top_p=top_p)
+                mc.response = response
+                return response.choices[0].message.content
         except (requests.exceptions.RequestException, ValueError, openai.RateLimitError) as e:
             if isinstance(e, openai.RateLimitError):
                 delay_base_sec += 10
             else:
                 logging.error(f"Error on attempt {attempt+1}: {str(e)}")
-            attempt += 1
             if attempt == retries:
                 raise
             backoff_sec = backoff_factor**attempt + delay_base_sec

@@ -8,14 +8,13 @@ import rich
 from dotenv import load_dotenv
 
 
-
 if "./" not in sys.path:
     sys.path.append("./")
 
 load_dotenv()
 
 from ctn2md.utils_vllm.vllm_description_qwen_prompt import PROMPT_QUESTION_QAGEN_QWEN
-from ctn2md.utils_vllm.vllm_base import call_mmc_qwen
+from ctn2md.utils_vllm.vllm_base import chat_qwen_mm
 
 
 #model='qwen-vl-max-1119'
@@ -36,7 +35,7 @@ def generate_image_description_by_qwen(image_url, instruction=None, model='qwen-
             },
         ]
     }]
-    response = call_mmc_qwen(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds, track_id="gid")
+    response = chat_qwen_mm(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds, track_id="gid")
     return response
 
 if __name__ == '__main__':
