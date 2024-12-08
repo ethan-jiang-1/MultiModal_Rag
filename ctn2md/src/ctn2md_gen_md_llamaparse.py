@@ -43,7 +43,7 @@ class GenMd_LlamaParse(GenMd_Base):
                           enforced_gen=False, 
                           mdcontrols=None):
         if not cls.does_support_doc_type(doc_pathname):
-            raise ValueError(f"GenMd_LlamaParse does not support {doc_pathname}")
+            raise ValueError(f"GenMd_LlamaParse does not support '{doc_pathname}'")
 
         md_info, gen_needed = cls.does_gen_needed(doc_pathname, out_dir, enforced_gen)
 

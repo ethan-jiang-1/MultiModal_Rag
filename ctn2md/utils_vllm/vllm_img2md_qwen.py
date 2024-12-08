@@ -35,7 +35,7 @@ def generate_full_mds_from_image_qwen(pname_image, rects_img=None, model='qwen-v
     full_content = ""
     for loop in range(4):
         logging.info(f"GFMFI: start loop:{loop}")
-        response = call_mmc_qwen(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds)
+        response = call_mmc_qwen(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds, track_id="gfmdiq")
         text_content = response.replace("```markdown", "").replace("```", "")
         full_content += text_content
         if text_content.find("[ocr_end]") != -1:

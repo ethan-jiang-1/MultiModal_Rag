@@ -26,7 +26,7 @@ def generate_long_mds_from_image_by_qwen(image_url, doc_title=None, model='qwen-
     full_content = ""
     for loop in range(4):
         logging.info(f"GLMFI: start loop:{loop}")
-        response = call_mmc_qwen(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds)
+        response = call_mmc_qwen(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds, track_id="glmfiq")
         text_content = response[0]["text"]
         text_content = text_content.replace("```markdown", "") 
         full_content += text_content
@@ -59,7 +59,7 @@ def generate_simple_mds_from_image_by_qwen(image_url, doc_title=None, model='qwe
     # The model name 'qwen-vl-max-0809' is the identity of 'Qwen2-VL-72B'.
 
     logging.info(f"GSMFI: generate_simple_mds_from_image_by_qwen started... {image_url}")
-    response = call_mmc_qwen(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds)
+    response = call_mmc_qwen(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds, track_id="gsmfiq")
     full_content = response.replace("```markdown", "").replace("```", "")
     logging.info(f"GSMFI: total output length {len(full_content)}")
     logging.info(f"GSMFI: generate_simple_mds_from_image_by_qwen ended. {image_url}")

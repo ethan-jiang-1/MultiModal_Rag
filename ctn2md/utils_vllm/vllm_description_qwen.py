@@ -36,7 +36,7 @@ def generate_image_description_by_qwen(image_url, instruction=None, model='qwen-
             },
         ]
     }]
-    response = call_mmc_qwen(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds)
+    response = call_mmc_qwen(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds, track_id="gid")
     return response
 
 if __name__ == '__main__':
