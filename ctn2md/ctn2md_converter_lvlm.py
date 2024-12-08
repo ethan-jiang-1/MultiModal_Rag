@@ -14,7 +14,7 @@ if "./" not in sys.path:
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo
-from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_gpt
+from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_llm
 from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_heirarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_gpt
 from ctn2md.src.make_final_result import make_final_json, reset_md_flow
@@ -42,10 +42,10 @@ def _do_content2md_convert_core_lvlm(doc_pathname,
     reset_md_flow(md_info_path)
 
     src_step_num = 0
-    if md_generator.need_followup_step("fix_headings_plc_by_gpt"):
-        md_info_path = fix_headings_plc_by_gpt(md_info_path, src_step_num=src_step_num)
+    if md_generator.need_followup_step("fix_headings_plc_by_llm"):
+        md_info_path = fix_headings_plc_by_llm(md_info_path, src_step_num=src_step_num)
         if md_info_path is None:
-            logging.error(f"DCCCV: failed {md_info_path} @fix_headings_plc_by_gpt")
+            logging.error(f"DCCCV: failed {md_info_path} @fix_headings_plc_by_llm")
             return None 
 
     src_step_num += 1
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪ST2H项目低压线束设计技术服务合同（电子电器）.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪车架总成技术服务合同.pdf"
-    #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪铝大梁式车架及副车架设计外包中标通知书.pdf"
+    doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪铝大梁式车架及副车架设计外包中标通知书.pdf"
     #doc_pathname = "datasrc/test/raw_docs/业绩案例、比亚迪驻场线束设计技术服务合同（电子电器）.pdf"
     #doc_pathname = "datasrc/test/raw_docs/1. 座椅STO间隙 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/2. 座垫与钢丝间隙 P1.pptx"
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/Winning Solution For Meta KDD Cup’ 24 2410.00005v1.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/attention_is_all_you_need.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/Regioselective hydroxylation of cholecalciferol.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/Survey of different Large Language Model Architectures.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/Survey of different Large Language Model Architectures.pdf"
 
     out_dir = None
     mdcontrols = None

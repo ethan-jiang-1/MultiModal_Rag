@@ -112,8 +112,8 @@ def _update_markdown_heading_content(md_text, md_info, fhl_map):
     return new_md_text, unprocessed_heading_lines_map
 
 
-def fix_headings_plc_by_gpt(md_info_path, src_step_num=None, dst_step_num=None):
-    logging.info(f"##MDFLOW##: fix_headings_plc_by_gpt started src_step_num:{src_step_num} dst_step_num:{dst_step_num}...")
+def fix_headings_plc_by_llm(md_info_path, src_step_num=None, dst_step_num=None):
+    logging.info(f"##MDFLOW##: fix_headings_plc_by_llm started src_step_num:{src_step_num} dst_step_num:{dst_step_num}...")
     md_info = MdInfo(md_info_path)
 
     pathname_src_step_md, pathname_dst_step_md = md_info.name_src_n_dst_step_pathname(src_step_num, dst_step_num=dst_step_num)
@@ -132,8 +132,12 @@ def fix_headings_plc_by_gpt(md_info_path, src_step_num=None, dst_step_num=None):
         md_text_new = _filter_markdown_heading_plc(md_text_new, md_info)
         fhl_org = md_info[MIFN.FHL_ORG]
     
-    model = "gpt-4o" # so far, only gpt-4o can handle this well,  gpt-4o-mini does not.
-    fhl_map = fix_heading_lvl_markdown(fhl_org, ctn_type=md_info.get_ctn_type(), model=model)
+    mctrl_fix_heading_model = md_info.get_md_control("mctrl_fix_heading_model", "gpt")
+    if mctrl_fix_heading_model == "gpt":
+        model = "gpt-4o" # so far, only gpt-4o can handle this well,  gpt-4o-mini does not.
+        fhl_map = fix_heading_lvl_markdown(fhl_org, ctn_type=md_info.get_ctn_type(), model=model)
+    else:
+        raise ValueError(f"not implemented yet for using {mctrl_fix_heading_model} in fix_headings_plc_by_llm")
 
     #rich.print(fhl_map)
     rich.print(fhl_map)
@@ -147,14 +151,14 @@ def fix_headings_plc_by_gpt(md_info_path, src_step_num=None, dst_step_num=None):
     md_text_new1, unprocessed_heading_lines_map = _update_markdown_heading_content(md_text_new, md_info, fhl_map)
     rich.print(unprocessed_heading_lines_map)
 
-    logging.warning(f"fix_headings_plc_by_gpt: pathname_dst_step_md: {pathname_dst_step_md}")
+    logging.warning(f"fix_headings_plc_by_llm: pathname_dst_step_md: {pathname_dst_step_md}")
     with open(pathname_dst_step_md, "w+") as f:
         f.write(md_text_new1)
     
     md_info[MIFN.FHL_MAP_O2N] = o2n_map
-    md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_headings_plc_by_gpt")
+    md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_headings_plc_by_llm")
     md_info_path = md_info.save()
-    logging.info(f"##MDFLOW##: fix_headings_plc_by_gpt ended: model: {model}")
+    logging.info(f"##MDFLOW##: fix_headings_plc_by_llm ended: model: {model}")
     return md_info_path 
 
 if __name__ == "__main__":
@@ -165,7 +169,7 @@ if __name__ == "__main__":
     md_info_path = "_output/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
     #md_info_path = "_output/ctn2md_座椅STO间隙 P1/_info.json"
 
-    md_info_path = fix_headings_plc_by_gpt(md_info_path, src_step_num=src_step_num, dst_step_num=dst_step_num)
+    md_info_path = fix_headings_plc_by_llm(md_info_path, src_step_num=src_step_num, dst_step_num=dst_step_num)
 
     md_info = MdInfo(md_info_path)
     rich.print(md_info)

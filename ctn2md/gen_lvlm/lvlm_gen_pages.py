@@ -16,6 +16,7 @@ from ctn2md.gen_lvlm.lvlm_pdf_to_images import get_job_id, parse_pdf_to_images
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.utils_vllm.vllm_img2md_gpt import generate_full_mds_from_image_gpt
+from ctn2md.utils_vllm.vllm_img2md_qwen import generate_full_mds_from_image_qwen
 
 def _is_in_repair_mode(md_info):
     mctl_lvlm_repair_pages = md_info.get_md_control("mctl_lvlm_repair_pages",[])  
@@ -51,6 +52,7 @@ def gen_pages_lvlm(md_info):
     fnames_imgs = []
     fnames_snps = []
     fnames_page_md_gen = []
+    mctrl_lvlm_img2md_model = md_info.get_md_control("mctrl_lvlm_img2md_model", "gpt")
     for ndx, image_info in enumerate(image_infos):
         page_index = ndx + 1
         fname_page_name, fname_page_rect_name, fname_rect_images = image_info
@@ -65,7 +67,11 @@ def gen_pages_lvlm(md_info):
         pname_page_md = os.path.join(aux_dir, fname_page_md)
         if _does_page_need_gen(md_info, page_index): 
             logging.info(f"GPL: generate page {page_index}...")
-            md_page = generate_full_mds_from_image_gpt(pname_image, rects_img)
+
+            if mctrl_lvlm_img2md_model == "qwen":
+                md_page = generate_full_mds_from_image_qwen(pname_image, rects_img)
+            else:
+                md_page = generate_full_mds_from_image_gpt(pname_image, rects_img)
 
             mctl_lvlm_notouch_pages = md_info.get_md_control("mctl_lvlm_notouch_pages",[])
             if page_index not in mctl_lvlm_notouch_pages:

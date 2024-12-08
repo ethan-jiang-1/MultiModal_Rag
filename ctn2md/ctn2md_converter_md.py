@@ -14,7 +14,7 @@ if "./" not in sys.path:
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo
-from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_gpt
+from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_llm
 from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_heirarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_gpt
 from ctn2md.src.make_final_result import make_final_json, reset_md_flow
@@ -42,10 +42,10 @@ def _do_content2md_convert_core_md(doc_pathname,
     reset_md_flow(md_info_path)
 
     src_step_num = 0
-    if md_generator.need_followup_step("fix_headings_plc_by_gpt"):
-        md_info_path = fix_headings_plc_by_gpt(md_info_path, src_step_num=src_step_num)
+    if md_generator.need_followup_step("fix_headings_plc_by_llm"):
+        md_info_path = fix_headings_plc_by_llm(md_info_path, src_step_num=src_step_num)
         if md_info_path is None:
-            logging.error(f"DCCCM: failed {md_info_path} @fix_headings_plc_by_gpt")
+            logging.error(f"DCCCM: failed {md_info_path} @fix_headings_plc_by_llm")
             return None 
 
     src_step_num += 1

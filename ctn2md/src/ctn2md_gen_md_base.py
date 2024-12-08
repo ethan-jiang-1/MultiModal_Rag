@@ -51,6 +51,6 @@ class GenMd_Base:
 
     @classmethod
     def need_followup_step(cls, step_name):
-        if step_name == "fix_headings_plc_by_gpt":
+        if step_name == "fix_headings_plc_by_llm":
             return True 
         return True

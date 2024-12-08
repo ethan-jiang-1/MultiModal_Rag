@@ -83,6 +83,8 @@ _DEFAULT_MDCONTROL = {
     "mctl_move_aux_files": True,
     "mctl_need_image_ref": True,
     "mctl_treat_doc_as_ctntype": "auto",
+    "mctrl_fix_heading_model": "gpt", # gpt/qwen
+
 
     # controls required by llamaparse converter
     "mctl_lp_min_img_relevance_score": 0.2,
@@ -100,8 +102,9 @@ _DEFAULT_MDCONTROL = {
     "mctl_lvlm_images_ignore": "", # list of image need to be ignore, seprated by comma
     "mctl_lvlm_repair_pages": [], # the target pages need to be repaired, 
                                   # list of page numbers,  The first page of the document is page 1
-    "mctl_lvlm_notouch_pages": [] # the target pages no need to be touched, 
-                                  # list of page numbers,  The first page of the document is page 1
+    "mctl_lvlm_notouch_pages": [], # the target pages no need to be touched, 
+                                   # list of page numbers,  The first page of the document is page 1
+    "mctrl_lvlm_img2md_model": "gpt" # gpt/qwen
 }
 
 class MdInfo:
