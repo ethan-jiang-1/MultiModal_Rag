@@ -1,6 +1,5 @@
-import dashscope
-import time
-import random
+#import time
+#import random
 import os
 import logging
 import sys
@@ -17,26 +16,7 @@ if "./" not in sys.path:
 load_dotenv()
 
 from ctn2md.utils_vllm.vllm_img2md_qwen_prompt import PROMPT_INSTRUCT_IMG2MD_QWEN_START, PROMPT_INSTRUCT_IMG2MD_QWEN_START_IMG_RECTS, PROMPT_INSTRUCT_IMG2MD_QWEN_CONTINUE
-
-dashscope.api_key = os.environ["DASHSCOPE_API_KEY"]
-
-# model='qwen-vl-max-0809', 
-def _retry_dashscope_get_response(messages, model='qwen-vl-max-1119', retries=5, backoff_in_seconds=1):
-    for attempt in range(retries):
-        try:
-            response = dashscope.MultiModalConversation.call(
-                model=model,
-                messages=messages, 
-                top_p=0.1,
-                max_length=2000)
-            return response 
-        except Exception as e:
-            logging.exception(e)
-            if attempt == retries - 1:
-                raise
-            sleep_time = backoff_in_seconds * (2**attempt) + random.uniform(0, 1)
-            time.sleep(sleep_time)
-
+from ctn2md.utils_vllm.vllm_base import call_mmc_qwen
 
 def generate_full_mds_from_image_qwen(pname_image, rects_img=None, model='qwen-vl-max-1119', retries=5, backoff_in_seconds=1):
          
@@ -55,7 +35,7 @@ def generate_full_mds_from_image_qwen(pname_image, rects_img=None, model='qwen-v
     full_content = ""
     for loop in range(4):
         logging.info(f"GFMFI: start loop:{loop}")
-        response =_retry_dashscope_get_response(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds)
+        response = call_mmc_qwen(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds)
         content = response.output.choices[0].message.content
         text_content = content[0]["text"]
         text_content = text_content.replace("```markdown", "") 

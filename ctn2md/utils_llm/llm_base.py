@@ -1,5 +1,4 @@
 from openai import AzureOpenAI
-from openai import OpenAI
 from dotenv import load_dotenv, find_dotenv
 import sys
 import os
@@ -115,13 +114,14 @@ def get_azure_gpt_client():
                          api_version="2024-02-15-preview")
     return client
 
+
 def get_dashscope_client():
+    from openai import OpenAI
     client = OpenAI(
         api_key=os.getenv("DASHSCOPE_API_KEY"),
         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
     )
     return client
-
 
 def jsons_load_repair(content):
     resp = json_repair.repair_json(content, 
@@ -130,21 +130,21 @@ def jsons_load_repair(content):
     return resp
 
 g_monitor_filename = None 
-def _get_monitor_filename():
+def _get_monitor_gpt_filename():
     global g_monitor_filename
     if g_monitor_filename is None:
         dir_root = os.path.dirname(find_dotenv())
         dir_logs = os.path.join(dir_root, "logs")
         os.makedirs(dir_logs, exist_ok=True)
-        filename = os.path.join(dir_logs, "ctn_monitor.csv")
+        filename = os.path.join(dir_logs, "ctn_gpt_monitor.csv")
         g_monitor_filename = filename
     return g_monitor_filename
 
-def _monitor_call(d0, messages, response, track_id=None):
+def _monitor_gpt_call(d0, messages, response, track_id=None):
     d1 = time.time()
 
     try:
-        filename = _get_monitor_filename()
+        filename = _get_monitor_gpt_filename()
 
         # d0 = response.created
         dt = d1 - d0
@@ -171,8 +171,8 @@ def _monitor_call(d0, messages, response, track_id=None):
             writer = csv.writer(file)
             writer.writerow([ts0, finish_reason, model, sec_span, total_tokens, prompt_tokens, completion_tokens, token_per_ms, str(track_id)])
 
-    except:  # noqa
-        pass 
+    except Exception as ex:  # noqa
+        print(ex) 
 
 
 def chat_gpt_json(messages, 
@@ -197,7 +197,7 @@ def chat_gpt_json(messages,
                 temperature=temperature,
                 top_p=top_p,
                 response_format={"type": "json_object"})
-            _monitor_call(d0, messages, response, track_id=track_id)
+            _monitor_gpt_call(d0, messages, response, track_id=track_id)
             resp = jsons_load_repair(response.choices[0].message.content)
             return resp
         except (requests.exceptions.RequestException, ValueError, openai.RateLimitError) as e:
@@ -233,7 +233,7 @@ def chat_gpt_plain(messages,
                 messages=messages,
                 temperature=temperature,
                 top_p=top_p)
-            _monitor_call(d0, messages, response, track_id=track_id)
+            _monitor_gpt_call(d0, messages, response, track_id=track_id)
             return response.choices[0].message.content
         except (requests.exceptions.RequestException, ValueError, openai.RateLimitError) as e:
             if isinstance(e, openai.RateLimitError):

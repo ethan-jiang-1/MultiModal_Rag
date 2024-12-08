@@ -1,15 +1,11 @@
-import dashscope
-import time
-import random
+#import time
+#import random
 import os
 import logging
 import sys
 #import json
 import rich
 from dotenv import load_dotenv
-
-#import json_repair
-
 
 if "./" not in sys.path:
     sys.path.append("./")
@@ -18,26 +14,7 @@ load_dotenv()
 
 from ctn2md.utils_vllm.vllm_ocr_restore_qwen_prompt import PROMPT_INSTRUCT_OCR_QWEN_START, PROMPT_INSTRUCT_OCR_QWEN_CONTINUE
 from ctn2md.utils_vllm.vllm_ocr_restore_qwen_prompt import PROMPT_INSTRUCT_OCR_QWEN_SINGLE
-
-dashscope.api_key = os.environ["DASHSCOPE_API_KEY"]
-
-# model='qwen-vl-max-0809', 
-def _retry_dashscope_get_response(messages, model='qwen-vl-max-1119', retries=5, backoff_in_seconds=1):
-    for attempt in range(retries):
-        try:
-            response = dashscope.MultiModalConversation.call(
-                model=model, 
-                messages=messages, 
-                top_p=0.1,
-                max_length=2000)
-            return response 
-        except Exception as e:
-            logging.exception(e)
-            if attempt == retries - 1:
-                raise
-            sleep_time = backoff_in_seconds * (2**attempt) + random.uniform(0, 1)
-            time.sleep(sleep_time)
-
+from ctn2md.utils_vllm.vllm_base import call_mmc_qwen
 
 def generate_long_mds_from_image_by_qwen(image_url, doc_title=None, model='qwen-vl-max-1119', retries=5, backoff_in_seconds=1):
          
@@ -49,7 +26,7 @@ def generate_long_mds_from_image_by_qwen(image_url, doc_title=None, model='qwen-
     full_content = ""
     for loop in range(4):
         logging.info(f"GLMFI: start loop:{loop}")
-        response =_retry_dashscope_get_response(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds)
+        response = call_mmc_qwen(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds)
         content = response.output.choices[0].message.content
         text_content = content[0]["text"]
         text_content = text_content.replace("```markdown", "") 
@@ -83,7 +60,7 @@ def generate_simple_mds_from_image_by_qwen(image_url, doc_title=None, model='qwe
     # The model name 'qwen-vl-max-0809' is the identity of 'Qwen2-VL-72B'.
 
     logging.info(f"GSMFI: generate_simple_mds_from_image_by_qwen started... {image_url}")
-    response =_retry_dashscope_get_response(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds)
+    response = call_mmc_qwen(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds)
     content = response.output.choices[0].message.content
     text_content = content[0]["text"]
     full_content = text_content.replace("```markdown", "") 

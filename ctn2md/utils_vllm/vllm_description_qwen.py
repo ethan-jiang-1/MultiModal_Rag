@@ -1,8 +1,7 @@
-import dashscope
-import time
-import random
+#import time
+#import random
 import os
-import logging
+#import logging
 import sys
 #import json
 import rich
@@ -16,8 +15,8 @@ if "./" not in sys.path:
 load_dotenv()
 
 from ctn2md.utils_vllm.vllm_description_qwen_prompt import PROMPT_QUESTION_QAGEN_QWEN
+from ctn2md.utils_vllm.vllm_base import call_mmc_qwen
 
-dashscope.api_key = os.environ["DASHSCOPE_API_KEY"]
 
 #model='qwen-vl-max-1119'
 #model='qwen-vl-max-0809'
@@ -37,27 +36,9 @@ def generate_image_description_by_qwen(image_url, instruction=None, model='qwen-
             },
         ]
     }]
-    
-    # The model name 'qwen-vl-max-0809' is the identity of 'Qwen2-VL-72B'.
-    # 
-    for attempt in range(retries):
-        try:
-            response = dashscope.MultiModalConversation.call(
-                model=model, 
-                messages=messages)
-            if response is not None: 
-                choice = response["output"]["choices"][0]
-                content = choice["message"]["content"]
-                answer_text = content[0]["text"]
-                return answer_text
-        except Exception as e:
-            logging.exception(e)
-            if attempt == retries - 1:
-                raise
-            sleep_time = backoff_in_seconds * (2**attempt) + random.uniform(
-                0, 1)
-            time.sleep(sleep_time)
-    return None
+    response = call_mmc_qwen(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds)
+    content = response.output.choices[0].message.content
+    return content
 
 if __name__ == '__main__':
     from ctn2md.utils.util_file import get_root_dir

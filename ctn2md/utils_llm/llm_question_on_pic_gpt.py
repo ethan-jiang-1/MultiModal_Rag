@@ -1,4 +1,3 @@
-#import dashscope
 #import time
 #import random
 import os
