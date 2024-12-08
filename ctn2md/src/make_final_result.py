@@ -135,6 +135,7 @@ def _copy_final_result_json(md_info):
     names = [MIFN.VERSION,
              MIFN.GEN_ENGINE,
              MIFN.PATHNAME_ORG_DOC,
+             MIFN.UNIQUE_DOC_ID,
              MIFN.FNAME_FINAL_MD, 
              MIFN.FNAME_FINAL_SUM, 
              MIFN.FNAMES_SECS,
@@ -147,6 +148,13 @@ def _copy_final_result_json(md_info):
 
     pathname_final_md = md_info.name_step_pathname(-1)
     pathname_final_json = pathname_final_md.replace(".md", ".final.json")
+
+    output_dir = md_info.get_out_dir()
+    pname_final_sum = os.path.join(output_dir, md_info[MIFN.FNAME_FINAL_SUM])
+    with open(pname_final_sum, 'r', encoding="utf-8") as f:
+        sum = json.load(f)
+    for key, val in sum.items():
+        md_final_info[key] = val
 
     with open(pathname_final_json, 'w', encoding="utf-8") as f:
         json.dump(md_final_info, f, indent=4, ensure_ascii=False)
@@ -181,7 +189,8 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     #md_info_path = "_output/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
-    md_info_path = "_output/ctn2md_YOU_ONLY_2409_13695v1_lvlm/_info.json"
+    #md_info_path = "_output/ctn2md_YOU_ONLY_2409_13695v1_lvlm/_info.json"
+    md_info_path = "_output/ctn2md_业绩案例_上汽内外饰DRE外包框架服务合同_lp/_info.json"
 
     pathname_final_json = make_final_json(md_info_path)
     print(pathname_final_json)

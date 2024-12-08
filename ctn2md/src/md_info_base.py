@@ -15,6 +15,7 @@ if "./" not in sys.path:
 
 from llama_parse.utils import Language
 from ctn2md.utils.util_ctn_type import CTN_TYPE
+from ctn2md.utils.util_file import get_crc32_id
 
 _MIB_INFO_VER = "0.5.0"
 _MIB_SEP_FNAME_EXT = "___"
@@ -27,6 +28,7 @@ class MIFN:  # Markdown Field Name
     VERSION = "version"
 
     PATHNAME_ORG_DOC = "pathname_org_doc"
+    UNIQUE_DOC_ID = "unique_doc_id"
 
     MDFLOW = "mdflow"
     MDCONTROL = "mdcontrol"
@@ -254,6 +256,7 @@ class MdInfo:
     def set_doc_pathname(self, doc_pathname):
         if MIFN.PATHNAME_ORG_DOC not in self._info:
             self._info[MIFN.PATHNAME_ORG_DOC] = doc_pathname
+            self._info[MIFN.UNIQUE_DOC_ID] = self.get_doc_title() + "_" + get_crc32_id(doc_pathname) 
         return self.save()
     
     def set_gen_engine(self, gen_engine_name):
