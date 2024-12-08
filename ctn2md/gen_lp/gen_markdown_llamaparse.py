@@ -18,8 +18,9 @@ from ctn2md.gen_lp.lp_revisit_result import post_scan_llamaparse_result
 from ctn2md.gen_lp.lp_gen_normal_pages import gen_normal_pages
 from ctn2md.gen_lp.lp_gen_premium_pages import gen_premium_pages
    
-def _save_final_md_from_pages(md_info):
+def _construct_s0_md_from_pages(md_info):
     out_dir = md_info.get_out_dir()
+    aux_dir = md_info.get_aux_dir()
     fnames_pages = md_info[MIFN.FNAMES_PAGES]
     if len(fnames_pages) == 0:
         raise ValueError(f"{MIFN.FNAMES_PAGES} is empty")
@@ -28,6 +29,10 @@ def _save_final_md_from_pages(md_info):
     full_md_text = ""
     for fname_page in fnames_pages:
         pname_page = os.path.join(out_dir, fname_page)
+        if not os.path.isfile(pname_page):
+            pname_page = os.path.join(aux_dir, fname_page)
+            if not os.path.isfile(pname_page):
+                raise ValueError(f"not able to find page md for {fname_page} to construct s0 document")            
         with open(pname_page, "r") as f:
             md_text = f.read()
         if len(full_md_text) != 0:
@@ -55,7 +60,7 @@ def generate_markdown_llamaparse(md_info, need_normal_step=True, need_preminum_s
         if (mctl_lp_premium_pages is not None) and (len(mctl_lp_premium_pages) != 0):
             gen_premium_pages(md_info)
 
-    pathname_step0 = _save_final_md_from_pages(md_info)
+    pathname_step0 = _construct_s0_md_from_pages(md_info)
     md_info.add_step_into_md_info_mdflow(pathname_step0, actor="generate_markdown_llamaparse")
     md_info.save()
 

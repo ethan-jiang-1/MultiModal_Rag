@@ -121,15 +121,15 @@ def fix_headings_plc_by_llm(md_info_path, src_step_num=None, dst_step_num=None):
         raise ValueError(f"no {pathname_src_step_md} and {pathname_dst_step_md}")
 
     with open(pathname_src_step_md, "r", encoding="utf8") as f:
-        md_text = f.read()
+        md_full_text = f.read()
 
-    md_text_new = _filter_markdown_heading_plc(md_text, md_info)
+    md_full_text_new = _filter_markdown_heading_plc(md_full_text, md_info)
 
     fhl_org = md_info[MIFN.FHL_ORG]
     org_heading_lines = fhl_org["org_heading_lines"]
     if len(org_heading_lines) == 0:
-        md_text_new = _fix_markdown_with_no_heading(md_text_new, md_info)
-        md_text_new = _filter_markdown_heading_plc(md_text_new, md_info)
+        md_full_text_new = _fix_markdown_with_no_heading(md_full_text_new, md_info)
+        md_full_text_new = _filter_markdown_heading_plc(md_full_text_new, md_info)
         fhl_org = md_info[MIFN.FHL_ORG]
     
     mctrl_fix_heading_model = md_info.get_md_control("mctrl_fix_heading_model", "gpt")
@@ -146,14 +146,12 @@ def fix_headings_plc_by_llm(md_info_path, src_step_num=None, dst_step_num=None):
                "new_heading_lines": [item["mapped_line"] for item in optimized_heading_lines_map]}
     rich.print(o2n_map)
 
-    # TODO: ethan_finial_md we need fix the page_md as well, as the final full md are come from indivdual page_md
-    # do we really need make dependence on page_md? better get rid of such dependence
-    md_text_new1, unprocessed_heading_lines_map = _update_markdown_heading_content(md_text_new, md_info, fhl_map)
+    md_full_text_new1, unprocessed_heading_lines_map = _update_markdown_heading_content(md_full_text_new, md_info, fhl_map)
     rich.print(unprocessed_heading_lines_map)
 
     logging.warning(f"fix_headings_plc_by_llm: pathname_dst_step_md: {pathname_dst_step_md}")
     with open(pathname_dst_step_md, "w+") as f:
-        f.write(md_text_new1)
+        f.write(md_full_text_new1)
     
     md_info[MIFN.FHL_MAP_O2N] = o2n_map
     md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_headings_plc_by_llm")

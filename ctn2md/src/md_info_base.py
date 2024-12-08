@@ -285,6 +285,26 @@ class MdInfo:
     def get_md_control(self, mdctrl_name, default_val):
         return self._md_control.get(mdctrl_name, default_val)
 
+    def get_md_control_notouch(self, mdctrl_name, default_val):
+        lst = self._md_control.get(mdctrl_name, default_val)
+        if len(lst) > 0:
+            xset = set()
+            for pn in lst:
+                if isinstance(pn, int):
+                    xset.add(pn)
+                elif isinstance(pn, str):
+                    if pn.find("-") != -1:
+                        pns = pn.split("-")
+                        pn_s = int(pns[0])
+                        pn_e = int(pns[1])
+                        for pnn in range(pn_s, pn_e):
+                            xset.add(pnn)
+                    else:
+                        xset.add(int(pn))
+            lst = xset.list()
+            lst = sorted(lst)
+        return lst
+
     def set_md_params(self, mdparam_name, val):
         if isinstance(mdparam_name, str):
             self._info[MIFN.MDPARAMS][mdparam_name] = val

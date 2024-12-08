@@ -336,8 +336,8 @@ class Page2Markdown():
             fname_page_md = self.get_page_md_fname()
             pname_page_md = os.path.join(out_dir, fname_page_md)
 
-            mctl_lp_notouch_pages = self.md_info.get_md_control("mctl_lp_notouch_pages", [])
-            if self.page_no not in mctl_lp_notouch_pages:
+            mctl_lp_notouch_pages = self.md_info.get_md_control_notouch("mctl_lp_notouch_pages", [])
+            if self.page_no not in mctl_lp_notouch_pages and os.path.isfile(pname_page_md):
                 with open(pname_page_md, "w", encoding="utf8") as f:
                     f.write(md_page_all)
             return fname_page_md
