@@ -14,7 +14,7 @@ import tqdm
 from HiQA.build_tool.img_tools import parse_page_svg
 from HiQA.utils.util_file import get_root_dir
 from HiQA.utils.util_logging import setup_logger_handlers
-from ctn2md.utils_llm.vllm_description import generate_image_description
+from ctn2md.utils_llm.vllm_description_qwen import generate_image_description_by_qwen
 
 def _save_crop_image_and_description(cropped_img, pathname_no_ext):
     image_pathname = pathname_no_ext + '.png'
@@ -33,7 +33,7 @@ def _save_crop_image_and_description(cropped_img, pathname_no_ext):
         # Handle text extraction around the image
         # text_content = get_text_around_image(blocks[skip_block:], i, lang)
         instruction = f"这是一张在'{title}'文件中的图片， 请简单描述一下这张图片。" 
-        text_content = generate_image_description(image_pathname, instruction=instruction)
+        text_content = generate_image_description_by_qwen(image_pathname, instruction=instruction)
         # title = get_title_of_image(blocks[skip_block:], i, lang)
         logging.error("text_content is None")
         if text_content is None:

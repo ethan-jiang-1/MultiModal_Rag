@@ -17,7 +17,7 @@ if "./" not in sys.path:
 #from ctn2md.src.md_info_base import MIFN
 #from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.utils_llm.llm_fix_vl_instruction import get_vllm_instruction
-from ctn2md.utils_llm.vllm_description import generate_image_description
+from ctn2md.utils_llm.vllm_description_qwen import generate_image_description_by_qwen
 from ctn2md.src.md_info_base import MIFN
 
 g_question_num = 6000
@@ -125,7 +125,7 @@ def _get_page_instruction(doc_title, content_around):
 
 def _gen_figure_info(md_info, doc_title, content_around, image_path):
     instruction = _get_page_instruction(doc_title, content_around)
-    resp = generate_image_description(image_path, instruction=instruction)
+    resp = generate_image_description_by_qwen(image_path, instruction=instruction)
     if resp is None:
         raise ValueError("resp is None")
     resp_json = json_repair.repair_json(resp, return_objects=True, ensure_ascii=True)

@@ -16,17 +16,17 @@ if "./" not in sys.path:
 
 load_dotenv()
 
-from ctn2md.utils_llm.vllm_ocr_restore_prompt import PROMPT_INSTRUCT_OCR_QWEN_START, PROMPT_INSTRUCT_OCR_QWEN_CONTINUE
-from ctn2md.utils_llm.vllm_ocr_restore_prompt import PROMPT_INSTRUCT_OCR_QWEN_SINGLE
+from ctn2md.utils_llm.vllm_ocr_restore_qwen_prompt import PROMPT_INSTRUCT_OCR_QWEN_START, PROMPT_INSTRUCT_OCR_QWEN_CONTINUE
+from ctn2md.utils_llm.vllm_ocr_restore_qwen_prompt import PROMPT_INSTRUCT_OCR_QWEN_SINGLE
 
 dashscope.api_key = os.environ["DASHSCOPE_API_KEY"]
 
-
-def _retry_dashscope_get_response(messages, retries=5, backoff_in_seconds=1):
+# model='qwen-vl-max-0809', 
+def _retry_dashscope_get_response(messages, model='qwen-vl-max-1119', retries=5, backoff_in_seconds=1):
     for attempt in range(retries):
         try:
             response = dashscope.MultiModalConversation.call(
-                model='qwen-vl-max-0809', 
+                model=model, 
                 messages=messages, 
                 top_p=0.1,
                 max_length=2000)
@@ -39,17 +39,17 @@ def _retry_dashscope_get_response(messages, retries=5, backoff_in_seconds=1):
             time.sleep(sleep_time)
 
 
-def generate_long_mds_from_image(image_url, doc_title=None, retries=5, backoff_in_seconds=1):
+def generate_long_mds_from_image_by_qwen(image_url, doc_title=None, model='qwen-vl-max-1119', retries=5, backoff_in_seconds=1):
          
     messages = [{'role': 'user',
                  'content': [{'image': image_url}, {'text': PROMPT_INSTRUCT_OCR_QWEN_START}]}]
     
     # The model name 'qwen-vl-max-0809' is the identity of 'Qwen2-VL-72B'.
-    logging.info(f"GLMFI: generate_long_mds_from_image started... {image_url}")
+    logging.info(f"GLMFI: generate_long_mds_from_image_by_qwen started... {image_url}")
     full_content = ""
     for loop in range(4):
         logging.info(f"GLMFI: start loop:{loop}")
-        response =_retry_dashscope_get_response(messages, retries=retries, backoff_in_seconds=backoff_in_seconds)
+        response =_retry_dashscope_get_response(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds)
         content = response.output.choices[0].message.content
         text_content = content[0]["text"]
         text_content = text_content.replace("```markdown", "") 
@@ -72,23 +72,23 @@ def generate_long_mds_from_image(image_url, doc_title=None, retries=5, backoff_i
     full_content = full_content.replace("[ocr_end]", "")
     #rich.print(messages)
     logging.info(f"GLMFI: total output length {len(full_content)}")
-    logging.info(f"GLMFI: generate_long_mds_from_image ended. {image_url}")
+    logging.info(f"GLMFI: generate_long_mds_from_image_by_qwen ended. {image_url}")
     return full_content
 
-def generate_simple_mds_from_image(image_url, doc_title=None, retries=5, backoff_in_seconds=1):
+def generate_simple_mds_from_image_by_qwen(image_url, doc_title=None, model='qwen-vl-max-1119', retries=5, backoff_in_seconds=1):
          
     messages = [{'role': 'user',
                  'content': [{'image': image_url}, {'text': PROMPT_INSTRUCT_OCR_QWEN_SINGLE}]}]
     
     # The model name 'qwen-vl-max-0809' is the identity of 'Qwen2-VL-72B'.
 
-    logging.info(f"GSMFI: generate_simple_mds_from_image started... {image_url}")
-    response =_retry_dashscope_get_response(messages, retries=retries, backoff_in_seconds=backoff_in_seconds)
+    logging.info(f"GSMFI: generate_simple_mds_from_image_by_qwen started... {image_url}")
+    response =_retry_dashscope_get_response(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds)
     content = response.output.choices[0].message.content
     text_content = content[0]["text"]
     full_content = text_content.replace("```markdown", "") 
     logging.info(f"GSMFI: total output length {len(full_content)}")
-    logging.info(f"GSMFI: generate_simple_mds_from_image ended. {image_url}")
+    logging.info(f"GSMFI: generate_simple_mds_from_image_by_qwen ended. {image_url}")
 
     return full_content
 
@@ -109,8 +109,8 @@ if __name__ == '__main__':
     full_path = os.path.join(dir_root, image_url)
     container_name = os.path.basename(os.path.dirname(image_url))
 
-    #text = generate_long_mds_from_image(full_path)
+    #text = generate_long_mds_from_image_by_qwen(full_path)
     #rich.print(text)
 
-    text = generate_simple_mds_from_image(full_path)
+    text = generate_simple_mds_from_image_by_qwen(full_path)
     rich.print(text)

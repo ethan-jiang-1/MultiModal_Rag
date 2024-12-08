@@ -1,6 +1,6 @@
-import dashscope
-import time
-import random
+#import dashscope
+#import time
+#import random
 import os
 import logging
 import sys
@@ -15,11 +15,9 @@ if "./" not in sys.path:
 
 load_dotenv()
 
-from ctn2md.utils_llm.vllm_description_prompt import PROMPT_QUESTION_QAGEN_QWEN, SYSTEM_PROMPT_GPT4_QAGEN, USER_PROMPT_GPT4_QAGEN
+from ctn2md.utils_llm.vllm_description_qwen_prompt import SYSTEM_PROMPT_GPT4_QAGEN, USER_PROMPT_GPT4_QAGEN
 from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from ctn2md.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
-
-dashscope.api_key = os.environ["DASHSCOPE_API_KEY"]
 
 
 def gen_questions_on_pic_by_gpt4(container_name, img_desc, model="gpt-4o", question_num=None):
@@ -50,47 +48,10 @@ def gen_questions_on_pic_by_gpt4(container_name, img_desc, model="gpt-4o", quest
         logging.exception(ex)
         raise ex
 
-
-def generate_image_description(image_url, instruction=None, retries=5, backoff_in_seconds=1):
-
-    if instruction is None:
-        instruction = "请简单描述一下这张图片。"
-         
-    messages = [{
-        'role': 'user',
-        'content': [
-            {
-                'image': image_url
-            },
-            {
-                'text': instruction
-            },
-        ]
-    }]
-    
-    # The model name 'qwen-vl-max-0809' is the identity of 'Qwen2-VL-72B'.
-    for attempt in range(retries):
-        try:
-            response = dashscope.MultiModalConversation.call(
-                model='qwen-vl-max-0809', 
-                messages=messages)
-            if response is not None: 
-                choice = response["output"]["choices"][0]
-                content = choice["message"]["content"]
-                answer_text = content[0]["text"]
-                return answer_text
-        except Exception as e:
-            logging.exception(e)
-            if attempt == retries - 1:
-                raise
-            sleep_time = backoff_in_seconds * (2**attempt) + random.uniform(
-                0, 1)
-            time.sleep(sleep_time)
-    return None
-
 if __name__ == '__main__':
     from ctn2md.utils.util_file import get_root_dir
     from ctn2md.utils.util_logging import setup_logger_handlers
+    from ctn2md.utils_llm.vllm_description_qwen import generate_image_description_by_qwen
     dir_root = get_root_dir()
     setup_logger_handlers()
 
@@ -99,23 +60,9 @@ if __name__ == '__main__':
     full_path = os.path.join(dir_root, image_url)
     container_name = os.path.basename(os.path.dirname(image_url))
 
-    # ret1 = generate_image_description(full_path)
-    # print(ret1)
-    # print()
-
-    #instruction = f"这是一张在'{container_name}'文件中的图片， 请简单描述一下这张图片。"   
-    #ret2 = generate_image_description(full_path, instruction=instruction)
-    #print(ret2)
-    #print()
-
     instruction = f"这是一张在'{container_name}'文件中的图片， 请详细描述一下这张图片。 要被用到知识库建设中，所以知识性细节越多越好."   
-    ret3 = generate_image_description(full_path, instruction=instruction)
+    ret3 = generate_image_description_by_qwen(full_path, instruction=instruction)
     print(ret3)
-    print()
-
-    instruction = PROMPT_QUESTION_QAGEN_QWEN.replace("{container_name}", container_name)
-    ret4 = generate_image_description(full_path, instruction=instruction)
-    print(ret4)
     print()
 
     img_desc = ret3

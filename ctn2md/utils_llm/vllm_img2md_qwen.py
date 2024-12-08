@@ -20,12 +20,12 @@ from ctn2md.utils_llm.vllm_img2md_qwen_prompt import PROMPT_INSTRUCT_IMG2MD_QWEN
 
 dashscope.api_key = os.environ["DASHSCOPE_API_KEY"]
 
-
-def _retry_dashscope_get_response(messages, retries=5, backoff_in_seconds=1):
+# model='qwen-vl-max-0809', 
+def _retry_dashscope_get_response(messages, model='qwen-vl-max-1119', retries=5, backoff_in_seconds=1):
     for attempt in range(retries):
         try:
             response = dashscope.MultiModalConversation.call(
-                model='qwen-vl-max-0809', 
+                model=model,
                 messages=messages, 
                 top_p=0.1,
                 max_length=2000)
@@ -38,7 +38,7 @@ def _retry_dashscope_get_response(messages, retries=5, backoff_in_seconds=1):
             time.sleep(sleep_time)
 
 
-def generate_full_mds_from_image_qwen(pname_image, rects_img=None, retries=5, backoff_in_seconds=1):
+def generate_full_mds_from_image_qwen(pname_image, rects_img=None, model='qwen-vl-max-1119', retries=5, backoff_in_seconds=1):
          
     inst_img_rects = ""
     if rects_img is not None and len(rects_img) > 0:
@@ -55,7 +55,7 @@ def generate_full_mds_from_image_qwen(pname_image, rects_img=None, retries=5, ba
     full_content = ""
     for loop in range(4):
         logging.info(f"GFMFI: start loop:{loop}")
-        response =_retry_dashscope_get_response(messages, retries=retries, backoff_in_seconds=backoff_in_seconds)
+        response =_retry_dashscope_get_response(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds)
         content = response.output.choices[0].message.content
         text_content = content[0]["text"]
         text_content = text_content.replace("```markdown", "") 
@@ -93,9 +93,6 @@ if __name__ == '__main__':
 
     full_path = os.path.join(dir_root, pname_image)
     container_name = os.path.basename(os.path.dirname(pname_image))
-
-    #text = generate_long_mds_from_image(full_path)
-    #rich.print(text)
 
     text = generate_full_mds_from_image_qwen(full_path, rects_img=rects_img)
     rich.print(text)
