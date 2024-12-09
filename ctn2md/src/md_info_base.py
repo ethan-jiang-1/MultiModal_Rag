@@ -112,7 +112,15 @@ _DEFAULT_MDCONTROL = {
                                   # list of page numbers,  The first page of the document is page 1
     "mctl_lvlm_notouch_pages": [], # the target pages no need to be touched, 
                                    # list of page numbers,  The first page of the document is page 1
-    "mctrl_lvlm_img2md_model": "gpt" # gpt/qwen
+    "mctrl_lvlm_img2md_model": "gpt", # gpt/qwen
+
+    "mctrl_lvlm_page_content_area_ratios":(0.15, 0.15, 0.1, 0.1),
+    "mctrl_lvlm_max_area_ratio": 0.7,
+    "mctrl_lvlm_max_outside_ratio": 0.1,
+    "mctrl_lvlm_min_coverage_ratio": 0.7,
+    "mctrl_lvlm_content_area_buffer_ratio": 0.05,
+    "mctrl_lvlm_paint_distance_ratio": (0.02, 0.02, 0.02, 0.02) 
+
 }
 
 class MdInfo:

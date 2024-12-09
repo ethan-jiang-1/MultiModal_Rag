@@ -12,7 +12,8 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from ctn2md.gen_lvlm.lvlm_pdf_to_images import get_job_id, parse_pdf_to_images
+from ctn2md.gen_lvlm.lvlm_base import get_job_id
+from ctn2md.gen_lvlm.lvlm_pdf_pages_to_images import parse_pdf_to_images
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.utils_vllm.vllm_img2md_gpt import generate_full_mds_from_image_gpt

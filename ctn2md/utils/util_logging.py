@@ -181,12 +181,12 @@ def _setup_logger_prg():
     srl_handler.setLevel(logging.DEBUG)  # 为handler设置级别
     logger_prg.addHandler(srl_handler)
 
-
-def setup_logger_handlers():
+def setup_logger_handlers(level=logging.INFO):
     global logger_inited 
     if logger_inited:
         return 
 
+    logging.getLogger().setLevel(level=level)
     logger_inited = True
 
     # hook logging to output the log to stdout as well
