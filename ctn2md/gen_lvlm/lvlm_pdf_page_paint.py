@@ -264,27 +264,28 @@ def _log_detected_regions(
         page (fitz.Page): PDF 的页面对象，用于计算区域面积占页面的比例。
         md_info (MdInfo): 元数据信息对象，用于控制参数。
     """
-    regions = regions.copy()
-    page_width, page_height = page.mediabox_size
-    page_area = page_width * page_height
+    if logging.getLogger().isEnabledFor(logging.DEBUG):
+        regions = regions.copy()
+        page_width, page_height = page.mediabox_size
+        page_area = page_width * page_height
 
-    merged_regions = _merge_adjacent_or_overlapping_rects(regions, page_width, page_height, md_info)
-    logging.debug(f"{description}: {len(merged_regions)} merged regions detected.")
+        merged_regions = _merge_adjacent_or_overlapping_rects(regions, page_width, page_height, md_info)
+        logging.debug(f"{description}: {len(merged_regions)} merged regions detected.")
 
-    sorted_regions = sorted(
-        merged_regions,
-        key=lambda region: (region.bounds[2] - region.bounds[0]) * (region.bounds[3] - region.bounds[1]),
-        reverse=True
-    )[:3]
+        sorted_regions = sorted(
+            merged_regions,
+            key=lambda region: (region.bounds[2] - region.bounds[0]) * (region.bounds[3] - region.bounds[1]),
+            reverse=True
+        )[:3]
 
-    for idx, region in enumerate(sorted_regions):
-        area = (region.bounds[2] - region.bounds[0]) * (region.bounds[3] - region.bounds[1])
-        area_ratio = area / page_area
-        logging.debug(
-            f"  Top {idx + 1} Merged Region: Area={area:.2f} ({area_ratio:.2%} of page), "
-            f"Bounds=({region.bounds[0]:.2f}, {region.bounds[1]:.2f}, "
-            f"{region.bounds[2]:.2f}, {region.bounds[3]:.2f})"
-        )
+        for idx, region in enumerate(sorted_regions):
+            area = (region.bounds[2] - region.bounds[0]) * (region.bounds[3] - region.bounds[1])
+            area_ratio = area / page_area
+            logging.debug(
+                f"  Top {idx + 1} Merged Region: Area={area:.2f} ({area_ratio:.2%} of page), "
+                f"Bounds=({region.bounds[0]:.2f}, {region.bounds[1]:.2f}, "
+                f"{region.bounds[2]:.2f}, {region.bounds[3]:.2f})"
+            )
 
 
 def _merge_adjacent_or_overlapping_rects(

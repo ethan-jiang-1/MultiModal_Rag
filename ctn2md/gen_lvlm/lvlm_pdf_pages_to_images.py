@@ -129,7 +129,8 @@ def clean_previous_images(output_dir, job_id):
             os.unlink(pname)
 
 if __name__ == "__main__":
-    setup_logger_handlers(logging.DEBUG)
+    #setup_logger_handlers(logging.DEBUG)
+    setup_logger_handlers()
 
     #doc_pathname = "datasrc/exam/raw_docs/attention_is_all_you_need.pdf"
     doc_pathname = "datasrc/exam/raw_docs/LongRAG.pdf"

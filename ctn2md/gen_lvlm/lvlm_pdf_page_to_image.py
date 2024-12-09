@@ -1,7 +1,7 @@
 import os
 import sys
 #import re
-from typing import List, Tuple, Optional  # , Dict
+from typing import List, Tuple, Optional, Dict
 import logging
 import rich
 
@@ -107,43 +107,138 @@ def _merge_rects_with_text_adjustments(page, rect_list):
     merged_rects = [rect for rect in merged_rects if rect.bounds[2] - rect.bounds[0] > 20 and rect.bounds[3] - rect.bounds[1] > 20]
     return merged_rects
 
+def _log_rect_area_stats(rects: List[sg.box], page_width: float, page_height: float, description: str):
+    total_area = sum(rect.area for rect in rects)
+    page_area = page_width * page_height
+    logging.info(
+        f"{description}: Total Area={total_area:.2f}, Coverage={total_area / page_area:.2%}, "
+        f"Count={len(rects)}"
+    )
+
+def _merge_adjacent_or_overlapping_non_text_rects(
+    rect_list: List[sg.box],
+    page_width: float,
+    page_height: float,
+    md_info: MdInfo
+) -> List[sg.box]:
+    """
+    合并相邻或重叠的非文本矩形区域，根据包含和重叠规则进行合并。
+
+    参数:
+        rect_list (List[sg.box]): 输入的矩形列表。
+        page_width (float): 页面宽度。
+        page_height (float): 页面高度。
+        md_info (MdInfo): 元数据信息对象，用于获取控制参数。
+
+    返回:
+        List[sg.box]: 合并后的矩形列表。
+    """
+    #merge_distance_ratio = md_info.get_md_control("mctrl_lvlm_merge_distance_ratio", 0.02)
+    #merge_distance = min(page_width, page_height) * merge_distance_ratio
+
+    def should_merge(rect1, rect2):
+        """判断两个矩形是否需要合并."""
+        # 规则 1：完全包含
+        if rect1.contains(rect2):
+            return True
+        if rect2.contains(rect1):
+            return True
+
+        # 规则 2：重叠面积超过总面积的 20%
+        intersection = rect1.intersection(rect2)
+        if intersection.is_empty:
+            return False
+
+        intersection_area = intersection.area
+        combined_area = rect1.area + rect2.area - intersection_area
+        if intersection_area / combined_area > 0.2:
+            return True
+
+        return False
+
+    # 合并矩形逻辑
+    merged = True
+    while merged:
+        merged = False
+        new_rect_list = []
+
+        while rect_list:
+            current = rect_list.pop(0)
+            to_merge = []
+
+            for other_rect in rect_list:
+                if should_merge(current, other_rect):
+                    to_merge.append(other_rect)
+
+            # 合并当前矩形和需要合并的矩形
+            for rect in to_merge:
+                rect_list.remove(rect)
+                current = sg.box(*current.union(rect).bounds)
+                merged = True  # 如果找到需要合并的矩形，标记继续
+
+            new_rect_list.append(current)
+
+        rect_list = new_rect_list  # 更新矩形列表，继续下一轮合并
+
+    return rect_list
+
+
 def _get_rect_bounds(list_rects):
     return [rect.bounds for rect in list_rects]
 
-def parse_non_text_rects_in_page(md_info: MdInfo, page: fitz.Page, page_index: int) -> List[Tuple[float, float, float, float]]:
+def parse_non_text_rects_in_page(
+    md_info: MdInfo,
+    page: fitz.Page,
+    page_index: int
+) -> Tuple[List[Tuple[float, float, float, float]], Dict[str, List[Tuple[float, float, float, float]]]]:
     """
-    Parse drawings in the page and merge adjacent rectangles.
+    解析 PDF 页面中的非文本区域，包括图片、绘制区域和表格。
+
+    参数:
+        md_info (MdInfo): 元数据信息对象，用于获取控制参数。
+        page (fitz.Page): PDF 页面对象。
+        page_index (int): 当前页面索引。
+
+    返回:
+        Tuple[List[Tuple[float, float, float, float]], Dict[str, List[Tuple[float, float, float, float]]]]:
+            合并后的非文本区域矩形边界，以及原始分类区域的矩形边界字典。
     """
-
-    # 提取画的内容
-    #drawings = page.get_drawings()
-
     # 提取图片区域
     images = page.get_image_info()
     rect_list_image = [sg.box(*image['bbox']) for image in images]
     logging.info(f"page_index:{page_index} has number of rect_list_image: {len(rect_list_image)}")
 
-    # 提取绘图区域
+    # 猜测绘制区域
     rect_list_paint = detect_paint_regions(md_info, page)
-    #rect_list_paint = []
     logging.info(f"page_index:{page_index} has number of rect_list_paint: {len(rect_list_paint)}")
 
+    # 猜测表格区域
     rect_list_table = detect_table_regions(md_info, page)
-    rect_list_table = []
     logging.info(f"page_index:{page_index} has number of rect_list_table: {len(rect_list_table)}")
 
-    # TODO: Merge all non_text_rects first
-    #merged_rects = merged_rects_drawing + merged_rects_image + merged_rects_paint
+    # 合并所有非文本区域
     merged_rects = rect_list_image + rect_list_paint + rect_list_table
 
-    merged_rects_final = merged_rects
-    #merged_rects_final = _merge_rects_with_text_adjustments(page, merged_rects)
-    merged_rects_bounds = _get_rect_bounds(merged_rects_final)
-    logging.info(f"page_index:{page_index} merged_rects_bounds: {len(merged_rects_bounds)}")
+    # 进行最终的合并和过滤
+    page_width, page_height = page.mediabox_size
+    final_merged_rects = _merge_adjacent_or_overlapping_non_text_rects(
+        merged_rects,
+        page_width,
+        page_height,
+        md_info
+    )
 
-    rects_list = {"rect_list_image": _get_rect_bounds(rect_list_image),
-                  "rect_list_paint": _get_rect_bounds(rect_list_paint),
-                  "rect_list_table": _get_rect_bounds(rect_list_table)}
+    # 获取矩形边界列表
+    merged_rects_bounds = _get_rect_bounds(final_merged_rects)
+
+    # 分类别返回原始分类区域的矩形边界
+    rects_list = {
+        "rect_list_image": _get_rect_bounds(rect_list_image),
+        "rect_list_paint": _get_rect_bounds(rect_list_paint),
+        "rect_list_table": _get_rect_bounds(rect_list_table)
+    }
+
+    logging.info(f"page_index:{page_index} merged_rects_bounds: {len(merged_rects_bounds)}")
 
     return merged_rects_bounds, rects_list
 
