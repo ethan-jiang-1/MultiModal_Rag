@@ -16,6 +16,9 @@ if './' not in sys.path:
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lvlm.lvlm_image_cnt_type import get_image_cnt_type, LVLM_IMG_CNT_TYPE
+from ctn2md.gen_lvlm.lvlm_pdf_paint import get_rect_list_paints
+from ctn2md.gen_lvlm.lvlm_pdf_table import detect_table_regions
+
 
 IMG_EXT = "jpg"  # or "png"
 JPG_QUALITY = 90 # 95
@@ -86,7 +89,7 @@ def _adsorb_rects_to_rects(source_rects: List[BaseGeometry], target_rects: List[
     return new_source_rects, target_rects
 
 
-def _merge_all_rects(page, rect_list):
+def _merge_rects_with_text_adjustments(page, rect_list):
     merged_rects = _merge_rects(rect_list, distance=10, horizontal_distance=100)
     merged_rects = [rect for rect in merged_rects if explain_validity(rect) == 'Valid Geometry']
 
@@ -106,32 +109,35 @@ def _merge_all_rects(page, rect_list):
     merged_rects = [rect for rect in merged_rects if rect.bounds[2] - rect.bounds[0] > 20 and rect.bounds[3] - rect.bounds[1] > 20]
     return merged_rects
 
-def _parse_rects(page: fitz.Page, page_index: int) -> List[Tuple[float, float, float, float]]:
+def _parse_non_text_rects(page: fitz.Page, page_index: int) -> List[Tuple[float, float, float, float]]:
     """
     Parse drawings in the page and merge adjacent rectangles.
     """
 
     # 提取画的内容
-    drawings = page.get_drawings()
-
-    # 忽略掉长度小于30的水平直线
-    is_short_line = lambda x: abs(x['rect'][3] - x['rect'][1]) < 1 and abs(x['rect'][2] - x['rect'][0]) < 30 # noqa
-    drawings = [drawing for drawing in drawings if not is_short_line(drawing)]
-
-    # 转换为shapely的矩形
-    rect_list_drawing = [sg.box(*drawing['rect']) for drawing in drawings]
-    merged_rects_drawing = _merge_all_rects(page, rect_list_drawing)
-    logging.info(f"page_index:{page_index} has number of rect_list_drawing: {len(rect_list_drawing)} after merge: {len(merged_rects_drawing)}")
+    #drawings = page.get_drawings()
 
     # 提取图片区域
     images = page.get_image_info()
     rect_list_image = [sg.box(*image['bbox']) for image in images]
-    merged_rects_image = _merge_all_rects(page, rect_list_image)
-    logging.info(f"page_index:{page_index} has number of rect_list_image: {len(rect_list_image)} after merge: {len(merged_rects_image)}")
+    logging.info(f"page_index:{page_index} has number of rect_list_image: {len(rect_list_image)}")
 
-    merged_rects = merged_rects_drawing + merged_rects_image
+    # 提取绘图区域
+    rect_list_paint = get_rect_list_paints(page)
+    logging.info(f"page_index:{page_index} has number of rect_list_paint: {len(rect_list_paint)}")
 
-    return [rect.bounds for rect in merged_rects]
+    rect_list_table = detect_table_regions(page)
+    logging.info(f"page_index:{page_index} has number of rect_list_table: {len(rect_list_table)}")
+
+    # TODO: Merge all non_text_rects first
+    #merged_rects = merged_rects_drawing + merged_rects_image + merged_rects_paint
+    merged_rects = rect_list_image + rect_list_paint + rect_list_table
+
+    merged_rects_final = _merge_rects_with_text_adjustments(page, merged_rects)
+    merged_rects_bounds = [rect.bounds for rect in merged_rects_final]
+    logging.info(f"page_index:{page_index} merged_rects_bounds: {len(merged_rects_bounds)}")
+
+    return merged_rects_bounds
 
 def _draw_red_rect_on_page(page, fitz_rect, fname_rect_name):
     # # 在页面上绘制红色矩形
@@ -178,7 +184,7 @@ def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None) -> List[Tuple[st
         logging.info(f'parse page: {page_index}')
         fname_rect_images = []
         logging.info(f"cal rects for {page_index} starts...")
-        rects = _parse_rects(page, page_index)
+        rects = _parse_non_text_rects(page, page_index)
         logging.info(f"cal rects for {page_index} done.")
 
         page_image = page.get_pixmap(matrix=fitz.Matrix(3, 3))
