@@ -33,7 +33,7 @@ def _add_rect_with_checks(
     """
     page_width, page_height = page.mediabox_size
     page_area = page_width * page_height
-    area_ratio_threshold = md_info.get_md_control("mctrl_lvlm_max_area_ratio", 0.5)
+    area_ratio_threshold = md_info.get_md_control("mctl_lvlm_paint_max_area_ratio", 0.5)
 
     rect_area = (rect.bounds[2] - rect.bounds[0]) * (rect.bounds[3] - rect.bounds[1])
 
@@ -57,7 +57,7 @@ def _filter_large_rects(rects: List[BaseGeometry], page: fitz.Page, md_info: MdI
     返回:
         List[BaseGeometry]: 过滤后的矩形列表。
     """
-    max_area_ratio = md_info.get_md_control("mctrl_lvlm_max_area_ratio", 0.7)
+    max_area_ratio = md_info.get_md_control("mctl_lvlm_paint_max_area_ratio", 0.7)
     page_width, page_height = page.mediabox_size
     page_area = page_width * page_height
 
@@ -65,7 +65,7 @@ def _filter_large_rects(rects: List[BaseGeometry], page: fitz.Page, md_info: MdI
     for rect in rects:
         rect_area = rect.area
         if rect_area > page_area * max_area_ratio:
-            logging.info(
+            logging.debug(
                 f"Removed Rect (Too Large): Area={rect_area:.2f}, "
                 f"Bounds=({rect.bounds[0]:.2f}, {rect.bounds[1]:.2f}, "
                 f"{rect.bounds[2]:.2f}, {rect.bounds[3]:.2f})"
@@ -88,9 +88,9 @@ def _filter_touching_content_area(rects: List[BaseGeometry], page: fitz.Page, md
     返回:
         List[BaseGeometry]: 过滤后的矩形列表。
     """
-    content_area_ratios = md_info.get_md_control("mctrl_lvlm_page_content_area_ratios", (0.15, 0.15, 0.1, 0.1))
-    max_outside_ratio = md_info.get_md_control("mctrl_lvlm_max_outside_ratio", 0.1)
-    buffer_ratio = md_info.get_md_control("mctrl_lvlm_content_area_buffer_ratio", 0.05)
+    content_area_ratios = md_info.get_md_control("mctl_lvlm_paint_page_content_area_ratios", (0.15, 0.15, 0.1, 0.1))
+    max_outside_ratio = md_info.get_md_control("mctl_lvlm_paint_max_outside_ratio", 0.1)
+    buffer_ratio = md_info.get_md_control("mctl_lvlm_paint_content_area_buffer_ratio", 0.05)
 
     page_width, page_height = page.mediabox_size
     content_x_min = page_width * content_area_ratios[0]
@@ -110,7 +110,7 @@ def _filter_touching_content_area(rects: List[BaseGeometry], page: fitz.Page, md
 
     for rect in rects:
         if not buffered_area.contains(rect):
-            logging.info(
+            logging.debug(
                 f"Removed Rect (Touches Outside Buffer): Bounds=({rect.bounds[0]:.2f}, {rect.bounds[1]:.2f}, "
                 f"{rect.bounds[2]:.2f}, {rect.bounds[3]:.2f})"
             )
@@ -119,7 +119,7 @@ def _filter_touching_content_area(rects: List[BaseGeometry], page: fitz.Page, md
         intersection_area = rect.intersection(content_area).area
         outside_ratio = (rect.area - intersection_area) / rect.area if rect.area > 0 else 0
         if outside_ratio > max_outside_ratio:
-            logging.info(
+            logging.debug(
                 f"Removed Rect (Exceeds Outside Ratio {max_outside_ratio:.2%}): Outside={outside_ratio:.2%}, "
                 f"Bounds=({rect.bounds[0]:.2f}, {rect.bounds[1]:.2f}, {rect.bounds[2]:.2f}, {rect.bounds[3]:.2f})"
             )
@@ -142,9 +142,9 @@ def _filter_by_content_area_coverage(rects: List[BaseGeometry], page: fitz.Page,
     返回:
         List[BaseGeometry]: 过滤后的矩形列表。
     """
-    content_area_ratios = md_info.get_md_control("mctrl_lvlm_page_content_area_ratios", (0.15, 0.15, 0.1, 0.1))
-    min_coverage_ratio = md_info.get_md_control("mctrl_lvlm_min_coverage_ratio", 0.7)
-    max_outside_ratio = md_info.get_md_control("mctrl_lvlm_max_outside_ratio", 0.1)
+    content_area_ratios = md_info.get_md_control("mctl_lvlm_paint_page_content_area_ratios", (0.15, 0.15, 0.1, 0.1))
+    min_coverage_ratio = md_info.get_md_control("mctl_lvlm_paint_min_coverage_ratio", 0.7)
+    max_outside_ratio = md_info.get_md_control("mctl_lvlm_paint_max_outside_ratio", 0.1)
 
     page_width, page_height = page.mediabox_size
     content_x_min = page_width * content_area_ratios[0]
@@ -164,7 +164,7 @@ def _filter_by_content_area_coverage(rects: List[BaseGeometry], page: fitz.Page,
         outside_ratio = (rect_area - intersection_area) / rect_area if rect_area > 0 else 0
 
         if coverage_ratio < min_coverage_ratio or outside_ratio > max_outside_ratio:
-            logging.info(
+            logging.debug(
                 f"Removed Rect (Coverage Check): Coverage={coverage_ratio:.2%}, Outside={outside_ratio:.2%}, "
                 f"Bounds=({rect.bounds[0]:.2f}, {rect.bounds[1]:.2f}, {rect.bounds[2]:.2f}, {rect.bounds[3]:.2f})"
             )
@@ -222,8 +222,8 @@ def _expand_and_absorb_regions_with_ratios(
 
     # 从 md_info 获取扩展控制参数（左、右、上、下的比例）
     paint_distance_ratios = md_info.get_md_control(
-        "mctrl_lvlm_paint_distance_ratio", 
-        (0.02, 0.02, 0.02, 0.02)  # 默认左、右、上、下的扩展比例
+        "mctl_lvlm_paint_text_distance_ratio", 
+        (0.015, 0.015, 0.015, 0.028)  # 默认左、右、上、下的扩展比例
     )
     text_x_left_distance_ratio, text_x_right_distance_ratio, text_y_up_distance_ratio, text_y_down_distance_ratio = paint_distance_ratios
 
@@ -306,7 +306,7 @@ def _merge_adjacent_or_overlapping_rects(
         List[sg.box]: 合并后的矩形列表。
     """
     # 从 md_info 获取合并距离比例
-    distance_ratio = md_info.get_md_control("mctrl_lvlm_merge_distance_ratio", 0.02)
+    distance_ratio = md_info.get_md_control("mctl_lvlm_paint_merge_distance_ratio", 0.02)
     merge_distance = min(page_width, page_height) * distance_ratio
     page_area = page_width * page_height
 
@@ -402,16 +402,42 @@ def detect_paint_regions(
     bordered_rects = [sg.box(*drawing['rect']) for drawing in drawings if drawing.get('stroke') is not None]
     _add_and_log_rects(bordered_rects, detected_rects, page, md_info, "bordered rectangles")
 
-    # 过滤矩形
+    # 方法 3: 路径复杂度检测
+    complex_paths = [
+        sg.box(*drawing['rect']) for drawing in drawings if len(drawing.get('points', [])) > 10
+    ]
+    _add_and_log_rects(complex_paths, detected_rects, page, md_info, "complex paths")
+
+    # 方法 4: 嵌套矩形检测
+    nested_rects = []
+    for outer in drawings:
+        outer_box = sg.box(*outer['rect'])
+        for inner in drawings:
+            inner_box = sg.box(*inner['rect'])
+            if outer_box.contains(inner_box) and outer_box != inner_box:
+                nested_rects.append(outer_box)
+    _add_and_log_rects(nested_rects, detected_rects, page, md_info, "nested rectangles")
+
+    # 方法 5: 柱状图特征检测
+    bar_chart_rects = []
+    for rect in detected_rects:
+        widths = [r.bounds[2] - r.bounds[0] for r in detected_rects]
+        if len(set(widths)) == 1 and len(detected_rects) > 5:
+            bar_chart_rects.extend(detected_rects)
+    _add_and_log_rects(bar_chart_rects, detected_rects, page, md_info, "bar chart rectangles")
+
+    # 方法 6: 高密度区域检测
+    dense_regions = []
+    for rect in detected_rects:
+        density = sum(1 for drawing in drawings if sg.box(*drawing['rect']).intersects(rect))
+        if density > md_info.get_md_control("mctl_lvlm_dense_region_threshold", 15):
+            dense_regions.append(rect)
+    _add_and_log_rects(dense_regions, detected_rects, page, md_info, "dense regions")
+
+    # 过滤、合并和扩展检测区域
     filtered_rects = _filter_rects(detected_rects, page, md_info)
-    _log_detected_regions(filtered_rects, "Rectangles after final checks", page, md_info)
-
-    # 合并相邻或重叠的矩形
     merged_rects = _merge_adjacent_or_overlapping_rects(filtered_rects, page_width, page_height, md_info)
-    _log_detected_regions(merged_rects, "Rectangles after merging", page, md_info)
-
-    # 扩展并吸附文字块
     expanded_paint_regions = _expand_and_absorb_regions_with_ratios(merged_rects, page, md_info)
-    _log_detected_regions(expanded_paint_regions, "Final paint regions detected", page, md_info)
 
+    logging.info(f"Final number of expanded paint regions: {len(expanded_paint_regions)}")
     return expanded_paint_regions

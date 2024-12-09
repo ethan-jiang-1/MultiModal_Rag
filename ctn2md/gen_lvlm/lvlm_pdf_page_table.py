@@ -14,29 +14,27 @@ if './' not in sys.path:
 
 from ctn2md.src.md_info_base import MdInfo
 
-def detect_table_regions(
-    md_info: MdInfo,
-    page: fitz.Page,
-    line_distance_ratio: float = 0.03,  # 线段合并的默认比例
-    text_x_distance_ratio: float = 0.02,  # 水平方向文字吸附比例
-    text_y_distance_ratio: float = 0.02,  # 垂直方向文字吸附比例
-    short_line_ratio: float = 0.03       # 短线段的长度比例
-) -> List[sg.box]:
+def detect_table_regions(md_info: MdInfo, page: fitz.Page) -> List[sg.box]:
     """
     检测由线段构成的表格区域，并吸附周围文字形成完整表格矩形。
 
     参数:
+        md_info (MdInfo): 元数据信息对象，用于获取配置参数。
         page (fitz.Page): PDF 的单页对象。
-        line_distance_ratio (float): 两条线段间的最大距离阈值（相对于页面宽度）。
-        text_x_distance_ratio (float): 表格区域与文字块之间水平方向的最大吸附比例（相对于页面宽度）。
-        text_y_distance_ratio (float): 表格区域与文字块之间垂直方向的最大吸附比例（相对于页面高度）。
-        short_line_ratio (float): 用于过滤短线段的长度比例（相对于页面宽度）。
 
     返回:
         List[sg.box]: 包含文字的表格区域的矩形列表。
     """
     # 获取页面宽度和高度
     page_width, page_height = page.mediabox_size
+
+    # 从 md_info 获取控制参数
+    line_distance_ratio = md_info.get_md_control("mctl_lvlm_table_line_distance_ratio", 0.03)
+    short_line_ratio = md_info.get_md_control("mctl_lvlm_table_short_line_ratio", 0.03)
+    text_distance_ratios = md_info.get_md_control(
+        "mctl_lvlm_table_text_distance_ratio", (0.02, 0.02, 0.02, 0.02)
+    )
+    text_x_left_distance_ratio, text_x_right_distance_ratio, text_y_up_distance_ratio, text_y_down_distance_ratio = text_distance_ratios
 
     # 短线段长度的绝对阈值
     short_line_threshold = page_width * short_line_ratio
@@ -90,10 +88,10 @@ def detect_table_regions(
     for table_rect in table_regions:
         # 扩展表格区域的边界
         expanded_table_rect = sg.box(
-            table_rect.bounds[0] - page_width * text_x_distance_ratio,
-            table_rect.bounds[1] - page_height * text_y_distance_ratio,
-            table_rect.bounds[2] + page_width * text_x_distance_ratio,
-            table_rect.bounds[3] + page_height * text_y_distance_ratio
+            table_rect.bounds[0] - page_width * text_x_left_distance_ratio,  # 左侧吸附
+            table_rect.bounds[1] - page_height * text_y_up_distance_ratio,   # 上方吸附
+            table_rect.bounds[2] + page_width * text_x_right_distance_ratio, # 右侧吸附
+            table_rect.bounds[3] + page_height * text_y_down_distance_ratio  # 下方吸附
         )
         
         # 合并扩展边界范围内的文字块

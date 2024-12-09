@@ -55,7 +55,7 @@ def gen_pages_lvlm(md_info):
     fnames_imgs = []
     fnames_snps = []
     fnames_page_md_gen = []
-    mctrl_lvlm_img2md_model = md_info.get_md_control("mctrl_lvlm_img2md_model", "gpt")
+    mctl_lvlm_img2md_model = md_info.get_md_control("mctl_lvlm_img2md_model", "gpt")
     mctl_lvlm_notouch_pages = md_info.get_md_control_notouch("mctl_lvlm_notouch_pages",[])
     for ndx, image_info in enumerate(image_infos):
         page_index = ndx + 1
@@ -74,7 +74,7 @@ def gen_pages_lvlm(md_info):
             if page_index not in mctl_lvlm_notouch_pages:
                 logging.info(f"GPL: generate page {page_index}...")
 
-                if mctrl_lvlm_img2md_model == "qwen":
+                if mctl_lvlm_img2md_model == "qwen":
                     md_page = generate_full_mds_from_image_qwen(pname_image, rects_img)
                 else:
                     md_page = generate_full_mds_from_image_gpt(pname_image, rects_img)
