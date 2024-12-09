@@ -7,6 +7,7 @@ import rich
 import json
 import re
 import json_repair
+#from enum import Enum
 
 _load_dotenv()
 
@@ -23,6 +24,11 @@ _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
 _MIB_FNAME_FINAL_INFO = "_final.json"
 _MIB_DEFAULT_OUT_ROOT = "_output"
+
+class FHL_QUALITY_TYPE:
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
 
 # Names of the field in _info.json  (read_write)
 class MIFN:  # Markdown Field Name
@@ -44,6 +50,7 @@ class MIFN:  # Markdown Field Name
 
     GEN_ENGINE = "parse_engine"
 
+    FHL_QUALITY = "fhl_quality"
     FHL_ORG = "fhl_org"
     FHL_MAP_O2N = "fhl_map_o2n"
 
@@ -301,7 +308,7 @@ class MdInfo:
                             xset.add(pnn)
                     else:
                         xset.add(int(pn))
-            lst = xset.list()
+            lst = list(xset)
             lst = sorted(lst)
         return lst
 

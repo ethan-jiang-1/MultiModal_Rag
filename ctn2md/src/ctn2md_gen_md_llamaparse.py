@@ -13,7 +13,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, MIFN
+from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src.ctn2md_gen_md_base import GenMd_Base
 
@@ -56,6 +56,8 @@ class GenMd_LlamaParse(GenMd_Base):
             if md_info_path is None:
                 return None
 
+        md_info[MIFN.FHL_QUALITY] = FHL_QUALITY_TYPE.LOW
+        md_info.save()
         return md_info.get_md_info_path()
 
     @classmethod

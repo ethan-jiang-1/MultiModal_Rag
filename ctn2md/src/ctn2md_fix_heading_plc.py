@@ -8,6 +8,7 @@ import rich
 #import json
 #import json_repair
 import copy
+from datetime import datetime 
 
 load_dotenv()
 
@@ -17,10 +18,10 @@ if "./" not in sys.path:
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.utils_llm.llm_fix_heading_lvl_gpt import fix_heading_lvl_markdown_by_gpt
 from ctn2md.utils_llm.llm_fix_heading_lvl_qwen import fix_heading_lvl_markdown_by_qwen
-from ctn2md.src.md_info_base import MdInfo, MIFN
-from ctn2md.src.md_process_plc import inject_plc_comment_to_page, separate_heading_and_plc_comment, get_all_normalized_headings_with_plc_info
+from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
+from ctn2md.src.md_process_plc import inject_plc_comment_to_page, separate_heading_and_plc_comment, get_all_normalized_headings_with_plc_info, has_injected_plc_comment
 
-def _filter_markdown_heading_plc(md_text, md_info):
+def _normalize_markdown_heading_plc(md_text, md_info):
     """
     规整化 Markdown 的 heading 写法，确保所有 heading 的 # 与内容之间仅有一个空格。
 
@@ -113,6 +114,39 @@ def _update_markdown_heading_content(md_text, md_info, fhl_map):
     return new_md_text, unprocessed_heading_lines_map
 
 
+def _collect_fhl_info(md_info, md_full_text):
+    md_full_text_new = _normalize_markdown_heading_plc(md_full_text, md_info)
+    fhl_org = md_info[MIFN.FHL_ORG]
+
+    org_heading_lines = fhl_org["org_heading_lines"]
+    if (len(org_heading_lines)) == 0 or (not has_injected_plc_comment(md_full_text)):
+        md_full_text_new = _fix_markdown_with_no_heading(md_full_text_new, md_info)
+
+        md_full_text_new = _normalize_markdown_heading_plc(md_full_text_new, md_info)
+        fhl_org = md_info[MIFN.FHL_ORG]
+
+    return fhl_org, md_full_text_new
+
+def _cal_new_fhl_map(md_info, fhl_org):
+    now = datetime.now()
+    question_num = now.hour * 100 + now.minute
+    logging.info(f"question_num: {question_num}")
+    mctrl_fix_heading_model = md_info.get_md_control("mctrl_fix_heading_model", "gpt")
+    fhl_quality = md_info.get(MIFN.FHL_QUALITY, FHL_QUALITY_TYPE.MEDIUM)
+    ctn_type = md_info.get_ctn_type()
+    if mctrl_fix_heading_model == "gpt":
+        model = "gpt-4o" # so far, only gpt-4o can handle this well,  gpt-4o-mini does not.
+        fhl_map = fix_heading_lvl_markdown_by_gpt(fhl_org, fhl_quality=fhl_quality, ctn_type=ctn_type, model=model, question_num=question_num)
+    elif mctrl_fix_heading_model == "qwen":
+        model = "qwen-max"  # TODO: qwen-max is not there yet, need to revisit the prompt
+        fhl_map = fix_heading_lvl_markdown_by_qwen(fhl_org, fhl_quality=fhl_quality, ctn_type=ctn_type, model=model, question_num=question_num)
+    else:
+        raise ValueError(f"not implemented yet for using {mctrl_fix_heading_model} in fix_headings_plc_by_llm")
+
+    #rich.print(fhl_map)
+    rich.print(fhl_map)
+    return fhl_map
+
 def fix_headings_plc_by_llm(md_info_path, src_step_num=None, dst_step_num=None):
     logging.info(f"##MDFLOW##: fix_headings_plc_by_llm started src_step_num:{src_step_num} dst_step_num:{dst_step_num}...")
     md_info = MdInfo(md_info_path)
@@ -124,43 +158,36 @@ def fix_headings_plc_by_llm(md_info_path, src_step_num=None, dst_step_num=None):
     with open(pathname_src_step_md, "r", encoding="utf8") as f:
         md_full_text = f.read()
 
-    md_full_text_new = _filter_markdown_heading_plc(md_full_text, md_info)
+    fhl_org, md_full_text_new = _collect_fhl_info(md_info, md_full_text)
 
-    fhl_org = md_info[MIFN.FHL_ORG]
-    org_heading_lines = fhl_org["org_heading_lines"]
-    if len(org_heading_lines) == 0:
-        md_full_text_new = _fix_markdown_with_no_heading(md_full_text_new, md_info)
-        md_full_text_new = _filter_markdown_heading_plc(md_full_text_new, md_info)
-        fhl_org = md_info[MIFN.FHL_ORG]
-    
-    mctrl_fix_heading_model = md_info.get_md_control("mctrl_fix_heading_model", "gpt")
-    if mctrl_fix_heading_model == "gpt":
-        model = "gpt-4o" # so far, only gpt-4o can handle this well,  gpt-4o-mini does not.
-        fhl_map = fix_heading_lvl_markdown_by_gpt(fhl_org, ctn_type=md_info.get_ctn_type(), model=model)
-    elif mctrl_fix_heading_model == "qwen":
-        model = "qwen-max"  # TODO: qwen-max is not there yet, need to revisit the prompt
-        fhl_map = fix_heading_lvl_markdown_by_qwen(fhl_org, ctn_type=md_info.get_ctn_type(), model=model)
+    fhl_map = _cal_new_fhl_map(md_info, fhl_org)    
+
+    optimized_heading_lines_map = fhl_map.get("optimized_heading_lines_map", None)
+    if optimized_heading_lines_map is not None:
+        o2n_map = {"org_heading_lines": [item["original_line"] for item in optimized_heading_lines_map],
+                   "new_heading_lines": [item["mapped_line"] for item in optimized_heading_lines_map]}
+        rich.print(o2n_map)
+
+        md_full_text_new1, unprocessed_heading_lines_map = _update_markdown_heading_content(md_full_text_new, md_info, fhl_map)
+        rich.print(unprocessed_heading_lines_map)
+
+        logging.warning(f"fix_headings_plc_by_llm: pathname_dst_step_md: {pathname_dst_step_md}")
+        with open(pathname_dst_step_md, "w+") as f:
+            f.write(md_full_text_new1)
+        
+        md_info[MIFN.FHL_MAP_O2N] = o2n_map
+        md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_headings_plc_by_llm")
+        md_info_path = md_info.save()
     else:
-        raise ValueError(f"not implemented yet for using {mctrl_fix_heading_model} in fix_headings_plc_by_llm")
-
-    #rich.print(fhl_map)
-    rich.print(fhl_map)
-    optimized_heading_lines_map = fhl_map["optimized_heading_lines_map"]
-    o2n_map = {"org_heading_lines": [item["original_line"] for item in optimized_heading_lines_map],
-               "new_heading_lines": [item["mapped_line"] for item in optimized_heading_lines_map]}
-    rich.print(o2n_map)
-
-    md_full_text_new1, unprocessed_heading_lines_map = _update_markdown_heading_content(md_full_text_new, md_info, fhl_map)
-    rich.print(unprocessed_heading_lines_map)
-
-    logging.warning(f"fix_headings_plc_by_llm: pathname_dst_step_md: {pathname_dst_step_md}")
-    with open(pathname_dst_step_md, "w+") as f:
-        f.write(md_full_text_new1)
+        logging.error("failed to get optimized_heading_lines_map out of model!!")
+        logging.warning(f"fix_headings_plc_by_llm: pathname_dst_step_md: {pathname_dst_step_md}")
+        with open(pathname_dst_step_md, "w+") as f:
+            f.write(md_full_text)
+        
+        md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_headings_plc_by_llm:failed")
+        md_info_path = md_info.save()        
     
-    md_info[MIFN.FHL_MAP_O2N] = o2n_map
-    md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_headings_plc_by_llm")
-    md_info_path = md_info.save()
-    logging.info(f"##MDFLOW##: fix_headings_plc_by_llm ended: model: {model}")
+    logging.info(f"##MDFLOW##: fix_headings_plc_by_llm ended")
     return md_info_path 
 
 if __name__ == "__main__":
