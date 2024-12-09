@@ -25,6 +25,8 @@ def _gen_md_llamaparse(doc_pathname, out_dir):
     md_info = MdInfo(out_dir)
     md_info.set_gen_engine("llamaparse:lp")
     md_info.set_doc_pathname(doc_pathname)
+    md_info[MIFN.FHL_QUALITY] = FHL_QUALITY_TYPE.LOW
+    md_info.save()
 
     md_info_path = generate_markdown_llamaparse(md_info)
 
@@ -56,8 +58,6 @@ class GenMd_LlamaParse(GenMd_Base):
             if md_info_path is None:
                 return None
 
-        md_info[MIFN.FHL_QUALITY] = FHL_QUALITY_TYPE.LOW
-        md_info.save()
         return md_info.get_md_info_path()
 
     @classmethod

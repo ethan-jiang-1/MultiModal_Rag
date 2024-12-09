@@ -178,10 +178,11 @@ def make_final_json(md_info_path):
 
 def reset_md_flow(md_info_path):
     md_info = MdInfo(md_info_path)
-    dict_md_flow = md_info[MIFN.MDFLOW]
-    for key in list(dict_md_flow.keys()): 
-        if key != "0":
-            del dict_md_flow[key]
+    dict_md_flow = md_info.get(MIFN.MDFLOW, None)
+    if dict_md_flow is not None:
+        for key in list(dict_md_flow.keys()): 
+            if key != "0":
+                del dict_md_flow[key]
     md_info.save()
 
 if __name__ == "__main__":

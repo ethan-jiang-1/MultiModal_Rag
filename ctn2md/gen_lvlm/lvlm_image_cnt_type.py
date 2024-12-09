@@ -1,4 +1,4 @@
-#import os
+import os
 import sys
 
 #import logging
@@ -19,14 +19,22 @@ class LVLM_IMG_CNT_TYPE:
     UNKNOWN = "unknown"
 
 def get_image_cnt_type(md_info, pname_image):
-    if pname_image.find("-") == -1:
+    basename = os.path.basename(pname_image)
+    if basename.find("-") == -1:
         return LVLM_IMG_CNT_TYPE.UNKNOWN
 
-    img_name = pname_image.split("-")[1]
+    img_name = basename.split("-")[1]
+    img_name = img_name.strip()
+    if len(img_name) == 0:
+        return LVLM_IMG_CNT_TYPE.UNKNOWN
+
     mctl_lvlm_images_ignore = md_info.get_md_control("mctl_lvlm_images_ignore", None)
     if mctl_lvlm_images_ignore is None:
         return LVLM_IMG_CNT_TYPE.IMAGE
-    if img_name in mctl_lvlm_images_ignore:
+    images_ignore = mctl_lvlm_images_ignore.split(",")
+    images_ignore = [item.strip() for item in images_ignore]
+
+    if img_name in images_ignore:
         return LVLM_IMG_CNT_TYPE.IGNORE
     return LVLM_IMG_CNT_TYPE.GRAPH
 

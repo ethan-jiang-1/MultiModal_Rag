@@ -57,7 +57,6 @@ def generate_markdown_lvlm(md_info, lvlm_model="gpt-4o"):
     md_info.add_step_into_md_info_mdflow(pathname_step0, actor=f"generate_markdown_lvlm@{lvlm_model}")
     md_info.save()
 
-
     logging.info(f"original doc: {doc_pathname}")
     logging.info(f"fname_output: {os.path.basename(pathname_step0)}")
     

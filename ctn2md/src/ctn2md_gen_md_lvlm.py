@@ -24,6 +24,9 @@ def _gen_md_lvlm(doc_pathname, out_dir, lvlm_model="gpt-4o"):
     md_info = MdInfo(out_dir)
     md_info.set_gen_engine(f"lvlm@{lvlm_model}")
     md_info.set_doc_pathname(doc_pathname)
+    md_info[MIFN.FHL_QUALITY] = FHL_QUALITY_TYPE.HIGH
+    
+    md_info.save()
 
     md_info_path = generate_markdown_lvlm(md_info, lvlm_model=lvlm_model)
 
@@ -54,9 +57,6 @@ class GenMd_Lvlm(GenMd_Base):
             md_info_path = _gen_md_lvlm(doc_pathname, out_dir)
             if md_info_path is None:
                 return None
-
-        md_info[MIFN.FHL_QUALITY] = FHL_QUALITY_TYPE.HIGH
-        md_info.save()
         return md_info.get_md_info_path()
 
 

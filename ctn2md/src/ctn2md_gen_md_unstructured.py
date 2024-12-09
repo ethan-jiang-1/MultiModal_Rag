@@ -25,6 +25,7 @@ def gen_md_unstructured(doc_pathname, out_dir):
     md_info = MdInfo(out_dir)
     md_info.set_gen_engine(f"unstructured")
     md_info.set_doc_pathname(doc_pathname)
+    md_info[MIFN.FHL_QUALITY] = FHL_QUALITY_TYPE.LOW
 
     md_info_path = generate_markdown_unstructured(md_info)
 
@@ -56,8 +57,6 @@ class GenMd_Unstructured(GenMd_Base):
             if md_info_path is None:
                 return None
 
-        md_info[MIFN.FHL_QUALITY] = FHL_QUALITY_TYPE.LOW
-        md_info.save()
         return md_info.get_md_info_path()
 
 

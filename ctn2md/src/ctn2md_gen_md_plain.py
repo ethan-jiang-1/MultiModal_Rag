@@ -64,6 +64,7 @@ def _gen_md_plain(doc_pathname, md_info):
     out_dir = md_info.get_out_dir()
     md_info.set_gen_engine("llamaparse:plain")
     md_info.set_doc_pathname(doc_pathname)
+    md_info[MIFN.FHL_QUALITY] = FHL_QUALITY_TYPE.LOW
 
     pathname_final_md = md_info.name_step_pathname(-1)
     if pathname_final_md == doc_pathname:
@@ -108,8 +109,6 @@ class GenMd_Plain(GenMd_Base):
             if md_info_path is None:
                 return None
 
-        md_info[MIFN.FHL_QUALITY] = FHL_QUALITY_TYPE.HIGH
-        md_info.save()        
         return md_info.get_md_info_path()
 
 

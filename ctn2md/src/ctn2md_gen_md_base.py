@@ -25,17 +25,24 @@ class GenMd_Base:
     def does_gen_needed(cls, doc_pathname, out_dir, enforced_gen):
         if out_dir is not None:
             out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=cls.OD_SUFFIX)
-        md_info = MdInfo(out_dir)
 
-        #md_info_path = None
         gen_needed = False
-        if not enforced_gen:
-            #md_info_path = md_info.get_md_info_path()
-            pathname_s0_md = md_info.name_step_pathname(0)
-            if (pathname_s0_md is None) or (not os.path.exists(pathname_s0_md)):
-                gen_needed = True
+        md_info = None
+
+        if enforced_gen:
+            gen_needed = True 
         else:
-            gen_needed = True
+            pname_md_info = os.path.join(out_dir, MdInfo.get_fname_md_info())
+            if not os.path.isfile(pname_md_info):
+                gen_needed = True
+            else:
+                md_info = MdInfo(out_dir)
+                pathname_s0_md = md_info.name_step_pathname(0)
+                if (pathname_s0_md is None) or (not os.path.exists(pathname_s0_md)):
+                    gen_needed = True
+
+        if md_info is None:
+            md_info = MdInfo(out_dir)
         return md_info, gen_needed
 
     @classmethod

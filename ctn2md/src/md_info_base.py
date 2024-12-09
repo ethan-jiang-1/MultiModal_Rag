@@ -203,6 +203,10 @@ class MdInfo:
     def get_fname_final_json(cls):
         return _MIB_FNAME_FINAL_INFO
 
+    @classmethod
+    def get_fname_md_info(cls):
+        return _MIB_FNAME_MD_INFO
+
     def load(self):
         if os.path.isfile(self._md_info_path):
             with open(self._md_info_path, 'r', encoding='utf-8') as file:
