@@ -66,9 +66,12 @@ if __name__ == "__main__":
     dir_root = get_root_dir()
     setup_logger_handlers()
 
-    pname_image = "_work/md_samples/e479b909-page_1_rects.png"
-    rects_img = ['e479b909-img_1_1.png']
+    #pname_image = "_work/md_samples/e479b909-page_1_rects.png"
+    #rects_img = ['e479b909-img_1_1.png']
     #rects_img = None
+
+    pname_image = "_work/md_pdf_pages/c3c1d78a-page_3_rects.jpg"
+    rects_img = ['c3c1d78a-img_3_1.jpg']
 
     full_path = os.path.join(dir_root, pname_image)
     container_name = os.path.basename(os.path.dirname(pname_image))

@@ -112,8 +112,8 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/Survey of different Large Language Model Architectures.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/A Coin Has Two Sides.pdf"
 
-    #doc_pathname = "datasrc/exam/raw_docs/3_20240131104523599_rearranged.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/tianyang_1_20.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/3_20240131104523599_rearranged.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/tianyang_1_20.pdf"
 
     out_dir = None
     mdcontrols = None
