@@ -16,8 +16,8 @@ if './' not in sys.path:
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 #from ctn2md.gen_lvlm.lvlm_image_cnt_type import get_image_cnt_type, LVLM_IMG_CNT_TYPE
-from ctn2md.gen_lvlm.lvlm_pdf_page_paint import detect_paint_regions
-from ctn2md.gen_lvlm.lvlm_pdf_page_table import detect_table_regions
+from ctn2md.gen_lvlm.gs_pdf_page_paint import detect_paint_regions
+from ctn2md.gen_lvlm.gs_pdf_page_table import detect_table_regions
 from ctn2md.gen_lvlm.lvlm_base import get_job_id
 
 
@@ -186,7 +186,7 @@ def _merge_adjacent_or_overlapping_non_text_rects(
 def _get_rect_bounds(list_rects):
     return [rect.bounds for rect in list_rects]
 
-def parse_non_text_rects_in_page(
+def gs_parse_non_text_rects_in_page(
     md_info: MdInfo,
     page: fitz.Page,
     page_index: int
@@ -214,7 +214,10 @@ def parse_non_text_rects_in_page(
 
     # 猜测表格区域
     rect_list_table = detect_table_regions(md_info, page)
+    #TODO: ignore table
+    rect_list_table = []
     logging.info(f"page_index:{page_index} has number of rect_list_table: {len(rect_list_table)}")
+
 
     # 合并所有非文本区域
     merged_rects = rect_list_image + rect_list_paint + rect_list_table
@@ -263,6 +266,6 @@ if __name__ == "__main__":
     pdf_document = fitz.open(doc_pathname)
     page = pdf_document[page_no - 1] # 0-based index
 
-    merged_rects_bounds, rects_list = parse_non_text_rects_in_page(md_info, page, page_no)
+    merged_rects_bounds, rects_list = gs_parse_non_text_rects_in_page(md_info, page, page_no)
     rich.print(merged_rects_bounds)
     rich.print(rects_list)

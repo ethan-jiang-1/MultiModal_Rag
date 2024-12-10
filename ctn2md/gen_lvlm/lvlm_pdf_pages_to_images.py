@@ -15,7 +15,7 @@ if './' not in sys.path:
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lvlm.lvlm_image_cnt_type import get_image_cnt_type, LVLM_IMG_CNT_TYPE
-from ctn2md.gen_lvlm.lvlm_pdf_page_to_image import parse_non_text_rects_in_page
+from ctn2md.gen_lvlm.gs_pdf_page_to_image import gs_parse_non_text_rects_in_page
 from ctn2md.gen_lvlm.lvlm_base import get_job_id
 
 
@@ -39,6 +39,12 @@ def _draw_red_rect_on_page(page, fitz_rect, fname_rect_name):
     # 插入带有白色背景的文字
     page.insert_text((text_x, text_y), fname_rect_name, fontsize=10, color=(1, 0, 0))
 
+def _get_non_text_rects(md_info, page, page_index, pname_page_name):
+    #TODO: using LVLM to see where is image or table...
+    logging.info(f"cal rects for {page_index} starts...")
+    rects_non_text, _ = gs_parse_non_text_rects_in_page(md_info, page, page_index)
+    logging.info(f"cal rects for {page_index} done.")
+    return rects_non_text
 
 def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None) -> List[Tuple[str, str, List[str]]]:
     """
@@ -67,9 +73,6 @@ def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None) -> List[Tuple[st
                 continue
         logging.info(f'parse page: {page_index}')
         fname_rect_images = []
-        logging.info(f"cal rects for {page_index} starts...")
-        rects_non_text, _ = parse_non_text_rects_in_page(md_info, page, page_index)
-        logging.info(f"cal rects for {page_index} done.")
 
         page_image = page.get_pixmap(matrix=fitz.Matrix(3, 3))
         try:
@@ -78,6 +81,10 @@ def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None) -> List[Tuple[st
             page_image.save(pname_page_name, jpg_quality=JPG_QUALITY)
         except Exception as ex:
             logging.exception(ex)
+    
+        logging.info(f"cal rects for {page_index} starts...")
+        rects_non_text = _get_non_text_rects(md_info, page, page_index, pname_page_name)
+        logging.info(f"cal rects for {page_index} done.")
 
         for index, rect_non_text in enumerate(rects_non_text):
             index += 1
