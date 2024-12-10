@@ -18,7 +18,7 @@ from llama_parse.utils import Language
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.utils.util_file import get_crc32_id
 
-_MIB_INFO_VER = "0.5.2"
+_MIB_INFO_VER = "0.5.3"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
@@ -112,14 +112,20 @@ _DEFAULT_MDCONTROL = {
                                   # list of page numbers,  The first page of the document is page 1
     "mctl_lvlm_notouch_pages": [], # the target pages no need to be touched, 
                                    # list of page numbers,  The first page of the document is page 1
+    
     "mctl_lvlm_img2md_model": "gpt", # gpt/qwen
+    "mctl_lvlm_region_model": "gpt",  # gpt/qwen/gs
 
     "mctl_lvlm_paint_page_content_area_ratios":(0.15, 0.15, 0.1, 0.1),
     "mctl_lvlm_paint_max_area_ratio": 0.7,
     "mctl_lvlm_paint_max_outside_ratio": 0.1,
     "mctl_lvlm_paint_min_coverage_ratio": 0.7,
     "mctl_lvlm_paint_content_area_buffer_ratio": 0.05,
-    "mctl_lvlm_paint_text_distance_ratio": (0.015, 0.015, 0.015, 0.028)  
+    "mctl_lvlm_paint_text_distance_ratio": (0.015, 0.015, 0.015, 0.028), 
+
+    "mctl_lvlm_table_line_distance_ratio": 0.03,
+    "mctl_lvlm_table_short_line_ratio":0.03,
+    "mctl_lvlm_table_text_distance_ratio": (0.02, 0.02, 0.02, 0.02)
 
 }
 
