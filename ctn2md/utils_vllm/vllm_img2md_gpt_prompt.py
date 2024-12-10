@@ -8,7 +8,7 @@ SYSTEM_PROMPT_IMG2MD = """
 """
 
 USER_PROMPT_IMG2MD = """
-## 优化后的任务描述
+## 任务描述
 
 以下是一页内容，请将其转化为 Markdown 格式，确保内容完整，排版顺序与原页面一致。
 
