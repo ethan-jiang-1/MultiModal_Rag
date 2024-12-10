@@ -14,6 +14,15 @@ from ctn2md.utils_llm.llm_base import get_gpt_messages_multimodal, chat_gpt_json
 from ctn2md.utils_vllm.vllm_img2region_gpt_prompt import SYSTEM_PROMPT_IMG2REGION, USER_PROMPT_IMG2REGION
 
 
+def _validate_response(response):
+    """Validate GPT response to ensure proper JSON structure."""
+    if not isinstance(response, list):
+        raise ValueError("Response is not a valid list.")
+    for item in response:
+        if not isinstance(item, dict) or "type" not in item or "bbox" not in item or "description" not in item:
+            raise ValueError(f"Invalid item format in response: {item}")
+    return True
+
 def generate_regions_from_image_gpt(pname_image, model="gpt-4o", question_num=None):
     if question_num is None:
         question_num = get_next_question_num()
@@ -39,8 +48,13 @@ def generate_regions_from_image_gpt(pname_image, model="gpt-4o", question_num=No
 
         set_question_num(question_num)
         save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="vllm_gpt") 
+        rich.print(resp)
+
+        if isinstance(resp, dict):
+            resp = [resp]
 
         logging.info(f"GRFIG: convert pdf page {pname_image} to regions by gpt done")
+        _validate_response(resp)
         return resp
     except Exception as ex: 
         logging.exception(ex)
