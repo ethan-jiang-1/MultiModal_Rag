@@ -10,7 +10,7 @@ if './' not in sys.path:
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lvlm.lvlm_base import get_job_id
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.utils_vllm.vllm_img2region_gpt import generate_regions_from_image_gpt
+#from ctn2md.utils_vllm.vllm_img2region_gpt import generate_regions_from_image_gpt
 from ctn2md.utils_vllm.vllm_img2region_qwen import generate_regions_from_image_qwen
 
 
@@ -51,6 +51,8 @@ def vllm_parse_non_text_rects_in_page_by_gpt(md_info, page, page_index, pname_pa
     Returns:
     - A list of bounds representing rectangular regions as (x_min, y_min, x_max, y_max).
     """
+    return vllm_parse_non_text_rects_in_page_by_qwen(md_info, page, page_index, pname_page_name)
+    """
     try:
         # Get page dimensions
         page_width, page_height = page.mediabox_size
@@ -87,6 +89,7 @@ def vllm_parse_non_text_rects_in_page_by_gpt(md_info, page, page_index, pname_pa
         # Log the error and return an empty list in case of failure
         logging.exception(f"Error parsing non-text rectangles for page {page_index}: {e}")
         return []
+    """
 
 def vllm_parse_non_text_rects_in_page_by_qwen(md_info, page, page_index, pname_page_name):
     """
@@ -109,26 +112,48 @@ def vllm_parse_non_text_rects_in_page_by_qwen(md_info, page, page_index, pname_p
         resp = generate_regions_from_image_qwen(pname_page_name)
         
         # Step 2: Process the GPT response to generate rects
+        resp_image_size = resp.get("image_size", None)
+        resp_regions = resp.get("regions", None)
+        if resp_image_size is None or resp_regions is None:
+            raise ValueError(f"resp_image_size: {resp_image_size} resp_regions: {resp_regions}")
+
+        resp_image_width = resp_image_size.get("width", 1)
+        resp_image_height = resp_image_size.get("height", 1)
         rects = []
-        for region in resp:
-            # Check if the region has the required fields
-            if "type" in region and "bbox" in region and isinstance(region["bbox"], list) and len(region["bbox"]) == 4:
-                region_type = region["type"]
-                x_min_rel, y_min_rel, x_max_rel, y_max_rel = region["bbox"]
+        for region in resp_regions:
+            region_type = region.get("type", None)
+            if region_type is None:
+                continue
 
-                # Convert relative coordinates to absolute coordinates
-                x_min = x_min_rel * page_width
-                y_min = y_min_rel * page_height
-                x_max = x_max_rel * page_width
-                y_max = y_max_rel * page_height
+            # Handle specific types: image, chart, table
+            if region_type in ["image", "chart", "table"]:
+                bbox = region.get("bbox", [])
+                if len(bbox) != 4:
+                    continue
 
-                # Handle specific types: image, chart, table
-                if region_type in ["image", "chart", "table"]:
-                    rects.append((x_min, y_min, x_max, y_max))
-                else:
-                    logging.warning(f"Page {page_index}: Ignored unsupported region type '{region_type}' with bbox {region['bbox']}")
+                # vllm 坐标体系是 左上角是起点0，0， x像右增加， y向下增加
+                # 整个图像的 宽高是 resp_image_width resp_image_height
+                x_top_left, y_top_left, width, height = bbox 
+
+                # PDF 的坐标体系是 - `(0, 0)` 通常是 PDF 页面左下角的起始点。
+                # - `x` 值从左到右增加，`y` 值从下到上增加。
+                # 整个图像的 宽高是 page_width, page_height
+
+                # 需要计算映射 vllm坐标体系 x_top_left, y_top_left, width, height 为
+                # PDF 坐标体系  x_min, y_min, x_max, y_max
+
+                # Map VLLM coordinates to PDF coordinates
+                x_min = x_top_left * (page_width / resp_image_width)  # X 起点
+                x_max = (x_top_left + width) * (page_width / resp_image_width)  # X 终点
+
+                # 修正 Y 方向逻辑
+                y_min = y_top_left * (page_height / resp_image_height)  # Y 下边界
+                y_max = (y_top_left + height) * (page_height / resp_image_height)  # Y 上边界
+
+                rects.append((x_min, y_min, x_max, y_max))
             else:
-                logging.warning(f"Page {page_index}: Invalid region format: {region}")
+                logging.warning(f"Page {page_index}: Ignored unsupported region type '{region_type}' with bbox {region['bbox']}")
+
 
         # Return the processed rectangles
         return rects

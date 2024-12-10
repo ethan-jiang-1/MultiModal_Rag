@@ -1,41 +1,85 @@
 PROMPT_INSTRUCT_IMG2REGION_QWEN = """
-你是一款多模态内容解析工具，专注于识别文档中的非典型文本区域（如图像、表格、图形和列表），并输出这些区域的位置和描述。
+# Task Description
 
-## 任务描述
+You are provided with a page of content. Please identify and analyze the **regions of the page**, which include:
 
-以下提供了一页文档内容，请识别并分析**非典型文本区域**。非典型区域包括：
-- **图像**：插图、模型结构图等。
-- **表格**：含结构化信息的网格区域。
-- **图形**：如流程图、柱状图、折线图等。
-- **列表**：非连续的项目清单。
+1. **Full Page Region**:
+   - Represents the boundary of the entire content within the page.
 
-### 输出要求
-- 返回格式必须是 JSON 数组：
-  - 整个返回对象必须是一个列表（`[]`）。
-  - 无论结果为空、仅有一个，还是多个，均需以列表形式返回。
-- 每个列表项表示一个非典型区域，其字段包括：
-  - `type`：区域类型，填写 `"image"`, `"table"`, `"chart"`, 或 `"list"`。
-  - `bbox`：区域的相对位置，表示该矩形区域在页面上的位置，格式为 `[x_min, y_min, x_max, y_max]`。
-    - `x_min`：矩形左边界的相对 x 坐标，表示该矩形区域在页面上的最左端位置。
-    - `y_min`：矩形下边界的相对 y 坐标，表示该矩形区域在页面上的最下端位置。
-    - `x_max`：矩形右边界的相对 x 坐标，表示该矩形区域在页面上的最右端位置。
-    - `y_max`：矩形上边界的相对 y 坐标，表示该矩形区域在页面上的最上端位置。
-    - **所有坐标为相对值，范围为 `0` 到 `1`。**
-  - `description`：区域内容的描述。如果页面已有明确描述，优先使用页面内容；若没有描述，则根据内容生成简要说明。
+2. **Non-typical Text Regions**:
+   - **Image**: Illustrations, model architecture diagrams, etc.
+   - **Table**: Structured grids with information.
+   - **Chart**: Diagrams like flowcharts, bar charts, line charts, etc.
+   - **List**: Discontinuous itemized content.
 
-### 注意事项
-- 如果没有非典型区域，请返回空数组：`[]`。
-- 返回格式必须严格遵守上述要求。
-- 返回结果中，所有非典型区域都必须包含在列表中。
+---
 
-### 示例输出
+## Input Image Information
+- The model processes the input image, which may involve resizing, cropping, or padding. The `image_size` field must reflect the **actual dimensions of the image as processed by the model**.
+
+---
+
+## Output Requirements
+
+### 1. Image Dimensions
+- Return the `width` and `height` of the image as seen by the model after internal processing (in pixels).
+
+### 2. Region Bounding Boxes
+- For each region, return a `bbox` in the format `[x_top_left, y_top_left, width, height]`:
+  - `x_top_left`: The x-coordinate of the top-left corner of the bounding box.
+  - `y_top_left`: The y-coordinate of the top-left corner of the bounding box.
+  - `width`: The width of the bounding box (in pixels).
+  - `height`: The height of the bounding box (in pixels).
+- Ensure that the bounding box fully encloses the region, including margins or other related elements.
+
+### 3. Region Information
+- **Full Page Region**:
+  - `type`: Use `"full_page"` to indicate the full page content region.
+  - `bbox`: Must cover the entire content area, starting at the top-left corner and extending to the full width and height of the `image_size`.
+  - `description`: Use `"Entire page content"` or a similar concise description.
+- **Non-typical Text Regions**:
+  - `type`: Use `"image"`, `"table"`, `"chart"`, or `"list"`.
+  - `description`: Provide a concise description of the region's content.
+
+---
+
+## Notes
+- Always include the full page region (`full_page`) as the first entry in the `regions` list.
+- Ensure all `bbox` values are within the dimensions defined by `image_size`.
+- If `image_size` differs from the original input dimensions, all `bbox` values must reflect the adjusted dimensions.
+- Return the regions in the following order:
+  1. Full page region.
+  2. Non-typical text regions, ordered from top to bottom.
+
+---
+
+## Output Format
+
+The result must be a JSON object with the following structure:
+
 ```json
-[
-  {
-    "type": "<type of region>",
-    "bbox": [<bbox values>],
-    "description": "<region description>"
+{
+  "image_size": {
+    "width": "<processed_image_width>",
+    "height": "<processed_image_height>"
   },
-  ...
-]
+  "image_processing_info": {
+    "resized": <bool resized>,
+    "aspect_ratio_x": <float aspect_ratio_at_x_axis>,
+    “aspect_ratio_y": <float aspect_ratio_at_y_axis>,
+    "coordinate_system": "<string coordinate_system_in_details>"
+  },
+  "regions": [
+    {
+      "type": "full_page",
+      "bbox": [<x_top_left>, <y_top_left>, <width>, <height>],
+      "description": "Entire page content"
+    },
+    {
+      "type": "<type_of_region>",
+      "bbox": [<x_top_left>, <y_top_left>, <width>, <height>],
+      "description": "<region_description>"
+    }
+  ]
+}
 """
