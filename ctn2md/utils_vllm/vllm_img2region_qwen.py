@@ -27,12 +27,12 @@ def generate_regions_from_image_qwen(pname_image, model='qwen-vl-max-1119', retr
                  'content': [{'image': pname_image}, {'text': prompt}]}]
     
     # The model name 'qwen-vl-max-0809' is the identity of 'Qwen2-VL-72B'.
-    logging.info(f"GFMFI: generate_regions_from_image_qwen started... {pname_image}")
+    logging.info(f"GRFIQ: generate_regions_from_image_qwen started... {pname_image}")
 
     response = chat_qwen_mm(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds, track_id="gfmdiq")
 
     resp = json_repair.repair_json(response, return_objects=True)
-    logging.info(f"GFMFI: generate_regions_from_image_qwen ended. {pname_image}")
+    logging.info(f"GRFIQ: generate_regions_from_image_qwen ended. {pname_image}")
     return resp
 
 
