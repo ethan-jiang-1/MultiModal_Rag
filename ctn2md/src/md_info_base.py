@@ -85,6 +85,7 @@ class MIFN:  # Markdown Field Name
 # Names of the field in _info_ctrl.json (read_only)
 # dictionary used to control inner flow...
 _DEFAULT_MDCONTROL = {
+    "version": _MIB_INFO_VER,
     "mctl_move_aux_files": True,
     "mctl_treat_doc_as_ctntype": "auto",
 

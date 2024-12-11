@@ -8,11 +8,14 @@ Convert the following page into Markdown format, ensuring completeness and maint
   - **Images**: Embed using `![Figure X](LocalImageFileName "caption")`.
 - Use headings, paragraphs, lists, and tables for structure.
 - Ignore headers and footers.
+- **Important**: Ensure the output text's language matches the original content exactly. **Do not translate** any text, and maintain the original language.
+
 {inst_img_rects}
 
 # Output:
 - Provide the first portion of the content in Markdown format.
 - Add "[ocr_end]" only when all content has been output.
+
 """
 
 PROMPT_INSTRUCT_IMG2MD_QWEN_START_IMG_RECTS = """

@@ -174,6 +174,7 @@ class MonitorContextLLM:
             sec_span = round(dt, 2)
             ts0 = datetime.fromtimestamp(self.d0).strftime("%Y%m%d:%H:%M:%S")
  
+            model = self.model
             if self.response is not None:
                 choice0 = self.response.choices[0]
                 finish_reason = choice0.finish_reason
@@ -233,6 +234,9 @@ def chat_gpt_json(messages,
             backoff_sec = backoff_factor**attempt + delay_base_sec
             logging.info(f"Retrying after backoff: {backoff_sec} seconds...")
             time.sleep(backoff_sec)
+        except (openai.BadRequestError) as e:
+            logging.exception(e)
+            raise
 
 def chat_gpt_plain(messages, 
                   model="gpt-4o-mini", 
@@ -266,6 +270,9 @@ def chat_gpt_plain(messages,
             backoff_sec = backoff_factor**attempt + delay_base_sec
             logging.info(f"Retrying after backoff: {backoff_sec} seconds...")
             time.sleep(backoff_sec)
+        except (openai.BadRequestError) as e:
+            logging.exception(e)
+            raise
 
 
 if __name__ == "__main__":

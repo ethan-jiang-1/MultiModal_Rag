@@ -60,10 +60,13 @@ def convert_images_to_mds(md_info, image_infos):
             if page_index not in mctl_lvlm_notouch_pages:
                 logging.info(f"GPL: generate page {page_index}...")
 
-                if mctl_lvlm_img2md_model == "qwen":
-                    md_page = generate_full_mds_from_image_qwen(pname_image, rects_img)
-                else:
-                    md_page = generate_full_mds_from_image_gpt(pname_image, rects_img)
+                try:
+                    if mctl_lvlm_img2md_model == "qwen":
+                        md_page = generate_full_mds_from_image_qwen(pname_image, rects_img)
+                    else:
+                        md_page = generate_full_mds_from_image_gpt(pname_image, rects_img)
+                except Exception as ex:
+                    md_page = f"\n**Failed to generate content for {fname_page_md}**:\n\n {str(ex)}\n\n"
 
                 with open(pname_page_md, "w", encoding="utf-8") as f:
                     f.write(md_page)
