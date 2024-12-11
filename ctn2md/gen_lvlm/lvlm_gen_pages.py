@@ -19,10 +19,13 @@ from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 
 
-def gen_pages_lvlm(md_info):
+def gen_pages_lvlm(md_info, mdcontrols=None, skip_gen_mds=False):
     pathname_doc = md_info.get_doc_pathname()
     job_id = get_job_id(pathname_doc)
     md_info[MIFN.LVLM_CUR_JOB_ID] = job_id
+
+    if isinstance(mdcontrols, dict):
+        md_info.update_mdcontrols(mdcontrols)
 
     logging.info(f"GPL: generate image pages job_id:{job_id} is_in_repair_mode: {is_in_repair_mode(md_info)}")
     # image_infos
@@ -33,8 +36,13 @@ def gen_pages_lvlm(md_info):
     md_info[MIFN.LVLM_IMAGE_INFOS] = image_infos
     md_info.save()
 
-    # Convert images (image_infos: with region images) to mds by LVLM
-    convert_images_to_mds(md_info, image_infos)
+    # Step2: Convert images (image_infos: with region images) to mds by LVLM
+    if not skip_gen_mds:
+        logging.info(f"GPL: convert images to mds")
+        convert_images_to_mds(md_info, image_infos)
+        logging.info(f"GPL: page generated is_in_repair_mode: {is_in_repair_mode(md_info)}")
+    else:
+        logging.warning(f"GPL: skip convert images to mds")
 
     return md_info.save()
 
@@ -43,16 +51,20 @@ if __name__ == "__main__":
 
     #doc_pathname = "datasrc/exam/raw_docs/attention_is_all_you_need.pdf"
     doc_pathname = "datasrc/exam/raw_docs/LongRAG.pdf"
+
+    #mdcontrols = None
+    mdcontrols = {"mctl_lvlm_region_model": "gs0"}  
+
+    skip_gen_mds = True
+
     output_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix='lvlm')
-
-    job_id = get_job_id(doc_pathname)
-
     os.makedirs(output_dir, exist_ok=True)
+    job_id = get_job_id(doc_pathname)
 
     md_info = MdInfo(output_dir)
     md_info.set_doc_pathname(doc_pathname)
     md_info[MIFN.LVLM_CUR_JOB_ID] = job_id
     
-    ret = gen_pages_lvlm(md_info)
+    ret = gen_pages_lvlm(md_info, mdcontrols=mdcontrols, skip_gen_mds=skip_gen_mds)
     rich.print(ret)
 

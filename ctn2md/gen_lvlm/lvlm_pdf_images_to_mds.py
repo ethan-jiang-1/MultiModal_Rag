@@ -41,6 +41,8 @@ def convert_images_to_mds(md_info, image_infos):
     fnames_page_md_gen = []
     mctl_lvlm_img2md_model = md_info.get_md_control("mctl_lvlm_img2md_model", "gpt")
     mctl_lvlm_notouch_pages = md_info.get_md_control_notouch("mctl_lvlm_notouch_pages",[])
+
+    logging.info(f"GITM: generate pages from images, is_in_repair_mode: {is_in_repair_mode(md_info)}")
     for ndx, image_info in enumerate(image_infos):
         page_index = ndx + 1
         fname_page_name, fname_page_rect_name, fname_rect_images = image_info
@@ -71,7 +73,7 @@ def convert_images_to_mds(md_info, image_infos):
             fnames_imgs.extend(fname_rect_images)
             fnames_snps.append(fname_page_name) 
             pnames_page_md.append(pname_page_md[len(output_dir) + 1:])
-    logging.info(f"GPL: page generated: {fnames_page_md_gen} is_in_repair_mode: {is_in_repair_mode(md_info)}")
+    logging.info(f"GITM: pages have been generated: {fnames_page_md_gen} from images is_in_repair_mode: {is_in_repair_mode(md_info)}")
     
     if not is_in_repair_mode(md_info):
         md_info[MIFN.FNAMES_PAGES] = pnames_page_md

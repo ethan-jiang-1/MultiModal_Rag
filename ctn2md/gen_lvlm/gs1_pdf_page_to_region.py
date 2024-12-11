@@ -269,7 +269,7 @@ def _gs1_parse_non_text_rects_in_page_core(
     return merged_rects_bounds, rects_list
 
 
-def gs1_parse_non_text_rects_in_page_core(
+def gs1_parse_non_text_rects_in_page(
     md_info: MdInfo,
     page: fitz.Page,
     page_index: int,
