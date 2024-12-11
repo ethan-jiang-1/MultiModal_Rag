@@ -315,10 +315,10 @@ class Page2Markdown():
     def save_page_markdown(self):
         #rich.print(self.page)
 
-        mctl_need_image_ref = self.md_info.get_md_control("mctl_need_image_ref", True)
+        mctl_lp_need_image_ref = self.md_info.get_md_control("mctl_lp_need_image_ref", True)
 
         md_imgs_ref_at_end = ""
-        if mctl_need_image_ref:
+        if mctl_lp_need_image_ref:
             md_page_plc_with_embed_img_ref = self.inject_images_at_right_position(self.md_page_plc_init)
             md_imgs_ref_at_end = self.composite_all_not_positioned_ref_as_markdown()
 

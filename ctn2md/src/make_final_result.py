@@ -57,17 +57,10 @@ def _move_aux_files_images(md_info, out_dir, aux_dir):
     if len(fnames_images) == 0:
         return False 
     
-    md_info_figures = md_info.get(MIFN.IMG_FIGURES, None)
-    if md_info_figures is None:
-        return False 
-
     for ndx, fname_img in enumerate(fnames_images):
         if aux_dir in fname_img:
             continue 
         if len(os.path.dirname(fname_img)) != 0:
-            continue
-        
-        if fname_img in md_info_figures:
             continue
 
         src_pathname = os.path.join(out_dir, fname_img)
@@ -83,16 +76,13 @@ def _move_aux_files_snpsts(md_info, out_dir, aux_dir):
 
     if len(fnames_snps) == 0:
         return False 
-    md_info_figures = md_info.get(MIFN.IMG_FIGURES, None)
+    
     for ndx, fname_img in enumerate(fnames_snps):
         if aux_dir in fname_img:
             continue 
         if len(os.path.dirname(fname_img)) != 0:
             continue
         
-        if md_info_figures is not None and fname_img in md_info_figures:
-            continue
-
         src_pathname = os.path.join(out_dir, fname_img)
         dst_pathname = os.path.join(aux_dir, fname_img)
         if os.path.isfile(src_pathname):

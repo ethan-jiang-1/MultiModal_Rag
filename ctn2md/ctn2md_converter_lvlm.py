@@ -97,8 +97,8 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/考勤修改统一规则.xlsx"
     #doc_pathname = "datasrc/test/raw_docs/高效沟通之黄金三角模型课程大纲.docx"
 
-    doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/ChatGPT intimates a tantalizing future_compressed.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/深度学习在视电阻率快速反演中的研究.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/ChatGPT intimates a tantalizing future_compressed.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/Long-Context LLMs Meet RAG_compressed.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/0530-大模型微调培训-VisualGLM.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/ai602-波士顿咨询：银行业生成式AI应用报告（2023）.pdf"

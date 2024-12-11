@@ -62,7 +62,7 @@ def _gen_md_plain(doc_pathname, md_info):
     logging.info(f"##MDFLOW##: gen_md_plain started...")
 
     out_dir = md_info.get_out_dir()
-    md_info.set_gen_engine("llamaparse:plain")
+    md_info.set_gen_engine("md2md:plain")
     md_info.set_doc_pathname(doc_pathname)
     md_info[MIFN.FHL_QUALITY] = FHL_QUALITY_TYPE.LOW
 

@@ -131,17 +131,17 @@ def _cal_new_fhl_map(md_info, fhl_org):
     now = datetime.now()
     question_num = now.hour * 100 + now.minute
     logging.info(f"question_num: {question_num}")
-    mctrl_fix_heading_model = md_info.get_md_control("mctrl_fix_heading_model", "gpt")
+    mctl_fix_heading_model = md_info.get_md_control("mctl_fix_heading_model", "gpt")
     fhl_quality = md_info.get(MIFN.FHL_QUALITY, FHL_QUALITY_TYPE.MEDIUM)
     ctn_type = md_info.get_ctn_type()
-    if mctrl_fix_heading_model == "gpt":
+    if mctl_fix_heading_model == "gpt":
         model = "gpt-4o" # so far, only gpt-4o can handle this well,  gpt-4o-mini does not.
         fhl_map = fix_heading_lvl_markdown_by_gpt(fhl_org, fhl_quality=fhl_quality, ctn_type=ctn_type, model=model, question_num=question_num)
-    elif mctrl_fix_heading_model == "qwen":
+    elif mctl_fix_heading_model == "qwen":
         model = "qwen-max"  # TODO: qwen-max is not there yet, need to revisit the prompt
         fhl_map = fix_heading_lvl_markdown_by_qwen(fhl_org, fhl_quality=fhl_quality, ctn_type=ctn_type, model=model, question_num=question_num)
     else:
-        raise ValueError(f"not implemented yet for using {mctrl_fix_heading_model} in fix_headings_plc_by_llm")
+        raise ValueError(f"not implemented yet for using {mctl_fix_heading_model} in fix_headings_plc_by_llm")
 
     #rich.print(fhl_map)
     rich.print(fhl_map)

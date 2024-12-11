@@ -31,13 +31,13 @@ def summarize_content_by_gpt(md_info_path, src_step_num=None, dst_step_num=None)
 
     doc_title = md_info.get_doc_title()
 
-    mctrl_summarize_model = md_info.get_md_control("mctrl_summarize_model", "gpt")
-    if mctrl_summarize_model == "gpt":
+    mctl_summarize_model = md_info.get_md_control("mctl_summarize_model", "gpt")
+    if mctl_summarize_model == "gpt":
         resp = summarize_doc_keywords_by_gpt(doc_title, full_content)
-    elif mctrl_summarize_model == "qwen":
+    elif mctl_summarize_model == "qwen":
         resp = summarize_doc_keywords_by_qwen(doc_title, full_content)
     else:
-        raise ValueError(f"not implemented yet for using {mctrl_summarize_model} in sumamrize document")
+        raise ValueError(f"not implemented yet for using {mctl_summarize_model} in sumamrize document")
     rich.print(resp)
 
     pathname_final_md_fname = md_info.name_step_pathname(-1)

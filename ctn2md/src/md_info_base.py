@@ -18,7 +18,7 @@ from llama_parse.utils import Language
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.utils.util_file import get_crc32_id
 
-_MIB_INFO_VER = "0.5.3"
+_MIB_INFO_VER = "0.6.0"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
@@ -54,8 +54,6 @@ class MIFN:  # Markdown Field Name
     FHL_ORG = "fhl_org"
     FHL_MAP_O2N = "fhl_map_o2n"
 
-    IMG_FIGURES = "img_figures"
-
     MD_SECTIONS = "md_sections"
     FNAMES_SECS = "fnames_secs"
 
@@ -88,14 +86,15 @@ class MIFN:  # Markdown Field Name
 # dictionary used to control inner flow...
 _DEFAULT_MDCONTROL = {
     "mctl_move_aux_files": True,
-    "mctl_need_image_ref": True,
     "mctl_treat_doc_as_ctntype": "auto",
-    "mctrl_fix_heading_model": "gpt", # gpt/qwen
-    "mctrl_summarize_model": "qwen", # gpt/qwen
-    "mctrl_image_relevance": "qwen", # gpt/qwen
 
-    # controls required by llamaparse converter
+    "mctl_fix_heading_model": "gpt", # gpt/qwen
+    "mctl_summarize_model": "qwen", # gpt/qwen
+
+    # controls required by llamaparse conversion
     "mctl_lp_min_img_relevance_score": 0.2,
+    "mctl_lp_img_relevance_model": "qwen", # gpt/qwen
+    "mctl_lp_need_image_ref": True,
     "mctl_lp_langauge": Language.SIMPLIFIED_CHINESE,
     "mctl_lp_take_screenshot": False,
     "mctl_lp_disable_ocr": False,
@@ -106,7 +105,7 @@ _DEFAULT_MDCONTROL = {
 
     "mctl_lp_img_to_heading": {}, # dictionary: key: embed_img_name/page_img_name (without job_id) to val: PlcId:plc_id
 
-    # controls required by lvlm convert 
+    # controls required by lvlm conversion
     "mctl_lvlm_images_ignore": "", # list of image need to be ignore, seprated by comma
     "mctl_lvlm_repair_pages": [], # the target pages need to be repaired, 
                                   # list of page numbers,  The first page of the document is page 1
