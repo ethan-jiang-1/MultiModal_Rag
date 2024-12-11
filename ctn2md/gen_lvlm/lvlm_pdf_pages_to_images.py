@@ -162,7 +162,8 @@ if __name__ == "__main__":
 
     doc_pathname = "datasrc/exam/raw_docs/Survey of different Large Language Model Architectures.pdf"
     sel_page_indexes = [3,4]
-    mctl_lvlm_region_model = "qwen"
+    #mctl_lvlm_region_model = "qwen"
+    mctl_lvlm_region_model = "gs"
 
     output_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix='lvlm')
 
