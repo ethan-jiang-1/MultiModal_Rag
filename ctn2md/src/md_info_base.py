@@ -272,6 +272,8 @@ class MdInfo:
                 if key in self._md_control:
                     old_val = self._md_control[key]
                 self._md_control[key] = val
+                if isinstance(val, str):
+                    os.environ[key] = val
                 if old_val is not None and old_val != val:
                     logging.info(f"alter md_controls {key}: form {old_val} to {val}")
         self.save()
@@ -313,6 +315,8 @@ class MdInfo:
         return self.extract_doc_title(self.get(MIFN.PATHNAME_ORG_DOC))
     
     def get_md_control(self, mdctrl_name, default_val):
+        if mdctrl_name in os.environ:
+            return os.environ[mdctrl_name]
         return self._md_control.get(mdctrl_name, default_val)
 
     def get_md_control_notouch(self, mdctrl_name, default_val):
