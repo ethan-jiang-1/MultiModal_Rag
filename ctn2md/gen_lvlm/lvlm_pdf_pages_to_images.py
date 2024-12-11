@@ -14,10 +14,10 @@ if './' not in sys.path:
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
-from ctn2md.gen_lvlm.lvlm_image_cnt_type import get_image_cnt_type, LVLM_IMG_CNT_TYPE
-from ctn2md.gen_lvlm.gs1_pdf_page_to_region import _gs1_parse_non_text_rects_in_page_core
+from ctn2md.gen_lvlm.lvlm_base import get_image_cnt_type, LVLM_IMG_CNT_TYPE
 from ctn2md.gen_lvlm.gs0_pdf_page_to_region import gs0_parse_non_text_rects_in_page
-from ctn2md.gen_lvlm.vllm_pdf_page_to_region import vllm_parse_non_text_rects_in_page_by_gpt, vllm_parse_non_text_rects_in_page_by_qwen
+from ctn2md.gen_lvlm.gs1_pdf_page_to_region import gs1_parse_non_text_rects_in_page
+from ctn2md.gen_lvlm.gvlm_pdf_page_to_region import vllm_parse_non_text_rects_in_page_by_gpt, vllm_parse_non_text_rects_in_page_by_qwen
 from ctn2md.gen_lvlm.lvlm_base import get_job_id
 
 
@@ -53,7 +53,7 @@ def _get_non_text_rects(md_info, page, page_index, pname_page_name, mctl_lvlm_re
     elif mctl_lvlm_region_model == "gs0":
         rects_non_text = gs0_parse_non_text_rects_in_page(md_info, page, page_index, pname_page_name)
     elif mctl_lvlm_region_model == "gs1":
-        rects_non_text = _gs1_parse_non_text_rects_in_page_core(md_info, page, page_index, pname_page_name)
+        rects_non_text = gs1_parse_non_text_rects_in_page(md_info, page, page_index, pname_page_name)
     else:
         raise ValueError(f"unspoorted mctl_lvlm_region_model {mctl_lvlm_region_model}")
     logging.info(f"cal rects for {page_index} done.")
