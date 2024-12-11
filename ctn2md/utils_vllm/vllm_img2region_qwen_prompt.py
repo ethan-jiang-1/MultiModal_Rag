@@ -1,60 +1,47 @@
 PROMPT_INSTRUCT_IMG2REGION_QWEN = """
 # Task Description
 
-You are provided with a page of content. Please identify and analyze the **regions of the page**, which include:
+You are provided with an image of a document page. Identify and analyze the **regions of interest**, which include:
 
 1. **Full Page Region**:
-   - Represents the boundary of the entire content within the page.
+   - Represents the boundary of the entire page content.
 
-2. **Non-typical Text Regions**:
-   - **Image**: Illustrations, model architecture diagrams, etc.
-   - **Table**: Structured grids with information.
-   - **Chart**: Diagrams like flowcharts, bar charts, line charts, etc.
-   - **List**: Discontinuous itemized content.
+2. **Non-typical Regions**:
+   - **Image**: Illustrations, diagrams, etc.
+   - **Table**: Structured grids with rows and columns.
+   - **Chart**: Flowcharts, bar charts, line charts, etc.
+   - **List**: Non-continuous itemized content.
 
 ---
 
 ## Input Image Information
-- The model processes the input image, which may involve resizing, cropping, or padding. The `image_size` field must reflect the **actual dimensions of the image as processed by the model**.
+The input image may have been resized, cropped, or padded during preprocessing. Your task is to return:
+1. The actual dimensions of the image **as processed by the model**.
+2. Whether the image has been **resized or padded**:
+   - If resized, specify the resizing method (e.g., "aspect-ratio preserved").
+   - If padded, specify the padding dimensions for top, bottom, left, and right (in pixels).
 
 ---
 
 ## Output Requirements
 
-### 1. Image Dimensions
-- Return the `width` and `height` of the image as seen by the model after internal processing (in pixels).
+### 1. Processed Image Dimensions
+- Return the actual dimensions of the processed image (`width` and `height` in pixels).
+- Include details of any resizing or padding applied during preprocessing.
 
 ### 2. Region Bounding Boxes
-- For each region, return a `bbox` in the format `[x_top_left, y_top_left, width, height]`:
-  - `x_top_left`: The x-coordinate of the top-left corner of the bounding box.
-  - `y_top_left`: The y-coordinate of the top-left corner of the bounding box.
-  - `width`: The width of the bounding box (in pixels).
-  - `height`: The height of the bounding box (in pixels).
-- Ensure that the bounding box fully encloses the region, including margins or other related elements.
+- Each region's bounding box (`bbox`) must be expressed as `[x_top_left, y_top_left, width, height]` in pixels, relative to the **processed image dimensions**.
+- Ensure the bounding box values are adjusted to exclude any padding (if applicable).
 
-### 3. Region Information
-- **Full Page Region**:
-  - `type`: Use `"full_page"` to indicate the full page content region.
-  - `bbox`: Must cover the entire content area, starting at the top-left corner and extending to the full width and height of the `image_size`.
-  - `description`: Use `"Entire page content"` or a similar concise description.
-- **Non-typical Text Regions**:
-  - `type`: Use `"image"`, `"table"`, `"chart"`, or `"list"`.
-  - `description`: Provide a concise description of the region's content.
+### 3. Additional Details
+- Include the following metadata about image processing:
+  - `resized`: Whether the image was resized (`true` or `false`).
+  - `aspect_ratio_preserved`: Whether the aspect ratio was preserved during resizing (`true` or `false`).
+  - `padding`: If padding was applied, include the padding dimensions for `top`, `bottom`, `left`, and `right` (in pixels).
 
 ---
 
-## Notes
-- Always include the full page region (`full_page`) as the first entry in the `regions` list.
-- Ensure all `bbox` values are within the dimensions defined by `image_size`.
-- If `image_size` differs from the original input dimensions, all `bbox` values must reflect the adjusted dimensions.
-- Return the regions in the following order:
-  1. Full page region.
-  2. Non-typical text regions, ordered from top to bottom.
-
----
-
-## Output Format
-
+## Final Output Format
 The result must be a JSON object with the following structure:
 
 ```json
@@ -64,10 +51,14 @@ The result must be a JSON object with the following structure:
     "height": "<processed_image_height>"
   },
   "image_processing_info": {
-    "resized": <bool resized>,
-    "aspect_ratio_x": <float aspect_ratio_at_x_axis>,
-    “aspect_ratio_y": <float aspect_ratio_at_y_axis>,
-    "coordinate_system": "<string coordinate_system_in_details>"
+    "resized": <true_or_false>,
+    "aspect_ratio_preserved": <true_or_false>,
+    "padding": {
+      "top": <padding_top_pixels>,
+      "bottom": <padding_bottom_pixels>,
+      "left": <padding_left_pixels>,
+      "right": <padding_right_pixels>
+    }
   },
   "regions": [
     {
@@ -79,7 +70,8 @@ The result must be a JSON object with the following structure:
       "type": "<type_of_region>",
       "bbox": [<x_top_left>, <y_top_left>, <width>, <height>],
       "description": "<region_description>"
-    }
+    },
+    ...
   ]
 }
 """
