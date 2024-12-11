@@ -1,7 +1,7 @@
 from dotenv import load_dotenv as _load_dotenv
 import os
 import sys
-#import logging
+import logging
 import rich
 #import random
 import json
@@ -268,7 +268,12 @@ class MdInfo:
     def update_mdcontrols(self, mdcontrols):
         if isinstance(mdcontrols, dict):
             for key, val in mdcontrols.items():
+                old_val = None
+                if key in self._md_control:
+                    old_val = self._md_control[key]
                 self._md_control[key] = val
+                if old_val is not None and old_val != val:
+                    logging.info(f"alter md_controls {key}: form {old_val} to {val}")
         self.save()
 
     def get_out_dir(self):

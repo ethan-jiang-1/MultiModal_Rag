@@ -117,7 +117,9 @@ if __name__ == "__main__":
 
     out_dir = None
     mdcontrols = None
-    enforced_gen = False   
+    enforced_gen = False 
+
+    mdcontrols = {"mctl_lvlm_region_model": "qwen"}  
 
     pathname_final_json = do_content2md_convert(doc_pathname, out_dir=out_dir, enforced_gen=enforced_gen,  mdcontrols=mdcontrols)
     print(pathname_final_json)
