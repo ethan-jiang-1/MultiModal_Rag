@@ -41,8 +41,9 @@ def _draw_red_rect_on_page(page, fitz_rect, fname_rect_name):
     page.insert_text((text_x, text_y), fname_rect_name, fontsize=10, color=(1, 0, 0))
 
 
-def _get_non_text_rects(md_info, page, page_index, pname_page_name):
-    mctl_lvlm_region_model = md_info.get_md_control("mctl_lvlm_region_model", "gpt")
+def _get_non_text_rects(md_info, page, page_index, pname_page_name, mctl_lvlm_region_model=None):
+    if mctl_lvlm_region_model is None:
+        mctl_lvlm_region_model = md_info.get_md_control("mctl_lvlm_region_model", "qwen")
     logging.info(f"cal rects for {page_index} starts...")
     if mctl_lvlm_region_model == "gpt":
         rects_non_text = vllm_parse_non_text_rects_in_page_by_gpt(md_info, page, page_index, pname_page_name) 
@@ -53,7 +54,7 @@ def _get_non_text_rects(md_info, page, page_index, pname_page_name):
     logging.info(f"cal rects for {page_index} done.")
     return rects_non_text
 
-def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None) -> List[Tuple[str, str, List[str]]]:
+def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None, mctl_lvlm_region_model=None) -> List[Tuple[str, str, List[str]]]:
     """
     Parse PDF to images and save to output_dir.
     """
@@ -69,15 +70,25 @@ def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None) -> List[Tuple[st
 
     clean_previous_images(output_dir, job_id)
 
+    if mctl_lvlm_region_model is None:
+        mctl_lvlm_region_model = md_info.get_md_control("mctl_lvlm_region_model", "qwen")
+
     # 打开PDF文件
     pdf_document = fitz.open(pdf_path)
     image_infos = []
 
+    mctl_lvlm_notouch_pages = md_info.get_md_control_notouch("mctl_lvlm_notouch_pages",[])
     for page_index, page in enumerate(pdf_document):
         page_index += 1
         if sel_page_indexes is not None:
             if page_index not in sel_page_indexes:
+                logging.info(f"skip {page_index} due to sel_page_indexes")
                 continue
+        else:
+            if page_index in mctl_lvlm_notouch_pages:
+                logging.info(f"skip {page_index} due to mctl_lvlm_notouch_pages")
+                continue
+
         logging.info(f'parse page: {page_index}')
         fname_rect_images = []
 
@@ -88,10 +99,10 @@ def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None) -> List[Tuple[st
             page_image.save(pname_page_name, jpg_quality=JPG_QUALITY)
         except Exception as ex:
             logging.exception(ex)
-    
-        logging.info(f"cal rects for {page_index} starts...")
-        rects_non_text = _get_non_text_rects(md_info, page, page_index, pname_page_name)
-        logging.info(f"cal rects for {page_index} done.")
+  
+        logging.info(f"cal rects for page:{page_index} starts {mctl_lvlm_region_model}...")
+        rects_non_text = _get_non_text_rects(md_info, page, page_index, pname_page_name, mctl_lvlm_region_model=mctl_lvlm_region_model)
+        logging.info(f"cal rects for page:{page_index} done.")
 
         for index, rect_non_text in enumerate(rects_non_text):
             index += 1
@@ -117,7 +128,7 @@ def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None) -> List[Tuple[st
 
         page_image_with_rects = page.get_pixmap(matrix=fitz.Matrix(3, 3))
         try:
-            fname_page_rect_name = f'{job_id}-page_{page_index}_rects.{IMG_EXT}'
+            fname_page_rect_name = f'{job_id}-page_{page_index}_rects.{IMG_EXT}'  
             pname_page_rect_name = os.path.join(output_dir, fname_page_rect_name)
             page_image_with_rects.save(pname_page_rect_name, jpg_quality=JPG_QUALITY)
         except Exception as ex:
@@ -146,8 +157,13 @@ if __name__ == "__main__":
     #setup_logger_handlers(logging.DEBUG)
     setup_logger_handlers()
 
-    #doc_pathname = "datasrc/exam/raw_docs/attention_is_all_you_need.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/LongRAG.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/LongRAG.pdf"
+    #sel_page_indexes = [8]
+
+    doc_pathname = "datasrc/exam/raw_docs/Survey of different Large Language Model Architectures.pdf"
+    sel_page_indexes = [3,4]
+    mctl_lvlm_region_model = "qwen"
+
     output_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix='lvlm')
 
     job_id = get_job_id(doc_pathname)
@@ -158,6 +174,6 @@ if __name__ == "__main__":
     md_info.set_doc_pathname(doc_pathname)
     md_info[MIFN.LVLM_CUR_JOB_ID] = job_id
     
-    sel_page_indexes = [8]
-    image_infos = parse_pdf_to_images(md_info, sel_page_indexes=sel_page_indexes)
+
+    image_infos = parse_pdf_to_images(md_info, sel_page_indexes=sel_page_indexes, mctl_lvlm_region_model=mctl_lvlm_region_model)
     rich.print(image_infos)

@@ -6,11 +6,9 @@ You are provided with a page of content. Please identify and analyze the **regio
 1. **Full Page Region**:
    - Represents the boundary of the entire content within the page.
 
-2. **Non-typical Text Regions**:
-   - **Image**: Illustrations, model architecture diagrams, etc.
-   - **Table**: Structured grids with information.
-   - **Chart**: Diagrams like flowcharts, bar charts, line charts, etc.
-   - **List**: Discontinuous itemized content.
+2. **Non-Typical Text Regions** (Focus on):
+   - **Image**: Illustrations, pictures, diagrams, etc.
+   - **Chart**: Flowcharts, bar charts, line charts, or any graphical data representation.
 
 ---
 
@@ -32,13 +30,18 @@ You are provided with a page of content. Please identify and analyze the **regio
   - `height`: The height of the bounding box (in pixels).
 - Ensure that the bounding box fully encloses the region, including margins or other related elements.
 
-### 3. Region Information
+### 3. Region Independence
+- **Non-overlapping Regions**:
+  - Each region must be **independent** and **non-overlapping** with any other region.
+  - If a potential overlap is detected, adjust the bounding boxes to ensure no intersection.
+
+### 4. Region Information
 - **Full Page Region**:
   - `type`: Use `"full_page"` to indicate the full page content region.
   - `bbox`: Must cover the entire content area, starting at the top-left corner and extending to the full width and height of the `image_size`.
   - `description`: Use `"Entire page content"` or a similar concise description.
-- **Non-typical Text Regions**:
-  - `type`: Use `"image"`, `"table"`, `"chart"`, or `"list"`.
+- **Non-Typical Text Regions**:
+  - `type`: Use `"image"` or `"chart"`.
   - `description`: Provide a concise description of the region's content.
 
 ---
@@ -46,7 +49,8 @@ You are provided with a page of content. Please identify and analyze the **regio
 ## Notes
 - Always include the full page region (`full_page`) as the first entry in the `regions` list.
 - Ensure all `bbox` values are within the dimensions defined by `image_size`.
-- If `image_size` differs from the original input dimensions, all `bbox` values must reflect the adjusted dimensions.
+- Ensure regions are **non-overlapping**:
+  - For any two bounding boxes, their intersection area must be zero.
 - Return the regions in the following order:
   1. Full page region.
   2. Non-typical text regions, ordered from top to bottom.
@@ -62,12 +66,6 @@ The result must be a JSON object with the following structure:
   "image_size": {
     "width": "<processed_image_width>",
     "height": "<processed_image_height>"
-  },
-  "image_processing_info": {
-    "resized": <bool resized>,
-    "aspect_ratio_x": <float aspect_ratio_at_x_axis>,
-    “aspect_ratio_y": <float aspect_ratio_at_y_axis>,
-    "coordinate_system": "<string coordinate_system_in_details>"
   },
   "regions": [
     {
