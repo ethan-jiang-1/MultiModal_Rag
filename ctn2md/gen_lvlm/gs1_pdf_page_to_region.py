@@ -209,7 +209,7 @@ def _get_rect_bounds(list_rects):
 - `(0, 0)` 通常是 PDF 页面左下角的起始点。
 - `x` 值从左到右增加，`y` 值从下到上增加。
 """
-def gs1_parse_non_text_rects_in_page(
+def _gs1_parse_non_text_rects_in_page_core(
     md_info: MdInfo,
     page: fitz.Page,
     page_index: int
@@ -268,6 +268,16 @@ def gs1_parse_non_text_rects_in_page(
 
     return merged_rects_bounds, rects_list
 
+
+def gs1_parse_non_text_rects_in_page_core(
+    md_info: MdInfo,
+    page: fitz.Page,
+    page_index: int
+) -> Tuple[List[Tuple[float, float, float, float]], Dict[str, List[Tuple[float, float, float, float]]]]:
+    merged_rects_bounds, _ = _gs1_parse_non_text_rects_in_page_core(md_info, page, page_index)   
+    return merged_rects_bounds 
+
+
 if __name__ == "__main__":
     
     setup_logger_handlers()
@@ -289,6 +299,6 @@ if __name__ == "__main__":
     pdf_document = fitz.open(doc_pathname)
     page = pdf_document[page_no - 1] # 0-based index
 
-    merged_rects_bounds, rects_list = gs1_parse_non_text_rects_in_page(md_info, page, page_no)
+    merged_rects_bounds, rects_list = _gs1_parse_non_text_rects_in_page_core(md_info, page, page_no)
     rich.print(merged_rects_bounds)
     rich.print(rects_list)

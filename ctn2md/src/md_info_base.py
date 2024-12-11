@@ -114,7 +114,7 @@ _DEFAULT_MDCONTROL = {
                                    # list of page numbers,  The first page of the document is page 1
     
     "mctl_lvlm_img2md_model": "gpt", # gpt/qwen
-    "mctl_lvlm_region_model": "gs0",  # gpt/qwen/gs
+    "mctl_lvlm_region_model": "gs0",  # gpt/qwen/gs1/gs0
 
     "mctl_lvlm_paint_page_content_area_ratios":(0.15, 0.15, 0.1, 0.1),
     "mctl_lvlm_paint_max_area_ratio": 0.7,
