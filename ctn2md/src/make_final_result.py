@@ -115,8 +115,9 @@ def _move_aux_files(md_info):
 
     os.makedirs(aux_dir, exist_ok=True)
     _move_aux_files_pages(md_info, out_dir, aux_dir)
-    _move_aux_files_images(md_info, out_dir, aux_dir)
-    _move_aux_files_snpsts(md_info, out_dir, aux_dir)
+    #TODO: ethan: scan ref img .. keep referened imgs 
+    #_move_aux_files_images(md_info, out_dir, aux_dir)
+    #_move_aux_files_snpsts(md_info, out_dir, aux_dir)
     _move_aux_files_tables(md_info, out_dir, aux_dir)
 
 
