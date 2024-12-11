@@ -19,7 +19,7 @@ from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 
 
-def gen_pages_lvlm(md_info, mdcontrols=None, skip_gen_mds=False):
+def gen_pages_lvlm(md_info, mdcontrols=None, skip_gen_mds=False, sel_page_indexes=None):
     pathname_doc = md_info.get_doc_pathname()
     job_id = get_job_id(pathname_doc)
     md_info[MIFN.LVLM_CUR_JOB_ID] = job_id
@@ -31,7 +31,7 @@ def gen_pages_lvlm(md_info, mdcontrols=None, skip_gen_mds=False):
     # image_infos
     # image_infos.append((fname_page_name, fname_page_rect_name, fname_rect_images))
     # Step1: convert all pdf pages to images (image_infos: with region images)
-    image_infos = parse_pdf_to_images(md_info)
+    image_infos = parse_pdf_to_images(md_info, sel_page_indexes=sel_page_indexes)
     rich.print(image_infos)
     md_info[MIFN.LVLM_IMAGE_INFOS] = image_infos
     md_info.save()
@@ -51,10 +51,11 @@ if __name__ == "__main__":
 
     #doc_pathname = "datasrc/exam/raw_docs/attention_is_all_you_need.pdf"
     doc_pathname = "datasrc/exam/raw_docs/LongRAG.pdf"
+    #sel_page_indexes = []
+    sel_page_indexes = None
 
     #mdcontrols = None
     mdcontrols = {"mctl_lvlm_region_model": "qwen"}  
-
     skip_gen_mds = True
 
     output_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix='lvlm')
