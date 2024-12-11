@@ -107,7 +107,7 @@ def _merge_all_rects(page, rect_list):
     merged_rects = [rect for rect in merged_rects if rect.bounds[2] - rect.bounds[0] > 20 and rect.bounds[3] - rect.bounds[1] > 20]
     return merged_rects
 
-def gs0_parse_non_text_rects_in_page(md_info: MdInfo, page: fitz.Page, page_index: int) -> List[Tuple[float, float, float, float]]:
+def gs0_parse_non_text_rects_in_page(md_info: MdInfo, page: fitz.Page, page_index: int, pname_page_name: str) -> List[Tuple[float, float, float, float]]:
     """
     Parse drawings in the page and merge adjacent rectangles.
     """

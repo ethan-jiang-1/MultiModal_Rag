@@ -51,9 +51,9 @@ def _get_non_text_rects(md_info, page, page_index, pname_page_name, mctl_lvlm_re
     elif mctl_lvlm_region_model == "qwen":
         rects_non_text = vllm_parse_non_text_rects_in_page_by_qwen(md_info, page, page_index, pname_page_name)
     elif mctl_lvlm_region_model == "gs0":
-        rects_non_text = gs0_parse_non_text_rects_in_page(md_info, page, page_index)
+        rects_non_text = gs0_parse_non_text_rects_in_page(md_info, page, page_index, pname_page_name)
     elif mctl_lvlm_region_model == "gs1":
-        rects_non_text, _ = _gs1_parse_non_text_rects_in_page_core(md_info, page, page_index)
+        rects_non_text = _gs1_parse_non_text_rects_in_page_core(md_info, page, page_index, pname_page_name)
     else:
         raise ValueError(f"unspoorted mctl_lvlm_region_model {mctl_lvlm_region_model}")
     logging.info(f"cal rects for {page_index} done.")

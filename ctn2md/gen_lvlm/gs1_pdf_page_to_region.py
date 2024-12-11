@@ -272,7 +272,8 @@ def _gs1_parse_non_text_rects_in_page_core(
 def gs1_parse_non_text_rects_in_page_core(
     md_info: MdInfo,
     page: fitz.Page,
-    page_index: int
+    page_index: int,
+    pname_page_name: str
 ) -> Tuple[List[Tuple[float, float, float, float]], Dict[str, List[Tuple[float, float, float, float]]]]:
     merged_rects_bounds, _ = _gs1_parse_non_text_rects_in_page_core(md_info, page, page_index)   
     return merged_rects_bounds 
