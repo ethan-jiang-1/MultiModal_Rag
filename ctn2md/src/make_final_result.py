@@ -14,6 +14,7 @@ if "./" not in sys.path:
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
+from ctn2md.utils.util_markdown import find_all_image_refs
 
 def _copy_last_step_as_final(md_info):
     last_step_num = md_info.get_last_step_num()
@@ -52,8 +53,14 @@ def _move_aux_files_pages(md_info, out_dir, aux_dir):
                 md_info_fanems_pages[ndx] = fname_page_aux
 
 def _move_aux_files_images(md_info, out_dir, aux_dir):
+    last_step_num = md_info.get_last_step_num()
+    pathname_step_md = md_info.name_step_pathname(last_step_num)
+    image_refs = find_all_image_refs(pathname_step_md)
+
     os.makedirs(aux_dir, exist_ok=True)
     fnames_images = md_info.get(MIFN.FNAMES_IMGS, [])
+    fnames_snps = md_info.get(MIFN.FNAMES_SNPS, [])
+    fnames_images += fnames_snps
     if len(fnames_images) == 0:
         return False 
     
@@ -63,32 +70,15 @@ def _move_aux_files_images(md_info, out_dir, aux_dir):
         if len(os.path.dirname(fname_img)) != 0:
             continue
 
+        if fname_img in image_refs:
+            continue
+
         src_pathname = os.path.join(out_dir, fname_img)
         dst_pathname = os.path.join(aux_dir, fname_img)
         if os.path.isfile(src_pathname):
             shutil.move(src_pathname, dst_pathname)
             dst_fname = dst_pathname.replace(out_dir + "/", "")
             fnames_images[ndx] = dst_fname
-
-def _move_aux_files_snpsts(md_info, out_dir, aux_dir):
-    os.makedirs(aux_dir, exist_ok=True)
-    fnames_snps = md_info.get(MIFN.FNAMES_SNPS, [])
-
-    if len(fnames_snps) == 0:
-        return False 
-    
-    for ndx, fname_img in enumerate(fnames_snps):
-        if aux_dir in fname_img:
-            continue 
-        if len(os.path.dirname(fname_img)) != 0:
-            continue
-        
-        src_pathname = os.path.join(out_dir, fname_img)
-        dst_pathname = os.path.join(aux_dir, fname_img)
-        if os.path.isfile(src_pathname):
-            shutil.move(src_pathname, dst_pathname)
-            dst_fname = dst_pathname.replace(out_dir + "/", "")
-            fnames_snps[ndx] = dst_fname
 
 def _move_aux_files_tables(md_info, out_dir, aux_dir):
     os.makedirs(aux_dir, exist_ok=True)
@@ -115,9 +105,7 @@ def _move_aux_files(md_info):
 
     os.makedirs(aux_dir, exist_ok=True)
     _move_aux_files_pages(md_info, out_dir, aux_dir)
-    #TODO: ethan: scan ref img .. keep referened imgs 
-    #_move_aux_files_images(md_info, out_dir, aux_dir)
-    #_move_aux_files_snpsts(md_info, out_dir, aux_dir)
+    _move_aux_files_images(md_info, out_dir, aux_dir)
     _move_aux_files_tables(md_info, out_dir, aux_dir)
 
 

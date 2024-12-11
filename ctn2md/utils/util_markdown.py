@@ -29,3 +29,15 @@ def remove_comment(line):
     移除行中的 <!-- ... --> 注释。
     """
     return re.sub(r'<!--.*?-->', '', line).strip()
+
+
+def find_all_image_refs(md_pathname):
+    # Read the content of the Markdown file
+    with open(md_pathname, 'r', encoding='utf-8') as md_file:
+        content = md_file.read()
+
+    # Find all image URLs in the Markdown file (ignoring tooltips or labels)
+    image_refs = re.findall(r'!\[.*?\]\(([^\)]+?)\s*(?:\".*?\")?\)', content)
+
+    # Process each image reference
+    return image_refs

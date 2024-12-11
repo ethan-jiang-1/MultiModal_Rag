@@ -4,7 +4,7 @@ import sys
 import logging
 import rich
 #import random
-import re
+#import re
 import shutil
 
 load_dotenv()
@@ -16,6 +16,7 @@ from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src.ctn2md_gen_md_base import GenMd_Base
+from ctn2md.utils.util_markdown import find_all_image_refs
 
 def _copy_img_files_in_markdown(doc_pathname, out_dir):
     """
@@ -30,12 +31,7 @@ def _copy_img_files_in_markdown(doc_pathname, out_dir):
     # Ensure the output directory exists
     os.makedirs(out_dir, exist_ok=True)
 
-    # Read the content of the Markdown file
-    with open(doc_pathname, 'r', encoding='utf-8') as md_file:
-        content = md_file.read()
-
-    # Find all image URLs in the Markdown file (ignoring tooltips or labels)
-    image_refs = re.findall(r'!\[.*?\]\(([^\)]+?)\s*(?:\".*?\")?\)', content)
+    image_refs = find_all_image_refs(doc_pathname)
 
     # Process each image reference
     for ref_url in image_refs:
