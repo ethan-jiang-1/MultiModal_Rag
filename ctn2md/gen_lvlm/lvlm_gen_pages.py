@@ -53,7 +53,7 @@ if __name__ == "__main__":
     doc_pathname = "datasrc/exam/raw_docs/LongRAG.pdf"
 
     #mdcontrols = None
-    mdcontrols = {"mctl_lvlm_region_model": "gs0"}  
+    mdcontrols = {"mctl_lvlm_region_model": "qwen"}  
 
     skip_gen_mds = True
 
