@@ -17,8 +17,8 @@ from ctn2md.utils_llm.llm_summarize_content_qwen import summarize_doc_keywords_b
 from ctn2md.utils.util_markdown import remove_comment
 from ctn2md.src.md_info_base import MdInfo, MIFN
 
-def summarize_content_by_gpt(md_info_path, src_step_num=None, dst_step_num=None):
-    logging.info(f"##MDFLOW##: summarize_content_by_gpt started src_step_num:{src_step_num} dst_step_num:{dst_step_num}...")
+def summarize_content_by_llm(md_info_path, src_step_num=None, dst_step_num=None):
+    logging.info(f"##MDFLOW##: summarize_content_by_llm started src_step_num:{src_step_num} dst_step_num:{dst_step_num}...")
     md_info = MdInfo(md_info_path)
 
     pathname_src_step_md, _ = md_info.name_src_n_dst_step_pathname(src_step_num, dst_step_num=dst_step_num)
@@ -48,7 +48,7 @@ def summarize_content_by_gpt(md_info_path, src_step_num=None, dst_step_num=None)
 
     md_info[MIFN.FNAME_FINAL_SUM] = os.path.basename(pathname_final_json_fname)
     md_info_path = md_info.save()
-    logging.info(f"##MDFLOW##: summarize_content_by_gpt ended.")
+    logging.info(f"##MDFLOW##: summarize_content_by_llm ended.")
     return md_info_path
 
 if __name__ == "__main__":
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     #md_info_path = "_output/ctn2md_高效沟通之黄金三角模型课程大纲/_info.json"
     md_info_path = "_output/ctn2md_attention_is_all_you_need/_info.json"
 
-    md_info_path = summarize_content_by_gpt(md_info_path, src_step_num=src_step_num)
+    md_info_path = summarize_content_by_llm(md_info_path, src_step_num=src_step_num)
     print(md_info_path)
 
     md_info = MdInfo(md_info_path)
