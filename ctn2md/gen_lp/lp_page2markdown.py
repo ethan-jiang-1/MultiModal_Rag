@@ -106,6 +106,13 @@ def _find_closest_heading(image, headings, page, y_threshold_ratio=None, x_toler
         if 'bBox' not in heading:
             continue
 
+        invalid = False
+        for key in heading['bBox'].keys():
+            if heading['bBox'][key] is None:
+                invalid = True
+        if invalid:
+            continue
+
         # 计算y方向的距离
         heading_y_top = heading['bBox']['y']
         y_distance = abs(image_y_top - heading_y_top)
