@@ -31,6 +31,9 @@ def summarize_content_by_llm(md_info_path, src_step_num=None, dst_step_num=None)
 
     doc_title = md_info.get_doc_title()
 
+    #TODO: ethan_bm25,  would be nice if we prepare document level bm25 info (how to cut the word, dictionary etc) as pickle or something structure that able to help calculate the bm25 score without knowing too much 
+    # especially difference document might have different terms (for word cut in chinese)
+
     mctl_summarize_model = md_info.get_md_control("mctl_summarize_model", "gpt")
     if mctl_summarize_model == "gpt":
         resp = summarize_doc_keywords_by_gpt(doc_title, full_content)
