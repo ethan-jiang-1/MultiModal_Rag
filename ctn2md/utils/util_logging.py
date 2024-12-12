@@ -150,7 +150,7 @@ def hook_handlers(logger):
     logger.handlers = [] # clear up default handler (likely stdout), as we have ourown hanlder
 
     global_state_module.g_hooked_logger_names.append(logger.name)
-    print(f"logger {logger.name} hooked")
+    #print(f"logger {logger.name} hooked")
 
     handlder_stdout = _get_handler_stdout()
     if handlder_stdout not in logger.handlers:
