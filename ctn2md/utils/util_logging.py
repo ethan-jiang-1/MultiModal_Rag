@@ -4,15 +4,33 @@ import os
 import logging
 from logging.handlers import TimedRotatingFileHandler
 import colorlog
+import types
 
 load_dotenv()
 
+MODULE_NAME = '__global_logging_state__'
+
+# 如果该模块未被创建过则创建
+if MODULE_NAME not in sys.modules:
+    # 创建一个全新的模块对象
+    global_state_module = types.ModuleType(MODULE_NAME)
+    # 在模块对象上挂载需要的全局状态变量
+    global_state_module.initialized = False
+    global_state_module.handlers_added = False
+    global_state_module.log_level = "INFO"
+    
+    # 将此虚拟模块对象注册到 sys.modules 中
+    sys.modules[MODULE_NAME] = global_state_module
+
+global_state_module.g_logger_inited = False
+global_state_module.g_hooked_logger_names = []
+global_state_module.g_stdout_handler = None
+global_state_module.g_main_handler = None
+global_state_module.g_error_handler = None
+global_state_module.g_progress_handler = None 
+
 _LOGGER_NAME_LLM = "llm_call"
 _LOGGER_NAME_PRG = "app_gradio"
-
-logging.basicConfig(level=logging.INFO)
-
-logger_inited = False
 
 def get_logger_llm():
     logger_llm = logging.getLogger(_LOGGER_NAME_LLM)
@@ -30,46 +48,40 @@ def _get_log_dir():
     os.makedirs(log_dir, exist_ok=True)
     return log_dir
 
+def _get_log_prefix():
+    return os.environ.get("APP_LOG_PREFIX", "ctn2md")
+
 def _get_log_pathname_main():
     log_dir = _get_log_dir()
-    srs_name = os.environ.get("SRS_LOG_NAME", "ctn2md.log")
+    srs_name = f"{_get_log_prefix()}.log"
     log_srs_file = os.path.join(log_dir, srs_name)
     return log_srs_file
 
-
 def _get_log_pathname_error():
     log_dir = _get_log_dir()
-    sre_name = os.environ.get("SRS_LOGE_NAME", "ctn2md_error.log")
+    sre_name = f"{_get_log_prefix()}_error.log"
     log_sre_file = os.path.join(log_dir, sre_name)
     return log_sre_file
 
 def _get_log_pathname_llm():
     log_dir = _get_log_dir()
-    srs_name = os.environ.get("SRS_LOGM_NAME", "ctn2md_llm.log")
+    srs_name = f"{_get_log_prefix()}_llm.log"
     log_srl_file = os.path.join(log_dir, srs_name)
     return log_srl_file
 
 def _get_log_pathname_progress():
     log_dir = _get_log_dir()
-    srs_name = os.environ.get("SRS_LOGP_NAME", "ctn2md_prg.log")
+    srs_name = f"{_get_log_prefix()}_prg.log"
     log_srp_file = os.path.join(log_dir, srs_name)
     return log_srp_file
 
-hooked_logger_names = []
-
-g_stdout_handler = None
-g_progress_handler = None
-g_error_handler = None
-g_progress_handler = None 
-
 def _get_handler_stdout():
-    global g_stdout_handler
-    if g_stdout_handler is not None:
-        return g_stdout_handler
+    if global_state_module.g_stdout_handler is not None:
+        return global_state_module.g_stdout_handler
 
-    g_stdout_handler = logging.StreamHandler(sys.stdout)
+    global_state_module.g_stdout_handler = logging.StreamHandler(sys.stdout)
     formatter = colorlog.ColoredFormatter(
-        '%(log_color)s%(levelname)-8s%(reset)s %(blue)s%(message)s',
+        '%(log_color)s %(asctime)s %(process)d %(levelname)-8s%(reset)s %(blue)s%(message)s',
         datefmt=None,
         reset=True,
         log_colors={
@@ -83,65 +95,61 @@ def _get_handler_stdout():
         style='%'
     )
     #formatter = logging.Formatter('%(asctime)s - PID:%(process)d - %(levelname)s - %(message)s')
-    g_stdout_handler.setFormatter(formatter)
-    g_stdout_handler.setLevel(logging.DEBUG)  # 为handler设置级别
-    return g_stdout_handler
+    global_state_module.g_stdout_handler.setFormatter(formatter)
+    global_state_module.g_stdout_handler.setLevel(logging.DEBUG)  # 为handler设置级别
+    return global_state_module.g_stdout_handler
 
 def _get_handler_main():
-    global g_progress_handler
-    if g_progress_handler is not None:
-        return g_progress_handler
+    if global_state_module.g_main_handler is not None:
+        return global_state_module.g_main_handler
 
     log_srs_file = _get_log_pathname_main()
-    g_progress_handler = TimedRotatingFileHandler(log_srs_file, when="midnight", interval=1, backupCount=30, delay=True, encoding="utf-8")
-    g_progress_handler.suffix = "%Y-%m-%d.log"
+    global_state_module.g_main_handler = TimedRotatingFileHandler(log_srs_file, when="midnight", interval=1, backupCount=30, delay=True, encoding="utf-8")
+    global_state_module.g_main_handler.suffix = "%Y-%m-%d.log"
     formatter = logging.Formatter('%(asctime)s - PID:%(process)d - %(levelname)s - %(message)s')
-    g_progress_handler.setFormatter(formatter)
-    g_progress_handler.setLevel(logging.INFO)  # 为handler设置级别
-    return g_progress_handler
+    global_state_module.g_main_handler.setFormatter(formatter)
+    global_state_module.g_main_handler.setLevel(logging.INFO)  # 为handler设置级别
+    return global_state_module.g_main_handler
 
 
 def _get_handler_error():
-    global g_error_handler
-    if g_error_handler is not None:
-        return g_error_handler
+    if global_state_module.g_error_handler is not None:
+        return global_state_module.g_error_handler
 
     log_sre_file = _get_log_pathname_error()
-    g_error_handler = TimedRotatingFileHandler(log_sre_file, when="midnight", interval=7, backupCount=30, delay=True, encoding="utf-8")
-    g_error_handler.suffix = "%Y-%m-%d.log"
+    global_state_module.g_error_handler = TimedRotatingFileHandler(log_sre_file, when="midnight", interval=7, backupCount=30, delay=True, encoding="utf-8")
+    global_state_module.g_error_handler.suffix = "%Y-%m-%d.log"
     formatter = logging.Formatter('%(asctime)s - PID:%(process)d - %(levelname)s - %(message)s')
-    g_error_handler.setFormatter(formatter)
-    g_error_handler.setLevel(logging.ERROR)  # 为handler设置级别
-    return g_error_handler
+    global_state_module.g_error_handler.setFormatter(formatter)
+    global_state_module.g_error_handler.setLevel(logging.ERROR)  # 为handler设置级别
+    return global_state_module.g_error_handler
 
 def _get_handler_progress():
-    global g_progress_handler
-    if g_progress_handler is not None:
-        return g_progress_handler
+    if global_state_module.g_progress_handler is not None:
+        return global_state_module.g_progress_handler
 
     log_srp_file = _get_log_pathname_progress()
-    g_progress_handler = TimedRotatingFileHandler(log_srp_file, when="midnight", interval=1, backupCount=30, delay=True, encoding="utf-8")
-    g_progress_handler.suffix = "%Y-%m-%d.log"
+    global_state_module.g_progress_handler = TimedRotatingFileHandler(log_srp_file, when="midnight", interval=1, backupCount=30, delay=True, encoding="utf-8")
+    global_state_module.g_progress_handler.suffix = "%Y-%m-%d.log"
     formatter = logging.Formatter('%(asctime)s - PID:%(process)d - %(levelname)s - %(message)s')
-    g_progress_handler.setFormatter(formatter)
-    g_progress_handler.setLevel(logging.INFO)  # 为handler设置级别
-    return g_progress_handler
+    global_state_module.g_progress_handler.setFormatter(formatter)
+    global_state_module.g_progress_handler.setLevel(logging.INFO)  # 为handler设置级别
+    return global_state_module.g_progress_handler
 
 def hook_handlers(logger):
-    global hooked_logger_names
-
     if logger is None:
         return 
 
     if not hasattr(logger, "name"):
         return  
 
-    if logger.name in hooked_logger_names:
+    if logger.name in global_state_module.g_hooked_logger_names:
         return 
 
     logger.propagate = False
+    logger.handlers = [] # clear up default handler (likely stdout), as we have ourown hanlder
 
-    hooked_logger_names.append(logger.name)
+    global_state_module.g_hooked_logger_names.append(logger.name)
     print(f"logger {logger.name} hooked")
 
     handlder_stdout = _get_handler_stdout()
@@ -182,12 +190,12 @@ def _setup_logger_prg():
     logger_prg.addHandler(srl_handler)
 
 def setup_logger_handlers(level=logging.INFO):
-    global logger_inited 
-    if logger_inited:
+    if global_state_module.g_logger_inited:
         return 
+    global_state_module.g_logger_inited = True
 
+    logging.basicConfig(level=level)
     logging.getLogger().setLevel(level=level)
-    logger_inited = True
 
     # hook logging to output the log to stdout as well
     logger = logging.getLogger()
@@ -233,3 +241,6 @@ def reset_log_files():
 
 if __name__ == "__main__":
     setup_logger_handlers()
+    logging.debug("HELLO ERROR")
+    logging.info("HELLO INFO")
+    logging.error("HELLO ERROR")
