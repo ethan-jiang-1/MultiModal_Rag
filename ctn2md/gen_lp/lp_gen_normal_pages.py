@@ -76,7 +76,7 @@ def _dump_normal_md_page_from_lp_json_result(json_result, md_info):
     cur_job_id = job_ids_set.pop()
     md_info[MIFN.LP_CUR_JOB_ID] = cur_job_id
     md_info[MIFN.LP_CUR_JOB_METADATA] = job_metadata
-    md_info[MIFN.FNAMES_PAGES] = fnames_pages
+    md_info[MIFN.FNAMES_MD_PAGES] = fnames_pages
 
     if MIFN.LP_JOB_ID_HISTORY not in md_info:
         md_info[MIFN.LP_JOB_ID_HISTORY] = []
@@ -96,7 +96,7 @@ def _dump_tables(parser, json_result, md_info):
     out_dir = md_info.get_out_dir()
     tables = parser.get_xlsx(json_result, out_dir)
     fnames_tbls = [os.path.basename(item["path"]) for item in tables]
-    md_info[MIFN.FNAMES_TBLS] = fnames_tbls   
+    md_info[MIFN.FNAMES_MD_TBLS] = fnames_tbls   
 
 
 def _n2u_restore_unique_name_normal_full(md_info):
@@ -106,12 +106,12 @@ def _n2u_restore_unique_name_normal_full(md_info):
         return 
     
     out_dir = md_info.get_out_dir()
-    n2u_replace_fnames(md_info, MIFN.FNAMES_PAGES, unique_job_id, new_job_id)
+    n2u_replace_fnames(md_info, MIFN.FNAMES_MD_PAGES, unique_job_id, new_job_id)
     n2u_replace_fnames(md_info, MIFN.FNAMES_IMGS, unique_job_id, new_job_id)
-    n2u_replace_fnames(md_info, MIFN.FNAMES_TBLS, unique_job_id, new_job_id)
+    n2u_replace_fnames(md_info, MIFN.FNAMES_MD_TBLS, unique_job_id, new_job_id)
     n2u_replace_fnames(md_info, MIFN.FNAMES_SNPS, unique_job_id, new_job_id)
 
-    for fname_md_page in md_info[MIFN.FNAMES_PAGES]:
+    for fname_md_page in md_info[MIFN.FNAMES_MD_PAGES]:
         pathname_page = os.path.join(out_dir, fname_md_page)
         n2u_update_md_content(md_info, pathname_page, unique_job_id, new_job_id)
 

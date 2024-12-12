@@ -13,7 +13,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, MIFN
+from ctn2md.src.md_info_base import MdInfo, MIFN, PUBLIC_MIFN
 from ctn2md.utils.util_markdown import find_all_image_refs
 
 def _copy_last_step_as_final(md_info):
@@ -46,7 +46,7 @@ def _move_aux_files_pages(md_info, out_dir, aux_dir):
             fnames_pages_aux.append(dst_fname)
 
     # update to reflex the move
-    md_info_fanems_pages = md_info[MIFN.FNAMES_PAGES]
+    md_info_fanems_pages = md_info[MIFN.FNAMES_MD_PAGES]
     for ndx, fname_page in enumerate(md_info_fanems_pages):
         for fname_page_aux in fnames_pages_aux:
             if fname_page in fname_page_aux:
@@ -58,9 +58,7 @@ def _move_aux_files_images(md_info, out_dir, aux_dir):
     image_refs = find_all_image_refs(pathname_step_md)
 
     os.makedirs(aux_dir, exist_ok=True)
-    fnames_images = md_info.get(MIFN.FNAMES_IMGS, [])
-    fnames_snps = md_info.get(MIFN.FNAMES_SNPS, [])
-    fnames_images += fnames_snps
+    fnames_images = md_info.get(PUBLIC_MIFN.FNAMES_IMGS, [])
     if len(fnames_images) == 0:
         return False 
     
@@ -82,7 +80,7 @@ def _move_aux_files_images(md_info, out_dir, aux_dir):
 
 def _move_aux_files_tables(md_info, out_dir, aux_dir):
     os.makedirs(aux_dir, exist_ok=True)
-    fnames_tbls = md_info.get(MIFN.FNAMES_TBLS, [])
+    fnames_tbls = md_info.get(MIFN.FNAMES_MD_TBLS, [])
     if len(fnames_tbls) == 0:
         return False 
     
@@ -108,33 +106,42 @@ def _move_aux_files(md_info):
     _move_aux_files_images(md_info, out_dir, aux_dir)
     _move_aux_files_tables(md_info, out_dir, aux_dir)
 
+def _add_sum_json_to_finial_info(md_info, md_final_info):
+    out_dir = md_info.get_out_dir()
+    pname_final_sum = os.path.join(out_dir, md_info[PUBLIC_MIFN.FNAME_FINAL_SUM])
+    with open(pname_final_sum, 'r', encoding="utf-8") as f:
+        sum = json.load(f)
+    md_final_info[PUBLIC_MIFN.DOC_SUMMARY] = {}
+    for key, val in sum.items():
+        md_final_info[PUBLIC_MIFN.DOC_SUMMARY][key] = val
+        if key == "title":
+            md_final_info[PUBLIC_MIFN.DOC_LOGIC_TITLE] = val 
+            md_final_info[PUBLIC_MIFN.DOC_NAME_TITLE] = md_info.get_doc_title()
 
 def _copy_final_result_json(md_info):
     md_final_info = {}
-    names = [MIFN.VERSION,
-             MIFN.GEN_ENGINE,
-             MIFN.PATHNAME_ORG_DOC,
-             MIFN.FNAME_ORG_DOC,
-             MIFN.SRC_CTN_TYPE,
-             MIFN.UNIQUE_DOC_ID,
-             MIFN.FNAME_FINAL_MD, 
-             MIFN.FNAME_FINAL_SUM, 
-             MIFN.FNAMES_SECS,
-             MIFN.FNAMES_IMGS,
-             MIFN.FNAMES_SNPS]
+    _add_sum_json_to_finial_info(md_info, md_final_info)
 
+    names = [PUBLIC_MIFN.VERSION,
+             PUBLIC_MIFN.GEN_ENGINE,
+             PUBLIC_MIFN.PATHNAME_ORG_DOC,
+             PUBLIC_MIFN.FNAME_ORG_DOC,
+             PUBLIC_MIFN.DOC_UNIQUE_ID,
+             PUBLIC_MIFN.DOC_CTN_TYPE,
+             PUBLIC_MIFN.DOC_NAME_TITLE,
+             PUBLIC_MIFN.DOC_LOGIC_TITLE,
+             PUBLIC_MIFN.FNAME_FINAL_MD, 
+             PUBLIC_MIFN.FNAME_FINAL_SUM, 
+             PUBLIC_MIFN.FNAMES_SECS,
+             PUBLIC_MIFN.FNAMES_IMGS,
+             PUBLIC_MIFN.FNAMES_SNPS]
     for name in names:
         if name in md_info:
-            md_final_info[name] = md_info[name]
+            if name in md_info:
+                md_final_info[name] = md_info[name]
 
     output_dir = md_info.get_out_dir()
     pathname_final_json = os.path.join(output_dir, md_info.get_fname_final_json())
-
-    pname_final_sum = os.path.join(output_dir, md_info[MIFN.FNAME_FINAL_SUM])
-    with open(pname_final_sum, 'r', encoding="utf-8") as f:
-        sum = json.load(f)
-    for key, val in sum.items():
-        md_final_info[key] = val
 
     with open(pathname_final_json, 'w', encoding="utf-8") as f:
         json.dump(md_final_info, f, indent=4, ensure_ascii=False)
@@ -150,7 +157,7 @@ def make_final_json(md_info_path):
         _move_aux_files(md_info)
 
     pathname_final_md = _copy_last_step_as_final(md_info)
-    md_info[MIFN.FNAME_FINAL_MD] = os.path.basename(pathname_final_md)
+    md_info[PUBLIC_MIFN.FNAME_FINAL_MD] = os.path.basename(pathname_final_md)
     md_info.save()
 
     pathname_final_json = _copy_final_result_json(md_info)

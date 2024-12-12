@@ -28,7 +28,7 @@ def chunk_section(md_section, max_tokens_in_chunk=MAX_TOKENS_IN_CHUNK):
             continue
 
         if desc is None:
-            raise ValueError("not qualified section -- no [desc]")
+            raise ValueError("not qualified section -- no [desc] found")
         token_count = len(get_token_encoding().encode(line)) + 1 
         if total_tokens + token_count > max_tokens_in_chunk:
             chunk_no += 1

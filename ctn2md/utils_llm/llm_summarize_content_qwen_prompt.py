@@ -34,6 +34,7 @@ USER_PROMPT_SUMMARIZE = """
 5. Strictly adhere to the following JSON output format:
 ```json
 {
+  "title": "<Title of the knowledge_based content in the same language as input>"
   "summary": "<Knowledge-based summary in the same language as the input>",
   "keywords_top": "<Top-ranked keywords by importance, separated by commas>",
   "keywords_remain": "<Remaining relevant keywords, ranked and separated by commas>"

@@ -79,7 +79,7 @@ def convert_images_to_mds(md_info, image_infos):
     logging.info(f"GITM: pages have been generated: {fnames_page_md_gen} from images is_in_repair_mode: {is_in_repair_mode(md_info)}")
     
     if not is_in_repair_mode(md_info):
-        md_info[MIFN.FNAMES_PAGES] = pnames_page_md
+        md_info[MIFN.FNAMES_MD_PAGES] = pnames_page_md
         md_info[MIFN.FNAMES_IMGS] = fnames_imgs
         md_info[MIFN.FNAMES_SNPS] = fnames_snps
         md_info.save()

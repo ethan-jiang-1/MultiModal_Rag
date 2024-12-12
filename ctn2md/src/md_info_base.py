@@ -19,7 +19,7 @@ from llama_parse.utils import Language
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.utils.util_file import get_crc32_id
 
-_MIB_INFO_VER = "0.6.1"
+_MIB_INFO_VER = "0.7.0"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
@@ -32,35 +32,39 @@ class FHL_QUALITY_TYPE:
     LOW = "low"
 
 # Names of the field in _info.json  (read_write)
-class MIFN:  # Markdown Field Name
+class PUBLIC_MIFN:
     VERSION = "version"
-
+    GEN_ENGINE = "parse_engine"
     PATHNAME_ORG_DOC = "pathname_org_doc"
     FNAME_ORG_DOC = "fname_org_doc"
-    UNIQUE_DOC_ID = "unique_doc_id"
 
+    DOC_UNIQUE_ID = "doc_unique_id"
+    DOC_CTN_TYPE = "doc_content_type"
+    DOC_NAME_TITLE = "doc_title_name"
+    DOC_LOGIC_TITLE = "doc_title_logic"
+    DOC_SUMMARY = "doc_summary"
+
+    FNAMES_SECS = "fnames_secs" 
+    FNAMES_IMGS = "fnames_imgs"
+    FNAMES_SNPS = "fnames_snps"
+
+    FNAME_FINAL_MD = "fname_final_md"
+    FNAME_FINAL_SUM = "fname_final_sum"
+
+# Names of the field in _info.json  (read_write)
+class MIFN(PUBLIC_MIFN):  # Markdown Field Name
+    FNAMES_MD_TBLS = "fnames_md_tbls"
+    FNAMES_MD_PAGES = "fnames_md_pages"
+    
     MDFLOW = "mdflow"
     MDCONTROL = "mdcontrol"
     MDPARAMS = "mdparams"
-
-    FNAMES_PAGES = "fnames_pages"
-    FNAMES_IMGS = "fnames_imgs"
-    FNAMES_TBLS = "fnames_tbls"
-    FNAMES_SNPS = "fnames_snps"
-
-    SRC_CTN_TYPE = "src_content_type"
-
-    GEN_ENGINE = "parse_engine"
 
     FHL_QUALITY = "fhl_quality"
     FHL_ORG = "fhl_org"
     FHL_MAP_O2N = "fhl_map_o2n"
 
     MD_SECTIONS = "md_sections"
-    FNAMES_SECS = "fnames_secs"
-
-    FNAME_FINAL_MD = "fname_final_md"
-    FNAME_FINAL_SUM = "fname_final_sum"
 
     # fields required by llamaparse converter
     LP_FNAMES_P_PAGES = "lp_fnames_p_pages"
@@ -248,7 +252,7 @@ class MdInfo:
         if MIFN.MDPARAMS not in self._info:
             self._info[MIFN.MDPARAMS] = {}
 
-        for fnames in [MIFN.FNAMES_PAGES, MIFN.FNAMES_IMGS, MIFN.FNAMES_TBLS,MIFN.FNAMES_SNPS]:
+        for fnames in [MIFN.FNAMES_MD_PAGES, MIFN.FNAMES_IMGS, MIFN.FNAMES_MD_TBLS,MIFN.FNAMES_SNPS]:
             if fnames not in self._info:
                 self._info[fnames] = []
 
@@ -302,7 +306,7 @@ class MdInfo:
         if MIFN.PATHNAME_ORG_DOC not in self._info:
             self._info[MIFN.PATHNAME_ORG_DOC] = doc_pathname
             self._info[MIFN.FNAME_ORG_DOC] = os.path.basename(doc_pathname)
-            self._info[MIFN.UNIQUE_DOC_ID] = self.get_doc_title() + "_" + get_crc32_id(doc_pathname)
+            self._info[MIFN.DOC_UNIQUE_ID] = self.get_doc_title() + "_" + get_crc32_id(doc_pathname)
             self._copy_org_doc()
         return self.save()
 
@@ -432,11 +436,11 @@ class MdInfo:
         doc_type = self.get_doc_type()
         ctn_type = CTN_TYPE.get_ctn_type_by_doc_type(doc_type)
         # if we have ctn_type defined, using ctn_type
-        ctn_type = self._info.get(MIFN.SRC_CTN_TYPE, ctn_type)
+        ctn_type = self._info.get(MIFN.DOC_CTN_TYPE, ctn_type)
         return ctn_type
 
     def get_fnames_pages(self):
-        return self.get(MIFN.FNAMES_PAGES, {})
+        return self.get(MIFN.FNAMES_MD_PAGES, {})
 
     def get(self, key, default=None):
         return self._info.get(key, default)

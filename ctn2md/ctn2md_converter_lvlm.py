@@ -114,11 +114,11 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/Winning Solution For Meta KDD Cup’ 24 2410.00005v1.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/attention_is_all_you_need.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/Regioselective hydroxylation of cholecalciferol.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/Survey of different Large Language Model Architectures.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/Survey of different Large Language Model Architectures.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/A Coin Has Two Sides.pdf"
 
     #doc_pathname = "datasrc/exam/raw_docs/3_20240131104523599_rearranged.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/tianyang_1_20.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/tianyang_1_20.pdf"
 
     mdcontrols = None
     #mdcontrols = {"mctl_lvlm_region_model": "qwen"}  

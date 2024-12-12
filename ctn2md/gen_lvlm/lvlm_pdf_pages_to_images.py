@@ -144,15 +144,15 @@ def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None, mctl_lvlm_region
     pdf_document.close()
     return image_infos
 
-def _assign_src_ctn_type(md_info, pdf_document):
+def _assign_final_doc_cnt_type(md_info, pdf_document):
     doc_type = md_info.get_doc_type()
-    md_info[MIFN.SRC_CTN_TYPE] = CTN_TYPE.get_ctn_type_by_doc_type(doc_type)
+    md_info[MIFN.DOC_CTN_TYPE] = CTN_TYPE.get_ctn_type_by_doc_type(doc_type)
     if pdf_document is not None and len(pdf_document) > 0:
         page1 = pdf_document[0]
         page_width, page_height = page1.mediabox_size
-        if md_info[MIFN.SRC_CTN_TYPE] == CTN_TYPE.PDF:
+        if md_info[MIFN.DOC_CTN_TYPE] == CTN_TYPE.PDF:
             if page_width > page_height:
-                md_info[MIFN.SRC_CTN_TYPE] = CTN_TYPE.PPT
+                md_info[MIFN.DOC_CTN_TYPE] = CTN_TYPE.PPT
         md_info.save()
 
 def clean_previous_images(output_dir, job_id):

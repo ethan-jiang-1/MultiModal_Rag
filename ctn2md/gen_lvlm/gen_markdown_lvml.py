@@ -20,9 +20,9 @@ from ctn2md.gen_lvlm.lvlm_gen_pages import gen_pages_lvlm
 def _construct_s0_md_from_pages(md_info):
     out_dir = md_info.get_out_dir()
     aux_dir = md_info.get_aux_dir()
-    fnames_pages = md_info[MIFN.FNAMES_PAGES]
+    fnames_pages = md_info[MIFN.FNAMES_MD_PAGES]
     if len(fnames_pages) == 0:
-        raise ValueError(f"{MIFN.FNAMES_PAGES} is empty")
+        raise ValueError(f"{MIFN.FNAMES_MD_PAGES} is empty")
     pathname_step0 = md_info.name_step_pathname(0)
 
     full_md_text = ""

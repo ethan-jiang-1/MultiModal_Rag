@@ -74,7 +74,7 @@ def _dump_preminum_md_page_content_from_lp_json_result(json_result, md_info):
             continue
 
         pages_images = prepare_pages_images(pages, md_info)
-        total_pages = len(md_info[MIFN.FNAMES_PAGES])
+        total_pages = len(md_info[MIFN.FNAMES_MD_PAGES])
         for page_ndx, page in enumerate(pages):
             p2m = Page2Markdown(job_id, page, total_pages, md_info, pages_images)
             p2m.analyse()
@@ -124,7 +124,7 @@ def n2u_restore_unique_name_premium(md_info, new_job_id):
         n2u_update_md_content(md_info, pathname_page, unique_job_id, new_job_id)
 
     # update to reflex the new permium file
-    for ndx, fname_page in enumerate(md_info[MIFN.FNAMES_PAGES]):
+    for ndx, fname_page in enumerate(md_info[MIFN.FNAMES_MD_PAGES]):
         for fname_p_page in md_info[MIFN.LP_FNAMES_P_PAGES]:
             if fname_page in fname_p_page:
                 md_info[ndx] = fname_p_page
