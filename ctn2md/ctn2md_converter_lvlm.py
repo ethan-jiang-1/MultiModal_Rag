@@ -12,6 +12,11 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
+if __name__ == "__main__":
+    from dotenv import find_dotenv
+    _root_dir = os.path.abspath(os.path.dirname(find_dotenv()))
+    os.chdir(_root_dir)
+
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo
 from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_llm
