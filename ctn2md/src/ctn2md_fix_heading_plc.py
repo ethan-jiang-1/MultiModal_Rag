@@ -138,7 +138,7 @@ def _cal_new_fhl_map(md_info, fhl_org):
         model = "gpt-4o" # so far, only gpt-4o can handle this well,  gpt-4o-mini does not.
         fhl_map = fix_heading_lvl_markdown_by_gpt(fhl_org, fhl_quality=fhl_quality, ctn_type=ctn_type, model=model, question_num=question_num)
     elif mctl_fix_heading_model == "qwen":
-        model = "qwen-max"  # TODO: qwen-max is not there yet, need to revisit the prompt
+        model = "qwen-max"  # TODO: ethan_qwen_prompt qwen-max is not there yet, need to revisit the prompt
         fhl_map = fix_heading_lvl_markdown_by_qwen(fhl_org, fhl_quality=fhl_quality, ctn_type=ctn_type, model=model, question_num=question_num)
     else:
         raise ValueError(f"not implemented yet for using {mctl_fix_heading_model} in fix_headings_plc_by_llm")

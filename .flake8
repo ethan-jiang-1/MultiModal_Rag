@@ -10,6 +10,7 @@ exclude =
     .git,
     __pycache__,
     venv,
+    venvx,
     example,
     mds,
     raw,

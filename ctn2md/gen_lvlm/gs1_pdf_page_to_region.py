@@ -237,7 +237,7 @@ def _gs1_parse_non_text_rects_in_page_core(
 
     # 猜测表格区域
     rect_list_table = detect_table_regions(md_info, page)
-    #TODO: ignore table
+    #TODO: ethan_table ignore table for now
     rect_list_table = []
     logging.info(f"page_index:{page_index} has number of rect_list_table: {len(rect_list_table)}")
 

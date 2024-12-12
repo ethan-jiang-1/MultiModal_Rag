@@ -24,6 +24,7 @@ def _get_llamaparse_normal(md_info):
     from llama_parse.utils import Language
 
     language = md_info.get_md_control("mctl_lp_langauge", Language.SIMPLIFIED_CHINESE)
+    #TODO: ethan_take_screenshot can be realiy replace by pyMuPDF which has much faster dumping performance
     take_screenshot = md_info.get_md_control("mctl_lp_take_screenshot", False)
     disable_ocr = md_info.get_md_control("mctl_lp_disable_ocr", False)
 

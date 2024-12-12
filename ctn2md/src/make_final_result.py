@@ -153,6 +153,7 @@ def make_final_json(md_info_path):
 
     pathname_final_json = _copy_final_result_json(md_info)
     logging.info(f"##MDFLOW##: make_final_md ended: move_aux_files: {move_aux_files}.")
+    logging.info(f"##MDFLOW##: Final md can be found at: \'{pathname_final_md}\'")
     return pathname_final_json
 
 def reset_md_flow(md_info_path):
