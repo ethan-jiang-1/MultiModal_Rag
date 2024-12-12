@@ -14,10 +14,10 @@ if "./" not in sys.path:
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
-from ctn2md.gen_lp.lp_revisit_result import post_scan_llamaparse_result
 from ctn2md.gen_lp.lp_gen_normal_pages import gen_normal_pages
 from ctn2md.gen_lp.lp_gen_premium_pages import gen_premium_pages
-   
+from ctn2md.utils.util_ctn_type import CTN_TYPE
+
 def _construct_s0_md_from_pages(md_info):
     out_dir = md_info.get_out_dir()
     aux_dir = md_info.get_aux_dir()
@@ -44,6 +44,21 @@ def _construct_s0_md_from_pages(md_info):
         f.write(full_md_text)
     return pathname_step0
 
+def _assign_src_ctn_type(md_info, json_result):
+    doc_type = md_info.get_doc_type()
+    md_info[MIFN.SRC_CTN_TYPE] = CTN_TYPE.get_ctn_type_by_doc_type(doc_type)
+    if json_result is not None and len(json_result) > 0:
+        json_result0_pages = json_result[0].get("pages", None)
+        if json_result0_pages is not None and len(json_result0_pages) > 0:
+            page1 = json_result0_pages[0]
+            if page1["page"] == 1:
+                page_width = page1["width"]
+                page_height = page1["height"]
+                if md_info[MIFN.SRC_CTN_TYPE] == CTN_TYPE.PDF:
+                    if page_width > page_height:
+                        md_info[MIFN.SRC_CTN_TYPE] = CTN_TYPE.PPT
+        md_info.save()
+
 def generate_markdown_llamaparse(md_info, need_normal_step=True, need_preminum_step=True):
     doc_pathname = md_info.get_doc_pathname()
     if (doc_pathname is None) or (not os.path.isfile(doc_pathname)):
@@ -65,7 +80,7 @@ def generate_markdown_llamaparse(md_info, need_normal_step=True, need_preminum_s
     md_info.add_step_into_md_info_mdflow(pathname_step0, actor="generate_markdown_llamaparse")
     md_info.save()
 
-    post_scan_llamaparse_result(md_info, json_result=json_result)
+    _assign_src_ctn_type(md_info, json_result)
 
     logging.info(f"original doc: {doc_pathname}")
     logging.info(f"fname_output: {os.path.basename(pathname_step0)}")

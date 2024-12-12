@@ -19,7 +19,7 @@ from ctn2md.gen_lvlm.gs0_pdf_page_to_region import gs0_parse_non_text_rects_in_p
 from ctn2md.gen_lvlm.gs1_pdf_page_to_region import gs1_parse_non_text_rects_in_page
 from ctn2md.gen_lvlm.gvlm_pdf_page_to_region import vllm_parse_non_text_rects_in_page_by_gpt, vllm_parse_non_text_rects_in_page_by_qwen
 from ctn2md.gen_lvlm.lvlm_base import get_job_id
-
+from ctn2md.utils.util_ctn_type import CTN_TYPE
 
 IMG_EXT = "jpg"  # or "png"
 JPG_QUALITY = 90 # 95
@@ -143,6 +143,17 @@ def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None, mctl_lvlm_region
 
     pdf_document.close()
     return image_infos
+
+def _assign_src_ctn_type(md_info, pdf_document):
+    doc_type = md_info.get_doc_type()
+    md_info[MIFN.SRC_CTN_TYPE] = CTN_TYPE.get_ctn_type_by_doc_type(doc_type)
+    if pdf_document is not None and len(pdf_document) > 0:
+        page1 = pdf_document[0]
+        page_width, page_height = page1.mediabox_size
+        if md_info[MIFN.SRC_CTN_TYPE] == CTN_TYPE.PDF:
+            if page_width > page_height:
+                md_info[MIFN.SRC_CTN_TYPE] = CTN_TYPE.PPT
+        md_info.save()
 
 def clean_previous_images(output_dir, job_id):
     if not os.path.isdir(output_dir):

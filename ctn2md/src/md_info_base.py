@@ -7,6 +7,7 @@ import rich
 import json
 import re
 import json_repair
+import shutil
 #from enum import Enum
 
 _load_dotenv()
@@ -18,7 +19,7 @@ from llama_parse.utils import Language
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.utils.util_file import get_crc32_id
 
-_MIB_INFO_VER = "0.6.0"
+_MIB_INFO_VER = "0.6.1"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
@@ -35,6 +36,7 @@ class MIFN:  # Markdown Field Name
     VERSION = "version"
 
     PATHNAME_ORG_DOC = "pathname_org_doc"
+    FNAME_ORG_DOC = "fname_org_doc"
     UNIQUE_DOC_ID = "unique_doc_id"
 
     MDFLOW = "mdflow"
@@ -46,7 +48,7 @@ class MIFN:  # Markdown Field Name
     FNAMES_TBLS = "fnames_tbls"
     FNAMES_SNPS = "fnames_snps"
 
-    CTN_TYPE = "content_type"
+    SRC_CTN_TYPE = "src_content_type"
 
     GEN_ENGINE = "parse_engine"
 
@@ -299,8 +301,19 @@ class MdInfo:
     def set_doc_pathname(self, doc_pathname):
         if MIFN.PATHNAME_ORG_DOC not in self._info:
             self._info[MIFN.PATHNAME_ORG_DOC] = doc_pathname
-            self._info[MIFN.UNIQUE_DOC_ID] = self.get_doc_title() + "_" + get_crc32_id(doc_pathname) 
+            self._info[MIFN.FNAME_ORG_DOC] = os.path.basename(doc_pathname)
+            self._info[MIFN.UNIQUE_DOC_ID] = self.get_doc_title() + "_" + get_crc32_id(doc_pathname)
+            self._copy_org_doc()
         return self.save()
+
+    def _copy_org_doc(self):
+        try:
+            src_path = self._info[MIFN.PATHNAME_ORG_DOC]
+            basename = os.path.basename(src_path)
+            dst_path = os.path.join(self.get_out_dir(), basename)
+            shutil.copy(src_path, dst_path)
+        except Exception as ex:
+            logging.exception(ex)
     
     def set_gen_engine(self, gen_engine_name):
         self._info[MIFN.GEN_ENGINE] = gen_engine_name
@@ -419,7 +432,7 @@ class MdInfo:
         doc_type = self.get_doc_type()
         ctn_type = CTN_TYPE.get_ctn_type_by_doc_type(doc_type)
         # if we have ctn_type defined, using ctn_type
-        ctn_type = self._info.get(MIFN.CTN_TYPE, ctn_type)
+        ctn_type = self._info.get(MIFN.SRC_CTN_TYPE, ctn_type)
         return ctn_type
 
     def get_fnames_pages(self):

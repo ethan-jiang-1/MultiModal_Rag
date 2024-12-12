@@ -114,6 +114,8 @@ def _copy_final_result_json(md_info):
     names = [MIFN.VERSION,
              MIFN.GEN_ENGINE,
              MIFN.PATHNAME_ORG_DOC,
+             MIFN.FNAME_ORG_DOC,
+             MIFN.SRC_CTN_TYPE,
              MIFN.UNIQUE_DOC_ID,
              MIFN.FNAME_FINAL_MD, 
              MIFN.FNAME_FINAL_SUM, 
