@@ -23,7 +23,7 @@ _MIB_INFO_VER = "0.7.0"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
-_MIB_FNAME_FINAL_INFO = "_final.json"
+_MIB_FNAME_FINAL_INFO = "_final_info.json"
 _MIB_DEFAULT_OUT_ROOT = "_output"
 
 class FHL_QUALITY_TYPE:
@@ -55,7 +55,7 @@ class PUBLIC_MIFN:
 class MIFN(PUBLIC_MIFN):  # Markdown Field Name
     FNAMES_MD_TBLS = "fnames_md_tbls"
     FNAMES_MD_PAGES = "fnames_md_pages"
-    
+
     MDFLOW = "mdflow"
     MDCONTROL = "mdcontrol"
     MDPARAMS = "mdparams"
