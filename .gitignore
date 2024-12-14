@@ -122,6 +122,8 @@ venv/
 venv
 venvx/
 venvx
+.venv/
+.venv
 
 _work/
 _work
