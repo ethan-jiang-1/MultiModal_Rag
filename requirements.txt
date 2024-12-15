@@ -1,5 +1,4 @@
 chromadb==0.5.23
-colorlog==6.8.2
 colorlog==6.9.0
 dashscope==1.20.14
 deepdiff==8.0.1
