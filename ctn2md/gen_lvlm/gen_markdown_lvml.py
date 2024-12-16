@@ -15,6 +15,7 @@ if "./" not in sys.path:
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lvlm.lvlm_gen_pages import gen_pages_lvlm
+from ctn2md.utils.util_markdown import read_markdown_file
 
    
 def _construct_s0_md_from_pages(md_info):
@@ -33,8 +34,7 @@ def _construct_s0_md_from_pages(md_info):
             pname_page = os.path.join(aux_dir, fname_page)       
             if not os.path.isfile(pname_page):
                 raise ValueError(f"not able to find page md for {fname_page} to construct s0 document")       
-        with open(pname_page, "r") as f:
-            md_text = f.read()
+        md_text = read_markdown_file(pname_page)
         if len(full_md_text) != 0:
             full_md_text += "\n"
         full_md_text += md_text

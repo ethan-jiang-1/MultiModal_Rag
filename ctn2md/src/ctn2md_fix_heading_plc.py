@@ -20,6 +20,7 @@ from ctn2md.utils_llm.llm_fix_heading_lvl_gpt import fix_heading_lvl_markdown_by
 from ctn2md.utils_llm.llm_fix_heading_lvl_qwen import fix_heading_lvl_markdown_by_qwen
 from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
 from ctn2md.src.md_process_plc import inject_plc_comment_to_page, separate_heading_and_plc_comment, get_all_normalized_headings_with_plc_info, has_injected_plc_comment
+from ctn2md.utils.util_markdown import read_markdown_file
 
 def _normalize_markdown_heading_plc(md_text, md_info):
     """
@@ -155,8 +156,7 @@ def fix_headings_plc_by_llm(md_info_path, src_step_num=None, dst_step_num=None):
     if pathname_src_step_md is None or pathname_dst_step_md is None:
         raise ValueError(f"no {pathname_src_step_md} and {pathname_dst_step_md}")
 
-    with open(pathname_src_step_md, "r", encoding="utf8") as f:
-        md_full_text = f.read()
+    md_full_text = read_markdown_file(pathname_src_step_md)
 
     fhl_org, md_full_text_new = _collect_fhl_info(md_info, md_full_text)
 
