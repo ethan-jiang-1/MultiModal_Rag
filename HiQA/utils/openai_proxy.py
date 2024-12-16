@@ -13,7 +13,7 @@ api_key = os.environ["AZURE_OPENAI_API_KEY"]
 client = openai.AzureOpenAI(
     azure_endpoint=endpoint,
     api_key=api_key,
-    api_version=os.environ["AZURE_OPENAI_VERSION"]
+    api_version=os.environ.get("AZURE_OPENAI_VERSION")
 )
 
 def send_messages(user_input, knowledge, role=None, model="gpt-4o"):
