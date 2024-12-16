@@ -21,7 +21,7 @@ model = os.environ["EMBEDDING_MODLE"]
 client = openai.AzureOpenAI(
     azure_endpoint=endpoint,
     api_key=api_key,
-    api_version="2024-02-15-preview"
+    api_version=os.environ["AZURE_OPENAI_VERSION"]
 )
 def get_text_embedding(text, deployment=EMBEDDING_MODEL):
     text = text.replace("\n", " ")

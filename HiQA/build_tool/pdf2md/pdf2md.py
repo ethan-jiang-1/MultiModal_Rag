@@ -172,7 +172,7 @@ def _get_gpt_messages(prompt):
 def fix_ocr_content_step1(doc_pathname, md_file):
     client = AzureOpenAI(api_key=os.getenv("OPENAI_API_KEY"),
                          azure_endpoint=os.getenv("OPENAI_BASE_URL"),
-                         api_version="2024-02-15-preview")
+                         api_version=os.environ["AZURE_OPENAI_VERSION"])
     md_text = get_md_content_step1(md_file)
     try:
         content = get_uns_content_step1(doc_pathname)

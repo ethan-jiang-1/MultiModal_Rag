@@ -111,7 +111,7 @@ def get_gpt_messages_multimodal(system_prompt, user_prompt, image_path):
 def get_azure_gpt_client():
     client = AzureOpenAI(api_key=os.getenv("OPENAI_API_KEY"),
                          azure_endpoint=os.getenv("OPENAI_BASE_URL"),
-                         api_version="2024-02-15-preview")
+                         api_version=os.environ["AZURE_OPENAI_VERSION"])
     return client
 
 
