@@ -30,11 +30,25 @@ def remove_comment(line):
     """
     return re.sub(r'<!--.*?-->', '', line).strip()
 
+def read_markdown_file(md_pathname):
+    """
+    读取 Markdown 文件内容。
+    """
+    encodings = ['utf-8', 'gbk', 'gb2312', 'gb18030', 'big5']
+    for encoding in encodings:
+        try:
+            with open(md_pathname, "r", encoding=encoding) as f:
+                content = f.read()
+                break
+        except UnicodeDecodeError:
+            if encoding == encodings[-1]:
+                raise ValueError(f"Could not decode file {md_pathname} with any of the attempted encodings")
+            continue
+    return content
 
 def find_all_image_refs(md_pathname):
     # Read the content of the Markdown file
-    with open(md_pathname, 'r', encoding='utf-8') as md_file:
-        content = md_file.read()
+    content = read_markdown_file(md_pathname)
 
     # Find all image URLs in the Markdown file (ignoring tooltips or labels)
     image_refs = re.findall(r'!\[.*?\]\(([^\)]+?)\s*(?:\".*?\")?\)', content)

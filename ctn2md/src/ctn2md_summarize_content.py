@@ -14,7 +14,7 @@ if "./" not in sys.path:
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.utils_llm.llm_summarize_content_gpt import summarize_doc_keywords_by_gpt
 from ctn2md.utils_llm.llm_summarize_content_qwen import summarize_doc_keywords_by_qwen
-from ctn2md.utils.util_markdown import remove_comment
+from ctn2md.utils.util_markdown import remove_comment, read_markdown_file
 from ctn2md.src.md_info_base import MdInfo, MIFN
 
 def summarize_content_by_llm(md_info_path, src_step_num=None, dst_step_num=None):
@@ -25,8 +25,7 @@ def summarize_content_by_llm(md_info_path, src_step_num=None, dst_step_num=None)
     if pathname_src_step_md is None:
         raise ValueError(f"no {pathname_src_step_md}")
 
-    with open(pathname_src_step_md, "r", encoding="utf8") as f:
-        full_content = f.read()
+    full_content = read_markdown_file(pathname_src_step_md)
     full_content = remove_comment(full_content)
 
     doc_title = md_info.get_doc_title()

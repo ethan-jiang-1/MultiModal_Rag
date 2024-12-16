@@ -15,7 +15,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.utils.util_markdown import remove_comment
+from ctn2md.utils.util_markdown import remove_comment, read_markdown_file
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.utils.util_file import get_crc32_id
 
@@ -348,9 +348,7 @@ def inject_section_heirarchy(md_info_path, src_step_num=None, dst_step_num=None)
     if pathname_src_step_md is None or pathname_dst_step_md is None:
         raise ValueError(f"no {pathname_src_step_md} and {pathname_dst_step_md}")
 
-    with open(pathname_src_step_md, "r", encoding="utf8") as f:
-        md_text = f.read()
-
+    md_text = read_markdown_file(pathname_src_step_md)
     md_text_new = _filter_headings_for_hierarchy_comments(md_text, md_info)
 
     logging.warning(f"fix_section_heirarchy: pathname_dst_step_md: {pathname_dst_step_md}")

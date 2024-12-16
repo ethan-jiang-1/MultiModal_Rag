@@ -118,7 +118,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/A Coin Has Two Sides.pdf"
 
     #doc_pathname = "datasrc/exam/raw_docs/3_20240131104523599_rearranged.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/tianyang_1_20.pdf"
+    doc_pathname = r"E:\test\test\业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
 
     mdcontrols = None
     #mdcontrols = {"mctl_lvlm_region_model": "qwen"}  

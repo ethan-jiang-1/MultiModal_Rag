@@ -85,7 +85,7 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     #doc_pathname = "_output/ctn2md_深度学习在视电阻率快速反演中的研究_lp/深度学习在视电阻率快速反演中的研究___pdf.md"
-    doc_pathname = r"E:\test\test\业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
+    doc_pathname = "_output/ctn2md_0530_大模型微调培训_VisualGLM_lp/0530-大模型微调培训-VisualGLM___pdf.md"
 
     out_dir = None
     mdcontrols = None
