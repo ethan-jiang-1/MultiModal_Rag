@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import sys
 #import logging
 import rich
+from dataclasses import dataclass
 
 load_dotenv()
 
@@ -13,6 +14,16 @@ from md2vdb.utils.util_tokenizer import get_token_encoding
 
 MAX_TOKENS_IN_CHUNK = 256
 
+@dataclass
+class chunked_section:
+    id: str
+    parent: str
+    order:str 
+    title: str 
+    desc: str
+    chunks: dict
+
+
 def chunk_section(md_section, max_tokens_in_chunk=MAX_TOKENS_IN_CHUNK):
     lines = md_section.splitlines()
 
@@ -22,7 +33,6 @@ def chunk_section(md_section, max_tokens_in_chunk=MAX_TOKENS_IN_CHUNK):
     chunk_no = 0
     for line in lines:
         if line.startswith("<!-- [desc]"):
-            desc = line.replace("<!-- ", "").replace(" -->", "")
             continue 
         if line.startswith("<!-- [ordered_name]"):
             continue
@@ -45,7 +55,7 @@ def chunk_section(md_section, max_tokens_in_chunk=MAX_TOKENS_IN_CHUNK):
     return desc, chunks            
 
 if __name__ == "__main__":
-    pname_md_section = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/xcs_6a2683b0_0008_3_2_2-_结构重参数化原理.md"
+    pname_md_section = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/xcs_6a2683b0_0006_3_1_1-_卷积原理.md"
 
     with open(pname_md_section, encoding="utf-8") as f:
         md_section = f.read()
