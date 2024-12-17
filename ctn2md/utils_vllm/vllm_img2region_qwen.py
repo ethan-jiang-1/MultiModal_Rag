@@ -55,6 +55,7 @@ if __name__ == '__main__':
 
     #pname_image = "_work/md_pdf_pages/c3c1d78a-page_3_rects.jpg"
     pname_image = "_work/md_pdf_pages/bd72132b-page_3.jpg"
+    #pname_image = "_work/md_pdf_pages/bd72132b-page_4.jpg"
 
     full_path = os.path.join(dir_root, pname_image)
     container_name = os.path.basename(os.path.dirname(pname_image))

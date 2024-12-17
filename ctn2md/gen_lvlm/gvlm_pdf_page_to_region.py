@@ -116,40 +116,55 @@ def vllm_parse_non_text_rects_in_page_by_qwen(md_info, page, page_index, pname_p
         resp_regions = resp.get("regions", None)
         if resp_image_size is None or resp_regions is None:
             raise ValueError(f"resp_image_size: {resp_image_size} resp_regions: {resp_regions}")
+        rich.print(resp_regions)    
+    
 
-        resp_image_width = resp_image_size.get("width", 1)
-        resp_image_height = resp_image_size.get("height", 1)
+        #resp_image_width = resp_image_size.get("width", 1)
+        #resp_image_height = resp_image_size.get("height", 1)
         rects = []
         for region in resp_regions:
-            region_type = region.get("type", None)
+            region_type = region.get("region_type", None)
             if region_type is None:
                 continue
 
             # Handle specific types: image, chart, table
-            if region_type in ["image", "chart", "table"]:
+            if region_type in ["image", "figure", "chart", "table"]:
                 bbox = region.get("bbox", [])
                 if len(bbox) != 4:
                     continue
 
-                # vllm 坐标体系是 左上角是起点0，0， x像右增加， y向下增加
-                # 整个图像的 宽高是 resp_image_width resp_image_height
-                x_top_left, y_top_left, width, height = bbox 
+                # vllm 坐标体系是 左上角是起点(0, 0)，x 向右增加，y 向下增加
+                # PDF 坐标体系是 左下角是起点(0, 0)，x 向右增加，y 向上增加
 
-                # PDF 的坐标体系是 - `(0, 0)` 通常是 PDF 页面左下角的起始点。
-                # - `x` 值从左到右增加，`y` 值从下到上增加。
-                # 整个图像的 宽高是 page_width, page_height
+                # bbox 格式： (x_top_left, y_top_left, x_bottom_right, y_bottom_right)
+                # 归一化后的坐标是 (x_top_left, y_top_left, x_bottom_right, y_bottom_right)，范围在 [0, 1000]
+                x_top_left, y_top_left, x_bottom_right, y_bottom_right = bbox
 
-                # 需要计算映射 vllm坐标体系 x_top_left, y_top_left, width, height 为
-                # PDF 坐标体系  x_min, y_min, x_max, y_max
+                # 将归一化的坐标映射回实际的 PDF 页面坐标系
+                # X 坐标映射：根据比例缩放，x_min 对应 x_top_left，x_max 对应 x_bottom_right
+                x_min = round(x_top_left * (page_width / 1000))  # X 起点，映射到实际页面宽度
+                x_max = round(x_bottom_right * (page_width / 1000))  # X 终点，映射到实际页面宽度
 
-                # Map VLLM coordinates to PDF coordinates
-                x_min = x_top_left * (page_width / resp_image_width)  # X 起点
-                x_max = (x_top_left + width) * (page_width / resp_image_width)  # X 终点
+                # Y 坐标映射 (注意 PDF 坐标系 y 从下到上增加)：需要修正 Y 坐标的方向，确保 y_min 小于 y_max
+                y_min = round(y_bottom_right * (page_height / 1000))  # Y 下边界，映射到实际页面高度
+                y_max = round(y_top_left * (page_height / 1000))  # Y 上边界，映射到实际页面高度
 
-                # 修正 Y 方向逻辑
-                y_min = y_top_left * (page_height / resp_image_height)  # Y 下边界
-                y_max = (y_top_left + height) * (page_height / resp_image_height)  # Y 上边界
+                # 修正不合理的坐标：确保 x_min < x_max 和 y_min < y_max
+                if x_min > x_max:
+                    x_min, x_max = x_max, x_min  # 如果 x_min > x_max，则交换它们
 
+                if y_min > y_max:
+                    y_min, y_max = y_max, y_min  # 如果 y_min > y_max，则交换它们
+
+                # 强制转换为整数，确保结果是整数类型
+                x_min = int(x_min)
+                x_max = int(x_max)
+                y_min = int(y_min)
+                y_max = int(y_max)
+
+                # 将转换后的坐标 (x_min, y_min, x_max, y_max) 添加到 rects 列表中
+                #rich.print("bbox", bbox)
+                #rich.print("rect", (x_min, y_min, x_max, y_max))
                 rects.append((x_min, y_min, x_max, y_max))
             else:
                 logging.warning(f"Page {page_index}: Ignored unsupported region type '{region_type}' with bbox {region['bbox']}")

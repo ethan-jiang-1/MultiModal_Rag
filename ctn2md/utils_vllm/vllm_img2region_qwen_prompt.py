@@ -1,83 +1,62 @@
 PROMPT_INSTRUCT_IMG2REGION_QWEN = """
-# Task Description
+# 任务描述
 
-You are provided with a page of content. Please identify and analyze the **regions of the page**, which include:
+你将接收一张输入图片，任务是基于视觉内容识别并定位所有的 **指定区域**，包括：
+1. **全图区域 (Full Page)**：  
+   - 表示整幅图像的边界框。
 
-1. **Full Page Region**:
-   - Represents the boundary of the entire content within the page.
-
-2. **Non-Typical Text Regions** (Focus on):
-   - **Image**: Illustrations, pictures, diagrams, etc.
-   - **Chart**: Flowcharts, bar charts, line charts, or any graphical data representation.
-
+2. **非典型文本区域 (Non-Typical Text Regions)**：  
+   - 可能没有，可以有一个，也可能有多个。包括：
+     - **image**：插图、照片等纯图像区域，不包含文字。该区域应完全由图像内容构成。
+     - **figure**：示意图、图示等非文本区域，通常没有文字或少量文字。
+     - **chart**：柱状图、折线图、流程图等图表内容，图表区域仅包含数据和图形，不应包含文本描述。
 ---
+## 输入说明
 
-## Input Image Information
-- The model processes the input image, which may involve resizing, cropping, or padding. The `image_size` field must reflect the **actual dimensions of the image as processed by the model**.
-
+- 输入为一张图片。  
+- 请基于 **Qwen2-VL 的原生能力**，返回边界框和区域描述。  
+- **所有边界框 (`bbox`) 的坐标值均使用 Qwen2-VL 归一化数值**，范围在 `[0, 1000)` 内。
 ---
-
-## Output Requirements
-
-### 1. Image Dimensions
-- Return the `width` and `height` of the image as seen by the model after internal processing (in pixels).
-
-### 2. Region Bounding Boxes
-- For each region, return a `bbox` in the format `[x_top_left, y_top_left, width, height]`:
-  - `x_top_left`: The x-coordinate of the top-left corner of the bounding box.
-  - `y_top_left`: The y-coordinate of the top-left corner of the bounding box.
-  - `width`: The width of the bounding box (in pixels).
-  - `height`: The height of the bounding box (in pixels).
-- Ensure that the bounding box fully encloses the region, including margins or other related elements.
-
-### 3. Region Independence
-- **Non-overlapping Regions**:
-  - Each region must be **independent** and **non-overlapping** with any other region.
-  - If a potential overlap is detected, adjust the bounding boxes to ensure no intersection.
-
-### 4. Region Information
-- **Full Page Region**:
-  - `type`: Use `"full_page"` to indicate the full page content region.
-  - `bbox`: Must cover the entire content area, starting at the top-left corner and extending to the full width and height of the `image_size`.
-  - `description`: Use `"Entire page content"` or a similar concise description.
-- **Non-Typical Text Regions**:
-  - `type`: Use `"image"` or `"chart"`.
-  - `description`: Provide a concise description of the region's content.
-
+## 输出要求
+请将你的输出格式化为标准的 **JSON 对象**，并包含以下字段：
+### 1. 图像尺寸 (image_size)  
+   - `width`：图像的宽度（像素）。  
+   - `height`：图像的高度（像素）。  
+### 2. 区域列表 (regions)  
+   `regions` 字段为数组，表示图像中所有识别到的区域。每个区域对象应包含以下字段：  
+   - **`region_type`**：字符串，表示区域的类型，取值为：  
+      - `"full_page"`：表示整幅图像的区域。  
+      - `"image"`：表示插图、照片等视觉区域。  
+      - `"figure"`：表示示意图等视觉区域。  
+      - `"chart"`：表示图表，如柱状图、折线图等。
+   - **`bbox`**：数组，表示归一化边界框坐标，格式为 `[x_top_left, y_top_left, x_bottom_right, y_bottom_right]`，所有值在 `[0, 1000)` 范围内。  
 ---
-
-## Notes
-- Always include the full page region (`full_page`) as the first entry in the `regions` list.
-- Ensure all `bbox` values are within the dimensions defined by `image_size`.
-- Ensure regions are **non-overlapping**:
-  - For any two bounding boxes, their intersection area must be zero.
-- Return the regions in the following order:
-  1. Full page region.
-  2. Non-typical text regions, ordered from top to bottom.
-
----
-
-## Output Format
-
-The result must be a JSON object with the following structure:
-
+## 输出格式示例
+返回的 JSON 示例必须仅包含占位符，模型需尽力输出所有的区域信息（包括 0 个、1 个或多个 `image` 和 `chart` 区域）：
 ```json
 {
   "image_size": {
-    "width": "<processed_image_width>",
-    "height": "<processed_image_height>"
+    "width": "<image_width_in_pixels>",
+    "height": "<image_height_in_pixels>",
   },
   "regions": [
     {
-      "type": "full_page",
-      "bbox": [<x_top_left>, <y_top_left>, <width>, <height>],
+      "region_type": "full_page",
+      "bbox": [0, 0, 1000, 1000],
       "description": "Entire page content"
     },
     {
-      "type": "<type_of_region>",
-      "bbox": [<x_top_left>, <y_top_left>, <width>, <height>],
-      "description": "<region_description>"
-    }
+      "region_type": "image",
+      "bbox": [<x1_normalized>, <y1_normalized>, <x2_normalized>, <y2_normalized>],
+      "description": "<Brief description of the image>"
+    },
+    {
+      "region_type": "chart",
+      "bbox": [<x1_normalized>, <y1_normalized>, <x2_normalized>, <y2_normalized>],
+      "description": "<Brief description of the chart>"
+    },
+    ...
   ]
 }
+
 """
