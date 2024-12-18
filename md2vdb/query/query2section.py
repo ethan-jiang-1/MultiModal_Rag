@@ -16,17 +16,26 @@ from md2vdb.common.vdb_base import VDB_PATH
 from md2vdb.query.recover_section_for_query import query_initial_points, recover_scored_sections_from_chunk_from_vdb, ScoredSection, LIMIT_QUERY
 from md2vdb.utils.utili_embedding import get_text_embedding
 
+class QdrantClientContextManager:
+    def __init__(self, *args, **kwargs):
+        self.client = QdrantClient(*args, **kwargs)
+
+    def __enter__(self):
+        return self.client
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.client.close()
+
 def query2section_on_single_collection(collection_name: str, query: str, limit: int = LIMIT_QUERY) -> List[ScoredSection]:
     """
     查询集合中的 chunk 并恢复完整的 section。
     """
-    client = QdrantClient(path=VDB_PATH)
+    with QdrantClientContextManager(path=VDB_PATH) as client:
+        query_vector = get_text_embedding(query)
 
-    query_vector = get_text_embedding(query)
+        initial_scored_chunks = query_initial_points(client, collection_name, query_vector, limit=limit)
 
-    initial_scored_chunks = query_initial_points(client, collection_name, query_vector, limit=limit)
-
-    merged_scored_sections = recover_scored_sections_from_chunk_from_vdb(client, collection_name, initial_scored_chunks)
+        merged_scored_sections = recover_scored_sections_from_chunk_from_vdb(client, collection_name, initial_scored_chunks)
 
     client.close()
     return merged_scored_sections
@@ -36,20 +45,18 @@ def query2section_on_multiple_collection(collection_names: list[str], query: str
     """
     查询集合中的 chunk 并恢复完整的 section。
     """
-    client = QdrantClient(path=VDB_PATH)
+    with QdrantClientContextManager(path=VDB_PATH) as client:
+        all_merged_scored_sections = []
+        for collection_name in collection_names:
+            query_vector = get_text_embedding(query)
 
-    all_merged_scored_sections = []
-    for collection_name in collection_names:
-        query_vector = get_text_embedding(query)
+            initial_scored_chunks = query_initial_points(client, collection_name, query_vector, limit=limit)
 
-        initial_scored_chunks = query_initial_points(client, collection_name, query_vector, limit=limit)
+            merged_scored_sections = recover_scored_sections_from_chunk_from_vdb(client, collection_name, initial_scored_chunks)
 
-        merged_scored_sections = recover_scored_sections_from_chunk_from_vdb(client, collection_name, initial_scored_chunks)
-
-        all_merged_scored_sections.extend(merged_scored_sections)
-
-    client.close()
-    return merged_scored_sections
+            all_merged_scored_sections.extend(merged_scored_sections)
+    
+    return all_merged_scored_sections
 
 
 if __name__ == "__main__":
