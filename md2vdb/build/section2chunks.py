@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-import os
+#import os
 import re
 import sys
 #import logging
@@ -31,7 +31,7 @@ class ChunkedSectionInfo:
     title: str
     desc: str
     max_tokens_in_chunk: int
-    doc_name: str 
+    doc_unique_id: str 
     doc_title: str
     content: str
 
@@ -67,7 +67,7 @@ def _get_parent_id(id):
     names = names[0:len(names)- 1]
     return ".".join(names)
 
-def chunk_section_to_chunks(md_section, doc_path=None, doc_title=None, max_tokens_in_chunk=MAX_TOKENS_IN_CHUNK, need_desc_at_top=True):
+def chunk_section_to_chunks(md_section, doc_unique_id, doc_title=None, max_tokens_in_chunk=MAX_TOKENS_IN_CHUNK, need_desc_at_top=True):
     lines = md_section.splitlines()
 
     ordered_names = None
@@ -126,7 +126,7 @@ def chunk_section_to_chunks(md_section, doc_path=None, doc_title=None, max_token
                                  title=title, 
                                  desc=desc,
                                  max_tokens_in_chunk=max_tokens_in_chunk, 
-                                 doc_name=os.path.basename(doc_path), 
+                                 doc_unique_id=doc_unique_id, 
                                  doc_title=doc_title, 
                                  content=doc_chunk)
         csis.append(csi)
@@ -144,13 +144,13 @@ def _test_parse_ordered_name():
 
 def _test_chunk_secion(max_tokens_in_chunk=256):   
     pname_md_section = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/xcs_ca5fb9b7_0006_3_1_1-_卷积原理.md"    
-    doc_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/深度学习在视电阻率快速反演中的研究.pdf"
+    doc_unique_id = "深度学习在视电阻率快速反演中的研究_1234"
     doc_title = "深度学习在视电阻率快速反演中的研究和应用"
 
     with open(pname_md_section, encoding="utf-8") as f:
         md_section = f.read()
 
-    csis = chunk_section_to_chunks(md_section, doc_path=doc_path, doc_title=doc_title, max_tokens_in_chunk=max_tokens_in_chunk)
+    csis = chunk_section_to_chunks(md_section, doc_unique_id, doc_title=doc_title, max_tokens_in_chunk=max_tokens_in_chunk)
     rich.print(csis)            
 
 if __name__ == "__main__":

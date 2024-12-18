@@ -70,7 +70,7 @@ def convert_doc_to_chunks(pname_final_md_info):
     doc_meta_info = _build_doc_meta_info(final_md_info)
 
     src_dir = os.path.dirname(pname_final_md_info)
-    doc_path = doc_meta_info.path_org_doc
+    doc_unique_id = doc_meta_info.doc_unique_id
     doc_title = doc_meta_info.doc_logic_title
     all_csis = []
     for fname in doc_meta_info.fnames_sec:
@@ -80,7 +80,7 @@ def convert_doc_to_chunks(pname_final_md_info):
 
         with open(pname_md_section, encoding="utf-8") as f:
             md_section = f.read()
-        csis = chunk_section_to_chunks(md_section, doc_path=doc_path, doc_title=doc_title)
+        csis = chunk_section_to_chunks(md_section, doc_unique_id, doc_title=doc_title)
         all_csis.extend(csis)
 
     return doc_meta_info, all_csis
