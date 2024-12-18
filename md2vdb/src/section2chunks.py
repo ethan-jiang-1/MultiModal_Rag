@@ -24,15 +24,16 @@ class OrderedNames:
 
 @dataclass
 class ChunkedSectionInfo:
-    chunk_id: str
-    parent: str
+    sec_id: str
+    parent_sec_id: str
     order: int
+    total: int
     title: str
     desc: str
     max_tokens_in_chunk: int
     doc_path: str 
     doc_title: str
-    doc_chunk: str
+    content: str
 
 def _parse_ordered_name(line):
     # 正则表达式匹配结构：
@@ -107,25 +108,27 @@ def chunk_section_to_chunks(md_section, doc_path=None, doc_title=None, max_token
     if ordered_names is None:
         raise ValueError("No ordered_name")
 
-    id = ordered_names.order
-    parent = _get_parent_id(id)
+    sec_id = ordered_names.order
+    parent = _get_parent_id(sec_id)
     title = ordered_names.title
     desc = ordered_names.desc
     max_tokens_in_chunk = max_tokens_in_chunk
 
     csis = []
+    total = len(chunks.keys())
     for order, chunk in chunks.items():
         order = int(order)
         doc_chunk = "\n".join(chunk)
-        csi = ChunkedSectionInfo(chunk_id=id, 
-                                 parent=parent, 
-                                 order=order, 
+        csi = ChunkedSectionInfo(sec_id=sec_id, 
+                                 parent_sec_id=parent, 
+                                 order=order,
+                                 total=total, 
                                  title=title, 
-                                 desc=desc, 
+                                 desc=desc,
                                  max_tokens_in_chunk=max_tokens_in_chunk, 
                                  doc_path=doc_path, 
                                  doc_title=doc_title, 
-                                 doc_chunk=doc_chunk)
+                                 content=doc_chunk)
         csis.append(csi)
 
     return csis
@@ -139,7 +142,7 @@ def _test_parse_ordered_name():
     ret = _parse_ordered_name(line)
     rich.print(ret)
 
-def _test_chunk_secion():   
+def _test_chunk_secion(max_tokens_in_chunk=256):   
     pname_md_section = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/xcs_6a2683b0_0006_3_1_1-_卷积原理.md"    
     doc_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/深度学习在视电阻率快速反演中的研究.pdf"
     doc_title = "深度学习在视电阻率快速反演中的研究和应用"
@@ -147,13 +150,13 @@ def _test_chunk_secion():
     with open(pname_md_section, encoding="utf-8") as f:
         md_section = f.read()
 
-    csis = chunk_section_to_chunks(md_section, doc_path=doc_path, doc_title=doc_title, max_tokens_in_chunk=256)
+    csis = chunk_section_to_chunks(md_section, doc_path=doc_path, doc_title=doc_title, max_tokens_in_chunk=max_tokens_in_chunk)
     rich.print(csis)            
 
 if __name__ == "__main__":
     _test_parse_ordered_name()
 
-    _test_chunk_secion()
+    _test_chunk_secion(max_tokens_in_chunk=256)
 
 
 
