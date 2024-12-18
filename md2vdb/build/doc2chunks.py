@@ -32,6 +32,7 @@ class DocMetaInfo(BaseModel):
     """
     path_org_doc: str
     fname_org_doc: str
+    fname_final_md: str
     doc_cnt_type: Optional[str]  # 可以是 str 或 None
     doc_unique_id: str
     doc_name_title: str
@@ -43,6 +44,7 @@ class DocMetaInfo(BaseModel):
 def _build_doc_meta_info(final_md_info):
     path_org_doc = final_md_info.get(PUBLIC_MIFN.PATHNAME_ORG_DOC)
     fname_org_doc = final_md_info.get(PUBLIC_MIFN.FNAME_ORG_DOC)
+    fname_final_md = final_md_info.get(PUBLIC_MIFN.FNAME_FINAL_MD)
     doc_cnt_type = final_md_info.get(PUBLIC_MIFN.DOC_CTN_TYPE)
     doc_unique_id = final_md_info.get(PUBLIC_MIFN.DOC_UNIQUE_ID)
     doc_name_title = final_md_info.get(PUBLIC_MIFN.DOC_NAME_TITLE)
@@ -50,6 +52,7 @@ def _build_doc_meta_info(final_md_info):
     doc_summary = final_md_info.get(PUBLIC_MIFN.DOC_SUMMARY)     
     return DocMetaInfo(path_org_doc=path_org_doc,
                        fname_org_doc=fname_org_doc,
+                       fname_final_md=fname_final_md,
                        doc_cnt_type=doc_cnt_type,
                        doc_unique_id=doc_unique_id,
                        doc_name_title=doc_name_title,

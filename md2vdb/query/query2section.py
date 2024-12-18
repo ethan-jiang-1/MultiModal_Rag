@@ -141,6 +141,14 @@ def _merge_chunks_to_sections(sections: Dict[str, Dict]) -> List[ScoredSection]:
         if total != len(chunks):
             logger.error(f"Not all chunks recovered for section {sec_id}")
 
+        payloads = []
+        for _, chunk in chunks:
+            payload = chunk.payload
+            if isinstance(chunk, ScoredPoint):
+                payload["score"] = chunk.score
+            else:
+                payload["score"] = 0.0
+            payloads.append(payload)
         scored_section = ScoredSection(
             sec_id=sec_id,
             parent_sec_id=payload0.get("parent_sec_id"),
@@ -150,7 +158,7 @@ def _merge_chunks_to_sections(sections: Dict[str, Dict]) -> List[ScoredSection]:
             desc=payload0.get("desc"),
             doc_path=payload0.get("doc_path"),
             doc_title=payload0.get("doc_title"),
-            payloads=[item[1].payload for item in chunks],
+            payloads=payloads,
         )
         merged_scored_sections.append(scored_section)
 
@@ -197,7 +205,8 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     query = "神经网络"
-    collection_name = "深度学习在视电阻率快速反演中的研究_6a2683b0"
+    #collection_name = "深度学习在视电阻率快速反演中的研究_6a2683b0"
+    collection_name = "Survey_of_different_Large_Language_Model_Architectures_bd72132b"
 
     results = query2section(collection_name, query)
     rich.print(results)

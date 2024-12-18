@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-#import os
+import os
 import re
 import sys
 #import logging
@@ -31,7 +31,7 @@ class ChunkedSectionInfo:
     title: str
     desc: str
     max_tokens_in_chunk: int
-    doc_path: str 
+    doc_name: str 
     doc_title: str
     content: str
 
@@ -126,7 +126,7 @@ def chunk_section_to_chunks(md_section, doc_path=None, doc_title=None, max_token
                                  title=title, 
                                  desc=desc,
                                  max_tokens_in_chunk=max_tokens_in_chunk, 
-                                 doc_path=doc_path, 
+                                 doc_name=os.path.basename(doc_path), 
                                  doc_title=doc_title, 
                                  content=doc_chunk)
         csis.append(csi)
@@ -143,7 +143,7 @@ def _test_parse_ordered_name():
     rich.print(ret)
 
 def _test_chunk_secion(max_tokens_in_chunk=256):   
-    pname_md_section = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvml/xcs_ca5fb9b7_0006_3_1_1-_卷积原理.md"    
+    pname_md_section = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/xcs_ca5fb9b7_0006_3_1_1-_卷积原理.md"    
     doc_path = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/深度学习在视电阻率快速反演中的研究.pdf"
     doc_title = "深度学习在视电阻率快速反演中的研究和应用"
 

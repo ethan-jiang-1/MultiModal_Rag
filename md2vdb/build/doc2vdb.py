@@ -87,12 +87,20 @@ def _copy_all_ref_files(doc_meta_info:DocMetaInfo, pname_final_md_info: str):
     # copy the final md
     src_path = os.path.join(dir_src, doc_meta_info.fname_org_doc)
     dst_path = os.path.join(dir_dst, doc_meta_info.fname_org_doc)
-    shutil.copy(src_path, dst_path)
+    if os.path.isfile(src_path):
+        shutil.copy(src_path, dst_path)
+
+    # copy the final md
+    src_path = os.path.join(dir_src, doc_meta_info.fname_final_md)
+    dst_path = os.path.join(dir_dst, doc_meta_info.fname_final_md)
+    if os.path.isfile(src_path):
+        shutil.copy(src_path, dst_path)    
 
     # copy the original doc
     src_path = doc_meta_info.path_org_doc
     dst_path = os.path.join(dir_dst, os.path.basename(src_path))
-    shutil.copy(src_path, dst_path)
+    if os.path.isfile(src_path):
+        shutil.copy(src_path, dst_path)
 
 
 def convert_doc_to_vdb(pname_final_md_info: str, max_chunk_num:int = None, skip_build_vdb:bool = False):
@@ -117,9 +125,10 @@ def convert_doc_to_vdb(pname_final_md_info: str, max_chunk_num:int = None, skip_
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    pname_final_md_info = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/_final_info.json"
-    skip_build_vdb = False
-    #skip_build_vdb = True
+    #pname_final_md_info = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/_final_info.json"
+    pname_final_md_info = "_work/ctn2md_Survey_of_different_Large_Language_Model_Architectures_lvlm/_final_info.json"
+    #skip_build_vdb = False
+    skip_build_vdb = True
 
     ret = convert_doc_to_vdb(pname_final_md_info, skip_build_vdb=skip_build_vdb)
     rich.print(ret)
