@@ -17,7 +17,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from md2vdb.common.chunked_section_info import ChunkedSectionInfo
-from md2vdb.utils.utili_embedding import get_text_embedding
+
 
 LIMIT_QUERY = 5
 
@@ -167,12 +167,10 @@ def _merge_chunks_to_scored_sections(sections: Dict[str, Dict]) -> List[ScoredSe
     return merged_scored_sections
 
 
-def query_initial_points(client: QdrantClient, collection_name: str,  query: str, limit: int = LIMIT_QUERY) -> List[ScoredPoint]:
+def query_initial_points(client: QdrantClient, collection_name: str,  query_vector: List[float], limit: int = LIMIT_QUERY) -> List[ScoredPoint]:
     """
     获取初始 chunk 数据。
     """
-    query_vector = get_text_embedding(query)
-
     initial_points = client.search(
         collection_name=collection_name,
         query_vector=query_vector,                      
@@ -180,8 +178,8 @@ def query_initial_points(client: QdrantClient, collection_name: str,  query: str
     )
     return initial_points
 
-def recover_section_from_vdb(client: QdrantClient, collection_name: str, initial_points: List[ScoredPoint]) -> List[ScoredSection]:
-    sections = _group_initial_chunks(initial_points)
+def recover_scored_sections_from_chunk_from_vdb(client: QdrantClient, collection_name: str, initial_scored_chunks: List[ScoredPoint]) -> List[ScoredSection]:
+    sections = _group_initial_chunks(initial_scored_chunks)
     _query_missing_chunks(client, collection_name, sections)
     merged_scored_sections = _merge_chunks_to_scored_sections(sections)
     return merged_scored_sections
