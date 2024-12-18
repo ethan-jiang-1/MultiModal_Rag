@@ -24,8 +24,8 @@ def _save_doc_meta_info(doc_meta_info:DocMetaInfo):
         f.write(doc_meta_info.model_dump_json(indent=4))
 
 
-def _copy_all_ref_files(doc_meta_info:DocMetaInfo, pname_final_md_info: str):
-    dir_src = os.path.dirname(pname_final_md_info)
+def _copy_all_ref_files(doc_meta_info:DocMetaInfo, pname_final_info: str):
+    dir_src = os.path.dirname(pname_final_info)
     dir_dst = get_ref_root(doc_meta_info.doc_unique_id)
 
     # copy all images refered by md
@@ -63,10 +63,10 @@ def _copy_all_ref_files(doc_meta_info:DocMetaInfo, pname_final_md_info: str):
         shutil.copy(src_path, dst_path)
 
 
-def upsert_doc_to_vdb(pname_final_md_info: str, max_chunk_num:int = None, skip_build_vdb:bool = False):
-    doc_meta_info, all_csis = convert_sections_to_chunks(pname_final_md_info)
+def upsert_doc_to_vdb(pname_final_info: str, max_chunk_num:int = None, skip_build_vdb:bool = False):
+    doc_meta_info, all_csis = convert_sections_to_chunks(pname_final_info)
     if doc_meta_info is None:
-        raise ValueError(f"not able to convert {pname_final_md_info}")
+        raise ValueError(f"not able to convert {pname_final_info}")
     
     collection_name = assign_collection_name_for_doc(doc_meta_info)
     
@@ -78,7 +78,7 @@ def upsert_doc_to_vdb(pname_final_md_info: str, max_chunk_num:int = None, skip_b
 
     _save_doc_meta_info(doc_meta_info)
 
-    _copy_all_ref_files(doc_meta_info, pname_final_md_info)
+    _copy_all_ref_files(doc_meta_info, pname_final_info)
 
     return collection_name
 
@@ -86,13 +86,16 @@ def upsert_doc_to_vdb(pname_final_md_info: str, max_chunk_num:int = None, skip_b
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    pname_final_md_info = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/_final_info.json"
-    #pname_final_md_info = "_work/ctn2md_Survey_of_different_Large_Language_Model_Architectures_lvlm/_final_info.json"
+    #pname_final_info = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/_final_info.json"
+    #pname_final_info = "_work/ctn2md_Survey_of_different_Large_Language_Model_Architectures_lvlm/_final_info.json"
+    #pname_final_info = "_output/ctn2md_AIGC时代的人力资源管理进化(徐刚)_lvlm/_final_info.json"
+    pname_final_info = "_output/ctn2md_业绩案例_上汽内外饰DRE外包框架服务合同_lp/_final_info.json"
+
     skip_build_vdb = False
     #skip_build_vdb = True
 
     collection_name = None
     max_chunk_num = None
 
-    ret = upsert_doc_to_vdb(pname_final_md_info, max_chunk_num=max_chunk_num, skip_build_vdb=skip_build_vdb)
+    ret = upsert_doc_to_vdb(pname_final_info, max_chunk_num=max_chunk_num, skip_build_vdb=skip_build_vdb)
     rich.print(ret)

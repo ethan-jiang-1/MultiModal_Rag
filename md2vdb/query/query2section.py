@@ -76,7 +76,21 @@ def test2():
 
     collection_names = []
     collection_names.append("papers")
-    #collection_names.append("Survey_of_different_Large_Language_Model_Architectures_bd72132b")
+    collection_names.append("mrag")
+
+    results = query2section_on_multiple_collection(collection_names, query) 
+    rich.print(results)
+    print()
+
+    for ndx, result in enumerate(results):
+        print()
+        rich.print(f"[red]{(ndx, round(result.score, 4), result.sec_id, result.desc)}[/red]", "\n", result.content)
+
+def test3():
+    query = "激励平台"
+
+    collection_names = []
+    collection_names.append("mrag")
 
     results = query2section_on_multiple_collection(collection_names, query) 
     rich.print(results)
@@ -90,9 +104,9 @@ def test2():
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    test1()
-
+    #test1()
     #test2()
+    test3()
 
 
 
