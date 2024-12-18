@@ -184,6 +184,14 @@ def recover_scored_sections_from_chunk_from_vdb(client: QdrantClient, collection
     merged_scored_sections = _merge_chunks_to_scored_sections(sections)
     return merged_scored_sections
 
+def sort_scored_sections_by_score(sections: List[ScoredSection]) -> List[ScoredSection]:
+    """
+    对 ScoredSection 列表按照 score 降序排序。
+
+    :param sections: ScoredSection 的列表
+    :return: 按照 score 降序排序后的列表
+    """
+    return sorted(sections, key=lambda section: section.score, reverse=True)
 
 if __name__ == "__main__":
     pass

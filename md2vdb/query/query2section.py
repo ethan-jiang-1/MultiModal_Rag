@@ -13,7 +13,7 @@ if "./" not in sys.path:
 
 from md2vdb.utils.util_logging import setup_logger_handlers
 from md2vdb.common.vdb_base import VDB_PATH
-from md2vdb.query.recover_section_for_query import query_initial_points, recover_scored_sections_from_chunk_from_vdb, ScoredSection, LIMIT_QUERY
+from md2vdb.query.recover_section_for_query import query_initial_points, recover_scored_sections_from_chunk_from_vdb, ScoredSection, LIMIT_QUERY, sort_scored_sections_by_score
 from md2vdb.utils.utili_embedding import get_text_embedding
 
 class QdrantClientContextManager:
@@ -56,12 +56,10 @@ def query2section_on_multiple_collection(collection_names: list[str], query: str
 
             all_merged_scored_sections.extend(merged_scored_sections)
     
+    all_merged_scored_sections = sort_scored_sections_by_score(all_merged_scored_sections)
     return all_merged_scored_sections
 
-
-if __name__ == "__main__":
-    setup_logger_handlers()
-
+def test1():
     query = "神经网络"
     collection_name = "深度学习在视电阻率快速反演中的研究_6a2683b0"
     #collection_name = "Survey_of_different_Large_Language_Model_Architectures_bd72132b"
@@ -72,5 +70,30 @@ if __name__ == "__main__":
 
     for ndx, result in enumerate(results):
         print()
-        rich.print((ndx, round(result.score, 2), result.sec_id, result.desc), result.content)
+        rich.print(f"[red]{(ndx, round(result.score, 4), result.sec_id, result.desc)}[/red]", "\n", result.content)
+
+def test2():
+    query = "fine-tuned chat models"
+
+    collection_names = []
+    collection_names.append("深度学习在视电阻率快速反演中的研究_6a2683b0")
+    collection_names.append("Survey_of_different_Large_Language_Model_Architectures_bd72132b")
+
+    results = query2section_on_multiple_collection(collection_names, query) 
+    rich.print(results)
+    print()
+
+    for ndx, result in enumerate(results):
+        print()
+        rich.print(f"[red]{(ndx, round(result.score, 4), result.sec_id, result.desc)}[/red]", "\n", result.content)
+
+
+if __name__ == "__main__":
+    setup_logger_handlers()
+
+    #test1()
+
+    test2()
+
+
 
