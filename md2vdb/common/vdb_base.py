@@ -4,6 +4,7 @@ VDB_PATH = "_ds_vdb"
 REF_PATH = "_ds_ref"
 
 FILENAME_DOC_META = "doc_meta.json"
+FILENAME_COLLECTION = "collection_map.json"
 
 def get_ref_root(unique_name: str) -> str:
     dir_ref = os.path.join(REF_PATH, unique_name)
@@ -11,8 +12,8 @@ def get_ref_root(unique_name: str) -> str:
     return dir_ref
 
 def get_doc_meta_pathname(unique_name: str) -> str:
-    dir_collection = get_ref_root(unique_name)
-    pname_doc_meta = os.path.join(dir_collection, FILENAME_DOC_META)
+    dir_doc_meta = get_ref_root(unique_name)
+    pname_doc_meta = os.path.join(dir_doc_meta, FILENAME_DOC_META)
     return pname_doc_meta
 
 

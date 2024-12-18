@@ -19,7 +19,7 @@ from md2vdb.build.doc2chunks import convert_doc_to_chunks, DocMetaInfo
 from md2vdb.build.section2chunks import ChunkedSectionInfo
 from md2vdb.utils.utili_embedding import EMBEDDING_VEC_LEN, get_text_embedding
 from md2vdb.utils.util_logging import setup_logger_handlers
-from md2vdb.common.vdb_const import VDB_PATH, get_doc_meta_pathname, get_ref_root
+from md2vdb.common.vdb_base import VDB_PATH, get_doc_meta_pathname, get_ref_root
 
 
 def _collection_stats_for_doc_id(client: QdrantClient, collection_name: str, target_doc_unique_id: str, target_doc_title: str):

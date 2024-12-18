@@ -12,6 +12,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from md2vdb.utils.util_tokenizer import get_token_encoding
+from md2vdb.common.chunked_section_info import ChunkedSectionInfo
 
 MAX_TOKENS_IN_CHUNK = 512
 
@@ -22,20 +23,6 @@ class OrderedNames:
     heading: str 
     desc: str
 
-# this is going to be payload in vector db
-@dataclass
-class ChunkedSectionInfo:
-    sec_id: str
-    parent_sec_id: str
-    level: int
-    order: int
-    total: int
-    heading: str
-    desc: str
-    max_tokens_in_chunk: int
-    doc_unique_id: str 
-    doc_title: str
-    content: str
 
 def _parse_ordered_name(line):
     # 正则表达式匹配结构：

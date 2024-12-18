@@ -17,8 +17,10 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from md2vdb.utils.util_logging import setup_logger_handlers
-from md2vdb.common.vdb_const import VDB_PATH
+from md2vdb.common.vdb_base import VDB_PATH
+from md2vdb.common.chunked_section_info import ChunkedSectionInfo
 from md2vdb.utils.utili_embedding import get_text_embedding
+
 
 LIMIT_QUERY = 5
 
@@ -138,8 +140,8 @@ def _merge_chunks_to_scored_sections(sections: Dict[str, Dict]) -> List[ScoredSe
         max_score = max((getattr(point, "score", 0.0) for _, point in chunks), default=0.0)
 
         payload0 = chunks[0][1].payload
-        total = payload0.get("total", len(chunks))
-        if total != len(chunks):
+        csi0 = ChunkedSectionInfo(**payload0)
+        if csi0.total != len(chunks):
             logger.error(f"Not all chunks recovered for section {sec_id}")
 
         payloads = []
@@ -153,12 +155,12 @@ def _merge_chunks_to_scored_sections(sections: Dict[str, Dict]) -> List[ScoredSe
         scored_section = ScoredSection(
             score=max_score,
             sec_id=sec_id,
-            parent_sec_id=payload0.get("parent_sec_id"),
-            level=payload0.get("level"),
-            heading=payload0.get("title"),
-            desc=payload0.get("desc"),
-            doc_unique_id=payload0.get("doc_unique_id"),
-            doc_title=payload0.get("doc_title"),
+            parent_sec_id=csi0.parent_sec_id,
+            level=csi0.level,
+            heading=csi0.heading,
+            desc=csi0.desc,
+            doc_unique_id=csi0.doc_unique_id,
+            doc_title=csi0.doc_title,
             content=content,
             payloads=payloads
         )
