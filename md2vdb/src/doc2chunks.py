@@ -12,7 +12,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.src.md_info_base import PUBLIC_MIFN
-from md2vdb.src.section2chunk import chunk_section
+from md2vdb.src.section2chunks import chunk_section_to_chunks
 
 @dataclass 
 class DocMetaInfo:
@@ -42,7 +42,13 @@ def _build_doc_meta_info(final_md_info):
                        doc_summary=doc_summary,
                        fnames_sec=final_md_info.get(PUBLIC_MIFN.FNAMES_SECS))
 
-def convert_doc_to_chunks(final_md_info, pname_final_md_info):
+def convert_doc_to_chunks(pname_final_md_info):
+    if not os.path.isfile(pname_final_md_info):
+        return None, None 
+    
+    with open(pname_final_md_info, encoding="utf-8") as f:
+        final_md_info = json.load(f)
+
     doc_meta_info = _build_doc_meta_info(final_md_info)
 
     src_dir = os.path.dirname(pname_final_md_info)
@@ -56,17 +62,14 @@ def convert_doc_to_chunks(final_md_info, pname_final_md_info):
 
         with open(pname_md_section, encoding="utf-8") as f:
             md_section = f.read()
-        csis = chunk_section(md_section, doc_path=doc_path, doc_title=doc_title)
+        csis = chunk_section_to_chunks(md_section, doc_path=doc_path, doc_title=doc_title)
         all_csis.extend(csis)
 
     return doc_meta_info, all_csis
 
 if __name__ == "__main__":
     pname_final_md_info = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/_final_info.json"
-    with open(pname_final_md_info, encoding="utf-8") as f:
-        final_md_info = json.load(f)
-    rich.print(final_md_info)
 
-    meta_info, all_csis = convert_doc_to_chunks(final_md_info, pname_final_md_info)
+    meta_info, all_csis = convert_doc_to_chunks(pname_final_md_info)
     rich.print(meta_info)
     rich.print(all_csis)
