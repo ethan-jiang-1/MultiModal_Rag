@@ -1,5 +1,12 @@
 import re
 import rich
+from dataclasses import dataclass
+
+@dataclass
+class OrderedNames:
+    order: str 
+    title: str 
+    desc: str
 
 def parse_ordered_name(line):
     # 正则表达式匹配结构：
@@ -19,11 +26,10 @@ def parse_ordered_name(line):
     match = pattern.search(line)
     
     if match:
-        return {
-            "order": match.group("order"),
-            "title": match.group("title").strip(),
-            "desc": match.group("desc").strip(),
-        }
+        order = match.group("order")
+        title = match.group("title").strip()
+        desc = match.group("desc").strip()
+        return OrderedNames(order, title, desc)
     else:
         return None
     
