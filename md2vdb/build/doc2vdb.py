@@ -117,12 +117,12 @@ def _prepare_collection_for_reinject_doc(client: QdrantClient, collection_name: 
             points_selector=filter_query
         )
         logging.info(f"Deleted {deleted_points} points from collection '{collection_name}' with doc_unique_id='{doc_unique_id}'.")
-        stats = _collection_stats_for_doc_id(client, collection_name, doc_unique_id, doc_title)
-        rich.print("[yellow]after cleanup[/yellow]", stats)
 
+    stats = _collection_stats_for_doc_id(client, collection_name, doc_unique_id, doc_title)
+    rich.print("[yellow]after cleanup[/yellow]", stats)
     logging.info(f"collection '{collection_name}' with doc_unique_id='{doc_unique_id} stats: {stats}")
 
-def _inject_chunks_into_vdb(client: QdrantClient, collection_name:str, doc_meta_info: DocMetaInfo, all_csis: list[ChunkedSectionInfo], max_chunk_num=None) -> UpdateResult:
+def _inject_doc_chunks_into_vdb(client: QdrantClient, collection_name:str, doc_meta_info: DocMetaInfo, all_csis: list[ChunkedSectionInfo], max_chunk_num=None) -> UpdateResult:
     vectors = []
     payloads = []
 
@@ -145,6 +145,7 @@ def _inject_chunks_into_vdb(client: QdrantClient, collection_name:str, doc_meta_
         PointStruct(id=str(uuid.uuid4()), vector=vectors[i], payload=payloads[i])  # 使用 UUID 作为 ID
         for i in range(len(vectors))
     ]
+    logging.info(f"total {len(points)} points need to be upsert")
 
     ret = client.upsert(
         collection_name=collection_name,
@@ -210,7 +211,7 @@ def convert_doc_to_vdb(pname_final_md_info: str,  collection_name:str, max_chunk
     if not skip_build_vdb:
         vdb_path = VDB_PATH 
         client = QdrantClient(path=vdb_path)
-        _inject_chunks_into_vdb(client, collection_name, doc_meta_info, all_csis, max_chunk_num=max_chunk_num)
+        _inject_doc_chunks_into_vdb(client, collection_name, doc_meta_info, all_csis, max_chunk_num=max_chunk_num)
         client.close()
 
     _save_doc_meta_info(doc_meta_info)
@@ -223,8 +224,8 @@ def convert_doc_to_vdb(pname_final_md_info: str,  collection_name:str, max_chunk
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    pname_final_md_info = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/_final_info.json"
-    #pname_final_md_info = "_work/ctn2md_Survey_of_different_Large_Language_Model_Architectures_lvlm/_final_info.json"
+    #pname_final_md_info = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/_final_info.json"
+    pname_final_md_info = "_work/ctn2md_Survey_of_different_Large_Language_Model_Architectures_lvlm/_final_info.json"
     skip_build_vdb = False
     #skip_build_vdb = True
 
