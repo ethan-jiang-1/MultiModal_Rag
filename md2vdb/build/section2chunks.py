@@ -18,17 +18,19 @@ MAX_TOKENS_IN_CHUNK = 512
 
 @dataclass
 class OrderedNames:
-    order: str 
-    title: str 
+    toc_order: str 
+    heading: str 
     desc: str
 
+# this is going to be payload in vector db
 @dataclass
 class ChunkedSectionInfo:
     sec_id: str
     parent_sec_id: str
+    level: int
     order: int
     total: int
-    title: str
+    heading: str
     desc: str
     max_tokens_in_chunk: int
     doc_unique_id: str 
@@ -42,9 +44,9 @@ def _parse_ordered_name(line):
     # 3) [desc] 和 [desc] 之间的内容作为 desc
     pattern = re.compile(r'''
         \[ordered_name\]\s*         # 匹配[ordered_name]，后面可能有空格
-        (?P<order>[\d\.]+)          # 匹配层级标识，格式为数字.数字.数字，如 1.4.6
+        (?P<toc_order>[\d\.]+)          # 匹配层级标识，格式为数字.数字.数字，如 1.4.6
         \)\s*                        # 匹配右括号
-        (?P<title>.*?)               # 匹配标题内容（非贪婪模式，直到下一个标记）
+        (?P<heading>.*?)               # 匹配标题内容（非贪婪模式，直到下一个标记）
         \[ordered_name\]\s*          # 匹配结束的[ordered_name]标签
         \[desc\]\s*(?P<desc>.*?)\s*\[desc\]  # 匹配[desc]和[desc]之间的内容，作为desc
     ''', re.VERBOSE | re.DOTALL)
@@ -53,19 +55,23 @@ def _parse_ordered_name(line):
     match = pattern.search(line)
     
     if match:
-        order = match.group("order")
-        title = match.group("title").strip()
+        toc_order = match.group("toc_order")
+        heading = match.group("heading").strip()
         desc = match.group("desc").strip()
-        return OrderedNames(order, title, desc)
+        return OrderedNames(toc_order, heading, desc)
     else:
         return None
 
-def _get_parent_id(id):
-    if id.find(".") == -1:
+def _get_parent_id(sec_id):
+    if sec_id.find(".") == -1:
         return ""
-    names = id.split(".")
+    names = sec_id.split(".")
     names = names[0:len(names)- 1]
     return ".".join(names)
+
+def _get_toc_level(sec_id):
+    names = sec_id.split(".")
+    return len(names)
 
 def chunk_section_to_chunks(md_section, doc_unique_id, doc_title=None, max_tokens_in_chunk=MAX_TOKENS_IN_CHUNK, need_desc_at_top=True):
     lines = md_section.splitlines()
@@ -108,9 +114,10 @@ def chunk_section_to_chunks(md_section, doc_unique_id, doc_title=None, max_token
     if ordered_names is None:
         raise ValueError("No ordered_name")
 
-    sec_id = ordered_names.order
+    sec_id = ordered_names.toc_order
     parent = _get_parent_id(sec_id)
-    title = ordered_names.title
+    level = _get_toc_level(sec_id)
+    heading = ordered_names.heading
     desc = ordered_names.desc
     max_tokens_in_chunk = max_tokens_in_chunk
 
@@ -121,9 +128,10 @@ def chunk_section_to_chunks(md_section, doc_unique_id, doc_title=None, max_token
         doc_chunk = "\n".join(chunk)
         csi = ChunkedSectionInfo(sec_id=sec_id, 
                                  parent_sec_id=parent, 
+                                 level=level,
                                  order=order,
                                  total=total, 
-                                 title=title, 
+                                 heading=heading, 
                                  desc=desc,
                                  max_tokens_in_chunk=max_tokens_in_chunk, 
                                  doc_unique_id=doc_unique_id, 

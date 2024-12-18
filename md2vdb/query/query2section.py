@@ -29,14 +29,15 @@ class ScoredSection:
     """
     数据类表示完整的 Section。
     """
+    score: float
     sec_id: str
     parent_sec_id: str
-    score: float
-    content: str
-    title: str
+    heading: str
+    level: int
     desc: str
-    doc_path: str
+    doc_unique_id: str
     doc_title: str
+    content: str
     payloads: list[Any]
 
 
@@ -150,15 +151,16 @@ def _merge_chunks_to_scored_sections(sections: Dict[str, Dict]) -> List[ScoredSe
                 payload["score"] = 0.0
             payloads.append(payload)
         scored_section = ScoredSection(
+            score=max_score,
             sec_id=sec_id,
             parent_sec_id=payload0.get("parent_sec_id"),
-            score=max_score,
-            content=content,
-            title=payload0.get("title"),
+            level=payload0.get("level"),
+            heading=payload0.get("title"),
             desc=payload0.get("desc"),
-            doc_path=payload0.get("doc_path"),
+            doc_unique_id=payload0.get("doc_unique_id"),
             doc_title=payload0.get("doc_title"),
-            payloads=payloads,
+            content=content,
+            payloads=payloads
         )
         merged_scored_sections.append(scored_section)
 
@@ -201,8 +203,8 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     query = "神经网络"
-    #collection_name = "深度学习在视电阻率快速反演中的研究_6a2683b0"
-    collection_name = "Survey_of_different_Large_Language_Model_Architectures_bd72132b"
+    collection_name = "深度学习在视电阻率快速反演中的研究_6a2683b0"
+    #collection_name = "Survey_of_different_Large_Language_Model_Architectures_bd72132b"
 
     results = query2section_on_single_collection(collection_name, query)
     rich.print(results)
