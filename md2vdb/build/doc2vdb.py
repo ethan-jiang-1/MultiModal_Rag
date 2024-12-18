@@ -125,10 +125,10 @@ def convert_doc_to_vdb(pname_final_md_info: str, max_chunk_num:int = None, skip_
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    #pname_final_md_info = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/_final_info.json"
-    pname_final_md_info = "_work/ctn2md_Survey_of_different_Large_Language_Model_Architectures_lvlm/_final_info.json"
-    #skip_build_vdb = False
-    skip_build_vdb = True
+    pname_final_md_info = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/_final_info.json"
+    #pname_final_md_info = "_work/ctn2md_Survey_of_different_Large_Language_Model_Architectures_lvlm/_final_info.json"
+    skip_build_vdb = False
+    #skip_build_vdb = True
 
     ret = convert_doc_to_vdb(pname_final_md_info, skip_build_vdb=skip_build_vdb)
     rich.print(ret)
