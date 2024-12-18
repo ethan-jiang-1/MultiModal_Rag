@@ -5,6 +5,7 @@ import sys
 #import logging
 import rich
 from dataclasses import dataclass
+from typing import List
 
 load_dotenv()
 
@@ -24,7 +25,7 @@ class OrderedNames:
     desc: str
 
 
-def _parse_ordered_name(line):
+def _parse_ordered_name(line:str) -> dict:
     # 正则表达式匹配结构：
     # 1) [ordered_name] 和 [ordered_name] 之间的层级标识（数字.数字.数字）
     # 2) 层级标识后面的标题
@@ -49,18 +50,18 @@ def _parse_ordered_name(line):
     else:
         return None
 
-def _get_parent_id(sec_id):
+def _get_parent_id(sec_id:str) -> str:
     if sec_id.find(".") == -1:
         return ""
     names = sec_id.split(".")
     names = names[0:len(names)- 1]
     return ".".join(names)
 
-def _get_toc_level(sec_id):
+def _get_toc_level(sec_id:str) -> int:
     names = sec_id.split(".")
     return len(names)
 
-def split_section_to_chunks(md_section, doc_unique_id, doc_title=None, max_tokens_in_chunk=MAX_TOKENS_IN_CHUNK, need_desc_at_top=True):
+def split_section_to_chunks(md_section:str, doc_unique_id:str, doc_title:str = None, max_tokens_in_chunk:int = MAX_TOKENS_IN_CHUNK, need_desc_at_top: bool = True) -> List[ChunkedSectionInfo]:
     lines = md_section.splitlines()
 
     ordered_names = None

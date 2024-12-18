@@ -4,7 +4,7 @@ import sys
 #import logging
 import rich
 import json
-
+from typing import List, Tuple
 
 load_dotenv()
 
@@ -14,8 +14,9 @@ if "./" not in sys.path:
 from ctn2md.src.md_info_base import PUBLIC_MIFN
 from md2vdb.build.split_section_to_chunks import split_section_to_chunks
 from md2vdb.common.doc_meta_info import DocMetaInfo
+from md2vdb.common.chunked_section_info import ChunkedSectionInfo
 
-def _build_doc_meta_info(final_md_info):
+def _build_doc_meta_info(final_md_info: dict) -> DocMetaInfo:
     path_org_doc = final_md_info.get(PUBLIC_MIFN.PATHNAME_ORG_DOC)
     fname_org_doc = final_md_info.get(PUBLIC_MIFN.FNAME_ORG_DOC)
     fname_final_md = final_md_info.get(PUBLIC_MIFN.FNAME_FINAL_MD)
@@ -34,7 +35,7 @@ def _build_doc_meta_info(final_md_info):
                        doc_summary=doc_summary,
                        fnames_sec=final_md_info.get(PUBLIC_MIFN.FNAMES_SECS))
 
-def convert_sections_to_chunks(pname_final_md_info):
+def convert_sections_to_chunks(pname_final_md_info: str) -> Tuple[DocMetaInfo, List[ChunkedSectionInfo]]:
     if not os.path.isfile(pname_final_md_info):
         raise ValueError(f"not found {pname_final_md_info}")
     
