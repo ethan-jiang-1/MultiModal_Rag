@@ -124,7 +124,7 @@ def _clean_and_merge_chunks_content(chunks: List[Tuple[int, Union[ScoredPoint, R
     return merged_content
 
 
-def _merge_chunks_to_sections(sections: Dict[str, Dict]) -> List[ScoredSection]:
+def _merge_chunks_to_scored_sections(sections: Dict[str, Dict]) -> List[ScoredSection]:
     """
     合并所有 chunk，恢复完整的 section。
     """
@@ -180,14 +180,10 @@ def _get_initial_points(client: QdrantClient, query: str, collection_name: str, 
     return initial_points
 
 
-def query2section(collection_name: str, query: str, limit: int = LIMIT_QUERY) -> List[ScoredSection]:
+def query2section_on_single_collection(collection_name: str, query: str, limit: int = LIMIT_QUERY) -> List[ScoredSection]:
     """
     查询集合中的 chunk 并恢复完整的 section。
     """
-    if not VDB_PATH:
-        logger.error("VDB_PATH is not set. Exiting...")
-        return []
-
     client = QdrantClient(path=VDB_PATH)
 
     initial_points = _get_initial_points(client, query, collection_name, limit=limit)
@@ -195,10 +191,10 @@ def query2section(collection_name: str, query: str, limit: int = LIMIT_QUERY) ->
 
     sections = _group_initial_chunks(initial_points)
     _query_missing_chunks(client, collection_name, sections)
-    merged_sections = _merge_chunks_to_sections(sections)
+    merged_scored_sections = _merge_chunks_to_scored_sections(sections)
 
     client.close()
-    return merged_sections
+    return merged_scored_sections
 
 
 if __name__ == "__main__":
@@ -208,5 +204,5 @@ if __name__ == "__main__":
     #collection_name = "深度学习在视电阻率快速反演中的研究_6a2683b0"
     collection_name = "Survey_of_different_Large_Language_Model_Architectures_bd72132b"
 
-    results = query2section(collection_name, query)
+    results = query2section_on_single_collection(collection_name, query)
     rich.print(results)
