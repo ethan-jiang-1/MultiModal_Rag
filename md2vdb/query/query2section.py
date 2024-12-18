@@ -61,3 +61,9 @@ if __name__ == "__main__":
 
     results = query2section_on_single_collection(collection_name, query)
     rich.print(results)
+    print()
+
+    for ndx, result in enumerate(results):
+        print()
+        rich.print((ndx, round(result.score, 2), result.sec_id, result.desc), result.content)
+
