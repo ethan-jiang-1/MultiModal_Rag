@@ -60,7 +60,7 @@ def _get_toc_level(sec_id):
     names = sec_id.split(".")
     return len(names)
 
-def chunk_section_to_chunks(md_section, doc_unique_id, doc_title=None, max_tokens_in_chunk=MAX_TOKENS_IN_CHUNK, need_desc_at_top=True):
+def split_section_to_chunks(md_section, doc_unique_id, doc_title=None, max_tokens_in_chunk=MAX_TOKENS_IN_CHUNK, need_desc_at_top=True):
     lines = md_section.splitlines()
 
     ordered_names = None
@@ -145,7 +145,7 @@ def _test_chunk_secion(max_tokens_in_chunk=256):
     with open(pname_md_section, encoding="utf-8") as f:
         md_section = f.read()
 
-    csis = chunk_section_to_chunks(md_section, doc_unique_id, doc_title=doc_title, max_tokens_in_chunk=max_tokens_in_chunk)
+    csis = split_section_to_chunks(md_section, doc_unique_id, doc_title=doc_title, max_tokens_in_chunk=max_tokens_in_chunk)
     rich.print(csis)            
 
 if __name__ == "__main__":

@@ -6,7 +6,6 @@ import uuid
 
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import VectorParams, Distance, PointStruct, UpdateResult, Filter, FieldCondition
-from dataclasses import fields
 
 load_dotenv()
 
@@ -14,7 +13,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from md2vdb.common.doc_meta_info import DocMetaInfo
-from md2vdb.build.section2chunks import ChunkedSectionInfo
+from md2vdb.build.split_section_to_chunks import ChunkedSectionInfo
 from md2vdb.utils.utili_embedding import EMBEDDING_VEC_LEN, get_text_embedding
 
 
@@ -128,9 +127,7 @@ def inject_doc_chunks_into_vdb(client: QdrantClient, collection_name:str, doc_me
     for ndx, csi in enumerate(all_csis):
         logging.info(f"converting doc_chunk {ndx+1}/{total} for {collection_name}")
         vector = get_text_embedding(csi.content)
-        payload = {}
-        for field in fields(csi):
-            payload[field.name] = getattr(csi, field.name)
+        payload = csi.model_dump()
         vectors.append(vector)
         payloads.append(payload)
         if max_chunk_num is None:

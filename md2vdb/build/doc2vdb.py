@@ -12,7 +12,7 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from md2vdb.build.doc2chunks import convert_doc_to_chunks, DocMetaInfo
+from md2vdb.build.convert_doc_to_chunks import convert_sections_to_chunks, DocMetaInfo
 from md2vdb.utils.util_logging import setup_logger_handlers
 from md2vdb.common.vdb_base import VDB_PATH, get_doc_meta_pathname, get_ref_root
 from md2vdb.build.inject_chunks_to_vdb import inject_doc_chunks_into_vdb
@@ -63,8 +63,8 @@ def _copy_all_ref_files(doc_meta_info:DocMetaInfo, pname_final_md_info: str):
         shutil.copy(src_path, dst_path)
 
 
-def convert_doc_to_vdb(pname_final_md_info: str,  collection_name:str, max_chunk_num:int = None, skip_build_vdb:bool = False):
-    doc_meta_info, all_csis = convert_doc_to_chunks(pname_final_md_info)
+def upsert_doc_to_vdb(pname_final_md_info: str,  collection_name:str, max_chunk_num:int = None, skip_build_vdb:bool = False):
+    doc_meta_info, all_csis = convert_sections_to_chunks(pname_final_md_info)
     if doc_meta_info is None:
         raise ValueError(f"not able to convert {pname_final_md_info}")
     
@@ -88,13 +88,13 @@ def convert_doc_to_vdb(pname_final_md_info: str,  collection_name:str, max_chunk
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    pname_final_md_info = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/_final_info.json"
-    #pname_final_md_info = "_work/ctn2md_Survey_of_different_Large_Language_Model_Architectures_lvlm/_final_info.json"
+    #pname_final_md_info = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/_final_info.json"
+    pname_final_md_info = "_work/ctn2md_Survey_of_different_Large_Language_Model_Architectures_lvlm/_final_info.json"
     skip_build_vdb = False
     #skip_build_vdb = True
 
     collection_name = None
     max_chunk_num = None
 
-    ret = convert_doc_to_vdb(pname_final_md_info, collection_name, max_chunk_num=max_chunk_num, skip_build_vdb=skip_build_vdb)
+    ret = upsert_doc_to_vdb(pname_final_md_info, collection_name, max_chunk_num=max_chunk_num, skip_build_vdb=skip_build_vdb)
     rich.print(ret)
