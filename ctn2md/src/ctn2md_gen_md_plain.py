@@ -107,6 +107,11 @@ class GenMd_Plain(GenMd_Base):
 
         return md_info.get_md_info_path()
 
+    @classmethod
+    def need_followup_step(cls, step_name):
+        if step_name == "fix_headings_plc_by_llm":
+            return False 
+        return True
 
 if __name__ == "__main__":
     #doc_pathname = "_output/ctn2md_attention_is_all_you_need/attention_is_all_you_need___pdf_s0.md"

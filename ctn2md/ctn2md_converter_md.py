@@ -52,14 +52,14 @@ def _do_content2md_convert_core_md(doc_pathname,
         if md_info_path is None:
             logging.error(f"DCCCM: failed {md_info_path} @fix_headings_plc_by_llm")
             return None 
+        src_step_num += 1
 
-    src_step_num += 1
     md_info_path = inject_section_heirarchy(md_info_path, src_step_num=src_step_num)
     if md_info_path is None:
         logging.error(f"DCCCM: failed {md_info_path} @inject_section_heirarchy")
         return None
-
     src_step_num += 1
+
     md_info_path = summarize_content_by_llm(md_info_path, src_step_num=src_step_num)
     if md_info_path is None:
         logging.error(f"DCCCM: failed {md_info_path} @summarize_content_by_llm")
@@ -85,7 +85,8 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     #doc_pathname = "_output/ctn2md_深度学习在视电阻率快速反演中的研究_lp/深度学习在视电阻率快速反演中的研究___pdf.md"
-    doc_pathname = "_output/ctn2md_0530_大模型微调培训_VisualGLM_lp/0530-大模型微调培训-VisualGLM___pdf.md"
+    #doc_pathname = "_output/ctn2md_0530_大模型微调培训_VisualGLM_lp/0530-大模型微调培训-VisualGLM___pdf.md"
+    doc_pathname = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/深度学习在视电阻率快速反演中的研究___pdf.md"
 
     out_dir = None
     mdcontrols = None

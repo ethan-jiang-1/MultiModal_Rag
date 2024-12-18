@@ -52,8 +52,8 @@ def _do_content2md_convert_core_lp(doc_pathname,
         if md_info_path is None:
             logging.error(f"DCCCP: failed {md_info_path} @fix_headings_plc_by_llm")
             return None 
-
-    src_step_num += 1
+        src_step_num += 1
+    
     md_info_path = inject_section_heirarchy(md_info_path, src_step_num=src_step_num)
     if md_info_path is None:
         logging.error(f"DCCCP: failed {md_info_path} @inject_section_heirarchy")
