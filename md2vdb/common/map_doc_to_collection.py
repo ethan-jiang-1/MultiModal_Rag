@@ -38,17 +38,29 @@ def assign_collection_name_to_doc(doc_meta_info:DocMetaInfo, all_csis:List[Chunk
     path_map_doc2col = get_map_doc2col_pathname()
     md2c = MapDocToCol.load_from_file(path_map_doc2col)
     unique_id = doc_meta_info.doc_unique_id
+
+    changed = False
+    org_collection_name = md2c.map_doc2col.get(unique_id, None)
     if collection_name_expected is None:
         if unique_id in md2c.map_doc2col:
             collection_name = md2c.map_doc2col[unique_id]
         else:
             collection_name = unique_id
+            if collection_name != org_collection_name:
+                md2c.map_doc2col[unique_id] = collection_name
+                changed = True
     else:
         collection_name = collection_name_expected
+        if collection_name != org_collection_name:
+            md2c.map_doc2col[unique_id] = collection_name
+            changed = True
+
     logging.info(f"collection_name: {collection_name}")
-    md2c.map_doc2col[unique_id] = collection_name
-    logging.info(f"map doc {unique_id} to  collection_name:{collection_name}")
-    md2c.save_to_file(path_map_doc2col)
+    if changed:
+        logging.info(f"new map doc {unique_id} to  collection_name:{collection_name}")
+        md2c.save_to_file(path_map_doc2col)
+    else:
+        logging.info(f"existing map doc {unique_id} to  collection_name:{collection_name}")
     return collection_name
 
 if __name__ == "__main__":
