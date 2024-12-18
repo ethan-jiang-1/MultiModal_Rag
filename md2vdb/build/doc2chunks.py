@@ -12,7 +12,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.src.md_info_base import PUBLIC_MIFN
-from md2vdb.src.section2chunks import chunk_section_to_chunks
+from md2vdb.build.section2chunks import chunk_section_to_chunks
 
 @dataclass 
 class DocMetaInfo:
@@ -44,7 +44,7 @@ def _build_doc_meta_info(final_md_info):
 
 def convert_doc_to_chunks(pname_final_md_info):
     if not os.path.isfile(pname_final_md_info):
-        return None, None 
+        raise ValueError(f"not found {pname_final_md_info}")
     
     with open(pname_final_md_info, encoding="utf-8") as f:
         final_md_info = json.load(f)

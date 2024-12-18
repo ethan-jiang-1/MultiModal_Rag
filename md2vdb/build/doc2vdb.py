@@ -14,11 +14,11 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from md2vdb.src.doc2chunks import convert_doc_to_chunks, DocMetaInfo
-from md2vdb.src.section2chunks import ChunkedSectionInfo
+from md2vdb.build.doc2chunks import convert_doc_to_chunks, DocMetaInfo
+from md2vdb.build.section2chunks import ChunkedSectionInfo
 from md2vdb.utils.utili_embedding import EMBEDDING_VEC_LEN, get_text_embedding
 from md2vdb.utils.util_logging import setup_logger_handlers
-from md2vdb.src.vdb_const import VDB_PATH
+from md2vdb.common.vdb_const import VDB_PATH
 
 def _inject_chunks_into_vdb(client: QdrantClient, doc_meta_info: DocMetaInfo, all_csis: list[ChunkedSectionInfo], max_chunk_num=None):
     collection_name = doc_meta_info.doc_unique_id

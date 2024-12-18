@@ -17,7 +17,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from md2vdb.utils.util_logging import setup_logger_handlers
-from md2vdb.src.vdb_const import VDB_PATH
+from md2vdb.common.vdb_const import VDB_PATH
 from md2vdb.utils.utili_embedding import get_text_embedding
 
 LIMIT_QUERY = 5
