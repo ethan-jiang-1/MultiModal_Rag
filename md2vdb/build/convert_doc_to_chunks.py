@@ -16,6 +16,11 @@ from md2vdb.build.split_section_to_chunks import split_section_to_chunks
 from md2vdb.common.doc_meta_info import DocMetaInfo
 from md2vdb.common.chunked_section_info import ChunkedSectionInfo
 
+def _get_collection_name(path_org_doc:str) -> str:
+    dir_name = os.path.dirname(path_org_doc)
+    collection_name = os.path.basename(dir_name)
+    return collection_name
+
 def _build_doc_meta_info(final_md_info: dict) -> DocMetaInfo:
     path_org_doc = final_md_info.get(PUBLIC_MIFN.PATHNAME_ORG_DOC)
     fname_org_doc = final_md_info.get(PUBLIC_MIFN.FNAME_ORG_DOC)
@@ -24,7 +29,8 @@ def _build_doc_meta_info(final_md_info: dict) -> DocMetaInfo:
     doc_unique_id = final_md_info.get(PUBLIC_MIFN.DOC_UNIQUE_ID)
     doc_name_title = final_md_info.get(PUBLIC_MIFN.DOC_NAME_TITLE)
     doc_logic_title = final_md_info.get(PUBLIC_MIFN.DOC_LOGIC_TITLE)
-    doc_summary = final_md_info.get(PUBLIC_MIFN.DOC_SUMMARY)     
+    doc_summary = final_md_info.get(PUBLIC_MIFN.DOC_SUMMARY)
+    collection_name = _get_collection_name(path_org_doc)     
     return DocMetaInfo(path_org_doc=path_org_doc,
                        fname_org_doc=fname_org_doc,
                        fname_final_md=fname_final_md,
@@ -33,9 +39,10 @@ def _build_doc_meta_info(final_md_info: dict) -> DocMetaInfo:
                        doc_name_title=doc_name_title,
                        doc_logic_title=doc_logic_title,
                        doc_summary=doc_summary,
-                       fnames_sec=final_md_info.get(PUBLIC_MIFN.FNAMES_SECS))
+                       fnames_sec=final_md_info.get(PUBLIC_MIFN.FNAMES_SECS),
+                       collection_name=collection_name)
 
-def convert_sections_to_chunks(pname_final_md_info: str) -> Tuple[DocMetaInfo, List[ChunkedSectionInfo]]:
+def build_doc_meta_info(pname_final_md_info: str) -> DocMetaInfo:
     if not os.path.isfile(pname_final_md_info):
         raise ValueError(f"not found {pname_final_md_info}")
     
@@ -43,6 +50,10 @@ def convert_sections_to_chunks(pname_final_md_info: str) -> Tuple[DocMetaInfo, L
         final_md_info = json.load(f)
 
     doc_meta_info = _build_doc_meta_info(final_md_info)
+    return doc_meta_info
+
+def convert_sections_to_chunks(pname_final_md_info: str) -> Tuple[DocMetaInfo, List[ChunkedSectionInfo]]:
+    doc_meta_info = build_doc_meta_info(pname_final_md_info)
 
     src_dir = os.path.dirname(pname_final_md_info)
     doc_unique_id = doc_meta_info.doc_unique_id

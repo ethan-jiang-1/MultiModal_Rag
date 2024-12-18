@@ -33,6 +33,7 @@ class DocMetaInfo(BaseModel):
     doc_logic_title: str
     doc_summary: DocSummary  # 嵌套 DocSummary 模型
     fnames_sec: List[str]  # 字符串列表
+    collection_name: str
 
     def save_to_file(self, path_meta_info):
         dir_name = os.path.dirname(path_meta_info)

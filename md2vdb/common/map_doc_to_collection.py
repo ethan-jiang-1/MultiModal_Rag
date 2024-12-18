@@ -2,7 +2,6 @@ from dotenv import load_dotenv
 import sys
 import os
 from pydantic import BaseModel
-from typing import List
 import logging
 import json
 
@@ -12,7 +11,6 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from md2vdb.common.doc_meta_info import DocMetaInfo
-from md2vdb.common.chunked_section_info import ChunkedSectionInfo
 from md2vdb.common.vdb_base import get_map_doc2col_pathname
 
 class MapDocToCol(BaseModel):
@@ -34,26 +32,18 @@ class MapDocToCol(BaseModel):
         map_d2c = cls.model_validate(data) 
         return map_d2c  
 
-def assign_collection_name_to_doc(doc_meta_info:DocMetaInfo, all_csis:List[ChunkedSectionInfo], collection_name_expected:str):
+def assign_collection_name_for_doc(doc_meta_info:DocMetaInfo):
     path_map_doc2col = get_map_doc2col_pathname()
     md2c = MapDocToCol.load_from_file(path_map_doc2col)
     unique_id = doc_meta_info.doc_unique_id
 
     changed = False
-    org_collection_name = md2c.map_doc2col.get(unique_id, None)
-    if collection_name_expected is None:
-        if unique_id in md2c.map_doc2col:
-            collection_name = md2c.map_doc2col[unique_id]
-        else:
-            collection_name = unique_id
-            if collection_name != org_collection_name:
-                md2c.map_doc2col[unique_id] = collection_name
-                changed = True
+    if unique_id in md2c.map_doc2col:
+        collection_name = md2c.map_doc2col[unique_id]
     else:
-        collection_name = collection_name_expected
-        if collection_name != org_collection_name:
-            md2c.map_doc2col[unique_id] = collection_name
-            changed = True
+        collection_name = doc_meta_info.collection_name
+        md2c.map_doc2col[unique_id] = collection_name
+        changed = True
 
     logging.info(f"collection_name: {collection_name}")
     if changed:
@@ -64,12 +54,12 @@ def assign_collection_name_to_doc(doc_meta_info:DocMetaInfo, all_csis:List[Chunk
     return collection_name
 
 if __name__ == "__main__":
-    from md2vdb.build.convert_doc_to_chunks import convert_sections_to_chunks, DocMetaInfo
+    from md2vdb.build.convert_doc_to_chunks import build_doc_meta_info, DocMetaInfo
 
     pname_final_md_info = "_work/ctn2md_Survey_of_different_Large_Language_Model_Architectures_lvlm/_final_info.json"
-    doc_meta_info, all_csis = convert_sections_to_chunks(pname_final_md_info)
+    doc_meta_info = build_doc_meta_info(pname_final_md_info)
 
     collection_name_expected = None
-    collection_name = assign_collection_name_to_doc(doc_meta_info, all_csis, collection_name_expected)
+    collection_name = assign_collection_name_for_doc(doc_meta_info)
     print(collection_name)
 

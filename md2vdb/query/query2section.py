@@ -61,8 +61,7 @@ def query2section_on_multiple_collection(collection_names: list[str], query: str
 
 def test1():
     query = "神经网络"
-    collection_name = "深度学习在视电阻率快速反演中的研究_6a2683b0"
-    #collection_name = "Survey_of_different_Large_Language_Model_Architectures_bd72132b"
+    collection_name = "papers"
 
     results = query2section_on_single_collection(collection_name, query)
     rich.print(results)
@@ -76,8 +75,8 @@ def test2():
     query = "fine-tuned chat models"
 
     collection_names = []
-    collection_names.append("深度学习在视电阻率快速反演中的研究_6a2683b0")
-    collection_names.append("Survey_of_different_Large_Language_Model_Architectures_bd72132b")
+    collection_names.append("papers")
+    #collection_names.append("Survey_of_different_Large_Language_Model_Architectures_bd72132b")
 
     results = query2section_on_multiple_collection(collection_names, query) 
     rich.print(results)
@@ -91,9 +90,9 @@ def test2():
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    #test1()
+    test1()
 
-    test2()
+    #test2()
 
 
 
