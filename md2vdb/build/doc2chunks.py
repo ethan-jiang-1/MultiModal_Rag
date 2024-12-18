@@ -13,7 +13,7 @@ if "./" not in sys.path:
 
 from ctn2md.src.md_info_base import PUBLIC_MIFN
 from md2vdb.build.section2chunks import chunk_section_to_chunks
-from md2vdb.common.doc_meta import DocMetaInfo
+from md2vdb.common.doc_meta_info import DocMetaInfo
 
 def _build_doc_meta_info(final_md_info):
     path_org_doc = final_md_info.get(PUBLIC_MIFN.PATHNAME_ORG_DOC)

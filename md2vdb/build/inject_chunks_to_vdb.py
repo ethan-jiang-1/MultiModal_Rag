@@ -13,7 +13,7 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from md2vdb.common.doc_meta import DocMetaInfo
+from md2vdb.common.doc_meta_info import DocMetaInfo
 from md2vdb.build.section2chunks import ChunkedSectionInfo
 from md2vdb.utils.utili_embedding import EMBEDDING_VEC_LEN, get_text_embedding
 
