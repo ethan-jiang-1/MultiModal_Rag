@@ -13,17 +13,19 @@ if "./" not in sys.path:
 from md2vdb.utils.util_tokenizer import get_token_encoding
 from md2vdb.src.parse_ordered_name import parse_ordered_name, OrderedNames
 
-MAX_TOKENS_IN_CHUNK = 1024
+MAX_TOKENS_IN_CHUNK = 512
 
 @dataclass
 class ChunkedSectionInfo:
     id: str
     parent: str
+    order: int
     title: str
     desc: str
     max_tokens_in_chunk: int
     doc_path: str 
     doc_title: str
+    doc_chunk: str
 
 def _get_parent_id(id):
     if id.find(".") == -1:
@@ -79,9 +81,22 @@ def chunk_section(md_section, doc_path=None, doc_title=None, max_tokens_in_chunk
     desc = ordered_names.desc
     max_tokens_in_chunk = max_tokens_in_chunk
 
-    csi = ChunkedSectionInfo(id, parent, title, desc, max_tokens_in_chunk, doc_path, doc_title)
+    csis = []
+    for order, chunk in chunks.items():
+        order = int(order)
+        doc_chunk = "\n".join(chunk)
+        csi = ChunkedSectionInfo(id=id, 
+                                 parent=parent, 
+                                 order=order, 
+                                 title=title, 
+                                 desc=desc, 
+                                 max_tokens_in_chunk=max_tokens_in_chunk, 
+                                 doc_path=doc_path, 
+                                 doc_title=doc_title, 
+                                 doc_chunk=doc_chunk)
+        csis.append(csi)
 
-    return csi, chunks            
+    return csis            
 
 if __name__ == "__main__":
     pname_md_section = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/xcs_6a2683b0_0006_3_1_1-_卷积原理.md"    
@@ -91,8 +106,8 @@ if __name__ == "__main__":
     with open(pname_md_section, encoding="utf-8") as f:
         md_section = f.read()
 
-    csi, chunks = chunk_section(md_section, doc_path=doc_path, doc_title=doc_title, max_tokens_in_chunk=256)
-    rich.print(csi)
-    rich.print(chunks)
+    csis = chunk_section(md_section, doc_path=doc_path, doc_title=doc_title, max_tokens_in_chunk=256)
+    rich.print(csis)
+
 
     
