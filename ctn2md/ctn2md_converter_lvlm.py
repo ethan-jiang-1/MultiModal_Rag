@@ -85,7 +85,7 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     #doc_pathname = "datasrc/exam/raw_docs/mrag/AIGC时代的人力资源管理进化(徐刚).pdf"
-    doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、上汽内外饰部CAD外包框架服务合同.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪ST2H项目低压线束设计技术服务合同（电子电器）.pdf"
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/papers/Winning Solution For Meta KDD Cup’ 24 2410.00005v1.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/Survey of different Large Language Model Architectures.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/A Coin Has Two Sides.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/papers/attention_is_all_you_need.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/papers/attention_is_all_you_need.pdf"
 
     #doc_pathname = "datasrc/exam/raw_docs/misc/0530-大模型微调培训-VisualGLM.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/misc/ai602-波士顿咨询：银行业生成式AI应用报告（2023）.pdf"

@@ -87,7 +87,9 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     #pname_final_info = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/_final_info.json"
-    pname_final_info = "_work/ctn2md_Survey_of_different_Large_Language_Model_Architectures_lvlm/_final_info.json"
+    #pname_final_info = "_work/ctn2md_Survey_of_different_Large_Language_Model_Architectures_lvlm/_final_info.json"
+    pname_final_info = "_output/ctn2md_attention_is_all_you_need_lvlm/_final_info.json"
+
     #pname_final_info = "_output/ctn2md_AIGC时代的人力资源管理进化(徐刚)_lvlm/_final_info.json"
     #pname_final_info = "_output/ctn2md_业绩案例_上汽内外饰DRE外包框架服务合同_lp/_final_info.json"
 

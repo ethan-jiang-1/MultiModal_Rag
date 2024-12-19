@@ -19,6 +19,7 @@ from ctn2md.utils.util_markdown import remove_comment, read_markdown_file
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.utils.util_file import get_crc32_id
 
+ORDERD_NO_HEADING = "0_NoHeading"
 class HeadingStack:
     def __init__(self):
         """初始化堆栈"""
@@ -265,7 +266,7 @@ def _save_current_section(output_dir, file_index, created_filenames, section_con
         file_name = _save_section_to_file(
             output_dir=output_dir,
             file_index=0,
-            ordered_name="0_NoHeading",
+            ordered_name=ORDERD_NO_HEADING,
             desc="NoDescription",
             section_content=section_content,
             crc32_id=crc32_id
@@ -308,6 +309,8 @@ def _save_section_to_file(output_dir, file_index, ordered_name, desc, section_co
         with open(file_path, 'w', encoding='utf-8') as f:
             if desc:
                 f.write(f"<!-- [desc] {desc} [desc] -->\n")
+            if ordered_name == ORDERD_NO_HEADING:
+                f.write(f"<!-- [ordered_name] 0) {ORDERD_NO_HEADING} [ordered_name] [desc] {desc} [desc] -->")
             f.write(section_content)
 
         logging.info(f"Saved section to file: {file_path}")
