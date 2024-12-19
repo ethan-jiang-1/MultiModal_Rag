@@ -16,21 +16,17 @@ from md2vdb.build.split_section_to_chunks import split_section_to_chunks
 from md2vdb.common.doc_meta_info import DocMetaInfo
 from md2vdb.common.chunked_section_info import ChunkedSectionInfo
 
-# We are going to use folder name of the org doc as collection_name
-def _get_collection_name(path_org_doc:str) -> str:
-    dir_name = os.path.dirname(path_org_doc)
-    collection_name = os.path.basename(dir_name)
-    return collection_name
 
 # Have to track back to original doc, as we are going to use folder name of the org doc as collection_name
-def _get_org_doc(final_md_info):
-    org_doc = final_md_info.get(PUBLIC_MIFN.PATHNAME_ORG_DOC)
-    org_doc = str(org_doc)
-    if org_doc.endswith(".md"):
+def _get_org_doc_and_collection_name(final_md_info):
+    pname_org_doc = final_md_info.get(PUBLIC_MIFN.PATHNAME_ORG_DOC)
+    if pname_org_doc.endswith(".md"):
         src_doc = final_md_info.get(PUBLIC_MIFN.PATHNAME_SRC_DOC, None)
         if src_doc is not None:
-            return src_doc
-    return org_doc
+            pname_org_doc = src_doc
+    dir_name = os.path.dirname(pname_org_doc)
+    collection_name = os.path.basename(dir_name)
+    return pname_org_doc, collection_name
 
 def _build_doc_meta_info(final_md_info: dict) -> DocMetaInfo:
     fname_org_doc = final_md_info.get(PUBLIC_MIFN.FNAME_ORG_DOC)
@@ -41,8 +37,7 @@ def _build_doc_meta_info(final_md_info: dict) -> DocMetaInfo:
     doc_logic_title = final_md_info.get(PUBLIC_MIFN.DOC_LOGIC_TITLE)
     doc_summary = final_md_info.get(PUBLIC_MIFN.DOC_SUMMARY)
 
-    path_org_doc = _get_org_doc(final_md_info)
-    collection_name = _get_collection_name(path_org_doc)
+    path_org_doc, collection_name = _get_org_doc_and_collection_name(final_md_info)
 
     return DocMetaInfo(path_org_doc=path_org_doc,
                        fname_org_doc=fname_org_doc,
