@@ -90,6 +90,7 @@ pytz==2024.2
 pyxnat==1.6.2
 PyYAML==6.0.2
 qdrant-client==1.12.1
+rank-bm25==0.2.2
 rdflib==6.3.2
 regex==2024.11.6
 requests==2.32.3

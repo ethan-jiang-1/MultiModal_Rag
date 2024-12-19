@@ -51,7 +51,8 @@ def query2section_on_multiple_collection(collection_names: list[str], query: str
     return all_merged_scored_sections
 
 def test1():
-    query = "神经网络"
+    #query = "神经网络"
+    query = "reference"
     collection_name = "papers"
 
     results = query2section_on_single_collection(collection_name, query)
