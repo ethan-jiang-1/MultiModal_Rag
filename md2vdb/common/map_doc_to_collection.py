@@ -12,6 +12,7 @@ if "./" not in sys.path:
 
 from md2vdb.common.doc_meta_info import DocMetaInfo
 from md2vdb.common.vdb_base import get_map_doc2col_pathname
+from md2vdb.utils.util_logging import setup_logger_handlers
 
 class MapDocToCol(BaseModel):
     map_doc2col: dict
@@ -56,10 +57,12 @@ def register_collection_name_for_doc(doc_meta_info:DocMetaInfo):
 if __name__ == "__main__":
     from md2vdb.build.convert_doc_to_chunks import build_doc_meta_info, DocMetaInfo
 
+    setup_logger_handlers()
+
     pname_final_md_info = "_work/ctn2md_Survey_of_different_Large_Language_Model_Architectures_lvlm/_final_info.json"
     doc_meta_info = build_doc_meta_info(pname_final_md_info)
 
     collection_name_expected = None
     collection_name = register_collection_name_for_doc(doc_meta_info)
-    print(collection_name)
+    print("regitered collection name: ", collection_name)
 
