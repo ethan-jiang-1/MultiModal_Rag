@@ -16,7 +16,7 @@ from md2vdb.build.convert_doc_to_chunks import convert_sections_to_chunks, DocMe
 from md2vdb.utils.util_logging import setup_logger_handlers
 from md2vdb.common.vdb_base import VDB_PATH, get_doc_meta_pathname, get_ref_root
 from md2vdb.build.inject_chunks_to_vdb import inject_doc_chunks_into_vdb
-from md2vdb.common.map_doc_to_collection import assign_collection_name_for_doc
+from md2vdb.common.map_doc_to_collection import register_collection_name_for_doc
 
 def _save_doc_meta_info(doc_meta_info:DocMetaInfo):
     pname_meta_doc = get_doc_meta_pathname(doc_meta_info.doc_unique_id)
@@ -68,7 +68,7 @@ def upsert_doc_to_vdb(pname_final_info: str, max_chunk_num:int = None, skip_buil
     if doc_meta_info is None:
         raise ValueError(f"not able to convert {pname_final_info}")
     
-    collection_name = assign_collection_name_for_doc(doc_meta_info)
+    collection_name = register_collection_name_for_doc(doc_meta_info)
     
     if not skip_build_vdb:
         vdb_path = VDB_PATH 

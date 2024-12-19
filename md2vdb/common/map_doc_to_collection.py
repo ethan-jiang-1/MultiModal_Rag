@@ -32,7 +32,7 @@ class MapDocToCol(BaseModel):
         map_d2c = cls.model_validate(data) 
         return map_d2c  
 
-def assign_collection_name_for_doc(doc_meta_info:DocMetaInfo):
+def register_collection_name_for_doc(doc_meta_info:DocMetaInfo):
     path_map_doc2col = get_map_doc2col_pathname()
     md2c = MapDocToCol.load_from_file(path_map_doc2col)
     unique_id = doc_meta_info.doc_unique_id
@@ -60,6 +60,6 @@ if __name__ == "__main__":
     doc_meta_info = build_doc_meta_info(pname_final_md_info)
 
     collection_name_expected = None
-    collection_name = assign_collection_name_for_doc(doc_meta_info)
+    collection_name = register_collection_name_for_doc(doc_meta_info)
     print(collection_name)
 
