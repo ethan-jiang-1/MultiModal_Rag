@@ -125,6 +125,7 @@ def _copy_final_result_json(md_info):
     names = [PUBLIC_MIFN.VERSION,
              PUBLIC_MIFN.GEN_ENGINE,
              PUBLIC_MIFN.PATHNAME_ORG_DOC,
+             PUBLIC_MIFN.PATHNAME_SRC_DOC,
              PUBLIC_MIFN.FNAME_ORG_DOC,
              PUBLIC_MIFN.DOC_UNIQUE_ID,
              PUBLIC_MIFN.DOC_CTN_TYPE,

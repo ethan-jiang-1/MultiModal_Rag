@@ -78,6 +78,10 @@ def _copy_orginal_files(md_info:MdInfo, doc_pathname:str):
                 shutil.copy(pname_org_doc, pname_dst_doc)
                 logging.info(f"copy file from {pname_org_doc} to {pname_dst_doc}")
 
+                org_final_org_doc = org_final_json.get(PUBLIC_MIFN.PATHNAME_ORG_DOC, None)
+                if org_final_org_doc is not None:
+                    md_info[PUBLIC_MIFN.PATHNAME_SRC_DOC] = org_final_org_doc
+
     return pathname_s0_md
     
 

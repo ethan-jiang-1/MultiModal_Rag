@@ -86,7 +86,8 @@ if __name__ == "__main__":
 
     #doc_pathname = "_output/ctn2md_深度学习在视电阻率快速反演中的研究_lp/深度学习在视电阻率快速反演中的研究___pdf.md"
     #doc_pathname = "_output/ctn2md_0530_大模型微调培训_VisualGLM_lp/0530-大模型微调培训-VisualGLM___pdf.md"
-    doc_pathname = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/深度学习在视电阻率快速反演中的研究___pdf.md"
+    #doc_pathname = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/深度学习在视电阻率快速反演中的研究___pdf.md"
+    doc_pathname = "_output/ctn2md_AIGC时代的人力资源管理进化(徐刚)_lp/AIGC时代的人力资源管理进化(徐刚)___pdf.md"
 
     out_dir = None
     mdcontrols = None

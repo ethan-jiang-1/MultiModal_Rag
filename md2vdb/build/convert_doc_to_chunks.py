@@ -16,13 +16,23 @@ from md2vdb.build.split_section_to_chunks import split_section_to_chunks
 from md2vdb.common.doc_meta_info import DocMetaInfo
 from md2vdb.common.chunked_section_info import ChunkedSectionInfo
 
+# We are going to use folder name of the org doc as collection_name
 def _get_collection_name(path_org_doc:str) -> str:
     dir_name = os.path.dirname(path_org_doc)
     collection_name = os.path.basename(dir_name)
     return collection_name
 
+# Have to track back to original doc, as we are going to use folder name of the org doc as collection_name
+def _get_org_doc(final_md_info):
+    org_doc = final_md_info.get(PUBLIC_MIFN.PATHNAME_ORG_DOC)
+    org_doc = str(org_doc)
+    if org_doc.endswith(".md"):
+        src_doc = final_md_info.get(PUBLIC_MIFN.PATHNAME_SRC_DOC, None)
+        if src_doc is not None:
+            return src_doc
+    return org_doc
+
 def _build_doc_meta_info(final_md_info: dict) -> DocMetaInfo:
-    path_org_doc = final_md_info.get(PUBLIC_MIFN.PATHNAME_ORG_DOC)
     fname_org_doc = final_md_info.get(PUBLIC_MIFN.FNAME_ORG_DOC)
     fname_final_md = final_md_info.get(PUBLIC_MIFN.FNAME_FINAL_MD)
     doc_cnt_type = final_md_info.get(PUBLIC_MIFN.DOC_CTN_TYPE)
@@ -30,7 +40,10 @@ def _build_doc_meta_info(final_md_info: dict) -> DocMetaInfo:
     doc_name_title = final_md_info.get(PUBLIC_MIFN.DOC_NAME_TITLE)
     doc_logic_title = final_md_info.get(PUBLIC_MIFN.DOC_LOGIC_TITLE)
     doc_summary = final_md_info.get(PUBLIC_MIFN.DOC_SUMMARY)
-    collection_name = _get_collection_name(path_org_doc)     
+
+    path_org_doc = _get_org_doc(final_md_info)
+    collection_name = _get_collection_name(path_org_doc)
+
     return DocMetaInfo(path_org_doc=path_org_doc,
                        fname_org_doc=fname_org_doc,
                        fname_final_md=fname_final_md,
@@ -72,7 +85,8 @@ def convert_sections_to_chunks(pname_final_md_info: str) -> Tuple[DocMetaInfo, L
     return doc_meta_info, all_csis
 
 if __name__ == "__main__":
-    pname_final_md_info = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/_final_info.json"
+    #pname_final_md_info = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/_final_info.json"
+    pname_final_md_info = "_output/ctn2md_AIGC时代的人力资源管理进化(徐刚)_md/_final_info.json"
 
     meta_info, all_csis = convert_sections_to_chunks(pname_final_md_info)
     rich.print(meta_info)
