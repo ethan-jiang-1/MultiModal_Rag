@@ -64,6 +64,9 @@ def _copy_all_ref_files(doc_meta_info:DocMetaInfo, pname_final_info: str):
 
 
 def upsert_doc_to_vdb(pname_final_info: str, max_chunk_num:int = None, skip_build_vdb:bool = False):
+    if not pname_final_info.endswith("_final_info.json"):
+        raise ValueError("only take _final_info.json as input")
+
     doc_meta_info, all_csis = convert_sections_to_chunks(pname_final_info)
     if doc_meta_info is None:
         raise ValueError(f"not able to convert {pname_final_info}")

@@ -108,10 +108,10 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/papers/YOU ONLY 2409.13695v1.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/LongRAG.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/DIFFERENTIAL TRANSFORMER 2410.05258v1.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/papers/Winning Solution For Meta KDD Cup’ 24 2410.00005v1.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/papers/Winning Solution For Meta KDD Cup’ 24 2410.00005v1.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/Survey of different Large Language Model Architectures.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/A Coin Has Two Sides.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/papers/attention_is_all_you_need.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/papers/attention_is_all_you_need.pdf"
 
     #doc_pathname = "datasrc/exam/raw_docs/misc/0530-大模型微调培训-VisualGLM.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/misc/ai602-波士顿咨询：银行业生成式AI应用报告（2023）.pdf"
