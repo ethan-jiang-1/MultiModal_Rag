@@ -6,6 +6,7 @@ import rich
 #import random
 #import re
 import shutil
+import json 
 
 load_dotenv()
 
@@ -13,7 +14,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
+from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE, PUBLIC_MIFN
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src.ctn2md_gen_md_base import GenMd_Base
 from ctn2md.utils.util_markdown import find_all_image_refs
@@ -52,6 +53,32 @@ def _copy_img_files_in_markdown(doc_pathname, out_dir):
         else:
             logging.info(f"Warning: File not found - {src_path}")
     return image_refs
+
+def _copy_orginal_files(md_info:MdInfo, doc_pathname:str):
+    pathname_s0_md = md_info.name_step_pathname(0)
+    shutil.copy(doc_pathname, pathname_s0_md)
+    logging.info(f"copy file from {doc_pathname} to {pathname_s0_md}")
+
+    dir_org = os.path.dirname(doc_pathname)
+    fname_final_json = MdInfo.get_fname_final_json()
+    pname_final_json = os.path.join(dir_org, fname_final_json)
+    if os.path.isfile(pname_final_json):
+        fname_org_final_info = fname_final_json.replace(".json", "_org.json")
+        pname_org_final_json = os.path.join(md_info.get_out_dir(), fname_org_final_info)
+        if os.path.isfile(pname_final_json):
+            shutil.copy(pname_final_json, pname_org_final_json)
+            logging.info(f"copy file from {pname_final_json} to {pname_org_final_json}")
+
+            with open(pname_org_final_json, "r", encoding="utf-8") as f:
+                org_final_json = json.load(f)
+            
+            pname_org_doc = org_final_json.get(PUBLIC_MIFN.PATHNAME_ORG_DOC)
+            pname_dst_doc = os.path.join(md_info.get_out_dir(), os.path.basename(pname_org_doc))
+            if os.path.isfile(pname_org_doc):
+                shutil.copy(pname_org_doc, pname_dst_doc)
+                logging.info(f"copy file from {pname_org_doc} to {pname_dst_doc}")
+
+    return pathname_s0_md
     
 
 def _gen_md_plain(doc_pathname, md_info):
@@ -65,9 +92,8 @@ def _gen_md_plain(doc_pathname, md_info):
     pathname_final_md = md_info.name_step_pathname(-1)
     if pathname_final_md == doc_pathname:
         raise ValueError(f"src_md cannot be same as dst_md: {doc_pathname}")
-    pathname_s0_md = md_info.name_step_pathname(0)
-    shutil.copy(doc_pathname, pathname_s0_md)
-    logging.info(f"copy md from {doc_pathname} to {pathname_s0_md}")
+
+    pathname_s0_md = _copy_orginal_files(md_info, doc_pathname)
     md_info.add_step_into_md_info_mdflow(pathname_s0_md, actor="gen_md_plain")
     md_info.save()
 
@@ -115,7 +141,8 @@ class GenMd_Plain(GenMd_Base):
 
 if __name__ == "__main__":
     #doc_pathname = "_output/ctn2md_attention_is_all_you_need/attention_is_all_you_need___pdf_s0.md"
-    doc_pathname = "_output/ctn2md_attention_is_all_you_need/attention_is_all_you_need___pdf.md"
+    #doc_pathname = "_output/ctn2md_attention_is_all_you_need/attention_is_all_you_need___pdf.md"
+    doc_pathname = "_output/ctn2md_AIGC时代的人力资源管理进化(徐刚)_lp/AIGC时代的人力资源管理进化(徐刚)___pdf.md"
 
     out_dir = MdInfo.get_suggested_out_dir(doc_pathname, GenMd_Plain.OD_SUFFIX)
     md_info = MdInfo(out_dir)
