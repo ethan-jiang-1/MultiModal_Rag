@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 import sys
 import rich
 
-from qdrant_client import QdrantClient
+#from qdrant_client import QdrantClient
 from typing import List
 
 # 加载环境变量
@@ -15,16 +15,7 @@ from md2vdb.utils.util_logging import setup_logger_handlers
 from md2vdb.common.vdb_base import VDB_PATH
 from md2vdb.query.recover_section_for_query import query_initial_points, recover_scored_sections_from_chunk_from_vdb, ScoredSection, LIMIT_QUERY, sort_scored_sections_by_score
 from md2vdb.utils.utili_embedding import get_text_embedding
-
-class QdrantClientContextManager:
-    def __init__(self, *args, **kwargs):
-        self.client = QdrantClient(*args, **kwargs)
-
-    def __enter__(self):
-        return self.client
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.client.close()
+from md2vdb.query.query_bsae import QdrantClientContextManager
 
 def query2section_on_single_collection(collection_name: str, query: str, limit: int = LIMIT_QUERY) -> List[ScoredSection]:
     """

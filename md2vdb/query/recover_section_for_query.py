@@ -17,7 +17,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from md2vdb.common.chunked_section_info import ChunkedSectionInfo
-
+from md2vdb.query.query_bsae import QdrantClientContextManager
 
 LIMIT_QUERY = 5
 
@@ -44,7 +44,7 @@ def _group_initial_chunks(initial_points: List[ScoredPoint]) -> Dict[str, Dict]:
     """
     按 sec_id 聚合初始 chunk 数据。
     """
-    sections = defaultdict(lambda: {"chunks": [], "max_score": 0.0, "metadata": None, "total": 0})
+    sections = defaultdict(lambda: {"order_n_point": [], "max_score": 0.0, "metadata": None, "total": 0})
 
     for point in initial_points:
         sec_id = point.payload.get("sec_id")
@@ -55,7 +55,7 @@ def _group_initial_chunks(initial_points: List[ScoredPoint]) -> Dict[str, Dict]:
         order = point.payload.get("order", 0)
         total = point.payload.get("total", 1)
 
-        sections[sec_id]["chunks"].append((order, point))
+        sections[sec_id]["order_n_point"].append((order, point))
         sections[sec_id]["max_score"] = max(sections[sec_id]["max_score"], getattr(point, "score", 0.0))
         sections[sec_id]["metadata"] = point.payload
         sections[sec_id]["total"] = total
@@ -69,7 +69,7 @@ def _query_missing_chunks(client: QdrantClient, collection_name: str, sections: 
     查询缺失的 chunk 并补齐到 sections 字典中。
     """
     for sec_id, data in sections.items():
-        existing_orders = {order for order, _ in data["chunks"]}
+        existing_orders = {order for order, _ in data["order_n_point"]}
         total_chunks = data["total"]
         missing_orders = [order for order in range(total_chunks) if order not in existing_orders]
 
@@ -91,17 +91,18 @@ def _query_missing_chunks(client: QdrantClient, collection_name: str, sections: 
                 )
                 if result and result[0]:
                     point = result[0][0]
-                    data["chunks"].append((missing_order, point))
+                    data["order_n_point"].append((missing_order, point))
                 else:
                     logger.warning(f"Chunk with sec_id={sec_id} and order={missing_order} not found.")
 
+        # 排序数据，确保按照 order 升序排列
+        data["order_n_point"].sort(key=lambda x: x[0])
+    return sections
 
 def _clean_chunk_content(content: str) -> str:
     """
     清理 chunk 内容，去除描述符 [desc] ... [desc] 及其包裹的内容。
     """
-    #cleaned_content = re.sub(r"\[desc\].*?\[desc\]\n?", "", content, flags=re.DOTALL)
-    #cleaned_content = re.sub(r"\[desc\][\s\S]*?\[desc\]", "", content)
     cleaned_content = re.sub(r"\[desc\][^\[]*?\[desc\]\n?", "", content)
     return cleaned_content.strip()
 
@@ -130,7 +131,7 @@ def _merge_chunks_to_scored_sections(sections: Dict[str, Dict]) -> List[ScoredSe
     """
     merged_scored_sections = []
     for sec_id, data in sections.items():
-        chunks = data["chunks"]
+        chunks = data["order_n_point"]
         content = _clean_and_merge_chunks_content(chunks)
 
         # 计算最高分数
@@ -194,4 +195,22 @@ def sort_scored_sections_by_score(sections: List[ScoredSection]) -> List[ScoredS
     return sorted(sections, key=lambda section: section.score, reverse=True)
 
 if __name__ == "__main__":
-    pass
+    import rich
+    from md2vdb.utils.utili_embedding import get_text_embedding
+    from md2vdb.utils.util_logging import setup_logger_handlers
+    from md2vdb.common.vdb_base import VDB_PATH
+
+    setup_logger_handlers()
+
+    query = "神经网络"
+    collection_name = "papers"
+
+
+    with QdrantClientContextManager(path=VDB_PATH) as client:
+        query_vector = get_text_embedding(query)
+
+        initial_scored_chunks = query_initial_points(client, collection_name, query_vector, limit=5)
+
+        merged_scored_sections = recover_scored_sections_from_chunk_from_vdb(client, collection_name, initial_scored_chunks)
+
+        rich.print(merged_scored_sections)

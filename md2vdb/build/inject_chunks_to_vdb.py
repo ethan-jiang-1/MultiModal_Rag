@@ -99,7 +99,7 @@ def _prepare_collection_for_reinject_doc(client: QdrantClient, collection_name: 
         logging.info(f"Collection '{collection_name}' created.")
     else:
         stats = _collection_stats_for_doc_id(client, collection_name, doc_unique_id, doc_title)
-        rich.print("[yellow]before cleanup[/yellow]", stats)
+        rich.print(f"[yellow]before cleanup[/yellow] {stats}")
         # 集合存在，清理与 doc_unique_id 匹配的点
         filter_query = Filter(
             must=[
@@ -114,7 +114,7 @@ def _prepare_collection_for_reinject_doc(client: QdrantClient, collection_name: 
         logging.info(f"Deleted {deleted_points} points from collection '{collection_name}' with doc_unique_id='{doc_unique_id}'.")
 
     stats = _collection_stats_for_doc_id(client, collection_name, doc_unique_id, doc_title)
-    rich.print("[yellow]after cleanup[/yellow]", stats)
+    rich.print(f"[yellow]after cleanup[/yellow] {stats}")
     logging.info(f"collection '{collection_name}' with doc_unique_id='{doc_unique_id} stats: {stats}")
 
 def inject_doc_chunks_into_vdb(client: QdrantClient, collection_name:str, doc_meta_info: DocMetaInfo, all_csis: list[ChunkedSectionInfo], max_chunk_num=None) -> UpdateResult:
@@ -145,6 +145,11 @@ def inject_doc_chunks_into_vdb(client: QdrantClient, collection_name:str, doc_me
         points=points,
     )
     rich.print(ret)
+
+    doc_unique_id = doc_meta_info.doc_unique_id
+    doc_title = doc_meta_info.doc_logic_title
+    stats = _collection_stats_for_doc_id(client, collection_name, doc_unique_id, doc_title)
+    rich.print(f"[yellow]after inject_doc_chunks_into_vdb [/yellow]  {stats}")
     return ret
 
 if __name__ == "__main__":
