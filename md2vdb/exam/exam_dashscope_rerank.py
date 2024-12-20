@@ -24,7 +24,8 @@ def dashscope_rerank(query_str:str, documents: List[str], top_n: int = None):
     return results
 
 if __name__ == "__main__":
-    query_str = "Organic skincare products for sensitive skin"
+    #query_str = "Organic skincare products for sensitive skin"
+    query_str = "Organic skincare for sensitive skin with aloe vera and chamomile:"
     documents = [
             "Organic skincare for sensitive skin with aloe vera and chamomile: Imagine the soothing embrace of nature with our organic skincare range, crafted specifically for sensitive skin. Infused with the calming properties of aloe vera and chamomile, each product provides gentle nourishment and protection. Say goodbye to irritation and hello to a glowing, healthy complexion.",
             "New makeup trends focus on bold colors and innovative techniques: Step into the world of cutting-edge beauty with this seasons makeup trends. Bold, vibrant colors and groundbreaking techniques are redefining the art of makeup. From neon eyeliners to holographic highlighters, unleash your creativity and make a statement with every look.",
@@ -36,5 +37,6 @@ if __name__ == "__main__":
             "新の化粧トレンドは大胆な色と革新的なテクニックに焦点を当てています: 最新の化粧トレンドで美しさの現代を体験してください。大胆で鮮やかな色と革新的な技術は、メイクのアートを再定義しています。ネオンアイライナーやホログラフィックハイライターなど、あらゆる見た目にクリエイティビティを解放し、ステートメントを打ち出してください。"
         ]
     
+    print(query_str, dashscope_rerank)
     results = dashscope_rerank(query_str, documents)
     rich.print(results)
