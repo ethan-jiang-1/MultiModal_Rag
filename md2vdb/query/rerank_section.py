@@ -15,6 +15,8 @@ if "./" not in sys.path:
 
 from md2vdb.query.recover_section_for_query import ScoredSection
 
+MAX_DOC_LEN = 3000
+
 def convert_to_documents_and_distance_results(scored_sections: List[ScoredSection]) -> Tuple[List[str], List[ScoredSection], List[Any]]:
     """
     将 ScoredSection 数据转化为 documents 和 distance_results 格式。
@@ -41,41 +43,58 @@ def convert_to_documents_and_distance_results(scored_sections: List[ScoredSectio
         distance_results.append({
             "index": ndx,  # 当前的顺序
             "document": document_content,
-            "relevance_score": relevance_score
+            "relevance_score": round(relevance_score, 5)
         })
 
+    distance_results = normalize_scores(distance_results, 0, 1)
     return indexed_documents, sorted_sections, distance_results
 
-def bm25_rerank(query_str:str, documents: List[str], top_n: int = None):
 
+def bm25_reorder(query_str: str, documents: List[str], top_n: int = None):
+    """
+    使用 BM25 对文档进行排序，并返回相关性分数。
+    
+    :param query_str: 查询字符串
+    :param documents: 文档列表
+    :param top_n: 返回的文档数（可选，默认为所有文档）
+    :return: 按 BM25 分数排序后的文档列表，每个元素包含索引、文档和相关性分数
+    """
+    # 对查询进行分词
     query_words = list(jieba.cut(query_str))
 
-    documents = [item[:3000] for item in documents]
+    # 文档截断到 3000 个字符，并对每个文档分词
+    documents = [doc[:MAX_DOC_LEN] for doc in documents]
+    tokenized_documents = [list(jieba.cut(doc)) for doc in documents]
 
-    documents_tokens = []
-    for document in documents:
-        document_words = list(jieba.cut(document))
-        document_tokens = BM25Okapi(document_words)
-        documents_tokens.append(document_tokens)
+    # 创建 BM25 对象
+    bm25_documents = BM25Okapi(tokenized_documents)
 
-    bm25_documents = BM25Okapi(documents)
+    # 计算 BM25 分数
     bm25_scores = bm25_documents.get_scores(query_words)
 
-    results = []
+    # 构建结果列表
+    bm25_results = []
     for i, score in enumerate(bm25_scores):
-        results.append({
+        bm25_results.append({
             "index": i,
             "document": documents[i],
-            "relevance_score": float(score)
+            "relevance_score": round(float(score), 5)
         })
 
-    return results
+    # 归一化 BM25 分数到 [0, 1] 范围
+    bm25_results = normalize_scores(bm25_results, 0, 1)
+
+    # 按 BM25 分数排序
+    bm25_results = sorted(bm25_results, key=lambda x: x["relevance_score"], reverse=True)
+
+    return bm25_results
+
     
 def dashscope_rerank(query_str:str, documents: List[str], top_n: int = None):
     model = "gte-rerank"
     api_key = os.getenv("DASHSCOPE_API_KEY")
 
-    documents = [item[:3000] for item in documents]
+    documents = [item[:MAX_DOC_LEN] for item in documents]
 
     ds_results = dashscope.TextReRank.call(
                 model=model,
@@ -87,17 +106,20 @@ def dashscope_rerank(query_str:str, documents: List[str], top_n: int = None):
             )
     
     results_items = ds_results.output.results
-    results = [dict(item) for item in results_items]
-    return results
+    rerank_results = []
+    for i, results_item in enumerate(results_items):
+        rerank_results.append({
+            "index": i,
+            "document": results_item["document"]["text"],
+            "relevance_score": round(float(results_item["relevance_score"]), 5)
+        })
+    rerank_results = normalize_scores(rerank_results, 0, 1)
+    return rerank_results
 
 def normalize_scores(results, min_score, max_score):
     """
     对分数进行归一化，将所有分数映射到 [0, 1]
     """
-    #scores = [r['relevance_score'] for r in results]
-    #max_score = max(scores)
-    #min_score = min(scores)
-
     for r in results:
         if max_score > min_score:
             r['relevance_score'] = (r['relevance_score'] - min_score) / (max_score - min_score)
@@ -156,7 +178,18 @@ def calculate_rrf_multiple(sources: List[Any], k: int = 60):
     sorted_rrf_scores = sorted(rrf_scores, key=lambda x: x["rrf_score"], reverse=True)
     return sorted_rrf_scores
 
-def rerank_rrf(query_str: str, scored_sections: List[ScoredSection], distance_weight=1, jina_weight=8, bm25_weight=1):
+def assign_score_rrf_score(sorted_rrf_scores, sorted_sections):
+    for srs in sorted_rrf_scores:
+        matched = False
+        for ss in sorted_sections:
+            if ss.content.startswith(srs["document"]):
+                ss.score_rrf = round(srs["rrf_score"], 5)
+                matched = True
+                break
+        if not matched:
+            logging.error(f"find no match for {srs}")
+
+def rerank_rrf(query_str: str, scored_sections: List[ScoredSection], distance_weight=1, rerank_weight=8, bm25_weight=1):
     """
     使用 RRF 融合多个排序来源，并对不同来源应用权重。
     
@@ -168,34 +201,28 @@ def rerank_rrf(query_str: str, scored_sections: List[ScoredSection], distance_we
     :return: 融合后的排序结果，按照 RRF 分数从高到低排序
     """
     # 转换 scored_sections 为文档列表和距离结果
-    indexed_documents, sorted_sections, distance_results_org = convert_to_documents_and_distance_results(scored_sections)
+    indexed_documents, sorted_sections, distance_results = convert_to_documents_and_distance_results(scored_sections)
 
     # 获取其他来源的排序结果
-    bm25_results_org = bm25_rerank(query_str, indexed_documents)
-    rerank_results_org = dashscope_rerank(query_str, indexed_documents)
+    bm25_results = bm25_reorder(query_str, indexed_documents)
+    rerank_results = dashscope_rerank(query_str, indexed_documents)
 
-    distance_results = normalize_scores(distance_results_org, 0, 1)
-    rich.print("distance_results", [item["relevance_score"] for item in distance_results])
-    bm25_results = normalize_scores(bm25_results_org, 0, 10)
-    rich.print("bm25_results", [item["relevance_score"] for item in bm25_results])
-    rerank_results = normalize_scores(rerank_results_org, 0, 1)
-    rich.print("rerank_results", [item["relevance_score"] for item in rerank_results])
+    rich.print(("distance_results", [item["relevance_score"] for item in distance_results], distance_weight))
+    rich.print(("bm25_results", [item["relevance_score"] for item in bm25_results], bm25_weight))
+    rich.print(("rerank_results", [item["relevance_score"] for item in rerank_results], rerank_weight))
 
     # 各来源及其权重
-    sources = [
-        (distance_results, distance_weight),
-        (rerank_results, jina_weight),
-        (bm25_results, bm25_weight)
-    ]
+    sources = []
+    if distance_weight > 0:
+        sources.append((distance_results, distance_weight))
+    if rerank_weight > 0:
+        sources.append((rerank_results, rerank_weight))
+    if bm25_weight > 0:
+        sources.append((bm25_results, bm25_weight))
 
     # 计算 RRF 排序结果
     sorted_rrf_scores = calculate_rrf_multiple(sources)
-    for srs in sorted_rrf_scores:
-        index = srs["index"]
-        if srs["document"] == sorted_sections[index].content:
-            sorted_sections[index].score_rrf = round(srs["rrf_score"], 5)
-        else:
-            logging.error("missed index?!")
+    assign_score_rrf_score(sorted_rrf_scores, sorted_sections)
     sorted_sections_rrf = sorted(sorted_sections, key=lambda x: x.score_rrf, reverse=True)
     return sorted_sections_rrf
 
@@ -210,7 +237,7 @@ if __name__ == "__main__":
 
     setup_logger_handlers()
 
-    query_str = "神经网络"
+    query_str = "神经网络 中央处理器"
     #query_str = "Intel(R) Xeon(R)"
     collection_name = "papers"
     limit = 10
@@ -229,8 +256,11 @@ if __name__ == "__main__":
 
         rich.print(merged_scored_sections)
 
-    sorted_sections_rrf = rerank_rrf(query_str, merged_scored_sections)
-    rich.print(sorted_sections_rrf)
+    distance_weight=0
+    rerank_weight=8
+    bm25_weight=1
+    sorted_sections_rrf = rerank_rrf(query_str, merged_scored_sections, distance_weight=distance_weight, rerank_weight=rerank_weight, bm25_weight=bm25_weight)
+    #rich.print(sorted_sections_rrf)
     print()
     print("len after initial query", len(initial_scored_chunks))   
     print("len after merge sections", len(merged_scored_sections))
