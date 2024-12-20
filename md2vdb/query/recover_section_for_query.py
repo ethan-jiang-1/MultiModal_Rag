@@ -29,6 +29,7 @@ class ScoredSection:
     数据类表示完整的 Section。
     """
     score: float
+    score_rrf: float
     sec_id: str
     parent_sec_id: str
     heading: str
@@ -151,7 +152,7 @@ def _merge_chunks_to_scored_sections(sections: Dict[str, Dict]) -> List[ScoredSe
                 payload["score"] = 0.0
             payloads.append(payload)
         scored_section = ScoredSection(
-            score=max_score,
+            score=round(max_score, 5),
             sec_id=sec_id,
             parent_sec_id=csi0.parent_sec_id,
             level=csi0.level,
@@ -160,7 +161,8 @@ def _merge_chunks_to_scored_sections(sections: Dict[str, Dict]) -> List[ScoredSe
             doc_unique_id=csi0.doc_unique_id,
             doc_title=csi0.doc_title,
             content=content,
-            payloads=payloads
+            payloads=payloads, 
+            score_rrf=0.0,
         )
         merged_scored_sections.append(scored_section)
 
