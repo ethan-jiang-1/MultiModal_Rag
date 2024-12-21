@@ -15,13 +15,14 @@ from md2vdb.utils.util_logging import setup_logger_handlers
 from md2vdb.query.query2section_raw import query2section_raw_on_multiple_collection
 from md2vdb.query.query2section_reranked import query2sortedsections_reranked
 from md2vdb.utils_llm.llm_knowledge_gen_gpt import knowlege_gen_by_gpt
+from md2vdb.query.md2html_with_ids import markdown_to_html_with_ids
 
 KNOWLEGE_FORMAT = """
-<knowledge_section>\n
-<source_file>{source_file}</source_file>\n
-<knowledge_title>{title}</knowledge_title>\n
-<knowledge_content>{content}</knowledge_content>\n
-</knowledge_section>\n
+<KnowledgeSnippet id="{id}"> n
+<Source>{source_file}</Source>\n
+<Title>{title}</Title>\n
+<Content> {html_content} </Content>\n
+</KnowledgeSnippet>\n
 """
 
 def find_collection_names(query: str) -> List[str]:
@@ -32,19 +33,22 @@ def query_rewerite(query: str, collection_names: List[str]) -> str:
 
 def form_knowledge_sections(scored_sections_reranked:List[ScoredSection]) -> str:
     knowledge_all = ""
-    for section in scored_sections_reranked:
+    for ndx, section in enumerate(scored_sections_reranked):
         source_file = section.fname_org_doc
         title = section.heading
         content = section.content
 
-        knowledge = KNOWLEGE_FORMAT.format(source_file=source_file,
+        html_content = markdown_to_html_with_ids(content)
+
+        knowledge = KNOWLEGE_FORMAT.format(id=ndx+1,
+                                           source_file=source_file,
                                            title=title,
-                                           content=content)
-        knowledge_all += knowledge
+                                           html_content=html_content)
+        knowledge_all += knowledge + "\n\n"
     return knowledge_all
 
 def knowledge_retrieve(query: str, knowledge: str):
-    resp = knowlege_gen_by_gpt(query, knowledge)
+    resp = knowlege_gen_by_gpt(query, knowledge, model="gpt-4o")
     return resp
 
 def query2knowledge(query: str, limit: int = 10) -> List[ScoredSection]:
