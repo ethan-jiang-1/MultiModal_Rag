@@ -37,6 +37,7 @@ class ScoredSection:
     desc: str
     doc_unique_id: str
     doc_title: str
+    fname_org_doc: str
     content: str
     payloads: list[Any]
 
@@ -162,6 +163,7 @@ def _merge_chunks_to_scored_sections(sections: Dict[str, Dict]) -> List[ScoredSe
             desc=csi0.desc,
             doc_unique_id=csi0.doc_unique_id,
             doc_title=csi0.doc_title,
+            fname_org_doc=csi0.fname_org_doc,
             content=content,
             payloads=payloads, 
             score_rrf=0.0,

@@ -21,4 +21,5 @@ class ChunkedSectionInfo(BaseModel):
     max_tokens_in_chunk: int
     doc_unique_id: str 
     doc_title: str
+    fname_org_doc: str
     content: str
