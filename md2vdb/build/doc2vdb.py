@@ -19,14 +19,14 @@ from md2vdb.build.inject_chunks_to_vdb import inject_doc_chunks_into_vdb
 from md2vdb.common.map_doc_to_collection import register_collection_name_for_doc
 
 def _save_doc_meta_info(doc_meta_info:DocMetaInfo):
-    pname_meta_doc = get_doc_meta_pathname(doc_meta_info.doc_unique_id)
+    pname_meta_doc = get_doc_meta_pathname(doc_meta_info)
     with open(pname_meta_doc, "w", encoding="utf-8") as f:
         f.write(doc_meta_info.model_dump_json(indent=4))
 
 
 def _copy_all_ref_files(doc_meta_info:DocMetaInfo, pname_final_info: str):
     dir_src = os.path.dirname(pname_final_info)
-    dir_dst = get_ref_root(doc_meta_info.doc_unique_id)
+    dir_dst = get_ref_root(doc_meta_info)
 
     # copy all images refered by md
     names = os.listdir(dir_src)
@@ -92,7 +92,8 @@ if __name__ == "__main__":
 
     #pname_final_info = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/_final_info.json"
     #pname_final_info = "_work/ctn2md_Survey_of_different_Large_Language_Model_Architectures_lvlm/_final_info.json"
-    pname_final_info = "_output/ctn2md_attention_is_all_you_need_lvlm/_final_info.json"
+    #pname_final_info = "_output/ctn2md_attention_is_all_you_need_lvlm/_final_info.json"
+    pname_final_info = "_work/ctn2md_mrag__1__座椅STO间隙_P1_lp/_final_info.json"
 
     #pname_final_info = "_output/ctn2md_AIGC时代的人力资源管理进化(徐刚)_lvlm/_final_info.json"
     #pname_final_info = "_output/ctn2md_业绩案例_上汽内外饰DRE外包框架服务合同_lp/_final_info.json"

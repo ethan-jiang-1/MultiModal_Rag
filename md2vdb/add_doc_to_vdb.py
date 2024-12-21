@@ -22,6 +22,28 @@ def upsert_docs_to_vdb(pnames_final_info: List[str]):
         else:
             logging.error(f"failed to find {pname_final_info}")
 
+def upsert_batch_kbname_to_vdb(dir_root_mds, kb_name=None):
+    if kb_name is None:
+        raise ValueError("kb_name(collection_name) need to be specified")
+    if not os.path.isdir(dir_root_mds):
+        raise ValueError(f"{dir_root_mds} is not a dir")
+    
+    names = os.listdir(dir_root_mds)
+    sel_names = []
+    for name in names:
+        if not name.startswith(f"ctn2md_{kb_name}__"):
+            continue
+        sel_name = os.path.join(dir_root_mds, name, "_final_info.json")
+        if os.path.isfile(sel_name):
+            sel_names.append(sel_name)
+            
+    for ndx, pname_final_info in enumerate(sel_names):
+        logging.info(f"{ndx} updata doc to vdb: {pname_final_info}")
+        if os.path.isfile(pname_final_info):
+            upsert_doc_to_vdb(pname_final_info)
+        else:
+            logging.error(f"failed to find {pname_final_info}")
+
 if __name__ == "__main__":
     setup_logger_handlers()
 

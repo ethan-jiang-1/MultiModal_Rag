@@ -83,7 +83,8 @@ def convert_sections_to_chunks(pname_final_md_info: str) -> Tuple[DocMetaInfo, L
 
 if __name__ == "__main__":
     #pname_final_md_info = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/_final_info.json"
-    pname_final_md_info = "_output/ctn2md_AIGC时代的人力资源管理进化(徐刚)_md/_final_info.json"
+    #pname_final_md_info = "_output/ctn2md_AIGC时代的人力资源管理进化(徐刚)_md/_final_info.json"
+    pname_final_md_info = "_work/ctn2md_mrag__1__座椅STO间隙_P1_lp/_final_info.json"
 
     meta_info, all_csis = convert_sections_to_chunks(pname_final_md_info)
     rich.print(meta_info)
