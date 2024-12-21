@@ -47,7 +47,7 @@ def form_knowledge_sections(scored_sections_reranked:List[ScoredSection]) -> str
         knowledge_all += knowledge + "\n\n"
     return knowledge_all
 
-def knowledge_retrieve(query: str, knowledge: str):
+def knowledge_retrieve(query: str, knowledge: str, scored_sections_reranked:List[ScoredSection]):
     resp = knowlege_gen_by_gpt(query, knowledge, model="gpt-4o")
     return resp
 
@@ -57,11 +57,11 @@ def query2knowledge(query: str, limit: int = 10) -> List[ScoredSection]:
 
     scored_sections_raw = query2section_raw_on_multiple_collection(collection_names, query, limit=limit)
 
-    scored_sections_reranked = query2sortedsections_reranked(query_str, scored_sections_raw)
+    scored_sections_reranked = query2sortedsections_reranked(query, scored_sections_raw)
 
     knowledge = form_knowledge_sections(scored_sections_reranked)
 
-    resp = knowledge_retrieve(query, knowledge)
+    resp = knowledge_retrieve(query, knowledge, scored_sections_reranked)
 
     return resp
 

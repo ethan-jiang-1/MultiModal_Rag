@@ -13,13 +13,12 @@ if "./" not in sys.path:
 
 os.environ["GRADIO_USE_LOCAL_FONTS"] = "True"
 
-from HiQA._app_base import CUSTOM_CSS, QUESTION_LIST
-from HiQA._app_qa_core import main_loop_gradio, get_main_ret
-from HiQA._app_log_monitor import ProgressLogger
-from HiQA.utils.util_logging import setup_logger_handlers
-from HiQA.qa_core import get_gpt_model
-from HiQA.utils.util_git import get_git_version
-
+from app_mrag._app_base import CUSTOM_CSS, QUESTION_LIST
+from app_mrag._app_qa_core import main_loop_gradio, get_main_ret
+from app_mrag._app_log_monitor import ProgressLogger
+from md2vdb.utils.util_logging import setup_logger_handlers
+from md2vdb.utils.util_git import get_git_version
+from md2vdb.utils.util_model import get_gpt_model
 
 def _process_markdown_images(markdown_str):
     """
