@@ -25,6 +25,7 @@ _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
 _MIB_FNAME_FINAL_INFO = "_final_info.json"
 _MIB_DEFAULT_OUT_ROOT = "_output"
+_MIB_CTN2MD_LEAD = "ctn2md"
 
 class FHL_QUALITY_TYPE:
     HIGH = "high"
@@ -216,13 +217,40 @@ class MdInfo:
                 doc_title = doc_title[:len(doc_title) - len(dd_ext)]
         
         return doc_title
+    
+    @classmethod
+    def _recover_kbname_and_doc_title(cls, dirname):
+        # 固定前缀和可能的后缀
+        prefix = _MIB_CTN2MD_LEAD
+        suffixes = ["_lvlm", "_lp", "_md", "_usio"]
+        
+        core_name_with_suffix = dirname[len(prefix) + 1:]
+
+        # 检查并去掉后缀
+        core_name = core_name_with_suffix
+        for suffix in suffixes:
+            if core_name_with_suffix.endswith(suffix):
+                core_name = core_name_with_suffix[:-len(suffix)]
+                break
+            
+        split_index = core_name.find("__")
+        if split_index != -1:
+            kb_name = core_name[:split_index]
+            doc_title = core_name[split_index + 2:]  # 跳过双下划线
+            return kb_name, doc_title
+        else:
+            raise ValueError("not able to recover kb_name and doc_title")
 
     @classmethod
     def get_suggested_out_dir(cls, pathname_org_doc, suffix=""):
         dir_name = os.path.dirname(pathname_org_doc)
         kb_name = os.path.basename(dir_name)
         doc_title = cls.extract_doc_title(pathname_org_doc)
-        out_dir = f"{_MIB_DEFAULT_OUT_ROOT}/ctn2md_{kb_name}__{doc_title}"
+        if pathname_org_doc.endswith(".md"):
+            if kb_name.startswith(_MIB_CTN2MD_LEAD):
+                kb_name, doc_title = cls._recover_kbname_and_doc_title(kb_name)
+
+        out_dir = f"{_MIB_DEFAULT_OUT_ROOT}/{_MIB_CTN2MD_LEAD}_{kb_name}__{doc_title}"
         if len(suffix) != 0:
             out_dir += f"_{suffix}"
         return out_dir
