@@ -11,8 +11,8 @@ def markdown_to_html_with_ids(markdown_text):
     Returns:
         str: The entire content converted to HTML with unique IDs for block-level elements.
     """
-    # Convert Markdown to HTML
-    html_content = markdown(markdown_text)
+    # Convert Markdown to HTML with tables extension enabled
+    html_content = markdown(markdown_text, extensions=['tables'])
 
     # Parse HTML with BeautifulSoup
     soup = BeautifulSoup(html_content, "html.parser")

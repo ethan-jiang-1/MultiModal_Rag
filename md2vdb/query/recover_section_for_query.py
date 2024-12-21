@@ -40,6 +40,7 @@ class ScoredSection:
     fname_org_doc: str
     content: str
     payloads: list[Any]
+    knowledge_snippet: Any
 
 
 def _group_initial_chunks(initial_points: List[ScoredPoint]) -> Dict[str, Dict]:
@@ -167,6 +168,7 @@ def _merge_chunks_to_scored_sections(sections: Dict[str, Dict]) -> List[ScoredSe
             content=content,
             payloads=payloads, 
             score_rrf=0.0,
+            knowledge_snippet=None,
         )
         merged_scored_sections.append(scored_section)
 

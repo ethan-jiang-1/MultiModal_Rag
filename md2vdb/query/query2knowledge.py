@@ -44,11 +44,24 @@ def form_knowledge_sections(scored_sections_reranked:List[ScoredSection]) -> str
                                            source_file=source_file,
                                            title=title,
                                            html_content=html_content)
+        section.knowledge_snippet = knowledge
         knowledge_all += knowledge + "\n\n"
     return knowledge_all
 
 def knowledge_retrieve(query: str, knowledge: str, scored_sections_reranked:List[ScoredSection]):
     resp = knowlege_gen_by_gpt(query, knowledge, model="gpt-4o")
+    return resp
+
+def search_for_ref_images(query: str, resp: dict, scored_sections_reranked:List[ScoredSection]):
+    detailed_refernces = resp.get("detailed_references", None)
+    if detailed_refernces is not None:
+        for ref in detailed_refernces:
+            snippet_id = ref.get("snippet_id", None)
+            if snippet_id is not None:
+                snippet_id = int(snippet_id) - 1
+                if snippet_id >= 0 and snippet_id < len(scored_sections_reranked):
+                    ref_section = scored_sections_reranked[snippet_id]
+                    rich.print(ref_section)
     return resp
 
 def query2knowledge(query: str, limit: int = 10) -> List[ScoredSection]:
