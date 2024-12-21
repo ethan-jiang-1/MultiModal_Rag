@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 import sys
-#import logging
+import logging
 import rich
 import shutil
 
@@ -72,6 +72,7 @@ def upsert_doc_to_vdb(pname_final_info: str, max_chunk_num:int = None, skip_buil
         raise ValueError(f"not able to convert {pname_final_info}")
     
     collection_name = register_collection_name_for_doc(doc_meta_info)
+    logging.info(f"upsert_doc_to_vdb: {collection_name} <- {pname_final_info}")
     
     if not skip_build_vdb:
         vdb_path = VDB_PATH 
