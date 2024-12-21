@@ -6,6 +6,7 @@ import jieba
 from rank_bm25 import BM25Okapi
 import dashscope
 import logging
+import rich
 
 # 加载环境变量
 load_dotenv()
@@ -96,6 +97,7 @@ def dashscope_rerank(query_str:str, documents: List[str], top_n: int = None):
 
     documents = [item[:MAX_DOC_LEN] for item in documents]
 
+    logging.info("start to call dashscope TextReRank...")
     ds_results = dashscope.TextReRank.call(
                 model=model,
                 top_n=top_n,
@@ -189,14 +191,14 @@ def assign_score_rrf_score(sorted_rrf_scores, sorted_sections):
         if not matched:
             logging.error(f"find no match for {srs}")
 
-def rerank_rrf(query_str: str, scored_sections: List[ScoredSection], distance_weight=1, rerank_weight=8, bm25_weight=1):
+def rerank_rrf(query_str: str, scored_sections: List[ScoredSection], distance_weight=1, rerank_weight=8, bm25_weight=1) -> List[ScoredSection]:
     """
     使用 RRF 融合多个排序来源，并对不同来源应用权重。
     
     :param query_str: 查询字符串
     :param scored_sections: ScoredSection 数据列表
     :param distance_weight: 距离排序的权重
-    :param jina_weight: Jina 排序的权重
+    :param rerank_weight: ReRank 排序的权重
     :param bm25_weight: BM25 排序的权重
     :return: 融合后的排序结果，按照 RRF 分数从高到低排序
     """
@@ -207,9 +209,10 @@ def rerank_rrf(query_str: str, scored_sections: List[ScoredSection], distance_we
     bm25_results = bm25_reorder(query_str, indexed_documents)
     rerank_results = dashscope_rerank(query_str, indexed_documents)
 
-    rich.print(("distance_results", [item["relevance_score"] for item in distance_results], distance_weight))
-    rich.print(("bm25_results", [item["relevance_score"] for item in bm25_results], bm25_weight))
-    rich.print(("rerank_results", [item["relevance_score"] for item in rerank_results], rerank_weight))
+    logging.info(f"query_str: {query_str} rerank scores:")
+    logging.info(f"{("distance_results", [item["relevance_score"] for item in distance_results], distance_weight)}")
+    logging.info(f"{("bm25_results    ", [item["relevance_score"] for item in bm25_results], bm25_weight)}")
+    logging.info(f"{("rerank_results  ", [item["relevance_score"] for item in rerank_results], rerank_weight)}")
 
     # 各来源及其权重
     sources = []
@@ -228,7 +231,6 @@ def rerank_rrf(query_str: str, scored_sections: List[ScoredSection], distance_we
 
 
 if __name__ == "__main__":
-    import rich
     from md2vdb.utils.utili_embedding import get_text_embedding
     from md2vdb.utils.util_logging import setup_logger_handlers
     from md2vdb.common.vdb_base import VDB_PATH

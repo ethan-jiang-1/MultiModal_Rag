@@ -72,6 +72,7 @@ def _query_missing_chunks(client: QdrantClient, collection_name: str, sections: 
     for sec_id, data in sections.items():
         existing_orders = {order for order, _ in data["order_n_point"]}
         total_chunks = data["total"]
+        doc_unique_id = data["metadata"]["doc_unique_id"]
         missing_orders = [order for order in range(total_chunks) if order not in existing_orders]
 
         if missing_orders:
@@ -81,7 +82,8 @@ def _query_missing_chunks(client: QdrantClient, collection_name: str, sections: 
                 filter_query = Filter(
                     must=[
                         FieldCondition(key="sec_id", match={"value": sec_id}),
-                        FieldCondition(key="order", match={"value": missing_order}),
+                        FieldCondition(key="order", match={"value": missing_order}),                        
+                        FieldCondition(key="doc_unique_id", match={"value": doc_unique_id}),
                     ]
                 )
                 result = client.scroll(
@@ -141,7 +143,7 @@ def _merge_chunks_to_scored_sections(sections: Dict[str, Dict]) -> List[ScoredSe
         payload0 = chunks[0][1].payload
         csi0 = ChunkedSectionInfo(**payload0)
         if csi0.total != len(chunks):
-            logger.error(f"Not all chunks recovered for section {sec_id}")
+            logger.error(f"Chunks recovered number misaligned for section {sec_id}: {csi0.total} != {len(chunks)}")
 
         payloads = []
         for _, chunk in chunks:
