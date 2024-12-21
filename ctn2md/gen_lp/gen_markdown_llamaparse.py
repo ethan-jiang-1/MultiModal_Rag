@@ -51,12 +51,14 @@ def _assign_final_doc_cnt_type(md_info, json_result):
         json_result0_pages = json_result[0].get("pages", None)
         if json_result0_pages is not None and len(json_result0_pages) > 0:
             page1 = json_result0_pages[0]
-            if page1["page"] == 1:
-                page_width = page1["width"]
-                page_height = page1["height"]
-                if md_info[MIFN.DOC_CTN_TYPE] == CTN_TYPE.PDF:
-                    if page_width > page_height:
-                        md_info[MIFN.DOC_CTN_TYPE] = CTN_TYPE.PPT
+            if md_info[MIFN.DOC_CTN_TYPE] == CTN_TYPE.PDF:
+                if "page" in page1:
+                    if page1["page"] == 1:
+                        if "with" in page1 and "height" in page1:
+                            page_width = page1["width"]
+                            page_height = page1["height"]
+                            if page_width > page_height:
+                                md_info[MIFN.DOC_CTN_TYPE] = CTN_TYPE.PPT
         md_info.save()
 
 def generate_markdown_llamaparse(md_info, need_normal_step=True, need_preminum_step=True):
