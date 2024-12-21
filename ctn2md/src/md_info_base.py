@@ -19,7 +19,7 @@ from llama_parse.utils import Language
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.utils.util_file import get_crc32_id
 
-_MIB_INFO_VER = "0.7.2"
+_MIB_INFO_VER = "0.8.0"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
@@ -141,11 +141,7 @@ class MdInfo:
         if not isinstance(md_info_path_or_out_dir, str):
             raise ValueError(f"MdInfo.init: expect string as path here: {md_info_path_or_out_dir}")
 
-        last_chat = md_info_path_or_out_dir[-1]
-        if (last_chat in ["/", "\\"]) or os.path.isdir(md_info_path_or_out_dir):
-            self._md_info_path = os.path.join(md_info_path_or_out_dir, _MIB_FNAME_MD_INFO)
-        else:
-            self._md_info_path = os.path.join(os.path.dirname(md_info_path_or_out_dir), _MIB_FNAME_MD_INFO)
+        self._md_info_path = self.get_suggested_md_info_path(md_info_path_or_out_dir)
         self._md_info_control_path = os.path.join(os.path.dirname(self._md_info_path), _MIB_FNAME_MD_CONTROL_INFO)
 
         self._out_dir = os.path.dirname(self._md_info_path)
@@ -162,6 +158,15 @@ class MdInfo:
     def __repr__(self):
         # 直接使用字典的__repr__方法
         return repr(self._info)
+    
+    @classmethod
+    def get_suggested_md_info_path(cls, md_info_path_or_out_dir):
+        last_chat = md_info_path_or_out_dir[-1]
+        if (last_chat in ["/", "\\"]) or os.path.isdir(md_info_path_or_out_dir):
+            md_info_path = os.path.join(md_info_path_or_out_dir, _MIB_FNAME_MD_INFO)
+        else:
+            md_info_path = os.path.join(os.path.dirname(md_info_path_or_out_dir), _MIB_FNAME_MD_INFO)
+        return md_info_path
 
     @classmethod
     def find_md_info_path(cls, out_dir_or_file_in_out_dir):
@@ -214,8 +219,10 @@ class MdInfo:
 
     @classmethod
     def get_suggested_out_dir(cls, pathname_org_doc, suffix=""):
+        dir_name = os.path.dirname(pathname_org_doc)
+        kb_name = os.path.basename(dir_name)
         doc_title = cls.extract_doc_title(pathname_org_doc)
-        out_dir = f"{_MIB_DEFAULT_OUT_ROOT}/ctn2md_{doc_title}"
+        out_dir = f"{_MIB_DEFAULT_OUT_ROOT}/ctn2md_{kb_name}__{doc_title}"
         if len(suffix) != 0:
             out_dir += f"_{suffix}"
         return out_dir
