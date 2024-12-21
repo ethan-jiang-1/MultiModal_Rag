@@ -16,6 +16,7 @@ from md2vdb.query.query2section_raw import query2section_raw_on_multiple_collect
 from md2vdb.query.query2section_reranked import query2sortedsections_reranked
 from md2vdb.utils_llm.llm_knowledge_gen_gpt import knowlege_gen_by_gpt
 from md2vdb.query.md2html_with_ids import markdown_to_html_with_ids
+from md2vdb.common.rag_answer import RagAnswer
 
 KNOWLEGE_FORMAT = """
 <KnowledgeSnippet id="{id}"> n
@@ -53,6 +54,8 @@ def knowledge_retrieve(query: str, knowledge: str, scored_sections_reranked:List
     return resp
 
 def search_for_ref_images(query: str, resp: dict, scored_sections_reranked:List[ScoredSection]):
+    image_names =[]
+    image_titles = []
     detailed_refernces = resp.get("detailed_references", None)
     if detailed_refernces is not None:
         for ref in detailed_refernces:
@@ -62,9 +65,18 @@ def search_for_ref_images(query: str, resp: dict, scored_sections_reranked:List[
                 if snippet_id >= 0 and snippet_id < len(scored_sections_reranked):
                     ref_section = scored_sections_reranked[snippet_id]
                     rich.print(ref_section)
-    return resp
+    return image_names, image_titles
 
-def query2knowledge(query: str, limit: int = 10) -> List[ScoredSection]:
+def compose_rag_answer(query: str, resp: dict, scored_sections_reranked:List[ScoredSection]) -> RagAnswer:
+    image_names, image_titles = search_for_ref_images(query, resp, scored_sections_reranked)
+    rag_answer = RagAnswer(answer=resp.get("simple_answer", ""),
+                           answer_referenced=resp.get("answer_with_reference", ""),
+                           sources=resp.get("referenced_documents", []),
+                           image_names=image_names,
+                           image_titles=image_titles)
+    return rag_answer
+
+def query2knowledge(query: str, limit: int = 10) -> RagAnswer:
     collection_names = find_collection_names(query)
     query = query_rewerite(query, collection_names)
 
@@ -76,12 +88,14 @@ def query2knowledge(query: str, limit: int = 10) -> List[ScoredSection]:
 
     resp = knowledge_retrieve(query, knowledge, scored_sections_reranked)
 
-    return resp
+    rag_answer = compose_rag_answer(query, resp, scored_sections_reranked)
+
+    return rag_answer
 
 if __name__ == "__main__":
     setup_logger_handlers()
     
     query_str = "神经网络 中央处理器"
-    ret = query2knowledge(query_str)
-    rich.print(ret)
+    rag_answer = query2knowledge(query_str)
+    rich.print(rag_answer)
     

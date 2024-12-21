@@ -117,14 +117,9 @@ def parse_final_result(result_dic):
     content = ""
     files, images = [], []
 
-    llm_response_json = result_dic.get("llm_response_json", None)
-    if llm_response_json is not None:
-        content = llm_response_json.get("answer")
-
+    content = result_dic.get("response_answer", "")
     files = result_dic.get("lst_source_matches", [])
-    image_n_title = result_dic.get("lst_image_n_title", None)
-    if image_n_title is not None:
-        images = [item["image"] for item in image_n_title]
+    images = result_dic.get("lst_image_names", [])
 
     return content, files, images
 
@@ -320,4 +315,4 @@ if __name__ == "__main__":
     ProgressLogger._setup_handler()
 
     interface = create_interface()
-    interface.launch()
+    interface.launch(share=False)

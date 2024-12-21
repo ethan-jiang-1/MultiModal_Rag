@@ -17,7 +17,7 @@ from md2vdb.utils.util_logging import setup_logger_handlers, get_logger_progress
 from md2vdb.query.query2section_raw import query2section_raw_on_multiple_collection
 from md2vdb.query.query2section_reranked import query2sortedsections_reranked
 from md2vdb.query.query2knowledge import knowledge_retrieve, form_knowledge_sections
-from md2vdb.query.query2knowledge import query_rewerite
+from md2vdb.query.query2knowledge import query_rewerite, compose_rag_answer
 
 setup_logger_handlers()
 logger_prg = get_logger_progress()
@@ -36,7 +36,8 @@ def do_core_query(user_input, kb_name='mrag', limit=10):
     ret_dict["user_input"] = user_input
     ret_dict["response_answer"] = ""
     ret_dict["lst_source_matches"] = []
-    ret_dict["lst_image_n_title"] = []
+    ret_dict["lst_image_names"] = []
+    ret_dict["lst_image_titles"] = []
 
     logger_prg.info("step1.1 20%: 查询重写")
     collection_names = [kb_name]
@@ -66,20 +67,19 @@ def do_core_query(user_input, kb_name='mrag', limit=10):
         return ret_dict 
 
     logger_prg.info("step5.0: 80%: 组织回答#综合知识(图像)")
-    resp = knowledge_retrieve(query, knowledge, scored_sections_reranked) 
-    if resp is None:
+    rag_answer = compose_rag_answer(query, resp, scored_sections_reranked) 
+    if rag_answer is None:
         ret_dict["response_answer"] = "ERROR: llm response is None"
         ret_dict["debug_resp"] = resp
         logging.error(f"##ret_dict(e1): {ret_dict}")
         return ret_dict 
 
-    #ret_dict["response"] = response 
-    resp["answer"] = resp["simple_answer"]
     ret_dict["user_input"] = user_input
-    ret_dict["response_answer"] = resp["simple_answer"]
-    ret_dict["lst_source_matches"] = resp["referenced_documents"]
-    ret_dict["lst_image_n_title"] = []
-    ret_dict["llm_response_json"] = resp
+    ret_dict["rag_answer"] = rag_answer.model_dump()
+    ret_dict["response_answer"] = rag_answer.answer
+    ret_dict["lst_source_matches"] = rag_answer.sources
+    ret_dict["lst_image_names"] = rag_answer.image_names
+    ret_dict["lst_image_titles"] = rag_answer.image_titles
 
     pretty_str = pformat(ret_dict)
     logging.info(f"##ret_dict: \n {pretty_str}")
