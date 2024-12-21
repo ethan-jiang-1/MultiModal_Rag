@@ -13,7 +13,8 @@ if "./" not in sys.path:
 
 from md2vdb.utils.util_logging import setup_logger_handlers
 from md2vdb.common.vdb_base import VDB_PATH
-from md2vdb.query.recover_section_for_query import query_initial_points, recover_scored_sections_from_chunk_from_vdb, ScoredSection, LIMIT_QUERY, sort_scored_sections_by_score
+from md2vdb.query.query_bsae import ScoredSection
+from md2vdb.query.recover_section_for_query import query_initial_points, recover_scored_sections_from_chunk_from_vdb, LIMIT_QUERY, sort_scored_sections_by_score
 from md2vdb.utils.utili_embedding import get_text_embedding
 from md2vdb.query.query_bsae import QdrantClientContextManager
 

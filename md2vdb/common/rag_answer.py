@@ -12,7 +12,8 @@ if "./" not in sys.path:
 class RagAnswer(BaseModel):
     answer: str
     answer_referenced: str 
-    sources: List[str]
+    source_names: List[str]
+    source_titles: List[str]
     image_names: List[str] 
     image_titles: List[str]
     

@@ -1,6 +1,7 @@
 from typing import List
 from dotenv import load_dotenv
 import sys
+import os
 #import logging
 import rich
 
@@ -10,12 +11,12 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from md2vdb.query.recover_section_for_query import ScoredSection
+from md2vdb.query.query_bsae import ScoredSection
 from md2vdb.utils.util_logging import setup_logger_handlers
 from md2vdb.query.query2section_raw import query2section_raw_on_multiple_collection
 from md2vdb.query.query2section_reranked import query2sortedsections_reranked
 from md2vdb.utils_llm.llm_knowledge_gen_gpt import knowlege_gen_by_gpt
-from md2vdb.query.md2html_with_ids import markdown_to_html_with_ids
+from md2vdb.query.query_bsae import markdown_to_html_with_ids
 from md2vdb.common.rag_answer import RagAnswer
 
 KNOWLEGE_FORMAT = """
@@ -53,7 +54,9 @@ def knowledge_retrieve(query: str, knowledge: str, scored_sections_reranked:List
     resp = knowlege_gen_by_gpt(query, knowledge, model="gpt-4o")
     return resp
 
-def search_for_ref_images(query: str, resp: dict, scored_sections_reranked:List[ScoredSection]):
+def search_for_file_refs(query: str, resp: dict, scored_sections_reranked:List[ScoredSection]):
+    source_names = []
+    source_titles = []
     image_names =[]
     image_titles = []
     detailed_refernces = resp.get("detailed_references", None)
@@ -65,13 +68,16 @@ def search_for_ref_images(query: str, resp: dict, scored_sections_reranked:List[
                 if snippet_id >= 0 and snippet_id < len(scored_sections_reranked):
                     ref_section = scored_sections_reranked[snippet_id]
                     rich.print(ref_section)
-    return image_names, image_titles
+    return source_names, source_titles, image_names, image_titles
 
 def compose_rag_answer(query: str, resp: dict, scored_sections_reranked:List[ScoredSection]) -> RagAnswer:
-    image_names, image_titles = search_for_ref_images(query, resp, scored_sections_reranked)
+    source_names, source_titles, image_names, image_titles = search_for_file_refs(query, resp, scored_sections_reranked)
+    source_names = resp.get("referenced_documents")
+    source_titles = [os.path.basename(item) for item in source_names]
     rag_answer = RagAnswer(answer=resp.get("simple_answer", ""),
                            answer_referenced=resp.get("answer_with_reference", ""),
-                           sources=resp.get("referenced_documents", []),
+                           source_names=source_names,
+                           source_titles=source_titles,
                            image_names=image_names,
                            image_titles=image_titles)
     return rag_answer

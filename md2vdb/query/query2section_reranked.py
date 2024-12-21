@@ -10,7 +10,7 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from md2vdb.query.recover_section_for_query import ScoredSection
+from md2vdb.query.query_bsae import ScoredSection
 from md2vdb.utils.util_logging import setup_logger_handlers
 from md2vdb.query.query2section_raw import query2section_raw_on_multiple_collection
 from md2vdb.query.rerank_section import rerank_rrf

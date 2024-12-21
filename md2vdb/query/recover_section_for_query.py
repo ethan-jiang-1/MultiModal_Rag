@@ -6,9 +6,8 @@ import re
 
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import ScoredPoint, Record, Filter, FieldCondition
-from typing import List, Dict, Tuple, Union, Any
+from typing import List, Dict, Tuple, Union
 from collections import defaultdict
-from dataclasses import dataclass
 
 # 加载环境变量
 load_dotenv()
@@ -18,29 +17,11 @@ if "./" not in sys.path:
 
 from md2vdb.common.chunked_section_info import ChunkedSectionInfo
 from md2vdb.query.query_bsae import QdrantClientContextManager
+from md2vdb.query.query_bsae import ScoredSection
 
 LIMIT_QUERY = 5
 
 logger = logging.getLogger(__name__)
-
-@dataclass
-class ScoredSection:
-    """
-    数据类表示完整的 Section。
-    """
-    score: float
-    score_rrf: float
-    sec_id: str
-    parent_sec_id: str
-    heading: str
-    level: int
-    desc: str
-    doc_unique_id: str
-    doc_title: str
-    fname_org_doc: str
-    content: str
-    payloads: list[Any]
-    knowledge_snippet: Any
 
 
 def _group_initial_chunks(initial_points: List[ScoredPoint]) -> Dict[str, Dict]:
@@ -130,7 +111,7 @@ def _clean_and_merge_chunks_content(chunks: List[Tuple[int, Union[ScoredPoint, R
     return merged_content
 
 
-def _merge_chunks_to_scored_sections(sections: Dict[str, Dict]) -> List[ScoredSection]:
+def _merge_chunks_to_scored_sections(sections: Dict[str, Dict], collection_name:str) -> List[ScoredSection]:
     """
     合并所有 chunk，恢复完整的 section。
     """
@@ -169,6 +150,7 @@ def _merge_chunks_to_scored_sections(sections: Dict[str, Dict]) -> List[ScoredSe
             payloads=payloads, 
             score_rrf=0.0,
             knowledge_snippet=None,
+            collection_name=collection_name,
         )
         merged_scored_sections.append(scored_section)
 
@@ -190,7 +172,7 @@ def query_initial_points(client: QdrantClient, collection_name: str,  query_vect
 def recover_scored_sections_from_chunk_from_vdb(client: QdrantClient, collection_name: str, initial_scored_chunks: List[ScoredPoint]) -> List[ScoredSection]:
     sections = _group_initial_chunks(initial_scored_chunks)
     _query_missing_chunks(client, collection_name, sections)
-    merged_scored_sections = _merge_chunks_to_scored_sections(sections)
+    merged_scored_sections = _merge_chunks_to_scored_sections(sections, collection_name)
     return merged_scored_sections
 
 def sort_scored_sections_by_score(sections: List[ScoredSection]) -> List[ScoredSection]:

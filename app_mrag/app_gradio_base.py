@@ -118,7 +118,7 @@ def parse_final_result(result_dic):
     files, images = [], []
 
     content = result_dic.get("response_answer", "")
-    files = result_dic.get("lst_source_matches", [])
+    files = result_dic.get("lst_source_names", [])
     images = result_dic.get("lst_image_names", [])
 
     return content, files, images

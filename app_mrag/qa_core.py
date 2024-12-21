@@ -35,7 +35,8 @@ def do_core_query(user_input, kb_name='mrag', limit=10):
     ret_dict["req_id"] = req_id
     ret_dict["user_input"] = user_input
     ret_dict["response_answer"] = ""
-    ret_dict["lst_source_matches"] = []
+    ret_dict["lst_source_names"] = []
+    ret_dict["lst_source_title"] = []
     ret_dict["lst_image_names"] = []
     ret_dict["lst_image_titles"] = []
 
@@ -77,7 +78,9 @@ def do_core_query(user_input, kb_name='mrag', limit=10):
     ret_dict["user_input"] = user_input
     ret_dict["rag_answer"] = rag_answer.model_dump()
     ret_dict["response_answer"] = rag_answer.answer
-    ret_dict["lst_source_matches"] = rag_answer.sources
+    ret_dict["response_answer_referenced"] = rag_answer.answer_referenced
+    ret_dict["lst_source_names"] = rag_answer.source_names
+    ret_dict["lst_soruce_titles"] = rag_answer.source_titles
     ret_dict["lst_image_names"] = rag_answer.image_names
     ret_dict["lst_image_titles"] = rag_answer.image_titles
 

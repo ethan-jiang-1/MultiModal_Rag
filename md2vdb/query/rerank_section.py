@@ -14,7 +14,7 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from md2vdb.query.recover_section_for_query import ScoredSection
+from md2vdb.query.query_bsae import ScoredSection
 
 MAX_DOC_LEN = 3000
 
