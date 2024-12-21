@@ -12,8 +12,17 @@ if "./" not in sys.path:
 
 from md2vdb.query.recover_section_for_query import ScoredSection
 from md2vdb.utils.util_logging import setup_logger_handlers
-from md2vdb.query.query2section import query2section_on_multiple_collection
-from md2vdb.query.rerank_section import rerank_rrf
+from md2vdb.query.query2section_raw import query2section_raw_on_multiple_collection
+from md2vdb.query.query2section_reranked import query2sortedsections_reranked
+from md2vdb.utils_llm.llm_knowledge_gen_gpt import knowlege_gen_by_gpt
+
+KNOWLEGE_FORMAT = """
+<knowledge_section>\n
+<source_file>{source_file}</source_file>\n
+<knowledge_title>{title}</knowledge_title>\n
+<knowledge_content>{content}</knowledge_content>\n
+</knowledge_section>\n
+"""
 
 def find_collection_names(query: str) -> List[str]:
     return ["papers"]
@@ -21,28 +30,41 @@ def find_collection_names(query: str) -> List[str]:
 def query_rewerite(query: str, collection_names: List[str]) -> str:
     return query 
 
-def query2sortedsections(query: str, limit: int = 10) -> List[ScoredSection]:
+def form_knowledge_sections(scored_sections_reranked:List[ScoredSection]) -> str:
+    knowledge_all = ""
+    for section in scored_sections_reranked:
+        source_file = section.fname_org_doc
+        title = section.heading
+        content = section.content
+
+        knowledge = KNOWLEGE_FORMAT.format(source_file=source_file,
+                                           title=title,
+                                           content=content)
+        knowledge_all += knowledge
+    return knowledge_all
+
+def knowledge_retrieve(query: str, knowledge: str):
+    resp = knowlege_gen_by_gpt(query, knowledge)
+    return resp
+
+def query2knowledge(query: str, limit: int = 10) -> List[ScoredSection]:
     collection_names = find_collection_names(query)
     query = query_rewerite(query, collection_names)
 
-    merged_scored_sections = query2section_on_multiple_collection(collection_names, query, limit=limit)
+    scored_sections_raw = query2section_raw_on_multiple_collection(collection_names, query, limit=limit)
 
-    distance_weight=0
-    rerank_weight=8
-    bm25_weight=1
-    sorted_sections_rrf = rerank_rrf(query_str, merged_scored_sections, distance_weight=distance_weight, rerank_weight=rerank_weight, bm25_weight=bm25_weight)
-    return sorted_sections_rrf
+    scored_sections_reranked = query2sortedsections_reranked(query_str, scored_sections_raw)
+
+    knowledge = form_knowledge_sections(scored_sections_reranked)
+
+    resp = knowledge_retrieve(query, knowledge)
+
+    return resp
 
 if __name__ == "__main__":
     setup_logger_handlers()
-
-    def _truncate_string(s: str, max_length: int) -> str:
-        if len(s) > max_length:
-            return s[:max_length - 3] + '...'  # 留出 3 个字符的空间给 '...'
-        return s
     
     query_str = "神经网络 中央处理器"
-    sorted_sections_rrf = query2sortedsections(query_str)
-
-    print("query", query_str)
-    rich.print([(item.score_rrf, item.score, _truncate_string(item.content, 80)) for item in sorted_sections_rrf])
+    ret = query2knowledge(query_str)
+    rich.print(ret)
+    

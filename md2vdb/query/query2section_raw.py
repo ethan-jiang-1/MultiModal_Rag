@@ -17,7 +17,7 @@ from md2vdb.query.recover_section_for_query import query_initial_points, recover
 from md2vdb.utils.utili_embedding import get_text_embedding
 from md2vdb.query.query_bsae import QdrantClientContextManager
 
-def query2section_on_single_collection(collection_name: str, query: str, limit: int = LIMIT_QUERY) -> List[ScoredSection]:
+def query2section_raw_on_single_collection(collection_name: str, query: str, limit: int = LIMIT_QUERY) -> List[ScoredSection]:
     """
     查询集合中的 chunk 并恢复完整的 section。
     """
@@ -32,7 +32,7 @@ def query2section_on_single_collection(collection_name: str, query: str, limit: 
     return merged_scored_sections
 
 
-def query2section_on_multiple_collection(collection_names: list[str], query: str, limit: int = LIMIT_QUERY) -> List[ScoredSection]:
+def query2section_raw_on_multiple_collection(collection_names: list[str], query: str, limit: int = LIMIT_QUERY) -> List[ScoredSection]:
     """
     查询集合中的 chunk 并恢复完整的 section。
     """
@@ -55,7 +55,7 @@ def test1():
     query = "reference"
     collection_name = "papers"
 
-    results = query2section_on_single_collection(collection_name, query)
+    results = query2section_raw_on_single_collection(collection_name, query)
     rich.print(results)
     print()
 
@@ -70,7 +70,7 @@ def test2():
     collection_names.append("papers")
     collection_names.append("mrag")
 
-    results = query2section_on_multiple_collection(collection_names, query) 
+    results = query2section_raw_on_multiple_collection(collection_names, query) 
     rich.print(results)
     print()
 
@@ -84,7 +84,7 @@ def test3():
     collection_names = []
     collection_names.append("mrag")
 
-    results = query2section_on_multiple_collection(collection_names, query) 
+    results = query2section_raw_on_multiple_collection(collection_names, query) 
     rich.print(results)
     print()
 
