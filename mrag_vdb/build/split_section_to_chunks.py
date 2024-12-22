@@ -61,7 +61,13 @@ def _get_toc_level(sec_id:str) -> int:
     names = sec_id.split(".")
     return len(names)
 
-def split_section_to_chunks(md_section:str, doc_unique_id:str, doc_title:str = None, fname_org_doc:str = None, max_tokens_in_chunk:int = MAX_TOKENS_IN_CHUNK, need_desc_at_top: bool = True) -> List[ChunkedSectionInfo]:
+def split_section_to_chunks(md_section:str, 
+                            doc_unique_id:str, 
+                            doc_title:str = None, 
+                            doc_ctn_type:str = None,
+                            fname_org_doc:str = None, 
+                            max_tokens_in_chunk:int = MAX_TOKENS_IN_CHUNK, 
+                            need_desc_at_top: bool = True) -> List[ChunkedSectionInfo]:
     lines = md_section.splitlines()
 
     ordered_names = None
@@ -123,7 +129,8 @@ def split_section_to_chunks(md_section:str, doc_unique_id:str, doc_title:str = N
                                  desc=desc,
                                  max_tokens=max_tokens_in_chunk, 
                                  doc_unique_id=doc_unique_id, 
-                                 doc_title=doc_title, 
+                                 doc_title=doc_title,
+                                 doc_ctn_type=doc_ctn_type, 
                                  fname_org_doc=fname_org_doc,
                                  content=doc_chunk,
                                  sec_seq_no=-1)
@@ -148,7 +155,10 @@ def _test_chunk_secion(max_tokens_in_chunk=256):
     with open(pname_md_section, encoding="utf-8") as f:
         md_section = f.read()
 
-    csis = split_section_to_chunks(md_section, doc_unique_id, doc_title=doc_title, max_tokens_in_chunk=max_tokens_in_chunk)
+    csis = split_section_to_chunks(md_section, 
+                                   doc_unique_id, 
+                                   doc_title=doc_title, 
+                                   max_tokens_in_chunk=max_tokens_in_chunk)
     rich.print(csis)            
 
 if __name__ == "__main__":

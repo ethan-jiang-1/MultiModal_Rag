@@ -23,6 +23,7 @@ def convert_sections_to_chunks(pname_final_md_info: str) -> Tuple[DocMetaInfo, L
     src_dir = os.path.dirname(pname_final_md_info)
     doc_unique_id = doc_meta_info.doc_unique_id
     doc_title = doc_meta_info.doc_logic_title
+    doc_ctn_type = doc_meta_info.doc_cnt_type
     fname_org_doc = doc_meta_info.fname_org_doc
     all_csis = []
     for fname in doc_meta_info.fnames_sec:
@@ -32,7 +33,11 @@ def convert_sections_to_chunks(pname_final_md_info: str) -> Tuple[DocMetaInfo, L
 
         with open(pname_md_section, encoding="utf-8") as f:
             md_section = f.read()
-        csis = split_section_to_chunks(md_section, doc_unique_id, doc_title=doc_title, fname_org_doc=fname_org_doc)
+        csis = split_section_to_chunks(md_section, 
+                                       doc_unique_id,
+                                       doc_title=doc_title, 
+                                       doc_ctn_type=doc_ctn_type,
+                                       fname_org_doc=fname_org_doc)
         all_csis.extend(csis)
 
     return doc_meta_info, all_csis

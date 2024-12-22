@@ -4,6 +4,8 @@ from typing import List, Any
 from markdown import markdown
 from bs4 import BeautifulSoup
 
+# most content are from ChunkedSectionInfo
+# but add some additional info 
 @dataclass
 class ScoredSection:
     """
@@ -18,11 +20,14 @@ class ScoredSection:
     desc: str
     doc_unique_id: str
     doc_title: str
+    doc_ctn_type: str
     fname_org_doc: str
     content: str
-    payloads: List[Any]
-    knowledge_snippet: Any
-    collection_name:str
+    sec_seq_no: int
+
+    payloads: List[Any]     # additional info: for debugging (all chunks merged)
+    knowledge_snippet: Any  # additional info: knowledge snippet -- for tracking llm content
+    collection_name:str     # addintional info: collection_name
 
 def markdown_to_html_with_ids(markdown_text):
     """

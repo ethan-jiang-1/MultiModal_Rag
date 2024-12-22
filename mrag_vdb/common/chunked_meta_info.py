@@ -21,6 +21,7 @@ class ChunkedSectionInfo(BaseModel):
     max_tokens: int             # max_token_in_chunk
     doc_unique_id: str          # doc unique id
     doc_title: str              # doc title
+    doc_ctn_type: str           # doc ctn type
     fname_org_doc: str          # doc file name
     content: str                # content (will be encoded to vector)
     sec_seq_no: int             # seq number at section level, 0-based

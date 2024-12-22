@@ -196,8 +196,11 @@ def _get_section_by_sec_id(sec_id: str, doc_unique_id: str, collection_name: str
                 desc=csi.desc,
                 doc_unique_id=csi.doc_unique_id,
                 doc_title=csi.doc_title,
+                doc_ctn_type=csi.doc_ctn_type,
                 fname_org_doc=csi.fname_org_doc,
                 content=csi.content,
+                sec_seq_no=csi.sec_seq_no,
+
                 payloads=point.payload,  # 使用 payload 作为 ScoredSection 的 payload
                 knowledge_snippet=None,  # 默认值，视需求而定
                 collection_name=collection_name,

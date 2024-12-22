@@ -19,7 +19,7 @@ from ctn2md.gen_lvlm.gs0_pdf_page_to_region import gs0_parse_non_text_rects_in_p
 from ctn2md.gen_lvlm.gs1_pdf_page_to_region import gs1_parse_non_text_rects_in_page
 from ctn2md.gen_lvlm.gvlm_pdf_page_to_region import vllm_parse_non_text_rects_in_page_by_gpt, vllm_parse_non_text_rects_in_page_by_qwen
 from ctn2md.gen_lvlm.lvlm_base import get_job_id
-from ctn2md.utils.util_ctn_type import CTN_TYPE
+#from ctn2md.utils.util_ctn_type import CTN_TYPE
 
 IMG_EXT = "jpg"  # or "png"
 #IMG_EXT = "png"  # or "png"
@@ -59,6 +59,19 @@ def _get_non_text_rects(md_info, page, page_index, pname_page_name, mctl_lvlm_re
         raise ValueError(f"unspoorted mctl_lvlm_region_model {mctl_lvlm_region_model}")
     logging.info(f"cal rects for {page_index} done.")
     return rects_non_text
+
+
+def _assign_final_doc_cnt_type(md_info, pdf_document):
+    from ctn2md.utils.util_ctn_type import CTN_TYPE
+    doc_type = md_info.get_doc_type()
+    md_info[MIFN.DOC_CTN_TYPE] = CTN_TYPE.get_ctn_type_by_doc_type(doc_type)
+    if pdf_document is not None and len(pdf_document) > 0:
+        page1 = pdf_document[0]
+        page_width, page_height = page1.mediabox_size
+        if md_info[MIFN.DOC_CTN_TYPE] == CTN_TYPE.PDF:
+            if page_width > page_height:
+                md_info[MIFN.DOC_CTN_TYPE] = CTN_TYPE.PPT
+        md_info.save()
 
 def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None, mctl_lvlm_region_model=None) -> List[Tuple[str, str, List[str]]]:
     """
@@ -142,19 +155,9 @@ def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None, mctl_lvlm_region
 
         image_infos.append((fname_page_name, fname_page_rect_name, fname_rect_images))
 
+    _assign_final_doc_cnt_type(md_info, pdf_document)
     pdf_document.close()
     return image_infos
-
-def _assign_final_doc_cnt_type(md_info, pdf_document):
-    doc_type = md_info.get_doc_type()
-    md_info[MIFN.DOC_CTN_TYPE] = CTN_TYPE.get_ctn_type_by_doc_type(doc_type)
-    if pdf_document is not None and len(pdf_document) > 0:
-        page1 = pdf_document[0]
-        page_width, page_height = page1.mediabox_size
-        if md_info[MIFN.DOC_CTN_TYPE] == CTN_TYPE.PDF:
-            if page_width > page_height:
-                md_info[MIFN.DOC_CTN_TYPE] = CTN_TYPE.PPT
-        md_info.save()
 
 def clean_previous_images(output_dir, job_id):
     if not os.path.isdir(output_dir):

@@ -10,6 +10,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.src.md_info_base import PUBLIC_MIFN
+from ctn2md.utils.util_ctn_type import CTN_TYPE
 from mrag_vdb.common.doc_meta_info import DocMetaInfo
 
 
@@ -36,6 +37,9 @@ def _build_doc_meta_info_core(final_md_info: dict) -> DocMetaInfo:
 
     path_org_doc, collection_name = _get_org_doc_and_collection_name(final_md_info)
     fname_org_doc = os.path.basename(path_org_doc)
+
+    if doc_cnt_type is None:
+        doc_cnt_type = CTN_TYPE.get_ctn_type_by_doc_pathname(path_org_doc)
 
     return DocMetaInfo(path_org_doc=path_org_doc,
                        fname_org_doc=fname_org_doc,
