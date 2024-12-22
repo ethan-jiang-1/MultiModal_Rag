@@ -10,10 +10,10 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from md2vdb.query.query_bsae import ScoredSection
-from md2vdb.utils.util_logging import setup_logger_handlers
-from md2vdb.query.query2section_raw import query2section_raw_on_multiple_collection
-from md2vdb.query.rerank_section import rerank_rrf
+from mrag_vdb.query.query_bsae import ScoredSection
+from mrag_vdb.utils.util_logging import setup_logger_handlers
+from mrag_vdb.query.query2section_raw import query2section_raw_on_multiple_collection
+from mrag_vdb.query.rerank_section import rerank_rrf
 
 def query2sortedsections_reranked(query: str, scored_sections_raw: List[ScoredSection]) -> List[ScoredSection]:
     distance_weight=0

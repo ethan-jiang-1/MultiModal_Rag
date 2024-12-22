@@ -15,9 +15,9 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from md2vdb.common.chunked_meta_info import ChunkedSectionInfo
-from md2vdb.common.vdb_base import QdrantClientContextManager
-from md2vdb.query.query_bsae import ScoredSection
+from mrag_vdb.common.chunked_meta_info import ChunkedSectionInfo
+from mrag_vdb.common.vdb_base import QdrantClientContextManager
+from mrag_vdb.query.query_bsae import ScoredSection
 
 LIMIT_QUERY = 5
 
@@ -186,9 +186,9 @@ def sort_scored_sections_by_score(sections: List[ScoredSection]) -> List[ScoredS
 
 if __name__ == "__main__":
     import rich
-    from md2vdb.utils.utili_embedding import get_text_embedding
-    from md2vdb.utils.util_logging import setup_logger_handlers
-    from md2vdb.common.vdb_base import VDB_PATH
+    from mrag_vdb.utils.utili_embedding import get_text_embedding
+    from mrag_vdb.utils.util_logging import setup_logger_handlers
+    from mrag_vdb.common.vdb_base import VDB_PATH
 
     setup_logger_handlers()
 

@@ -7,10 +7,10 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 
-from md2vdb.utils.util_logging import setup_logger_handlers
-from app_mrag.app_gradio_base import create_interface
-from app_mrag._app_log_monitor import ProgressLogger
-from md2vdb.utils.util_model import set_gpt_model
+from mrag_vdb.utils.util_logging import setup_logger_handlers
+from mrag_app.app_gradio_base import create_interface
+from mrag_app._app_log_monitor import ProgressLogger
+from mrag_vdb.utils.util_model import set_gpt_model
 
 # 启动界面
 if __name__ == "__main__":

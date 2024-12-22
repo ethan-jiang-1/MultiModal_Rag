@@ -46,7 +46,7 @@ if __name__ == "__main__":
     import sys
     sys.path.append("./")
 
-    from md2vdb.utils.util_logging import setup_logger_handlers
+    from mrag_vdb.utils.util_logging import setup_logger_handlers
     setup_logger_handlers()
 
     encoding = get_token_encoding()

@@ -8,9 +8,9 @@ if "./" not in sys.path:
     sys.path.append("./")
 load_dotenv()
 
-from md2vdb.utils_llm.llm_knowledge_gen_gpt_prompt import SYSTEM_PROMPT_KNOWLEGE_GEN, USER_PROMPT_KNOWLEGE
-from md2vdb.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
-from md2vdb.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
+from mrag_vdb.utils_llm.llm_knowledge_gen_gpt_prompt import SYSTEM_PROMPT_KNOWLEGE_GEN, USER_PROMPT_KNOWLEGE
+from mrag_vdb.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
+from mrag_vdb.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
 
 
 def knowlege_gen_by_gpt(user_input, knowledge, model="gpt-4o-mini", question_num=None):

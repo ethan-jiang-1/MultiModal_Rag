@@ -14,13 +14,13 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from md2vdb.query.query_bsae import ScoredSection
-from md2vdb.common.vdb_base import REF_PATH
-from md2vdb.common.vdb_base import VDB_PATH
-from md2vdb.utils.util_file import get_root_dir
-from md2vdb.utils.util_logging import setup_logger_handlers
-from md2vdb.common.vdb_base import QdrantClientContextManager
-from md2vdb.common.chunked_meta_info import ChunkedSectionInfo
+from mrag_vdb.query.query_bsae import ScoredSection
+from mrag_vdb.common.vdb_base import REF_PATH
+from mrag_vdb.common.vdb_base import VDB_PATH
+from mrag_vdb.utils.util_file import get_root_dir
+from mrag_vdb.utils.util_logging import setup_logger_handlers
+from mrag_vdb.common.vdb_base import QdrantClientContextManager
+from mrag_vdb.common.chunked_meta_info import ChunkedSectionInfo
 
 def _get_ref_pname(collection_name:str, unique_doc_id:str, fname:str):
     dir_root = get_root_dir()
@@ -246,10 +246,10 @@ def search_for_file_refs(query: str, resp: dict, scored_sections_reranked:List[S
     return refs_info
 
 if __name__ == "__main__":
-    from md2vdb.query.query_bsae import ScoredSection
-    from md2vdb.query.query2section_raw import query2section_raw_on_multiple_collection
-    from md2vdb.query.query2section_reranked import query2sortedsections_reranked
-    from md2vdb.query.query2knowledge import form_knowledge_sections, knowledge_retrieve
+    from mrag_vdb.query.query_bsae import ScoredSection
+    from mrag_vdb.query.query2section_raw import query2section_raw_on_multiple_collection
+    from mrag_vdb.query.query2section_reranked import query2sortedsections_reranked
+    from mrag_vdb.query.query2knowledge import form_knowledge_sections, knowledge_retrieve
 
     setup_logger_handlers()
     

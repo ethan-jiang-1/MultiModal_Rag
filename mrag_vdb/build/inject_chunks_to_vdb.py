@@ -13,10 +13,10 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from md2vdb.common.doc_meta_info import DocMetaInfo
-from md2vdb.build.split_section_to_chunks import ChunkedSectionInfo
-from md2vdb.utils.utili_embedding import EMBEDDING_VEC_LEN, get_text_embedding
-from md2vdb.build.inspect_doc_vdb import cal_stats_for_doc_id
+from mrag_vdb.common.doc_meta_info import DocMetaInfo
+from mrag_vdb.build.split_section_to_chunks import ChunkedSectionInfo
+from mrag_vdb.utils.utili_embedding import EMBEDDING_VEC_LEN, get_text_embedding
+from mrag_vdb.build.inspect_doc_vdb import cal_stats_for_doc_id
 
 
 def _prepare_collection_for_reinject_doc(client: QdrantClient, collection_name: str, doc_meta_info: DocMetaInfo):
@@ -96,8 +96,8 @@ def inject_doc_chunks_into_vdb(client: QdrantClient, collection_name:str, doc_me
     return ret
 
 if __name__ == "__main__":
-    from md2vdb.common.vdb_base import VDB_PATH, QdrantClientContextManager
-    from md2vdb.build.build_doc_meta_info import build_doc_meta_info
+    from mrag_vdb.common.vdb_base import VDB_PATH, QdrantClientContextManager
+    from mrag_vdb.build.build_doc_meta_info import build_doc_meta_info
 
     pname_final_info = "_work/ctn2md_mrag__5__back_panel_与环境匹配工程校核_P2_md/_final_info.json"
     doc_meta_info = build_doc_meta_info(pname_final_info)

@@ -11,8 +11,8 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from md2vdb.utils.util_logging import setup_logger_handlers
-from md2vdb.build.doc2vdb import upsert_doc_to_vdb
+from mrag_vdb.utils.util_logging import setup_logger_handlers
+from mrag_vdb.build.doc2vdb import upsert_doc_to_vdb
 
 def upsert_docs_to_vdb(pnames_final_info: List[str]):
     for ndx, pname_final_info in enumerate(pnames_final_info):

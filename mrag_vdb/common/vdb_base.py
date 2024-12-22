@@ -5,7 +5,7 @@ from qdrant_client import QdrantClient
 if "./" not in sys.path:
     sys.path.append("./")
 
-from md2vdb.common.doc_meta_info import DocMetaInfo
+from mrag_vdb.common.doc_meta_info import DocMetaInfo
 
 VDB_PATH = "_ds_vdb"
 REF_PATH = "_ds_ref"

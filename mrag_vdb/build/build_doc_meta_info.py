@@ -10,7 +10,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.src.md_info_base import PUBLIC_MIFN
-from md2vdb.common.doc_meta_info import DocMetaInfo
+from mrag_vdb.common.doc_meta_info import DocMetaInfo
 
 
 

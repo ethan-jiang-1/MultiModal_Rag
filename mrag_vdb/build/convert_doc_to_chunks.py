@@ -11,10 +11,10 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from md2vdb.build.split_section_to_chunks import split_section_to_chunks
-from md2vdb.common.doc_meta_info import DocMetaInfo
-from md2vdb.common.chunked_meta_info import ChunkedSectionInfo
-from md2vdb.build.build_doc_meta_info import build_doc_meta_info
+from mrag_vdb.build.split_section_to_chunks import split_section_to_chunks
+from mrag_vdb.common.doc_meta_info import DocMetaInfo
+from mrag_vdb.common.chunked_meta_info import ChunkedSectionInfo
+from mrag_vdb.build.build_doc_meta_info import build_doc_meta_info
 
 
 def convert_sections_to_chunks(pname_final_md_info: str) -> Tuple[DocMetaInfo, List[ChunkedSectionInfo]]:

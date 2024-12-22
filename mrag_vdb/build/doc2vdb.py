@@ -10,12 +10,12 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from md2vdb.build.convert_doc_to_chunks import convert_sections_to_chunks, DocMetaInfo
-from md2vdb.utils.util_logging import setup_logger_handlers
-from md2vdb.common.vdb_base import VDB_PATH, get_doc_meta_pathname, get_ref_root
-from md2vdb.build.inject_chunks_to_vdb import inject_doc_chunks_into_vdb
-from md2vdb.common.map_doc_to_collection import MapDocToCol
-from md2vdb.common.vdb_base import QdrantClientContextManager
+from mrag_vdb.build.convert_doc_to_chunks import convert_sections_to_chunks, DocMetaInfo
+from mrag_vdb.utils.util_logging import setup_logger_handlers
+from mrag_vdb.common.vdb_base import VDB_PATH, get_doc_meta_pathname, get_ref_root
+from mrag_vdb.build.inject_chunks_to_vdb import inject_doc_chunks_into_vdb
+from mrag_vdb.common.map_doc_to_collection import MapDocToCol
+from mrag_vdb.common.vdb_base import QdrantClientContextManager
 
 def _save_doc_meta_info(doc_meta_info:DocMetaInfo):
     pname_meta_doc = get_doc_meta_pathname(doc_meta_info)

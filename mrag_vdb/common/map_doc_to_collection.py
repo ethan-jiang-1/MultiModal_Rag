@@ -11,9 +11,9 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from md2vdb.common.doc_meta_info import DocMetaInfo
-from md2vdb.common.vdb_base import get_map_doc2col_pathname
-from md2vdb.utils.util_logging import setup_logger_handlers
+from mrag_vdb.common.doc_meta_info import DocMetaInfo
+from mrag_vdb.common.vdb_base import get_map_doc2col_pathname
+from mrag_vdb.utils.util_logging import setup_logger_handlers
 
 def decompose_doc_unique_id(doc_unique_id):
     pattern = r"^(.+?)_([a-f0-9]+)$"
@@ -83,7 +83,7 @@ class MapDocToCol(BaseModel):
         return collection_name
 
 if __name__ == "__main__":
-    from md2vdb.build.convert_doc_to_chunks import build_doc_meta_info, DocMetaInfo
+    from mrag_vdb.build.convert_doc_to_chunks import build_doc_meta_info, DocMetaInfo
 
     setup_logger_handlers()
 

@@ -11,12 +11,12 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from md2vdb.utils.util_logging import setup_logger_handlers
-from md2vdb.common.vdb_base import VDB_PATH
-from md2vdb.query.query_bsae import ScoredSection
-from md2vdb.query.recover_section_for_query import query_initial_points, recover_scored_sections_from_chunk_from_vdb, LIMIT_QUERY, sort_scored_sections_by_score
-from md2vdb.utils.utili_embedding import get_text_embedding
-from md2vdb.common.vdb_base import QdrantClientContextManager
+from mrag_vdb.utils.util_logging import setup_logger_handlers
+from mrag_vdb.common.vdb_base import VDB_PATH
+from mrag_vdb.query.query_bsae import ScoredSection
+from mrag_vdb.query.recover_section_for_query import query_initial_points, recover_scored_sections_from_chunk_from_vdb, LIMIT_QUERY, sort_scored_sections_by_score
+from mrag_vdb.utils.utili_embedding import get_text_embedding
+from mrag_vdb.common.vdb_base import QdrantClientContextManager
 
 def query2section_raw_on_single_collection(collection_name: str, query: str, limit: int = LIMIT_QUERY) -> List[ScoredSection]:
     """

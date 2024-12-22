@@ -12,14 +12,14 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from md2vdb.query.query_bsae import ScoredSection
-from md2vdb.utils.util_logging import setup_logger_handlers
-from md2vdb.query.query2section_raw import query2section_raw_on_multiple_collection
-from md2vdb.query.query2section_reranked import query2sortedsections_reranked
-from md2vdb.utils_llm.llm_knowledge_gen_gpt import knowlege_gen_by_gpt
-from md2vdb.query.query_bsae import markdown_to_html_with_ids
-from md2vdb.common.rag_answer import RagAnswer
-from md2vdb.query.search_file_refs import search_for_file_refs
+from mrag_vdb.query.query_bsae import ScoredSection
+from mrag_vdb.utils.util_logging import setup_logger_handlers
+from mrag_vdb.query.query2section_raw import query2section_raw_on_multiple_collection
+from mrag_vdb.query.query2section_reranked import query2sortedsections_reranked
+from mrag_vdb.utils_llm.llm_knowledge_gen_gpt import knowlege_gen_by_gpt
+from mrag_vdb.query.query_bsae import markdown_to_html_with_ids
+from mrag_vdb.common.rag_answer import RagAnswer
+from mrag_vdb.query.search_file_refs import search_for_file_refs
 
 KNOWLEGE_FORMAT = """
 <KnowledgeSnippet id="{id}"> n

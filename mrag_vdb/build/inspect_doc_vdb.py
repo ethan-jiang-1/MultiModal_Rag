@@ -72,8 +72,8 @@ def cal_stats_for_doc_id(client: QdrantClient, collection_name: str, target_doc_
     return stats
 
 if __name__ == "__main__":
-    from md2vdb.common.vdb_base import VDB_PATH, QdrantClientContextManager
-    from md2vdb.common.doc_meta_info import DocMetaInfo
+    from mrag_vdb.common.vdb_base import VDB_PATH, QdrantClientContextManager
+    from mrag_vdb.common.doc_meta_info import DocMetaInfo
     import json
 
     #pname_doc_meta_info = "_ds_ref/mrag_5__back_panel_与环境匹配工程校核_P2_274ae6fb/doc_meta.json"
