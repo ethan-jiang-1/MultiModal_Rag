@@ -234,7 +234,7 @@ if __name__ == "__main__":
     from md2vdb.utils.utili_embedding import get_text_embedding
     from md2vdb.utils.util_logging import setup_logger_handlers
     from md2vdb.common.vdb_base import VDB_PATH
-    from md2vdb.query.query_bsae import QdrantClientContextManager
+    from md2vdb.common.vdb_base import QdrantClientContextManager
     from md2vdb.query.query2section_raw import query_initial_points, recover_scored_sections_from_chunk_from_vdb
 
     setup_logger_handlers()

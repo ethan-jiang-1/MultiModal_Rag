@@ -1,5 +1,7 @@
 import os 
 import sys
+from qdrant_client import QdrantClient
+
 if "./" not in sys.path:
     sys.path.append("./")
 
@@ -11,6 +13,16 @@ REF_PATH = "_ds_ref"
 FILENAME_DOC_META = "doc_meta.json"
 FILENAME_COLLECTION = "collection_map.json"
 FILENAME_DOC2COL = "map_doc2col.json"
+
+class QdrantClientContextManager:
+    def __init__(self, *args, **kwargs):
+        self.client = QdrantClient(*args, **kwargs)
+
+    def __enter__(self):
+        return self.client
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.client.close()
 
 def get_ref_root(doc_meta_info: DocMetaInfo) -> str:
     collection_name = doc_meta_info.collection_name

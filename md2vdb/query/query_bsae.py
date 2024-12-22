@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Any
-from qdrant_client import QdrantClient
+#from qdrant_client import QdrantClient
 from markdown import markdown
 from bs4 import BeautifulSoup
 
@@ -23,19 +23,6 @@ class ScoredSection:
     payloads: List[Any]
     knowledge_snippet: Any
     collection_name:str
-
-
-class QdrantClientContextManager:
-    def __init__(self, *args, **kwargs):
-        self.client = QdrantClient(*args, **kwargs)
-
-    def __enter__(self):
-        return self.client
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.client.close()
-
-
 
 def markdown_to_html_with_ids(markdown_text):
     """

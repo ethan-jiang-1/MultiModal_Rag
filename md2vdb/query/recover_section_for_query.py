@@ -16,7 +16,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from md2vdb.common.chunked_meta_info import ChunkedSectionInfo
-from md2vdb.query.query_bsae import QdrantClientContextManager
+from md2vdb.common.vdb_base import QdrantClientContextManager
 from md2vdb.query.query_bsae import ScoredSection
 
 LIMIT_QUERY = 5

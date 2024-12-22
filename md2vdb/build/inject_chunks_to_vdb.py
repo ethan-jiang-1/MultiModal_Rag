@@ -3,6 +3,7 @@ import sys
 import logging
 import rich
 import uuid
+import json
 
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import VectorParams, Distance, PointStruct, UpdateResult, Filter, FieldCondition
@@ -153,4 +154,26 @@ def inject_doc_chunks_into_vdb(client: QdrantClient, collection_name:str, doc_me
     return ret
 
 if __name__ == "__main__":
-    pass
+    from md2vdb.common.vdb_base import VDB_PATH, QdrantClientContextManager
+    from md2vdb.build.build_doc_meta_info import build_doc_meta_info
+
+    final_info = False
+    if final_info: 
+        pname_final_info = "_work/ctn2md_mrag__5__back_panel_与环境匹配工程校核_P2_md/_final_info.json"
+        doc_meta_info = build_doc_meta_info(pname_final_info)
+    else:
+        pname_doc_meta_info = "_ds_ref/mrag_5__back_panel_与环境匹配工程校核_P2_274ae6fb/doc_meta.json"
+        with open(pname_doc_meta_info, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        doc_meta_info = DocMetaInfo(**data)
+    rich.print(doc_meta_info)
+
+    with QdrantClientContextManager(path=VDB_PATH) as client:
+
+        collection_name = doc_meta_info.collection_name
+        target_doc_unique_id = doc_meta_info.doc_unique_id
+        target_doc_title = doc_meta_info.doc_logic_title
+
+        stats = _collection_stats_for_doc_id(client, collection_name, target_doc_unique_id, target_doc_title)
+        rich.print(stats)
+

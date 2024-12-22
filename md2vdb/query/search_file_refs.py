@@ -19,7 +19,7 @@ from md2vdb.common.vdb_base import REF_PATH
 from md2vdb.common.vdb_base import VDB_PATH
 from md2vdb.utils.util_file import get_root_dir
 from md2vdb.utils.util_logging import setup_logger_handlers
-from md2vdb.query.query_bsae import QdrantClientContextManager
+from md2vdb.common.vdb_base import QdrantClientContextManager
 from md2vdb.common.chunked_meta_info import ChunkedSectionInfo
 
 def _get_ref_pname(collection_name:str, unique_doc_id:str, fname:str):
