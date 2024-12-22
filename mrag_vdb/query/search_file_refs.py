@@ -1,5 +1,5 @@
 
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 from dotenv import load_dotenv
 import sys
 import os
@@ -73,123 +73,32 @@ def _check_if_imgs_are_related_to_qa(query: str, answer: str, context: str, ref_
     ref_img_titles_relevance_scores = [0.0 for item in ref_img_titles]
     return ref_img_titles_relevance_scores
 
-def _find_ref_imgs_map_from_nearset_silbings(query: str, answer: str, slibling_move: int, ref_section: ScoredSection):
+def _get_section_by_seq_no(collection_name: str, doc_unique_id: str, seq_no: int) -> Optional[ScoredSection]:
     """
-    根据兄弟章节的位置找到相关的图片，并过滤符合条件的图片（相关性 > 2.0）。
-    
-    参数:
-        query (str): 查询内容。
-        answer (str): 答案内容。
-        slibling_move (int): 移动的方向：-1 表示上一个兄弟章节，+1 表示下一个兄弟章节。
-        ref_section (ScoredSection): 当前章节对象。
-    
-    返回:
-        dict: 过滤后的图片信息映射，键为图片文件名，值为图片路径和标题。
-    """
-    # 获取当前章节的 sec_id 和 parent_sec_id
-    parent_sec_id = ref_section.parent_sec_id
-    current_sec_id = ref_section.sec_id
-
-    # 通过 sec_id 来确定兄弟章节的位置。假设我们有方法来查询兄弟章节
-    sibling_sec_id = _get_sibling_sec_id(parent_sec_id, current_sec_id, slibling_move)
-
-    if sibling_sec_id is None:
-        # 没有找到兄弟章节，返回空字典
-        return {}
-
-    # 查找兄弟章节的内容（我们假设这里有方法可以根据 sec_id 获取章节）
-    sibling_section = _get_section_by_sec_id(sibling_sec_id, ref_section.doc_unique_id, ref_section.collection_name)
-    if not sibling_section:
-        return {}
-
-    # 扫描兄弟章节中的图片文件和标题
-    ref_img_fnames, ref_img_titles = _scan_markdown_for_ref_imgs(sibling_section.content)
-    
-    if len(ref_img_fnames) == 0:
-        # 如果没有图片，返回空字典
-        return {}
-
-    # 构建图片映射
-    ref_imgs_map = _construct_ref_imgs_map(ref_img_fnames, ref_img_titles, sibling_section)
-
-    # 过滤掉相关性评分小于 2.0 的图片
-    filtered_ref_imgs_map = {}
-    for img_fname, (img_pname, img_title) in ref_imgs_map.items():
-        relevance_score = _check_if_imgs_are_related_to_qa(query, answer, sibling_section.content, [img_title])
-        
-        if relevance_score[0] > 2.0:  # 相关性评分大于 2.0
-            filtered_ref_imgs_map[img_fname] = (img_pname, img_title)
-
-    return filtered_ref_imgs_map
-
-
-def _get_sibling_sec_id(parent_sec_id: str, current_sec_id: str, slibling_move: int) -> str:
-    """
-    通过当前章节的 `parent_sec_id` 和 `sec_id`，找到前一个或后一个兄弟章节的 `sec_id`。
-    
-    参数:
-        parent_sec_id (str): 父章节的 id。
-        current_sec_id (str): 当前章节的 id。
-        slibling_move (int): -1 表示找前一个兄弟章节，+1 表示找下一个兄弟章节。
-    
-    返回:
-        str: 兄弟章节的 `sec_id`。
-    """
-    # 这里可以通过一些规则来计算兄弟章节的 `sec_id`
-    # 比如，我们可以通过 `sec_id` 的层级结构来推算
-    # 假设 sec_id 类似 1.1, 1.2, 1.3 这种格式，可以根据数值范围来调整
-    sec_ids = current_sec_id.split(".")
-    if slibling_move == 1:
-        # 下一个兄弟章节
-        sec_ids[-1] = str(int(sec_ids[-1]) + 1)
-    elif slibling_move == -1:
-        # 上一个兄弟章节
-        sec_ids[-1] = str(int(sec_ids[-1]) - 1)
-
-    return ".".join(sec_ids)
-
-
-def _get_section_by_sec_id(sec_id: str, doc_unique_id: str, collection_name: str) -> ScoredSection:
-    """
-    根据 sec_id 获取章节的详细信息。
-    使用 Qdrant 客户端进行查询，返回一个 ScoredSection 对象。
-
-    参数:
-        sec_id (str): 章节 id。
-        collection_name (str): 集合的名称（例如文档的名称）。
-    
-    返回:
-        ScoredSection: 对应的章节对象。
+    根据 doc_unique_id + sec_seq_no 直接查询 Qdrant,
+    返回对应的 ScoredSection（若无则返回 None）。
     """
     with QdrantClientContextManager(path=VDB_PATH) as client:
         filter_query = Filter(
             must=[
-                FieldCondition(key="sec_id", match={"value": sec_id}),
-                FieldCondition(key="doc_unique_id", match={"value": doc_unique_id})
+                FieldCondition(key="doc_unique_id", match={"value": doc_unique_id}),
+                FieldCondition(key="sec_seq_no", match={"value": seq_no}),
             ]
         )
-
-        # 执行查询，limit=1 只获取一个匹配项
         result = client.scroll(
             collection_name=collection_name,
             scroll_filter=filter_query,
             limit=1,
-            with_vectors=False  # 假设这里不需要向量数据
+            with_vectors=False
         )
 
-        # 如果有查询结果且结果包含数据点
         if result and result[0]:
-            # 假设 result[0][0] 是我们需要的章节数据点
             point = result[0][0]
-            
-            # 获取 payload 中的 ChunkedSectionInfo 信息
             csi = ChunkedSectionInfo(**point.payload)
-            
-            # 构造 ScoredSection 对象，如果缺少某些字段使用默认值
             return ScoredSection(
-                score=0.0,  # 默认值
-                score_rrf=0.0,  # 默认值
-                sec_id=sec_id,
+                score=0.0,
+                score_rrf=0.0,
+                sec_id=csi.sec_id,
                 parent_sec_id=csi.parent_sec_id,
                 heading=csi.heading,
                 level=csi.level,
@@ -200,14 +109,75 @@ def _get_section_by_sec_id(sec_id: str, doc_unique_id: str, collection_name: str
                 fname_org_doc=csi.fname_org_doc,
                 content=csi.content,
                 sec_seq_no=csi.sec_seq_no,
-
-                payloads=point.payload,  # 使用 payload 作为 ScoredSection 的 payload
-                knowledge_snippet=None,  # 默认值，视需求而定
+                payloads=point.payload,
+                knowledge_snippet=None,
                 collection_name=collection_name,
             )
-
-    # 如果没有查询到结果，返回 None 或者抛出异常
     return None
+
+def _is_toc_relevant(ref_section: ScoredSection, neighbor_section: ScoredSection, offset: int) -> bool:
+    """
+    判断 neighbor_section 是否在 TOC 上和 ref_section 存在
+    - 同级（Sibling）
+    - 父级（Parent）
+    - 子级（Child）
+    这三种关系。
+    
+    offset < 0 => 可能是前面的 chunk（Sibling 或 Parent）
+    offset > 0 => 可能是后面的 chunk（Sibling 或 Child）
+    """
+    # 同级 (Sibling)
+    if neighbor_section.parent_sec_id == ref_section.parent_sec_id:
+        return True
+
+    # 前面 => 也可能是父级
+    if offset < 0:
+        # 如果 neighbor_section 就是 ref_section 的 parent
+        if neighbor_section.sec_id == ref_section.parent_sec_id:
+            return True
+
+    # 后面 => 也可能是子级
+    if offset > 0:
+        # 如果 neighbor_section 的 parent 就是 ref_section
+        if neighbor_section.parent_sec_id == ref_section.sec_id:
+            return True
+
+    return False
+
+def _find_ref_imgs_map_lqcut(query: str, answer: str, ref_section: ScoredSection) -> dict:
+    """
+    只在前/后几个相邻的 sec_seq_no 中寻找那些 TOC 上
+    属于 Sibling/Parent/Child 的章节，以尝试获取图片引用。
+    """
+    # 可以根据需要扩展搜索范围，比如 [-2, -1, +1, +2]
+    near_seq_offsets = [-1, +1]  
+
+    found_map = {}
+    for offset in near_seq_offsets:
+        neighbor_seq_no = ref_section.sec_seq_no + offset
+        neighbor_section = _get_section_by_seq_no(
+            ref_section.collection_name,
+            ref_section.doc_unique_id,
+            neighbor_seq_no
+        )
+        if not neighbor_section:
+            continue
+
+        # 先判断 TOC 关系（Sibling / Parent / Child）
+        if not _is_toc_relevant(ref_section, neighbor_section, offset):
+            # 如果不符合你列出的 3 种情况，跳过
+            continue
+
+        # 如果 TOC 相关，再扫描图片
+        n_img_fnames, n_img_titles = _scan_markdown_for_ref_imgs(neighbor_section.content)
+        if n_img_fnames:
+            candidate_map = _construct_ref_imgs_map(n_img_fnames, n_img_titles, neighbor_section)
+            
+            # 做相关度判断（如果你需要的话）
+            # candidate_map = _filter_by_relevance(query, answer, candidate_map, neighbor_section)
+            found_map.update(candidate_map)
+
+    return found_map
 
 def _is_ctn_gen_by_high_quality_parse_engine(ref_section: ScoredSection) -> bool:
     if ref_section.doc_ctn_type.find("llamaparse") != -1:
@@ -215,17 +185,21 @@ def _is_ctn_gen_by_high_quality_parse_engine(ref_section: ScoredSection) -> bool
     return True
 
 def _find_ref_imgs_map(query: str, answer: str, ref_section: ScoredSection) -> dict:
+    """
+    优先从当前section找图，如果找不到且是低质量解析，
+    那就往前后相邻的 chunk 搜索若干步看有没有图。
+    """
+    # 1. 先在当前 chunk 里扫描
     ref_img_fnames, ref_img_titles = _scan_markdown_for_ref_imgs(ref_section.content)
-    if len(ref_img_fnames) > 0: 
+    if len(ref_img_fnames) > 0:
         return _construct_ref_imgs_map(ref_img_fnames, ref_img_titles, ref_section)
-    
-    if _is_ctn_gen_by_high_quality_parse_engine(ref_section):
-        return {}
-    
-    ref_imgs_map = _find_ref_imgs_map_from_nearset_silbings(query, answer, 1, ref_section) # after
-    if not ref_imgs_map:
-        ref_imgs_map = _find_ref_imgs_map_from_nearset_silbings(query, answer, -1, ref_section) # before
-    return ref_imgs_map
+
+    # 2. 若没有图片，并且是 llamaparse 之类的低质量解析，则尝试相邻 chunk
+    if not _is_ctn_gen_by_high_quality_parse_engine(ref_section):
+        return _find_ref_imgs_map_lqcut(query, answer, ref_section)
+
+    # 3. 若依然没有，返回空
+    return {}
 
 
 def search_for_file_refs(query: str, resp: dict, scored_sections_reranked:List[ScoredSection]):
