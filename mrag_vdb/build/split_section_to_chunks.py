@@ -121,11 +121,12 @@ def split_section_to_chunks(md_section:str, doc_unique_id:str, doc_title:str = N
                                  total=total, 
                                  heading=heading, 
                                  desc=desc,
-                                 max_tokens_in_chunk=max_tokens_in_chunk, 
+                                 max_tokens=max_tokens_in_chunk, 
                                  doc_unique_id=doc_unique_id, 
                                  doc_title=doc_title, 
                                  fname_org_doc=fname_org_doc,
-                                 content=doc_chunk)
+                                 content=doc_chunk,
+                                 sec_seq_no=-1)
         csis.append(csi)
 
     return csis

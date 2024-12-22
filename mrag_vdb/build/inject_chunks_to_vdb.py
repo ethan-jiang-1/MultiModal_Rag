@@ -67,9 +67,15 @@ def inject_doc_chunks_into_vdb(client: QdrantClient, collection_name:str, doc_me
     _prepare_collection_for_reinject_doc(client, collection_name, doc_meta_info)
 
     total = len(all_csis)
+    sec_seq_no = -1
+    cur_sec_id = "no"
     for ndx, csi in enumerate(all_csis):
         logging.info(f"converting doc_chunk {ndx+1}/{total} for {collection_name}")
         vector = get_text_embedding(csi.content)
+        if csi.sec_id != cur_sec_id:
+            cur_sec_id = csi.sec_id
+            sec_seq_no += 1
+        csi.sec_seq_no = sec_seq_no
         payload = csi.model_dump()
         vectors.append(vector)
         payloads.append(payload)
