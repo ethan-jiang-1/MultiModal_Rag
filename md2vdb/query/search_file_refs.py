@@ -55,6 +55,18 @@ def _scan_markdown_for_ref_imgs(md_content: str) -> Tuple[List[str], List[str]]:
 
     return ref_img_fnames, ref_img_titles
 
+def _find_ref_imgs_map(ref_section: ScoredSection):
+    md_content = ref_section.content
+    ref_img_fnames, ref_img_titles = _scan_markdown_for_ref_imgs(md_content)
+
+    ref_imgs_map = {}
+    for ref_img_fname, ref_img_title in zip(ref_img_fnames, ref_img_titles):
+        if ref_img_fname not in ref_imgs_map:
+            ref_img_pname = _get_ref_pname(ref_section.collection_name, ref_section.doc_unique_id, ref_img_fname)
+            ref_imgs_map[ref_img_fname] = (ref_img_pname, ref_img_title)
+
+    return ref_imgs_map
+
 def search_for_file_refs(query: str, resp: dict, scored_sections_reranked:List[ScoredSection]):
     refs_info = {}
     detailed_refernces = resp.get("detailed_references", None)
@@ -74,17 +86,11 @@ def search_for_file_refs(query: str, resp: dict, scored_sections_reranked:List[S
             ref_doc_pname = _get_ref_pname(ref_section.collection_name, ref_section.doc_unique_id, ref_doc_fname)
             ref_doc_title = ref_section.doc_title
 
-            md_content = ref_section.content
-            ref_img_fnames, ref_img_titles = _scan_markdown_for_ref_imgs(md_content)
-
             if ref_doc_fname not in refs_info:
-                refs_info[ref_doc_fname] = {"ref_doc_tuple": (ref_doc_pname, ref_doc_title), 
-                                            "ref_imgs_map": {}}
-            ref_imgs_map = refs_info[ref_doc_fname]["ref_imgs_map"] 
-            for ref_img_fname, ref_img_title in zip(ref_img_fnames, ref_img_titles):
-                if ref_img_fname not in ref_imgs_map:
-                    ref_img_pname = _get_ref_pname(ref_section.collection_name, ref_section.doc_unique_id, ref_img_fname)
-                    ref_imgs_map[ref_img_fname] = (ref_img_pname, ref_img_title)
+                refs_info[ref_doc_fname] = {}
+                refs_info[ref_doc_fname]["ref_doc_tuple"] = (ref_doc_pname, ref_doc_title) 
+                refs_info[ref_doc_fname]["ref_imgs_map"] = _find_ref_imgs_map(ref_section)
+
 
     rich.print(refs_info)
     return refs_info
@@ -113,4 +119,5 @@ if __name__ == "__main__":
     resp = knowledge_retrieve(query, knowledge, scored_sections_reranked)
 
     refs_info = search_for_file_refs(query, resp, scored_sections_reranked)
+    print()
     rich.print(refs_info)
