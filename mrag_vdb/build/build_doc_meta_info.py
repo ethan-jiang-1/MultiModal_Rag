@@ -35,11 +35,15 @@ def _build_doc_meta_info_core(final_md_info: dict) -> DocMetaInfo:
     doc_logic_title = final_md_info.get(PUBLIC_MIFN.DOC_LOGIC_TITLE)
     doc_summary = final_md_info.get(PUBLIC_MIFN.DOC_SUMMARY)
 
+    gen_engine = final_md_info.get(PUBLIC_MIFN.GEN_ENGINE)
+
     path_org_doc, collection_name = _get_org_doc_and_collection_name(final_md_info)
     fname_org_doc = os.path.basename(path_org_doc)
 
     if doc_cnt_type is None:
         doc_cnt_type = CTN_TYPE.get_ctn_type_by_doc_pathname(path_org_doc)
+
+    doc_cnt_type = f"{doc_cnt_type}@{gen_engine}"
 
     return DocMetaInfo(path_org_doc=path_org_doc,
                        fname_org_doc=fname_org_doc,

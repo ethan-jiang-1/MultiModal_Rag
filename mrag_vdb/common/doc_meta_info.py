@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 import sys
 import os
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import List
 import json
 
 load_dotenv()
@@ -27,7 +27,7 @@ class DocMetaInfo(BaseModel):
     path_org_doc: str
     fname_org_doc: str
     fname_final_md: str
-    doc_cnt_type: Optional[str]  # 可以是 str 或 None
+    doc_cnt_type: str  
     doc_unique_id: str
     doc_name_title: str
     doc_logic_title: str
