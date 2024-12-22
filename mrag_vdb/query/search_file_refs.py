@@ -68,10 +68,6 @@ def _construct_ref_imgs_map(ref_img_fnames: List[str], ref_img_titles: List[str]
 
     return ref_imgs_map
 
-def _check_if_imgs_are_related_to_qa(query: str, answer: str, context: str, ref_img_titles: List[str]):
-    # using context, query and answer to check if ref from slibing are good fit images
-    ref_img_titles_relevance_scores = [0.0 for item in ref_img_titles]
-    return ref_img_titles_relevance_scores
 
 def _get_section_by_seq_no(collection_name: str, doc_unique_id: str, seq_no: int) -> Optional[ScoredSection]:
     """
@@ -173,8 +169,6 @@ def _find_ref_imgs_map_lqcut(query: str, answer: str, ref_section: ScoredSection
         if n_img_fnames:
             candidate_map = _construct_ref_imgs_map(n_img_fnames, n_img_titles, neighbor_section)
             
-            # 做相关度判断（如果你需要的话）
-            # candidate_map = _filter_by_relevance(query, answer, candidate_map, neighbor_section)
             found_map.update(candidate_map)
 
     return found_map
@@ -184,7 +178,7 @@ def _is_ctn_gen_by_high_quality_parse_engine(ref_section: ScoredSection) -> bool
         return False
     return True
 
-def _find_ref_imgs_map(query: str, answer: str, ref_section: ScoredSection) -> dict:
+def _find_ref_imgs_map(query: str, answer: str, ref_section: ScoredSection) -> Tuple[dict, bool]:
     """
     优先从当前section找图，如果找不到且是低质量解析，
     那就往前后相邻的 chunk 搜索若干步看有没有图。
@@ -192,14 +186,25 @@ def _find_ref_imgs_map(query: str, answer: str, ref_section: ScoredSection) -> d
     # 1. 先在当前 chunk 里扫描
     ref_img_fnames, ref_img_titles = _scan_markdown_for_ref_imgs(ref_section.content)
     if len(ref_img_fnames) > 0:
-        return _construct_ref_imgs_map(ref_img_fnames, ref_img_titles, ref_section)
+        return _construct_ref_imgs_map(ref_img_fnames, ref_img_titles, ref_section), False
 
     # 2. 若没有图片，并且是 llamaparse 之类的低质量解析，则尝试相邻 chunk
     if not _is_ctn_gen_by_high_quality_parse_engine(ref_section):
-        return _find_ref_imgs_map_lqcut(query, answer, ref_section)
+        return _find_ref_imgs_map_lqcut(query, answer, ref_section), True
 
     # 3. 若依然没有，返回空
-    return {}
+    return {}, True
+
+def _check_if_imgs_are_related_to_qa(query: str, answer: str, context: str, ref_img_titles: List[str]):
+    # using context, query and answer to check if ref from slibing are good fit images
+    ref_img_titles_relevance_scores = [0.0 for item in ref_img_titles]
+    return ref_img_titles_relevance_scores
+
+def _find_relavent_ref_imgs_map(query: str, answer: str, ref_section: ScoredSection) -> dict:
+    ref_img_map, search = _find_ref_imgs_map(query, answer, ref_section)
+    # 做相关度判断（如果你需要的话）
+    # candidate_map = _filter_by_relevance(query, answer, candidate_map, neighbor_section)
+    return ref_img_map
 
 
 def search_for_file_refs(query: str, resp: dict, scored_sections_reranked:List[ScoredSection]):
@@ -225,7 +230,7 @@ def search_for_file_refs(query: str, resp: dict, scored_sections_reranked:List[S
             if ref_doc_fname not in refs_info:
                 refs_info[ref_doc_fname] = {}
                 refs_info[ref_doc_fname]["ref_doc_tuple"] = (ref_doc_pname, ref_doc_title) 
-                refs_info[ref_doc_fname]["ref_imgs_map"] = _find_ref_imgs_map(query, answer, ref_section)
+                refs_info[ref_doc_fname]["ref_imgs_map"] = _find_relavent_ref_imgs_map(query, answer, ref_section)
 
     rich.print(refs_info)
     return refs_info
