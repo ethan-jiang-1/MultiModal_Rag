@@ -26,26 +26,31 @@ logger = logging.getLogger(__name__)
 
 def _group_initial_chunks(initial_points: List[ScoredPoint]) -> Dict[str, Dict]:
     """
-    按 sec_id 聚合初始 chunk 数据。
+    按 sec_id 和 doc_unique_id 聚合初始 chunk 数据，以确保不同文件中的相同 sec_id 不会被错误合并。
     """
     sections = defaultdict(lambda: {"order_n_point": [], "max_score": 0.0, "metadata": None, "total": 0})
 
     for point in initial_points:
         sec_id = point.payload.get("sec_id")
-        if sec_id is None:
-            logger.warning("Missing sec_id in point payload, skipping point.")
+        doc_unique_id = point.payload.get("doc_unique_id")  # 获取 doc_unique_id
+        if sec_id is None or doc_unique_id is None:
+            logger.warning("Missing sec_id or doc_unique_id in point payload, skipping point.")
             continue
 
         order = point.payload.get("order", 0)
         total = point.payload.get("total", 1)
 
-        sections[sec_id]["order_n_point"].append((order, point))
-        sections[sec_id]["max_score"] = max(sections[sec_id]["max_score"], getattr(point, "score", 0.0))
-        sections[sec_id]["metadata"] = point.payload
-        sections[sec_id]["total"] = total
+        # 使用 (sec_id, doc_unique_id) 作为唯一的键
+        section_key = (sec_id, doc_unique_id)
 
-    logger.info(f"Initial sections grouped by sec_id: {len(sections)} sections found.")
+        sections[section_key]["order_n_point"].append((order, point))
+        sections[section_key]["max_score"] = max(sections[section_key]["max_score"], getattr(point, "score", 0.0))
+        sections[section_key]["metadata"] = point.payload
+        sections[section_key]["total"] = total
+
+    logger.info(f"Initial sections grouped by sec_id and doc_unique_id: {len(sections)} sections found.")
     return sections
+
 
 
 def _query_missing_chunks(client: QdrantClient, collection_name: str, sections: Dict[str, Dict]) -> None:
@@ -116,7 +121,11 @@ def _merge_chunks_to_scored_sections(sections: Dict[str, Dict], collection_name:
     合并所有 chunk，恢复完整的 section。
     """
     merged_scored_sections = []
-    for sec_id, data in sections.items():
+    for section_key, data in sections.items():
+        # 使用 (sec_id, doc_unique_id) 作为唯一的键
+        # section_key = (sec_id, doc_unique_id)
+        sec_id, _ = section_key
+
         chunks = data["order_n_point"]
         content = _clean_and_merge_chunks_content(chunks)
 

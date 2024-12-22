@@ -209,10 +209,18 @@ def _get_section_by_sec_id(sec_id: str, doc_unique_id: str, collection_name: str
     # 如果没有查询到结果，返回 None 或者抛出异常
     return None
 
-def _find_ref_imgs_map(query: str, answer: str, ref_section: ScoredSection):
+def _is_ctn_gen_by_high_quality_parse_engine(ref_section: ScoredSection) -> bool:
+    if ref_section.doc_ctn_type.find("llamaparse") != -1:
+        return False
+    return True
+
+def _find_ref_imgs_map(query: str, answer: str, ref_section: ScoredSection) -> dict:
     ref_img_fnames, ref_img_titles = _scan_markdown_for_ref_imgs(ref_section.content)
     if len(ref_img_fnames) > 0: 
         return _construct_ref_imgs_map(ref_img_fnames, ref_img_titles, ref_section)
+    
+    if _is_ctn_gen_by_high_quality_parse_engine(ref_section):
+        return {}
     
     ref_imgs_map = _find_ref_imgs_map_from_nearset_silbings(query, answer, 1, ref_section) # after
     if not ref_imgs_map:
@@ -273,6 +281,7 @@ if __name__ == "__main__":
     knowledge = form_knowledge_sections(scored_sections_reranked)
 
     resp = knowledge_retrieve(query, knowledge, scored_sections_reranked)
+    rich.print(resp)
 
     refs_info = search_for_file_refs(query, resp, scored_sections_reranked)
     print()
