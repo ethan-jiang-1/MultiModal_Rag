@@ -86,7 +86,7 @@ if __name__ == "__main__":
 
     #doc_pathname = "datasrc/exam/raw_docs/mrag/AIGC时代的人力资源管理进化(徐刚).pdf"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/AIGC时代的人力资源管理进化(徐刚).pdf"
-    doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、上汽内外饰部CAD外包框架服务合同.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪ST2H项目低压线束设计技术服务合同（电子电器）.pdf"
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/mrag/1. 座椅STO间隙 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/2. 座垫与钢丝间隙 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/3. 头枕杆圆角定义 P1.pptx"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/4. 前后排座椅间距定义 P1.pptx"
+    doc_pathname = "datasrc/exam/raw_docs/mrag/4. 前后排座椅间距定义 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/5. back panel 与环境匹配工程校核_P2.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/6. 前后排座椅H点距离要求 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/管理者角色定位与认知课程大纲.docx"
