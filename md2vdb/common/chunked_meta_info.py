@@ -23,3 +23,13 @@ class ChunkedSectionInfo(BaseModel):
     doc_title: str
     fname_org_doc: str
     content: str
+
+
+class ChunkedImageInfo(BaseModel):
+    heading: str 
+    desc: str
+    doc_unique_id: str
+    doc_title: str
+    image_description: str 
+    fname_image: str
+    fname_org_doc: str

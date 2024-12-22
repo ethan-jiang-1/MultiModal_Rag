@@ -14,7 +14,7 @@ if "./" not in sys.path:
 from ctn2md.src.md_info_base import PUBLIC_MIFN
 from md2vdb.build.split_section_to_chunks import split_section_to_chunks
 from md2vdb.common.doc_meta_info import DocMetaInfo
-from md2vdb.common.chunked_section_info import ChunkedSectionInfo
+from md2vdb.common.chunked_meta_info import ChunkedSectionInfo
 
 
 # Have to track back to original doc, as we are going to use folder name of the org doc as collection_name

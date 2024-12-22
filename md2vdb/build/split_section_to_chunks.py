@@ -13,7 +13,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from md2vdb.utils.util_tokenizer import get_token_encoding
-from md2vdb.common.chunked_section_info import ChunkedSectionInfo
+from md2vdb.common.chunked_meta_info import ChunkedSectionInfo
 
 MAX_TOKENS_IN_CHUNK = 512
 
