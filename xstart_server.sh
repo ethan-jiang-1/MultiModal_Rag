@@ -1,2 +1,0 @@
-source venv/bin/activate
-nohup uvicorn server.main:app --reload --port 8200 > logs/output.log 2>&1 &

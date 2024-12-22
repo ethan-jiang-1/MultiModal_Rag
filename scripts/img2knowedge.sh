@@ -1,1 +1,0 @@
-python HiQA/build_tool/hiqa_prepare_image_pdf.py
