@@ -6,6 +6,7 @@ import os
 import html
 import logging 
 import re
+import rich
 import urllib.parse
 
 if "./" not in sys.path:
@@ -114,14 +115,25 @@ def parse_final_result(result_dic):
     #user_input = result_dic.get("user_input", "")
     
     # 初始化返回内容
-    content = ""
-    files, images = [], []
-
     content = result_dic.get("response_answer", "")
-    files = result_dic.get("lst_source_names", [])
-    images = result_dic.get("lst_image_names", [])
+    content_details = result_dic.get("response_answer_referenced", "")
 
-    return content, files, images
+    src_names = result_dic.get("lst_source_names", [])
+    src_titles = result_dic.get("lst_source_titles", [])
+    src_pnames = result_dic.get("lst_source_pnames", [])
+
+    img_names = result_dic.get("lst_image_names", [])
+    img_titles= result_dic.get("lst_image_titles", [])
+    img_pnames = result_dic.get("lst_image_pnames", [])
+
+    srcs_name_title_pname = []
+    for name, title, pname in zip(src_names, src_titles, src_pnames):
+        srcs_name_title_pname.append((name, title, pname))
+    imgs_name_title_pname = []
+    for name, title, pname in zip(img_names, img_titles, img_pnames):
+        imgs_name_title_pname.append((name, title, pname))
+
+    return content, content_details, srcs_name_title_pname, imgs_name_title_pname
 
 # 动态更新的进度内容生成器
 def update_progress(progress_percentage, current_task, progress_log):
@@ -217,32 +229,35 @@ def on_submit(user_input):
 
     # 使用 parse_final_result 获取回答内容、文件和图片组合情况
     result_dic["user_input"] = user_input
-    content, files, images = parse_final_result(result_dic)
+    content, content_details, srcs_name_title_pname, imgs_name_title_pname = parse_final_result(result_dic)
+    rich.print(content, content_details)
+    rich.print(srcs_name_title_pname)
+    rich.print(imgs_name_title_pname)
 
     # 生成文件和图片的下载链接
     #root_dir = "http://your-server-address"
     # 生成文件下载链接的HTML
     file_links_html = (
         "<p>相关的文件：</p><ul>" + "".join(
-            [f"<li><a href='file://{html.escape(file)}' download>{os.path.basename(file)}</a></li>"
-            for file in files]
-        ) + "</ul>" if files else "<p>没有文件可下载。</p>"
+            [f"<li><a href='file://{html.escape(name_title_pname[2])}' download>{os.path.basename(name_title_pname[0])}</a></li>"
+            for name_title_pname in srcs_name_title_pname]
+        ) + "</ul>" if srcs_name_title_pname else "<p>没有文件可下载。</p>"
     )
 
     # 生成图片下载链接的HTML
     image_links_html = (
         "<p>相关的图片：</p><ul>" + "".join(
-            [f"<li><a href='file://{html.escape(img)}' download>{os.path.basename(img)}</a></li>"
-            for img in images]
-        ) + "</ul>" if images else "<p>没有图片可下载。</p>"
+            [f"<li><a href='file://{html.escape(name_title_pname[2])}' download>{os.path.basename(name_title_pname[0])}</a></li>"
+            for name_title_pname in imgs_name_title_pname]
+        ) + "</ul>" if imgs_name_title_pname else "<p>没有图片可下载。</p>"
     )
 
     yield (
         update_progress(100, "所有任务完成", progress_log),
         content,  # 显示最终回答内容
-        gr.update(value=file_links_html, visible=bool(files)),  # 文件名和下载链接HTML
-        gr.update(value=image_links_html, visible=bool(images)),  # 图片名和下载链接HTML
-        gr.update(value=images if images else None, visible=bool(images))  # 显示/隐藏图片列表
+        gr.update(value=file_links_html, visible=bool(srcs_name_title_pname)),  # 文件名和下载链接HTML
+        gr.update(value=image_links_html, visible=bool(imgs_name_title_pname)),  # 图片名和下载链接HTML
+        gr.update(value=[ntp[2] for ntp in imgs_name_title_pname] if imgs_name_title_pname else None, visible=bool(imgs_name_title_pname))  # 显示/隐藏图片列表
     )
 
 # 构建界面的函数

@@ -14,6 +14,8 @@ class RagAnswer(BaseModel):
     answer_referenced: str 
     source_names: List[str]
     source_titles: List[str]
+    source_pnames: List[str]
     image_names: List[str] 
     image_titles: List[str]
+    image_pnames: List[str]
     

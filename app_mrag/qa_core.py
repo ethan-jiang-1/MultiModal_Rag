@@ -80,9 +80,11 @@ def do_core_query(user_input, kb_name='mrag', limit=10):
     ret_dict["response_answer"] = rag_answer.answer
     ret_dict["response_answer_referenced"] = rag_answer.answer_referenced
     ret_dict["lst_source_names"] = rag_answer.source_names
-    ret_dict["lst_soruce_titles"] = rag_answer.source_titles
+    ret_dict["lst_source_titles"] = rag_answer.source_titles
+    ret_dict["lst_source_pnames"] = rag_answer.source_pnames
     ret_dict["lst_image_names"] = rag_answer.image_names
     ret_dict["lst_image_titles"] = rag_answer.image_titles
+    ret_dict["lst_image_pnames"] = rag_answer.image_pnames
 
     pretty_str = pformat(ret_dict)
     logging.info(f"##ret_dict: \n {pretty_str}")
