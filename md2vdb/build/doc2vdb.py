@@ -87,14 +87,8 @@ def upsert_doc_to_vdb(pname_final_info: str, max_chunk_num:int = None, skip_buil
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    #pname_final_info = "_work/ctn2md_深度学习在视电阻率快速反演中的研究_lvlm/_final_info.json"
-    #pname_final_info = "_work/ctn2md_Survey_of_different_Large_Language_Model_Architectures_lvlm/_final_info.json"
-    #pname_final_info = "_output/ctn2md_attention_is_all_you_need_lvlm/_final_info.json"
     #pname_final_info = "_work/ctn2md_mrag__1__座椅STO间隙_P1_lp/_final_info.json"
     pname_final_info = "_work/ctn2md_mrag__5__back_panel_与环境匹配工程校核_P2_md/_final_info.json"
-
-    #pname_final_info = "_output/ctn2md_AIGC时代的人力资源管理进化(徐刚)_lvlm/_final_info.json"
-    #pname_final_info = "_output/ctn2md_业绩案例_上汽内外饰DRE外包框架服务合同_lp/_final_info.json"
 
     skip_build_vdb = False
     #skip_build_vdb = True
