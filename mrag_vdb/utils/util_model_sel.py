@@ -9,7 +9,7 @@ class ModelGptSel:
 
     @classmethod
     def set_gpt_model(cls, model_name):
-        if cls.is_supported_model(model_name):
+        if cls.is_supported_gpt_model(model_name):
             cls._g_gpt_model = model_name
         return cls._g_gpt_model
 
