@@ -18,7 +18,7 @@ def knowlege_gen_by_gpt(user_input, knowledge, model="gpt-4o-mini", question_num
         question_num = get_next_question_num()
 
     try:
-        if model not in ["gpt-4o-mini", "gpt-4o"]: 
+        if not model.startswith("gpt"): 
             raise ValueError(f"f{model} not supporst")
 
         logging.info(f"start to summarize the content by {model} as question_num: {question_num}")

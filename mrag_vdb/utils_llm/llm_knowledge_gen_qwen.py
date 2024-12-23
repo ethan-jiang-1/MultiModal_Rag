@@ -18,7 +18,7 @@ def knowlege_gen_by_qwen(user_input, knowledge, model="qwen-turbo-1101", questio
         question_num = get_next_question_num()
 
     try:
-        if model not in ["qwen-plus", "qwen-plus-1127", "qwen-turbo-1101"]: 
+        if not model.startswith("qwen"): 
             raise ValueError(f"f{model} not supporst")
 
         logging.info(f"start to summarize the content by {model} as question_num: {question_num}")

@@ -18,7 +18,7 @@ def check_img_relevance_by_qwen(user_query:str, llm_answer: str, knowledge_conte
         question_num = get_next_question_num()
 
     try:
-        if model not in ["gpt-4o-mini", "gpt-4o"]: 
+        if not model.startswith("qwen"): 
             raise ValueError(f"f{model} not supporst")
 
         logging.info(f"start to summarize the content by {model} as question_num: {question_num}")
