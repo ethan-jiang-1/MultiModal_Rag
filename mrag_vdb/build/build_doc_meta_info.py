@@ -68,6 +68,8 @@ def build_doc_meta_info(pname_final_md_info: str) -> DocMetaInfo:
 
 
 if __name__ == "__main__":
-    pname_final_md_info = "_work/ctn2md_mrag__1__座椅STO间隙_P1_lp/_final_info.json"
+    #pname_final_md_info = "_work/ctn2md_mrag__1__座椅STO间隙_P1_lp/_final_info.json"
+    pname_final_md_info = "_work/ctn2md_papers____AI+应用_百花齐放_新质生产力前景广阔pdf_lvlm/_final_info.json"
+
     doc_meta_info = build_doc_meta_info(pname_final_md_info)
     rich.print(doc_meta_info)    

@@ -83,7 +83,7 @@ class MapDocToCol(BaseModel):
         return collection_name
 
 if __name__ == "__main__":
-    from mrag_vdb.build.convert_doc_to_chunks import build_doc_meta_info, DocMetaInfo
+    from mrag_vdb.build._convert_doc_to_chunks import build_doc_meta_info, DocMetaInfo
 
     setup_logger_handlers()
 

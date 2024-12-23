@@ -10,10 +10,10 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from mrag_vdb.build.convert_doc_to_chunks import convert_sections_to_chunks, DocMetaInfo
+from mrag_vdb.build._convert_doc_to_chunks import convert_sections_to_chunks, DocMetaInfo
 from mrag_vdb.utils.util_logging import setup_logger_handlers
 from mrag_vdb.common.vdb_base import VDB_PATH, get_doc_meta_pathname, get_ref_root
-from mrag_vdb.build.inject_chunks_to_vdb import inject_doc_chunks_into_vdb
+from mrag_vdb.build._inject_chunks_to_vdb import inject_doc_chunks_into_vdb
 from mrag_vdb.common.map_doc_to_collection import MapDocToCol
 from mrag_vdb.common.vdb_base import QdrantClientContextManager
 
@@ -88,7 +88,8 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     #pname_final_info = "_work/ctn2md_mrag__1__座椅STO间隙_P1_lp/_final_info.json"
-    pname_final_info = "_work/ctn2md_mrag__5__back_panel_与环境匹配工程校核_P2_md/_final_info.json"
+    #pname_final_info = "_work/ctn2md_mrag__5__back_panel_与环境匹配工程校核_P2_md/_final_info.json"
+    pname_final_info = "_work/ctn2md_papers____AI+应用_百花齐放_新质生产力前景广阔pdf_lvlm/_final_info.json"
 
     skip_build_vdb = False
     #skip_build_vdb = True
