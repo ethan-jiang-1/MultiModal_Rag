@@ -23,7 +23,7 @@ class GenMd_Base:
 
     @classmethod
     def does_gen_needed(cls, doc_pathname, out_dir, enforced_gen):
-        if out_dir is not None:
+        if out_dir is None:
             out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=cls.OD_SUFFIX)
 
         gen_needed = False

@@ -142,7 +142,7 @@ class MdInfo:
         if not isinstance(md_info_path_or_out_dir, str):
             raise ValueError(f"MdInfo.init: expect string as path here: {md_info_path_or_out_dir}")
 
-        self._md_info_path = self.get_suggested_md_info_path(md_info_path_or_out_dir)
+        self._md_info_path = self._get_suggested_md_info_path(md_info_path_or_out_dir)
         self._md_info_control_path = os.path.join(os.path.dirname(self._md_info_path), _MIB_FNAME_MD_CONTROL_INFO)
 
         self._out_dir = os.path.dirname(self._md_info_path)
@@ -161,13 +161,13 @@ class MdInfo:
         return repr(self._info)
     
     @classmethod
-    def get_suggested_md_info_path(cls, md_info_path_or_out_dir):
-        last_chat = md_info_path_or_out_dir[-1]
-        if (last_chat in ["/", "\\"]) or os.path.isdir(md_info_path_or_out_dir):
+    def _get_suggested_md_info_path(cls, md_info_path_or_out_dir):
+        if os.path.isdir(md_info_path_or_out_dir):
             md_info_path = os.path.join(md_info_path_or_out_dir, _MIB_FNAME_MD_INFO)
-        else:
-            md_info_path = os.path.join(os.path.dirname(md_info_path_or_out_dir), _MIB_FNAME_MD_INFO)
-        return md_info_path
+            return md_info_path
+        elif os.path.isfile(md_info_path_or_out_dir) and md_info_path_or_out_dir.endswith(".json"):
+            return md_info_path_or_out_dir
+        raise ValueError(f"not able to suggest md_info_path for {md_info_path_or_out_dir}")
 
     @classmethod
     def find_md_info_path(cls, out_dir_or_file_in_out_dir):
@@ -253,6 +253,8 @@ class MdInfo:
         out_dir = f"{_MIB_DEFAULT_OUT_ROOT}/{_MIB_CTN2MD_LEAD}_{kb_name}__{doc_title}"
         if len(suffix) != 0:
             out_dir += f"_{suffix}"
+        else:
+            raise ValueError("suffix is a must for out_dir")
         return out_dir
 
     @classmethod
