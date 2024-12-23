@@ -51,13 +51,15 @@ def _group_initial_chunks(initial_points: List[ScoredPoint]) -> Dict[str, Dict]:
     logger.info(f"Initial sections grouped by sec_id and doc_unique_id: {len(sections)} sections found.")
     return sections
 
-
-
 def _query_missing_chunks(client: QdrantClient, collection_name: str, sections: Dict[str, Dict]) -> None:
     """
     查询缺失的 chunk 并补齐到 sections 字典中。
     """
-    for sec_id, data in sections.items():
+    for section_key, data in sections.items():
+        # 使用 (sec_id, doc_unique_id) 作为唯一的键
+        # section_key = (sec_id, doc_unique_id)
+        sec_id, _ = section_key
+
         existing_orders = {order for order, _ in data["order_n_point"]}
         total_chunks = data["total"]
         doc_unique_id = data["metadata"]["doc_unique_id"]
