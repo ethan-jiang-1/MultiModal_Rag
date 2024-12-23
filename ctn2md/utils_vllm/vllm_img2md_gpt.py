@@ -31,12 +31,9 @@ def generate_full_mds_from_image_gpt(pname_image, rects_img=None, model="gpt-4o"
             str_rects_img = ""
             for ndx, rect_img in enumerate(rects_img):
                 if len(str_rects_img) != 0:
-                    str_rects_img += ", "
-                str_rects_img += f"red_rect{ndx+1}: {rect_img}"
-            if len(rect_img) == 1:
-                str_rects_img += f"  as for the red_rect, you need to process it according to the instruction."
-            else:
-                str_rects_img += f"  as for these len{rects_img} red_rects, you need to process all of them one by one according to the instruction."
+                    str_rects_img += "\n"
+                str_rects_img += f"- `red_rect{ndx+1}`: {rect_img}\n"
+
             inst_img_rects = USER_PROMPT_INST_IMG_RECTS.replace("{img_rects}", str_rects_img)
    
         user_prompt = USER_PROMPT_IMG2MD.replace("{inst_img_rects}", inst_img_rects)
