@@ -226,9 +226,10 @@ def _check_if_imgs_are_related_to_qa(query: str, answer: str, context: str, fnam
     return ref_img_fname_relevance_scores
 
 def _find_relavent_ref_imgs_map(query: str, answer: str, ref_section: ScoredRecoveredSection) -> dict:
-    ref_img_map, search = _find_ref_imgs_map(query, answer, ref_section)
-    # 做相关度判断（如果你需要的话）
-    # candidate_map = _filter_by_relevance(query, answer, candidate_map, neighbor_section)
+    ref_img_map, _ = _find_ref_imgs_map(query, answer, ref_section)
+    if len(ref_img_map) == 0:
+        return {}
+
     fname_and_titles = []
     for ref_img_fname, pname_n_title in ref_img_map.items():
         fname_and_titles.append((ref_img_fname, pname_n_title[1]))
