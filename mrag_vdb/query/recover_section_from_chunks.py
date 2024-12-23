@@ -17,7 +17,7 @@ if "./" not in sys.path:
 
 from mrag_vdb.common.chunked_meta_info import ChunkedSectionInfo
 from mrag_vdb.common.vdb_base import QdrantClientContextManager
-from mrag_vdb.query.query_bsae import ScoredSection
+from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
 
 LIMIT_QUERY = 5
 
@@ -118,7 +118,7 @@ def _clean_and_merge_chunks_content(chunks: List[Tuple[int, Union[ScoredPoint, R
     return merged_content
 
 
-def _merge_chunks_to_scored_sections(sections: Dict[str, Dict], collection_name:str) -> List[ScoredSection]:
+def _merge_chunks_to_scored_sections(sections: Dict[str, Dict], collection_name:str) -> List[ScoredRecoveredSection]:
     """
     合并所有 chunk，恢复完整的 section。
     """
@@ -148,7 +148,7 @@ def _merge_chunks_to_scored_sections(sections: Dict[str, Dict], collection_name:
                 payload["score"] = 0.0
             payloads.append(payload)
             
-        scored_section = ScoredSection(
+        scored_section = ScoredRecoveredSection(
             score=round(max_score, 5),
             score_rrf=0.0,
 
@@ -185,13 +185,13 @@ def query_initial_points(client: QdrantClient, collection_name: str,  query_vect
     )
     return initial_points
 
-def recover_scored_sections_from_chunk_from_vdb(client: QdrantClient, collection_name: str, initial_scored_chunks: List[ScoredPoint]) -> List[ScoredSection]:
+def recover_scored_sections_from_chunk_from_vdb(client: QdrantClient, collection_name: str, initial_scored_chunks: List[ScoredPoint]) -> List[ScoredRecoveredSection]:
     sections = _group_initial_chunks(initial_scored_chunks)
     _query_missing_chunks(client, collection_name, sections)
     merged_scored_sections = _merge_chunks_to_scored_sections(sections, collection_name)
     return merged_scored_sections
 
-def sort_scored_sections_by_score(sections: List[ScoredSection]) -> List[ScoredSection]:
+def sort_scored_sections_by_score(sections: List[ScoredRecoveredSection]) -> List[ScoredRecoveredSection]:
     """
     对 ScoredSection 列表按照 score 降序排序。
 

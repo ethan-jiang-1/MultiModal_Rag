@@ -14,7 +14,7 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from mrag_vdb.query.query_bsae import ScoredSection
+from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
 from mrag_vdb.common.vdb_base import REF_PATH
 from mrag_vdb.common.vdb_base import VDB_PATH
 from mrag_vdb.utils.util_file import get_root_dir
@@ -59,7 +59,7 @@ def _scan_markdown_for_ref_imgs(md_content: str) -> Tuple[List[str], List[str]]:
 
     return ref_img_fnames, ref_img_titles
 
-def _construct_ref_imgs_map(ref_img_fnames: List[str], ref_img_titles: List[str], ref_section: ScoredSection):
+def _construct_ref_imgs_map(ref_img_fnames: List[str], ref_img_titles: List[str], ref_section: ScoredRecoveredSection):
     ref_imgs_map = {}
     for ref_img_fname, ref_img_title in zip(ref_img_fnames, ref_img_titles):
         if ref_img_fname not in ref_imgs_map:
@@ -69,7 +69,7 @@ def _construct_ref_imgs_map(ref_img_fnames: List[str], ref_img_titles: List[str]
     return ref_imgs_map
 
 
-def _get_section_by_seq_no(collection_name: str, doc_unique_id: str, seq_no: int) -> Optional[ScoredSection]:
+def _get_section_by_seq_no(collection_name: str, doc_unique_id: str, seq_no: int) -> Optional[ScoredRecoveredSection]:
     """
     根据 doc_unique_id + sec_seq_no 直接查询 Qdrant,
     返回对应的 ScoredSection（若无则返回 None）。
@@ -91,7 +91,7 @@ def _get_section_by_seq_no(collection_name: str, doc_unique_id: str, seq_no: int
         if result and result[0]:
             point = result[0][0]
             csi = ChunkedSectionInfo(**point.payload)
-            return ScoredSection(
+            return ScoredRecoveredSection(
                 score=0.0,
                 score_rrf=0.0,
                 sec_id=csi.sec_id,
@@ -111,7 +111,7 @@ def _get_section_by_seq_no(collection_name: str, doc_unique_id: str, seq_no: int
             )
     return None
 
-def _is_toc_relevant(ref_section: ScoredSection, neighbor_section: ScoredSection, offset: int) -> bool:
+def _is_toc_relevant(ref_section: ScoredRecoveredSection, neighbor_section: ScoredRecoveredSection, offset: int) -> bool:
     """
     判断 neighbor_section 是否在 TOC 上和 ref_section 存在
     - 同级（Sibling）
@@ -140,7 +140,7 @@ def _is_toc_relevant(ref_section: ScoredSection, neighbor_section: ScoredSection
 
     return False
 
-def _find_ref_imgs_map_lqcut(query: str, answer: str, ref_section: ScoredSection) -> dict:
+def _find_ref_imgs_map_lqcut(query: str, answer: str, ref_section: ScoredRecoveredSection) -> dict:
     """
     只在前/后几个相邻的 sec_seq_no 中寻找那些 TOC 上
     属于 Sibling/Parent/Child 的章节，以尝试获取图片引用。
@@ -173,12 +173,12 @@ def _find_ref_imgs_map_lqcut(query: str, answer: str, ref_section: ScoredSection
 
     return found_map
 
-def _is_ctn_gen_by_high_quality_parse_engine(ref_section: ScoredSection) -> bool:
+def _is_ctn_gen_by_high_quality_parse_engine(ref_section: ScoredRecoveredSection) -> bool:
     if ref_section.doc_ctn_type.find("llamaparse") != -1:
         return False
     return True
 
-def _find_ref_imgs_map(query: str, answer: str, ref_section: ScoredSection) -> Tuple[dict, bool]:
+def _find_ref_imgs_map(query: str, answer: str, ref_section: ScoredRecoveredSection) -> Tuple[dict, bool]:
     """
     优先从当前section找图，如果找不到且是低质量解析，
     那就往前后相邻的 chunk 搜索若干步看有没有图。
@@ -200,7 +200,7 @@ def _check_if_imgs_are_related_to_qa(query: str, answer: str, context: str, fnam
     ref_img_fname_relevance_scores = [(fname_and_title[0], 2.0) for fname_and_title in fname_and_titles]
     return ref_img_fname_relevance_scores
 
-def _find_relavent_ref_imgs_map(query: str, answer: str, ref_section: ScoredSection) -> dict:
+def _find_relavent_ref_imgs_map(query: str, answer: str, ref_section: ScoredRecoveredSection) -> dict:
     ref_img_map, search = _find_ref_imgs_map(query, answer, ref_section)
     # 做相关度判断（如果你需要的话）
     # candidate_map = _filter_by_relevance(query, answer, candidate_map, neighbor_section)
@@ -217,7 +217,7 @@ def _find_relavent_ref_imgs_map(query: str, answer: str, ref_section: ScoredSect
     return ref_img_map
 
 
-def search_for_file_refs(query: str, resp: dict, scored_sections_reranked:List[ScoredSection], include_image: bool = True):
+def search_for_file_refs(query: str, resp: dict, scored_sections_reranked:List[ScoredRecoveredSection], include_image: bool = True):
     refs_info = {}
     answer = resp.get("simple_answer", "")
     detailed_refernces = resp.get("detailed_references", None)
@@ -247,7 +247,7 @@ def search_for_file_refs(query: str, resp: dict, scored_sections_reranked:List[S
     return refs_info
 
 if __name__ == "__main__":
-    from mrag_vdb.query.query_bsae import ScoredSection
+    from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
     from mrag_vdb.query.query2section_raw import query2section_raw_on_multiple_collection
     from mrag_vdb.query.query2section_reranked import query2sortedsections_reranked
     from mrag_vdb.query.query2knowledge import form_knowledge_sections, knowledge_retrieve

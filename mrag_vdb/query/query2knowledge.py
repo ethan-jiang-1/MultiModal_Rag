@@ -12,7 +12,7 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from mrag_vdb.query.query_bsae import ScoredSection
+from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
 from mrag_vdb.utils.util_logging import setup_logger_handlers
 from mrag_vdb.query.query2section_raw import query2section_raw_on_multiple_collection
 from mrag_vdb.query.query2section_reranked import query2sortedsections_reranked
@@ -35,7 +35,7 @@ def find_collection_names(query: str) -> List[str]:
 def query_rewerite(query: str, collection_names: List[str]) -> str:
     return query 
 
-def form_knowledge_sections(scored_sections_reranked:List[ScoredSection]) -> str:
+def form_knowledge_sections(scored_sections_reranked:List[ScoredRecoveredSection]) -> str:
     knowledge_all = ""
     for ndx, section in enumerate(scored_sections_reranked):
         source_file = section.fname_org_doc
@@ -52,12 +52,12 @@ def form_knowledge_sections(scored_sections_reranked:List[ScoredSection]) -> str
         knowledge_all += knowledge + "\n\n"
     return knowledge_all
 
-def knowledge_retrieve(query: str, knowledge: str, scored_sections_reranked:List[ScoredSection]):
+def knowledge_retrieve(query: str, knowledge: str, scored_sections_reranked:List[ScoredRecoveredSection]):
     resp = knowlege_gen_by_gpt(query, knowledge, model="gpt-4o")
     return resp
 
 
-def compose_rag_answer(query: str, resp: dict, scored_sections_reranked:List[ScoredSection], include_image:bool = True) -> RagAnswer:
+def compose_rag_answer(query: str, resp: dict, scored_sections_reranked:List[ScoredRecoveredSection], include_image:bool = True) -> RagAnswer:
     refs_info = search_for_file_refs(query, resp, scored_sections_reranked, include_image=include_image)
     source_names = []
     source_titles = []

@@ -13,12 +13,12 @@ if "./" not in sys.path:
 
 from mrag_vdb.utils.util_logging import setup_logger_handlers
 from mrag_vdb.common.vdb_base import VDB_PATH
-from mrag_vdb.query.query_bsae import ScoredSection
-from mrag_vdb.query.recover_section_for_query import query_initial_points, recover_scored_sections_from_chunk_from_vdb, LIMIT_QUERY, sort_scored_sections_by_score
+from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
+from mrag_vdb.query.recover_section_from_chunks import query_initial_points, recover_scored_sections_from_chunk_from_vdb, LIMIT_QUERY, sort_scored_sections_by_score
 from mrag_vdb.utils.utili_embedding import get_text_embedding
 from mrag_vdb.common.vdb_base import QdrantClientContextManager
 
-def query2section_raw_on_single_collection(collection_name: str, query: str, limit: int = LIMIT_QUERY) -> List[ScoredSection]:
+def query2section_raw_on_single_collection(collection_name: str, query: str, limit: int = LIMIT_QUERY) -> List[ScoredRecoveredSection]:
     """
     查询集合中的 chunk 并恢复完整的 section。
     """
@@ -32,7 +32,7 @@ def query2section_raw_on_single_collection(collection_name: str, query: str, lim
     return merged_scored_sections
 
 
-def query2section_raw_on_multiple_collection(collection_names: list[str], query: str, limit: int = LIMIT_QUERY) -> List[ScoredSection]:
+def query2section_raw_on_multiple_collection(collection_names: list[str], query: str, limit: int = LIMIT_QUERY) -> List[ScoredRecoveredSection]:
     """
     查询集合中的 chunk 并恢复完整的 section。
     """

@@ -14,11 +14,11 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from mrag_vdb.query.query_bsae import ScoredSection
+from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
 
-MAX_DOC_LEN = 3000
+MAX_DOC_LEN = 3000  # max len restricted by RERANK
 
-def convert_to_documents_and_distance_results(scored_sections: List[ScoredSection]) -> Tuple[List[str], List[ScoredSection], List[Any]]:
+def convert_to_documents_and_distance_results(scored_sections: List[ScoredRecoveredSection]) -> Tuple[List[str], List[ScoredRecoveredSection], List[Any]]:
     """
     将 ScoredSection 数据转化为 documents 和 distance_results 格式。
     
@@ -191,7 +191,7 @@ def assign_score_rrf_score(sorted_rrf_scores, sorted_sections):
         if not matched:
             logging.error(f"find no match for {srs}")
 
-def rerank_rrf(query_str: str, scored_sections: List[ScoredSection], distance_weight=1, rerank_weight=8, bm25_weight=1) -> List[ScoredSection]:
+def rerank_rrf(query_str: str, scored_sections: List[ScoredRecoveredSection], distance_weight=1, rerank_weight=8, bm25_weight=1) -> List[ScoredRecoveredSection]:
     """
     使用 RRF 融合多个排序来源，并对不同来源应用权重。
     
