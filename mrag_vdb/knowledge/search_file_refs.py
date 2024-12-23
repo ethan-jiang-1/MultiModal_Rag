@@ -250,7 +250,7 @@ if __name__ == "__main__":
     from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
     from mrag_vdb.query.query2section_raw import query2section_raw_on_multiple_collection
     from mrag_vdb.query.query2section_reranked import query2sortedsections_reranked
-    from mrag_vdb.query.query2knowledge import form_knowledge_sections, knowledge_retrieve
+    from mrag_vdb.knowledge.query2knowledge import form_knowledge_sections, knowledge_retrieve
 
     setup_logger_handlers()
     

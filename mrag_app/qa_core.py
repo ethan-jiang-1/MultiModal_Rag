@@ -16,8 +16,8 @@ if "./" not in sys.path:
 from mrag_vdb.utils.util_logging import setup_logger_handlers, get_logger_progress
 from mrag_vdb.query.query2section_raw import query2section_raw_on_multiple_collection
 from mrag_vdb.query.query2section_reranked import query2sortedsections_reranked
-from mrag_vdb.query.query2knowledge import knowledge_retrieve, form_knowledge_sections
-from mrag_vdb.query.query2knowledge import query_rewerite, compose_rag_answer
+from mrag_vdb.knowledge.query2knowledge import knowledge_retrieve, form_knowledge_sections
+from mrag_vdb.knowledge.query2knowledge import query_rewerite, compose_rag_answer
 
 setup_logger_handlers()
 logger_prg = get_logger_progress()

@@ -19,7 +19,7 @@ from mrag_vdb.query.query2section_reranked import query2sortedsections_reranked
 from mrag_vdb.utils_llm.llm_knowledge_gen_gpt import knowlege_gen_by_gpt
 from mrag_vdb.query.query_bsae import markdown_to_html_with_ids
 from mrag_vdb.common.rag_answer import RagAnswer
-from mrag_vdb.query.search_file_refs import search_for_file_refs
+from mrag_vdb.knowledge.search_file_refs import search_for_file_refs
 
 KNOWLEGE_FORMAT = """
 <KnowledgeSnippet id="{id}"> n
