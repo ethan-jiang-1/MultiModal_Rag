@@ -18,3 +18,23 @@ class ModelGptSel:
         if model_name in cls.SUPPORTED_MODELS:
             return True 
         return False
+    
+class KbNameSel:
+    _g_kb_name = "mrag"
+    SUPPORTED_KBNAMES = ["mrag", "papers"]
+
+    @classmethod
+    def get_kbname(cls):
+        return cls._g_kb_name 
+    
+    @classmethod
+    def set_kbname(cls, kbname):
+        if cls.is_supported_kbname(kbname):
+            cls._g_kb_name = kbname
+        return cls._g_kb_name
+    
+    @classmethod
+    def is_supported_kbname(cls, kbname):
+        if kbname in cls.SUPPORTED_KBNAMES:
+            return True 
+        return False
