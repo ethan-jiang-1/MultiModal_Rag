@@ -1,4 +1,4 @@
-from typing import List
+#from typing import List
 from dotenv import load_dotenv
 import sys
 import os
@@ -13,7 +13,7 @@ from mrag_vdb.utils_llm.llm_image_relevance_gpt_prompt import SYSTEM_PROMPT_IMAG
 from mrag_vdb.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from mrag_vdb.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
 
-def check_img_relevance_by_gpt(user_query:str, llm_answer: str, context: str, numberd_image_description: List[str], model:str = "gpt-4o-mini", question_num:int = None):
+def check_img_relevance_by_gpt(user_query:str, llm_answer: str, knowledge_context: str, numbered_image_descriptions: str, model:str = "gpt-4o-mini", question_num:int = None):
     if question_num is None:
         question_num = get_next_question_num()
 
@@ -23,7 +23,7 @@ def check_img_relevance_by_gpt(user_query:str, llm_answer: str, context: str, nu
 
         logging.info(f"start to summarize the content by {model} as question_num: {question_num}")
         prompt = USER_PROMPT_IMAGE_RELEVANCE.replace("{user_query}", user_query).replace("{llm_answer}", llm_answer)
-        prompt = prompt.replace("{context}", context).replace("{numberd_image_description}", numberd_image_description)
+        prompt = prompt.replace("{knowledge_context}", knowledge_context).replace("{numbered_image_descriptions}", numbered_image_descriptions)
 
         temperature = 0.1
         top_p = 0.9
@@ -36,7 +36,7 @@ def check_img_relevance_by_gpt(user_query:str, llm_answer: str, context: str, nu
                              track_id=f"sdk_sum{question_num}")
 
         set_question_num(question_num)
-        save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="gvi_vllminst") 
+        save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="cirbg") 
 
         return resp
     except Exception as ex: 

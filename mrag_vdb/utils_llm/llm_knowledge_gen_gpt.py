@@ -35,7 +35,7 @@ def knowlege_gen_by_gpt(user_input, knowledge, model="gpt-4o-mini", question_num
                              track_id=f"sdk_sum{question_num}")
 
         set_question_num(question_num)
-        save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="gvi_vllminst") 
+        save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="kgbg") 
 
         return resp
     except Exception as ex: 

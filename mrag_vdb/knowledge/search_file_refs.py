@@ -198,25 +198,29 @@ def _find_ref_imgs_map(query: str, answer: str, ref_section: ScoredRecoveredSect
     # 3. 若依然没有，返回空
     return {}, True
 
-def _check_if_imgs_are_related_to_qa(query: str, answer: str, context: str, fname_and_titles: List[Tuple[str, str]]) -> List[Tuple[str, float]]:
+def _check_if_imgs_are_related_to_qa(user_query: str, llm_answer: str, knowledge_context: str, fname_and_titles: List[Tuple[str, str]]) -> List[Tuple[str, float]]:
     image_titles = [item[1] for item in fname_and_titles]
     rich.print(image_titles)
 
-    numberd_image_description = ""
+    numbered_image_descriptions = ""
     for ndx, image_title in enumerate(image_titles):
-        numberd_image_description += f"{ndx+1}) {image_title.replace("\n", "")}"
+        numbered_image_descriptions += f"<image_description id='{ndx+1}'> {image_title.replace("\n", "")} </image_description>\n"
+    numbered_image_descriptions += "\n"
 
     ref_img_fname_relevance_scores = []
-    resp = check_img_relevance_by_gpt(query, answer, context, numberd_image_description, model="gpt-4o-mini")
+    resp = check_img_relevance_by_gpt(user_query, llm_answer, knowledge_context, numbered_image_descriptions, model="gpt-4o-mini")
+    rich.print(numbered_image_descriptions)
+    logging.info(f"check_img_relevance_by_gpt: {resp}")
+    rich.print(resp)
 
-    images = resp.get("images", None)
-    if images is None:
+    image_relevance_scores = resp.get("image_relevance_scores", None)
+    if image_relevance_scores is None:
         logging.error(f"not able to get right resp for img relevance: {resp}")
         return []
 
-    sorted_id_to_scores = sorted(images, key=lambda x: (x['relevance_score'], x['id']))
+    sorted_id_to_scores = sorted(image_relevance_scores, key=lambda x: (x['relevance_score'], x['id']))
     for ndx, id_n_score in enumerate(sorted_id_to_scores):
-        id = id_n_score["id"]
+        id = int(id_n_score["id"])
         id -= 1
         relevance_score = id_n_score["relevance_score"]
         if id >= 0 and id < len(fname_and_titles):
