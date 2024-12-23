@@ -3,7 +3,7 @@ from typing import List, Optional, Tuple
 from dotenv import load_dotenv
 import sys
 import os
-#import logging
+import logging
 import rich
 import re
 from qdrant_client.http.models import Filter, FieldCondition
@@ -21,6 +21,9 @@ from mrag_vdb.utils.util_file import get_root_dir
 from mrag_vdb.utils.util_logging import setup_logger_handlers
 from mrag_vdb.common.vdb_base import QdrantClientContextManager
 from mrag_vdb.common.chunked_meta_info import ChunkedSectionInfo
+from mrag_vdb.utils_llm.llm_image_relevance_gpt import check_img_relevance_by_gpt
+
+MIN_IMG_RELEVANCE_SCORE = 2.0
 
 def _get_ref_pname(collection_name:str, unique_doc_id:str, fname:str):
     dir_root = get_root_dir()
@@ -196,8 +199,30 @@ def _find_ref_imgs_map(query: str, answer: str, ref_section: ScoredRecoveredSect
     return {}, True
 
 def _check_if_imgs_are_related_to_qa(query: str, answer: str, context: str, fname_and_titles: List[Tuple[str, str]]) -> List[Tuple[str, float]]:
-    # using context, query and answer to check if ref from slibing are good fit images
-    ref_img_fname_relevance_scores = [(fname_and_title[0], 2.0) for fname_and_title in fname_and_titles]
+    image_titles = [item[1] for item in fname_and_titles]
+    rich.print(image_titles)
+
+    numberd_image_description = ""
+    for ndx, image_title in enumerate(image_titles):
+        numberd_image_description += f"{ndx+1}) {image_title.replace("\n", "")}"
+
+    ref_img_fname_relevance_scores = []
+    resp = check_img_relevance_by_gpt(query, answer, context, numberd_image_description, model="gpt-4o-mini")
+
+    images = resp.get("images", None)
+    if images is None:
+        logging.error(f"not able to get right resp for img relevance: {resp}")
+        return []
+
+    sorted_id_to_scores = sorted(images, key=lambda x: (x['relevance_score'], x['id']))
+    for ndx, id_n_score in enumerate(sorted_id_to_scores):
+        id = id_n_score["id"]
+        id -= 1
+        relevance_score = id_n_score["relevance_score"]
+        if id >= 0 and id < len(fname_and_titles):
+            fname = fname_and_titles[id][0]
+            ref_img_fname_relevance_scores.append((fname, relevance_score))
+
     return ref_img_fname_relevance_scores
 
 def _find_relavent_ref_imgs_map(query: str, answer: str, ref_section: ScoredRecoveredSection) -> dict:
@@ -211,7 +236,7 @@ def _find_relavent_ref_imgs_map(query: str, answer: str, ref_section: ScoredReco
     ref_img_fname_relevance_scores = _check_if_imgs_are_related_to_qa(query, answer, ref_section.content, fname_and_titles)
     for fname_n_score in ref_img_fname_relevance_scores:
         fname, score = fname_n_score
-        if score < 2.0:
+        if score < MIN_IMG_RELEVANCE_SCORE:
             if fname in ref_img_map:
                 del ref_img_map[fname]
     return ref_img_map
