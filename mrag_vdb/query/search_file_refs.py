@@ -195,15 +195,25 @@ def _find_ref_imgs_map(query: str, answer: str, ref_section: ScoredSection) -> T
     # 3. 若依然没有，返回空
     return {}, True
 
-def _check_if_imgs_are_related_to_qa(query: str, answer: str, context: str, ref_img_titles: List[str]):
+def _check_if_imgs_are_related_to_qa(query: str, answer: str, context: str, fname_and_titles: List[Tuple[str, str]]) -> List[Tuple[str, float]]:
     # using context, query and answer to check if ref from slibing are good fit images
-    ref_img_titles_relevance_scores = [0.0 for item in ref_img_titles]
-    return ref_img_titles_relevance_scores
+    ref_img_fname_relevance_scores = [(fname_and_title[0], 2.0) for fname_and_title in fname_and_titles]
+    return ref_img_fname_relevance_scores
 
 def _find_relavent_ref_imgs_map(query: str, answer: str, ref_section: ScoredSection) -> dict:
     ref_img_map, search = _find_ref_imgs_map(query, answer, ref_section)
     # 做相关度判断（如果你需要的话）
     # candidate_map = _filter_by_relevance(query, answer, candidate_map, neighbor_section)
+    fname_and_titles = []
+    for ref_img_fname, pname_n_title in ref_img_map.items():
+        fname_and_titles.append((ref_img_fname, pname_n_title[1]))
+
+    ref_img_fname_relevance_scores = _check_if_imgs_are_related_to_qa(query, answer, ref_section.content, fname_and_titles)
+    for fname_n_score in ref_img_fname_relevance_scores:
+        fname, score = fname_n_score
+        if score < 2.0:
+            if fname in ref_img_map:
+                del ref_img_map[fname]
     return ref_img_map
 
 
