@@ -23,7 +23,7 @@ from mrag_vdb.common.vdb_base import QdrantClientContextManager
 from mrag_vdb.common.chunked_meta_info import ChunkedSectionInfo
 from mrag_vdb.utils_llm.llm_image_relevance_gpt import check_img_relevance_by_gpt
 from mrag_vdb.utils_llm.llm_image_relevance_qwen import check_img_relevance_by_qwen
-from mrag_vdb.utils.util_model_sel import ModelGptSel
+from mrag_vdb.common.runtime_settings import ModelGptSel
 
 MIN_IMG_RELEVANCE_SCORE = 2.0
 

@@ -21,7 +21,7 @@ from mrag_vdb.utils_llm.llm_knowledge_gen_qwen import knowlege_gen_by_qwen
 from mrag_vdb.knowledge._knowledge_base import markdown_to_html_with_ids
 from mrag_vdb.common.rag_answer import RagAnswer
 from mrag_vdb.knowledge.search_file_refs import search_for_file_refs
-from mrag_vdb.utils.util_model_sel import ModelGptSel
+from mrag_vdb.common.runtime_settings import ModelGptSel
 
 KNOWLEGE_FORMAT = """
 <KnowledgeSnippet id="{id}"> n
