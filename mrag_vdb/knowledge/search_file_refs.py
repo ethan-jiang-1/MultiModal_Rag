@@ -22,6 +22,8 @@ from mrag_vdb.utils.util_logging import setup_logger_handlers
 from mrag_vdb.common.vdb_base import QdrantClientContextManager
 from mrag_vdb.common.chunked_meta_info import ChunkedSectionInfo
 from mrag_vdb.utils_llm.llm_image_relevance_gpt import check_img_relevance_by_gpt
+from mrag_vdb.utils_llm.llm_image_relevance_qwen import check_img_relevance_by_qwen
+from mrag_vdb.utils.util_model_sel import ModelGptSel
 
 MIN_IMG_RELEVANCE_SCORE = 2.0
 
@@ -208,7 +210,13 @@ def _check_if_imgs_are_related_to_qa(user_query: str, llm_answer: str, knowledge
     numbered_image_descriptions += "\n"
 
     ref_img_fname_relevance_scores = []
-    resp = check_img_relevance_by_gpt(user_query, llm_answer, knowledge_context, numbered_image_descriptions, model="gpt-4o-mini")
+    model = ModelGptSel.get_gpt_model()
+    if model.startswith("gpt"):
+        resp = check_img_relevance_by_gpt(user_query, llm_answer, knowledge_context, numbered_image_descriptions, model=model)
+    elif model.startswith("qwen"):
+        resp = check_img_relevance_by_qwen(user_query, llm_answer, knowledge_context, numbered_image_descriptions, model=model) 
+    else:
+        raise ValueError(f"not support model: {model}")
     rich.print(numbered_image_descriptions)
     logging.info(f"check_img_relevance_by_gpt: {resp}")
     rich.print(resp)

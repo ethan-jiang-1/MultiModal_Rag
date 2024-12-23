@@ -10,7 +10,7 @@ if "./" not in sys.path:
 from mrag_vdb.utils.util_logging import setup_logger_handlers
 from mrag_app._app_gradio_base import create_interface
 from mrag_app._app_log_monitor import ProgressLogger
-from mrag_vdb.utils.util_model import set_gpt_model
+from mrag_vdb.utils.util_model_sel import set_gpt_model
 
 # 启动界面
 if __name__ == "__main__":

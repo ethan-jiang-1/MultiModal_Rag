@@ -1,7 +1,7 @@
 from typing import List
 from dotenv import load_dotenv
 import sys
-import os
+#import os
 #import logging
 import rich
 #import re
@@ -21,6 +21,7 @@ from mrag_vdb.utils_llm.llm_knowledge_gen_qwen import knowlege_gen_by_qwen
 from mrag_vdb.knowledge._knowledge_base import markdown_to_html_with_ids
 from mrag_vdb.common.rag_answer import RagAnswer
 from mrag_vdb.knowledge.search_file_refs import search_for_file_refs
+from mrag_vdb.utils.util_model_sel import ModelGptSel
 
 KNOWLEGE_FORMAT = """
 <KnowledgeSnippet id="{id}"> n
@@ -54,12 +55,13 @@ def form_knowledge_snippets(scored_sections_reranked:List[ScoredRecoveredSection
     return knowledge_all
 
 def gen_answer_from_knowledge_snippets(query: str, knowledge_snippets: str):
-    model_gen = os.getenv("MODEL_GEN", "gpt-4o-mini")
-    #model_gen = os.getenv("MODEL_GEN", "qwen-plus-1127")
+    model_gen = ModelGptSel.get_gpt_model()
     if model_gen.startswith("gpt"):
         resp = knowlege_gen_by_gpt(query, knowledge_snippets, model=model_gen)
     elif model_gen.startswith("qwen"):
         resp = knowlege_gen_by_qwen(query, knowledge_snippets, model=model_gen)
+    else:
+        raise ValueError(f"not support model: {model_gen}")
     return resp
 
 
