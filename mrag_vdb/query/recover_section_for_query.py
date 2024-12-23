@@ -129,7 +129,7 @@ def _merge_chunks_to_scored_sections(sections: Dict[str, Dict], collection_name:
         sec_id, _ = section_key
 
         chunks = data["order_n_point"]
-        content = _clean_and_merge_chunks_content(chunks)
+        merged_content = _clean_and_merge_chunks_content(chunks)
 
         # 计算最高分数
         max_score = max((getattr(point, "score", 0.0) for _, point in chunks), default=0.0)
@@ -147,8 +147,11 @@ def _merge_chunks_to_scored_sections(sections: Dict[str, Dict], collection_name:
             else:
                 payload["score"] = 0.0
             payloads.append(payload)
+            
         scored_section = ScoredSection(
             score=round(max_score, 5),
+            score_rrf=0.0,
+
             sec_id=sec_id,
             parent_sec_id=csi0.parent_sec_id,
             level=csi0.level,
@@ -158,10 +161,10 @@ def _merge_chunks_to_scored_sections(sections: Dict[str, Dict], collection_name:
             doc_title=csi0.doc_title,
             doc_ctn_type=csi0.doc_ctn_type,
             fname_org_doc=csi0.fname_org_doc,
-            content=content,
+            content=merged_content,
             sec_seq_no=csi0.sec_seq_no,
+
             payloads=payloads, 
-            score_rrf=0.0,
             knowledge_snippet=None,
             collection_name=collection_name,
         )

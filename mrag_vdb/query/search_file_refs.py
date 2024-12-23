@@ -207,7 +207,7 @@ def _find_relavent_ref_imgs_map(query: str, answer: str, ref_section: ScoredSect
     return ref_img_map
 
 
-def search_for_file_refs(query: str, resp: dict, scored_sections_reranked:List[ScoredSection]):
+def search_for_file_refs(query: str, resp: dict, scored_sections_reranked:List[ScoredSection], include_image: bool = True):
     refs_info = {}
     answer = resp.get("simple_answer", "")
     detailed_refernces = resp.get("detailed_references", None)
@@ -229,8 +229,9 @@ def search_for_file_refs(query: str, resp: dict, scored_sections_reranked:List[S
 
             if ref_doc_fname not in refs_info:
                 refs_info[ref_doc_fname] = {}
-                refs_info[ref_doc_fname]["ref_doc_tuple"] = (ref_doc_pname, ref_doc_title) 
-                refs_info[ref_doc_fname]["ref_imgs_map"] = _find_relavent_ref_imgs_map(query, answer, ref_section)
+                refs_info[ref_doc_fname]["ref_doc_tuple"] = (ref_doc_pname, ref_doc_title)
+                if include_image:
+                    refs_info[ref_doc_fname]["ref_imgs_map"] = _find_relavent_ref_imgs_map(query, answer, ref_section)
 
     rich.print(refs_info)
     return refs_info

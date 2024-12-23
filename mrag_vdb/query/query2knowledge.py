@@ -57,8 +57,8 @@ def knowledge_retrieve(query: str, knowledge: str, scored_sections_reranked:List
     return resp
 
 
-def compose_rag_answer(query: str, resp: dict, scored_sections_reranked:List[ScoredSection]) -> RagAnswer:
-    refs_info = search_for_file_refs(query, resp, scored_sections_reranked)
+def compose_rag_answer(query: str, resp: dict, scored_sections_reranked:List[ScoredSection], include_image:bool = True) -> RagAnswer:
+    refs_info = search_for_file_refs(query, resp, scored_sections_reranked, include_image=include_image)
     source_names = []
     source_titles = []
     source_pnames = []
@@ -71,12 +71,14 @@ def compose_rag_answer(query: str, resp: dict, scored_sections_reranked:List[Sco
         source_names.append(source_name)
         source_titles.append(source_title)
         source_pnames.append(source_pname)
-        ref_imgs_map = src_val["ref_imgs_map"]
-        for image_name, img_val in ref_imgs_map.items():
-            image_pname, image_title = img_val
-            image_names.append(image_name)
-            image_titles.append(image_title)
-            image_pnames.append(image_pname)
+
+        ref_imgs_map = src_val.get("ref_imgs_map", None)
+        if isinstance(ref_imgs_map, dict):
+            for image_name, img_val in ref_imgs_map.items():
+                image_pname, image_title = img_val
+                image_names.append(image_name)
+                image_titles.append(image_title)
+                image_pnames.append(image_pname)
 
     rag_answer = RagAnswer(answer=resp.get("simple_answer", ""),
                            answer_referenced=resp.get("answer_with_reference", ""),
