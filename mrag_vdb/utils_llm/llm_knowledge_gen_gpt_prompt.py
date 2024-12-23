@@ -1,7 +1,5 @@
 
 SYSTEM_PROMPT_KNOWLEGE_GEN = """
-# SYSTEM PROMPT
-
 You are an intelligent knowledge assistant. Your task is to provide accurate answers to user questions based on a structured XML knowledge base. Follow these rules carefully:
 
 ## Input Description
@@ -51,7 +49,6 @@ Follow these rules strictly to ensure your responses are complete, accurate, and
 
 
 USER_PROMPT_KNOWLEGE = """
-
 Please answer my question based on the knowledge snippets provided and output your response in the specified JSON format. Follow these instructions carefully:
 
 ## My Question: 

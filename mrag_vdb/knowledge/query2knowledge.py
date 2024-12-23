@@ -1,7 +1,7 @@
 from typing import List
 from dotenv import load_dotenv
 import sys
-#import os
+import os
 #import logging
 import rich
 #import re
@@ -17,6 +17,7 @@ from mrag_vdb.utils.util_logging import setup_logger_handlers
 from mrag_vdb.query.query2section_raw import query2section_raw_on_multiple_collection
 from mrag_vdb.query.query2section_reranked import query2sortedsections_reranked
 from mrag_vdb.utils_llm.llm_knowledge_gen_gpt import knowlege_gen_by_gpt
+from mrag_vdb.utils_llm.llm_knowledge_gen_qwen import knowlege_gen_by_qwen
 from mrag_vdb.knowledge._knowledge_base import markdown_to_html_with_ids
 from mrag_vdb.common.rag_answer import RagAnswer
 from mrag_vdb.knowledge.search_file_refs import search_for_file_refs
@@ -35,7 +36,7 @@ def find_collection_names(query: str) -> List[str]:
 def query_rewerite(query: str, collection_names: List[str]) -> str:
     return query 
 
-def form_knowledge_sections(scored_sections_reranked:List[ScoredRecoveredSection]) -> str:
+def form_knowledge_snippets(scored_sections_reranked:List[ScoredRecoveredSection]) -> str:
     knowledge_all = ""
     for ndx, section in enumerate(scored_sections_reranked):
         source_file = section.fname_org_doc
@@ -52,8 +53,13 @@ def form_knowledge_sections(scored_sections_reranked:List[ScoredRecoveredSection
         knowledge_all += knowledge + "\n\n"
     return knowledge_all
 
-def knowledge_retrieve(query: str, knowledge: str, scored_sections_reranked:List[ScoredRecoveredSection]):
-    resp = knowlege_gen_by_gpt(query, knowledge, model="gpt-4o")
+def gen_answer_from_knowledge_snippets(query: str, knowledge_snippets: str):
+    model_gen = os.getenv("MODEL_GEN", "gpt-4o-mini")
+    #model_gen = os.getenv("MODEL_GEN", "qwen-plus-1127")
+    if model_gen.startswith("gpt"):
+        resp = knowlege_gen_by_gpt(query, knowledge_snippets, model=model_gen)
+    elif model_gen.startswith("qwen"):
+        resp = knowlege_gen_by_qwen(query, knowledge_snippets, model=model_gen)
     return resp
 
 
@@ -97,9 +103,9 @@ def query2knowledge(query: str, collection_names:List[str], limit: int = 10) -> 
 
     scored_sections_reranked = query2sortedsections_reranked(query, scored_sections_raw)
 
-    knowledge = form_knowledge_sections(scored_sections_reranked)
+    knowledge_snippets = form_knowledge_snippets(scored_sections_reranked)
 
-    resp = knowledge_retrieve(query, knowledge, scored_sections_reranked)
+    resp = gen_answer_from_knowledge_snippets(query, knowledge_snippets)
 
     rag_answer = compose_rag_answer(query, resp, scored_sections_reranked)
 

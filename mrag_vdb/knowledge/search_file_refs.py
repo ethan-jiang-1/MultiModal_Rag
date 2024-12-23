@@ -250,7 +250,7 @@ if __name__ == "__main__":
     from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
     from mrag_vdb.query.query2section_raw import query2section_raw_on_multiple_collection
     from mrag_vdb.query.query2section_reranked import query2sortedsections_reranked
-    from mrag_vdb.knowledge.query2knowledge import form_knowledge_sections, knowledge_retrieve
+    from mrag_vdb.knowledge.query2knowledge import form_knowledge_snippets, gen_answer_from_knowledge_snippets
 
     setup_logger_handlers()
     
@@ -268,9 +268,9 @@ if __name__ == "__main__":
 
     scored_sections_reranked = query2sortedsections_reranked(query, scored_sections_raw)
 
-    knowledge = form_knowledge_sections(scored_sections_reranked)
+    knowledge_snippets = form_knowledge_snippets(scored_sections_reranked)
 
-    resp = knowledge_retrieve(query, knowledge, scored_sections_reranked)
+    resp = gen_answer_from_knowledge_snippets(query, knowledge_snippets)
     rich.print(resp)
 
     refs_info = search_for_file_refs(query, resp, scored_sections_reranked)
