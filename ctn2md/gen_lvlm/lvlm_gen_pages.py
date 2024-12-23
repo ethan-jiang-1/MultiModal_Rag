@@ -17,6 +17,7 @@ from ctn2md.gen_lvlm.lvlm_pdf_pages_to_images import parse_pdf_to_images
 from ctn2md.gen_lvlm.lvlm_pdf_images_to_mds import convert_images_to_mds
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
+from ctn2md.gen_lvlm.lvlm_base import is_still_in_gen_mode
 
 
 def gen_pages_lvlm(md_info, mdcontrols=None, skip_gen_mds=False, sel_page_indexes=None):
@@ -37,7 +38,7 @@ def gen_pages_lvlm(md_info, mdcontrols=None, skip_gen_mds=False, sel_page_indexe
     md_info.save()
 
     # Step2: Convert images (image_infos: with region images) to mds by LVLM
-    if not skip_gen_mds:
+    if not skip_gen_mds or is_still_in_gen_mode(md_info):
         logging.info(f"GPL: convert images to mds")
         convert_images_to_mds(md_info, image_infos)
         logging.info(f"GPL: page generated is_in_repair_mode: {is_in_repair_mode(md_info)}")

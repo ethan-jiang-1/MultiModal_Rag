@@ -14,20 +14,30 @@ if './' not in sys.path:
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MIFN
-from ctn2md.gen_lvlm.lvlm_base import is_in_repair_mode
+from ctn2md.gen_lvlm.lvlm_base import is_in_repair_mode, is_still_in_gen_mode
 from ctn2md.utils_vllm.vllm_img2md_gpt import generate_full_mds_from_image_gpt
 from ctn2md.utils_vllm.vllm_img2md_qwen import generate_full_mds_from_image_qwen
 
+FAILED_GEN_CONTENT_MSG = "**Failed to generate content**:"
 
 def _does_page_need_gen(md_info, page_index, pname_page_md):
     if not os.path.isfile(pname_page_md):
         return True
-    if is_in_repair_mode(md_info):
-        mctl_lvlm_repair_pages = md_info.get_md_control("mctl_lvlm_repair_pages",[])
-        if page_index in mctl_lvlm_repair_pages:
-            return True
-        return False   
-    return True
+
+    with open(pname_page_md, "r", encoding="utf-8") as f:
+        content = f.read()
+    if content.startswith(FAILED_GEN_CONTENT_MSG):
+        return True
+
+    if is_still_in_gen_mode(md_info): 
+        return False
+    else:
+        if is_in_repair_mode(md_info):
+            mctl_lvlm_repair_pages = md_info.get_md_control("mctl_lvlm_repair_pages",[])
+            if page_index in mctl_lvlm_repair_pages:
+                return True
+
+    return False   
 
 
 def convert_images_to_mds(md_info, image_infos):
@@ -56,7 +66,6 @@ def convert_images_to_mds(md_info, image_infos):
         fname_page_md = f"page_{page_index}.md"
         pname_page_md = os.path.join(aux_dir, fname_page_md)
         if _does_page_need_gen(md_info, page_index, pname_page_md): 
-
             if page_index not in mctl_lvlm_notouch_pages:
                 logging.info(f"GPL: generate page {page_index}...")
 
@@ -66,10 +75,13 @@ def convert_images_to_mds(md_info, image_infos):
                     else:
                         md_page = generate_full_mds_from_image_gpt(pname_image, rects_img)
                 except Exception as ex:
-                    md_page = f"\n**Failed to generate content for {fname_page_md}**:\n\n {str(ex)}\n\n"
+                    md_page = f"\n{FAILED_GEN_CONTENT_MSG}\n\n {fname_page_md}\n\n reason: {str(ex)}\n\n"
 
                 with open(pname_page_md, "w", encoding="utf-8") as f:
                     f.write(md_page)
+            fnames_page_md_gen.append(fname_page_md)
+        else:
+            logging.info(f"skip gen {pname_page_md}")
             fnames_page_md_gen.append(fname_page_md)
 
         if not is_in_repair_mode(md_info):

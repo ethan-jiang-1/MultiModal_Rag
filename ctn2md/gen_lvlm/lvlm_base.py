@@ -13,7 +13,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 #from ctn2md.utils.util_logging import setup_logger_handlers
-#from ctn2md.src.md_info_base import MdInfo, MIFN
+from ctn2md.src.md_info_base import PUBLIC_MIFN
 class LVLM_IMG_CNT_TYPE:
     GRAPH = "graph"
     IMAGE = "image"
@@ -53,5 +53,11 @@ def is_in_repair_mode(md_info):
     mctl_lvlm_repair_pages = md_info.get_md_control("mctl_lvlm_repair_pages",[])  
     if len(mctl_lvlm_repair_pages) > 0:
         return True
+    return False
+
+def is_still_in_gen_mode(md_info):
+    fname_final_sum = md_info.get(PUBLIC_MIFN.FNAME_FINAL_SUM, None)
+    if fname_final_sum is None:
+        return True 
     return False
 

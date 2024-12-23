@@ -19,7 +19,7 @@ from ctn2md.gen_lvlm.gs0_pdf_page_to_region import gs0_parse_non_text_rects_in_p
 from ctn2md.gen_lvlm.gs1_pdf_page_to_region import gs1_parse_non_text_rects_in_page
 from ctn2md.gen_lvlm.gvlm_pdf_page_to_region import vllm_parse_non_text_rects_in_page_by_gpt, vllm_parse_non_text_rects_in_page_by_qwen
 from ctn2md.gen_lvlm.lvlm_base import get_job_id
-#from ctn2md.utils.util_ctn_type import CTN_TYPE
+from ctn2md.gen_lvlm.lvlm_base import is_still_in_gen_mode
 
 IMG_EXT = "jpg"  # or "png"
 #IMG_EXT = "png"  # or "png"
@@ -87,7 +87,8 @@ def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None, mctl_lvlm_region
     if len(job_id) == 0:
         raise ValueError(f"invalid job_id {job_id}")
 
-    clean_previous_images(output_dir, job_id)
+    if not is_still_in_gen_mode(md_info):
+        clean_previous_images(output_dir, job_id)
 
     if mctl_lvlm_region_model is None:
         mctl_lvlm_region_model = md_info.get_md_control("mctl_lvlm_region_model", "qwen")
@@ -99,22 +100,27 @@ def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None, mctl_lvlm_region
     mctl_lvlm_notouch_pages = md_info.get_md_control_notouch("mctl_lvlm_notouch_pages",[])
     for page_index, page in enumerate(pdf_document):
         page_index += 1
-        if sel_page_indexes is not None:
-            if page_index not in sel_page_indexes:
-                logging.info(f"skip {page_index} due to sel_page_indexes")
-                continue
-        else:
-            if page_index in mctl_lvlm_notouch_pages:
-                logging.info(f"skip {page_index} due to mctl_lvlm_notouch_pages")
-                continue
+
+        fname_page_name = f'{job_id}-page_{page_index}.{IMG_EXT}'
+        pname_page_name = os.path.join(output_dir, fname_page_name)
+        fname_page_rect_name = f'{job_id}-page_{page_index}_rects.{IMG_EXT}'  
+        pname_page_rect_name = os.path.join(output_dir, fname_page_rect_name)
+
+        if not is_still_in_gen_mode(md_info):
+            if sel_page_indexes is not None:
+                if page_index not in sel_page_indexes:
+                    logging.info(f"skip {page_index} due to sel_page_indexes")
+                    continue
+            else:
+                if page_index in mctl_lvlm_notouch_pages:
+                    logging.info(f"skip {page_index} due to mctl_lvlm_notouch_pages")
+                    continue        
 
         logging.info(f'parse page: {page_index}')
         fname_rect_images = []
 
         page_image = page.get_pixmap(matrix=fitz.Matrix(3, 3))
         try:
-            fname_page_name = f'{job_id}-page_{page_index}.{IMG_EXT}'
-            pname_page_name = os.path.join(output_dir, fname_page_name)
             page_image.save(pname_page_name, jpg_quality=JPG_QUALITY)
         except Exception as ex:
             logging.exception(ex)
@@ -147,8 +153,6 @@ def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None, mctl_lvlm_region
 
         page_image_with_rects = page.get_pixmap(matrix=fitz.Matrix(3, 3))
         try:
-            fname_page_rect_name = f'{job_id}-page_{page_index}_rects.{IMG_EXT}'  
-            pname_page_rect_name = os.path.join(output_dir, fname_page_rect_name)
             page_image_with_rects.save(pname_page_rect_name, jpg_quality=JPG_QUALITY)
         except Exception as ex:
             logging.exception(ex)
