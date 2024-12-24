@@ -1,9 +1,5 @@
-#import time
-#import random
 import os
-#import logging
 import sys
-#import json
 import rich
 from dotenv import load_dotenv
 
@@ -16,8 +12,6 @@ load_dotenv()
 from ctn2md.utils_llm.llm_base import get_gpt_messages_multimodal, chat_gpt_plain
 from ctn2md.utils.util_file import get_root_dir
 
-#model='qwen-vl-max-1119'
-#model='qwen-vl-max-0809'
 def generate_image_description_by_gpt(image_path, instruction=None, model='gpt-4o-mini', retries=5, backoff_in_seconds=1):
 
     if instruction is None:
