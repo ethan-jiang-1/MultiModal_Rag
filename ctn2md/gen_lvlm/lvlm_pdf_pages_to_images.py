@@ -20,27 +20,11 @@ from ctn2md.gen_lvlm.gs1_pdf_page_to_region import gs1_parse_non_text_rects_in_p
 from ctn2md.gen_lvlm.gvlm_pdf_page_to_region import vllm_parse_non_text_rects_in_page_by_gpt, vllm_parse_non_text_rects_in_page_by_qwen
 from ctn2md.gen_lvlm.lvlm_base import get_job_id
 from ctn2md.gen_lvlm.lvlm_base import is_still_in_gen_mode
+from ctn2md.gen_lvlm._draw_redrect_on_page import draw_redrect_on_page
 
 IMG_EXT = "jpg"  # or "png"
 #IMG_EXT = "png"  # or "png"
 JPG_QUALITY = 90 # 95
-
-
-def _draw_red_rect_on_page(page, fitz_rect, fname_rect_name):
-    # # 在页面上绘制红色矩形
-    big_fitz_rect = fitz.Rect(fitz_rect.x0 - 1, fitz_rect.y0 - 1, fitz_rect.x1 + 1, fitz_rect.y1 + 1)
-    # 空心矩形
-    page.draw_rect(big_fitz_rect, color=(1, 0, 0), width=1)
-    # 画矩形区域(实心)
-    # page.draw_rect(big_fitz_rect, color=(1, 0, 0), fill=(1, 0, 0))
-    # 在矩形内的左上角写上矩形的索引name，添加一些偏移量
-    text_x = fitz_rect.x0 + 2
-    text_y = fitz_rect.y0 + 10
-    text_rect = fitz.Rect(text_x, text_y - 9, text_x + 80, text_y + 2)
-    # 绘制白色背景矩形
-    page.draw_rect(text_rect, color=(1, 1, 1), fill=(1, 1, 1))
-    # 插入带有白色背景的文字
-    page.insert_text((text_x, text_y), fname_rect_name, fontsize=10, color=(1, 0, 0))
 
 
 def _get_non_text_rects(md_info, page, page_index, pname_page_name, mctl_lvlm_region_model=None):
@@ -122,6 +106,7 @@ def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None, mctl_lvlm_region
         page_image = page.get_pixmap(matrix=fitz.Matrix(3, 3))
         try:
             page_image.save(pname_page_name, jpg_quality=JPG_QUALITY)
+            logging.info(f"pname_page_name saved {pname_page_name}")
         except Exception as ex:
             logging.exception(ex)
   
@@ -149,11 +134,12 @@ def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None, mctl_lvlm_region
                 logging.exception(ex)
 
             if draw_red_rect:
-                _draw_red_rect_on_page(page, fitz_rect, fname_rect_name)
+                draw_redrect_on_page(page, fitz_rect, fname_rect_name)
 
         page_image_with_rects = page.get_pixmap(matrix=fitz.Matrix(3, 3))
         try:
             page_image_with_rects.save(pname_page_rect_name, jpg_quality=JPG_QUALITY)
+            logging.info(f"pname_page_rect_name saved {pname_page_rect_name}")
         except Exception as ex:
             logging.exception(ex)
 
@@ -184,10 +170,16 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/LongRAG.pdf"
     #sel_page_indexes = [8]
 
-    doc_pathname = "datasrc/exam/raw_docs/Survey of different Large Language Model Architectures.pdf"
-    sel_page_indexes = [3,4]
-    mctl_lvlm_region_model = "qwen"
+    #doc_pathname = "datasrc/exam/raw_docs/Survey of different Large Language Model Architectures.pdf"
+    #sel_page_indexes = [3,4]
+    #mctl_lvlm_region_model = "qwen"
     #mctl_lvlm_region_model = "gs0"
+
+    #doc_pathname = "datasrc/exam/raw_docs/Survey of different Large Language Model Architectures.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/papers/ “AI+应用”百花齐放，新质生产力前景广阔pdf.pdf"
+    sel_page_indexes = [1]
+    mctl_lvlm_region_model = "gs0"
+
 
     output_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix='lvlm')
 

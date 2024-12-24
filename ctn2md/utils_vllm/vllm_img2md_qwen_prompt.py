@@ -5,8 +5,9 @@ Convert the following page into Markdown format, ensuring completeness and maint
 - Recognize and convert text, lists, tables, and images:
   - **Lists**: Use Markdown list format (`-` for unordered, numbers for ordered).
   - **Tables**: Use Markdown table format.
-  - **Images**: Embed using `![Figure X](LocalImageFileName "caption")`.
-- Use headings, paragraphs, lists, and tables for structure.
+  - **Images**: Embed using `![Figure X](<Y: LocalImageFileName> "<Z: caption of the image content>")`.
+- Use headings, paragraphs, lists, and tables for structure.  
+- Ensure image output is/are located at the right place in the markdown flow, do not simply put at end of the markdown. **do not miss** any image output with their caption.
 - Ignore headers and footers.
 - **Important**: Ensure the output text's language matches the original content exactly. **Do not translate** any text, and maintain the original language.
 

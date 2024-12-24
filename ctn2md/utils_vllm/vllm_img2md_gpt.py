@@ -27,14 +27,13 @@ def generate_full_mds_from_image_gpt(pname_image, rects_img=None, model="gpt-4o"
 
         if rects_img is not None and len(rects_img) > 0:
             rects_img = sorted(rects_img)
-
-            str_rects_img = ""
+            img_rects = ""
             for ndx, rect_img in enumerate(rects_img):
-                if len(str_rects_img) != 0:
-                    str_rects_img += "\n"
-                str_rects_img += f"- `red_rect{ndx+1}`: {rect_img}\n"
+                if len(inst_img_rects) != 0:
+                    img_rects += "\n"
+                img_rects += f"- `red_rect{ndx+1}`: {rect_img}\n"
 
-            inst_img_rects = USER_PROMPT_INST_IMG_RECTS.replace("{img_rects}", str_rects_img)
+            inst_img_rects = USER_PROMPT_INST_IMG_RECTS.replace("{img_rects}", inst_img_rects)
    
         user_prompt = USER_PROMPT_IMG2MD.replace("{inst_img_rects}", inst_img_rects)
 

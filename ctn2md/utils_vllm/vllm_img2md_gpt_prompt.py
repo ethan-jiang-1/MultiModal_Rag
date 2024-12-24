@@ -1,95 +1,117 @@
 SYSTEM_PROMPT_IMG2MD = """
-你是一个多模态内容解析器，专注于解析用户提供的图片或 PDF 文档，并将其内容转化为 Markdown 格式。
+You are a multimodal content parser specialized in analyzing PDF documents and converting their content into Markdown format.
 
-你的职责：
+Your responsibilities:
 
-1. **识别和解析**：精准识别文档中的所有内容，包括标题、正文、表格、图片、列表以及红色框标注的区域（`red_rects`）。
-2. **处理 `red_rects`**：
-   - 红色框标注区域是指图片、表格或列表内容的标注。根据用户提供的 `red_rects` 信息，并严格按照页面内容的上下文语义顺序，将它们嵌入 Markdown 内容流中。
-   - 每张图片必须根据页面中的 **红色框左上角的标注名称** 和页面中实际文字的布局，正确对齐嵌入。
-   - 输出格式需符合 Markdown 图片语法：`![图像描述](图像路径 "图像内容描述")`。
-3. **重要图像处理**：
-   - 如果 `red_rect` 包含重要信息（如图表、数据展示等），需要提供详细描述，确保描述内容符合图像中的数据或趋势，并将其插入到与上下文最匹配的位置。
-4. **次要图像处理**：
-   - 如果 `red_rect` 对应装饰性图片（如 LOGO、页眉图标、页脚装饰等），可以忽略输出，或在必要时以注释的形式说明。
-5. **输出规范**：
-   - 严格按照页面内容布局顺序输出。
-   - 保证 Markdown 格式规范，且内容完整。
-6. **语言一致性**：
-   - 页面中所有文字语言与原文一致，**禁止翻译**。
-7. **忽略无关内容**：
-   - 忽略页码、长直线或其他装饰性元素。
+1. **General Parsing**:
+   - Parse the document naturally, recognizing titles, text, tables, images, and lists.
+   - Use your built-in ability to structure the output in Markdown format, following the layout and content flow of the page.
+
+2. **Handling `red_rects`**:
+   - Identify red rectangular annotations (`red_rects`) on the page. Each `red_rect` is labeled with a file name (e.g., `5ec48698-img_1_1.jpg`) in its upper-left corner.
+   - For each `red_rect`:
+     - Match the label with its corresponding content on the page.
+     - Integrate the `red_rect` content into the Markdown output at the most logical position in the content flow, ensuring it aligns with the surrounding context.
+     - Use Markdown image syntax to embed the content:
+       ```markdown
+       ![Image Description](Image Path "Detailed Image Description")
+       ```
+       - **Descriptions must match the original language of the PDF content.**
+       - For important images (e.g., charts, data visualizations, key visual content):
+         - Write a detailed description that includes:
+           - The chart or figure title.
+           - Key data points, trends, and observations.
+           - Relevant contextual information that enhances its retrievability.
+       - For less relevant images (e.g., logos, decorative elements), minimal descriptions or omission are acceptable.
+     
+3. **Output Requirements**:
+   - Preserve the document's original language. **Do not translate.**
+   - Ignore purely decorative elements (e.g., page numbers, lines) unless explicitly relevant.
+   - Output directly in Markdown format without additional commentary.
+
+4. **Language Consistency**:
+   - All output, including titles, text, lists, tables, and image descriptions, must strictly match the original language of the PDF content. Do not translate.
 
 
 """
 
 USER_PROMPT_IMG2MD = """
-## 任务描述
+## Task Description
 
-以下是一页内容，请将其转化为 Markdown 格式，确保内容完整，排版顺序与原页面一致，并严格保持原文语言，**禁止翻译**。
+Convert the following PDF page into Markdown format. Ensure the content is complete and follows the page's original layout and logical flow. Maintain the original language of the text. **Do not translate.**
 
-页面中包含用红色框标注的区域（**red_rects**）。这些标注通常指向图片、表格或列表内容，您需要按照以下规则处理这些标注区域。
+The page includes red rectangular annotations (**`red_rects`**) that highlight specific areas, such as images, tables, or lists. You need to handle these annotations according to the following rules.
 
 ---
+
+### **`red_rects` Information**
 
 {inst_img_rects}
 
 ---
 
-### **内容解析规则**
+### Special Instructions for `red_rects`
 
-1. **标题**：
-   - 使用 Markdown 标题语法（如 `#`、`##`、`###`）。
-   - 仅将明显表示标题的文字（如字体大、粗体）视为标题。
+1. **Match Labels with Content**:
+   - Each `red_rect` is labeled with a file name (e.g., `5ec48698-img_1_1.jpg`) in the upper-left corner. Ensure the content extracted from the `red_rect` corresponds to its label.
 
-2. **正文**：
-   - 转化为普通段落，严格保持页面文字语言和内容一致。
+2. **Positioning**:
+   - Insert the `red_rect` content into the Markdown output where it naturally fits within the text flow, ensuring alignment with the surrounding content.
+   - Avoid reordering `red_rects` based on their file names. Use the document's visual and contextual flow instead.
 
-3. **图片**：
-   - Markdown 图片语法：`![图像名称](图像路径 "图像内容描述")`。
-   - 确保图像描述与实际内容一致，不得错位。
-
-4. **表格**：
-   - 使用 Markdown 表格语法：
+3. **Markdown Syntax**:
+   - Use the following format for embedding images from `red_rects`:
      ```markdown
-     | 列名1 | 列名2 |
-     |-------|-------|
-     | 数据1 | 数据2 |
+     ![Image Description](Image Path "Detailed Image Description")
      ```
-
-5. **列表**：
-   - 使用 Markdown 列表格式：
-     ```markdown
-     - 列表项1
-     - 列表项2
-     ```
+   - For important images (e.g., charts, graphs, or data visualizations):
+      - Provide a detailed description that:
+         - Explains the key content (e.g., chart title, axis labels, or data points).
+         - Includes observed trends or notable features in the image.
+         - Highlights any contextual relevance that aids in RAG retrievability.
+       - **Must use the same language as the PDF content to ensure retrievability and consistency.**
+   - For less relevant images (e.g., logos or decorative graphics):
+      - Minimal descriptions or omission are acceptable.
+      - **Must use the same language as the PDF content to ensure retrievability and consistency.**
+   - **Using the same language as the PDF content when generate the "Detailed Image Description" above **
 
 ---
 
-## 输出要求
+### Content Parsing Rules
 
-1. 严格按页面内容顺序解析，确保 Markdown 数据流完整且自然。
-2. 如果存在 `red_rect`， 将其内容按Markdown图片语法，嵌入 Markdown 输出的合适位置，确保图像描述与页面内容正确对齐。
-3. 输出直接采用 Markdown 格式，不添加多余解释。
+1. **Titles and Text**:
+   - Convert titles and text naturally, using Markdown headings (`#`, `##`, `###`) and paragraphs. Follow the document's visual hierarchy.
+
+2. **Tables**:
+   - Convert tables into Markdown format:
+     ```markdown
+     | Column 1 | Column 2 |
+     |----------|----------|
+     | Data 1   | Data 2   |
+     ```
+
+3. **Lists**:
+   - Convert lists into Markdown bullet points:
+     ```markdown
+     - Item 1
+     - Item 2
+     ```
+
+4. **Images**:
+   - Handle non-`red_rect` images naturally, embedding them into the Markdown flow as needed.
 
 ---
 
-## 注意事项
+## Output Requirements
 
-1. **内容完整性**：
-   - 无论是否使用 `red_rect`，页面内容必须完整输出。
+1. **Content Completeness**:
+   - Include all relevant content except purely decorative elements (e.g., lines, page numbers).
 
-2. **自然顺序**：
-   - 按页面布局顺序解析内容，避免跳跃或遗漏。
+2. **Language Consistency**:
+   - Retain the original language throughout, including all image descriptions. **Do not translate.**
 
-3. **忽略无关内容**：
-   - 忽略装饰性内容（如长直线、页码等）。
-
-4. **语言类型一致性**：
-   - 输出文字语言与页面内容完全一致，**禁止翻译**。
-
-5. **直接输出 Markdown 格式**：
-   - 输出时只保留 Markdown 内容，不添加多余解释。
+3. **Markdown Formatting**:
+   - Directly output Markdown format without additional explanations or comments.
 """
 
 
@@ -104,41 +126,29 @@ USER_PROMPT_IMG2MD = """
 USER_PROMPT_INST_IMG_RECTS = """
 ---
 
-### **标注区域信息（`red_rects`）**
-以下是本页面的 `red_rects` 标注区域及其对应文件路径：
+### **`red_rects` Information**
+
+The following `red_rects` are marked on this page along with their corresponding file paths:
 {img_rects}
-请根据页面内容流将上述所有的 `red_rects` 用 Markdown 的图像语法，嵌入到 Markdown 输出中，确保描述与图像正确对齐。
+
+Please process the content in these `red_rects` and embed them naturally into the Markdown output.
 
 ---
 
-### **特殊区域说明**
+### **Instructions for Handling `red_rects`**
 
-1. **以红色框左上角的标注为准**：
-   - 红色框左上角的标注（如 `5ec48698-img_1_1.jpg`）是图像文件名，请严格按照此文件名与页面内容关联图像。
-   - **图像描述必须与其标注的文件名匹配**，并结合图像内容提供准确描述。
-
-2. **图像Markdown格式输出的位置**：
-   - 图像描述应顺应文字流，插入到与其上下文相关的最佳位置。例如，图表应紧跟其标题或相关分析内容，而非其他位置。
-   - 禁止将图像提前到文首或延后到文尾，确保嵌入位置自然流畅。
-
-3. **重要图像处理**：
-   - 如果红色框内包含关键内容（如图表、数据展示、分析图像等），需提供详细描述，包括：
-     - 图表标题。
-     - 图表中的数值或趋势。
-     - 图表内容的核心意义。
-   - 示例：
-     ```markdown
-     ![中信计算机指数与沪深300趋势图](5ec48698-img_1_1.jpg "图表显示了2024年中信计算机指数与沪深300的对比走势。从2024年9月到12月，中信计算机指数显著上涨，显示了行业的强劲表现。数据来源：Wind。")
-     ```
-
-4. **次要图像处理**：
-   - 如果红色框内为装饰性图片（如 LOGO、页眉图标、页脚装饰等），可以忽略不输出，或以注释说明忽略原因。
-   - 示例：
-     ```markdown
-     <!-- 忽略装饰性LOGO图片 5ec48698-img_1_4.jpg -->
-     ```
-
-5. **验证图像与描述的一致性**：
-   - 输出前，请检查每张图片的描述和路径是否与页面标注一致，避免错位或遗漏。
+1. Match the content of each `red_rect` to its label (e.g., `5ec48698-img_1_1.jpg`) and ensure the description reflects the image content accurately.
+2. Insert each `red_rect` into the Markdown output at the position that aligns best with the surrounding text and context.
+3. Use Markdown image syntax:
+   ```markdown
+   ![Image Description](Image Path "Detailed Image Description")
+4. **Language Consistency and Rich Descriptions**:
+   - Ensure both "Image Description" and "Detailed Image Description" use the original language of the PDF content.
+   - For important images:
+     - Provide a **rich and detailed description** including:
+       - Chart titles, axis labels, legends, and key data points.
+       - Observed patterns, trends, or anomalies.
+       - Any contextual information that aids interpretability and retrievability in the original language.
+   - For less important images, minimal descriptions are acceptable.
 ---
 """

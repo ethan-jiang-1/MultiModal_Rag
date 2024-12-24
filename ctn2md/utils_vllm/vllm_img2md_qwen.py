@@ -22,8 +22,11 @@ def generate_full_mds_from_image_qwen(pname_image, rects_img=None, model='qwen-v
          
     inst_img_rects = ""
     if rects_img is not None and len(rects_img) > 0:
-        str_rects_img = ",".join(rects_img)
-        inst_img_rects = PROMPT_INSTRUCT_IMG2MD_QWEN_START_IMG_RECTS.replace("{img_rects}", str_rects_img)
+        rects_img = sorted(rects_img)
+        img_rects = ""
+        for ndx, rect_img in enumerate(rects_img):
+            img_rects += f" `red_rect{ndx+1}`: {rect_img}, "
+        inst_img_rects = PROMPT_INSTRUCT_IMG2MD_QWEN_START_IMG_RECTS.replace("{img_rects}", img_rects)
     
     prompt_start = PROMPT_INSTRUCT_IMG2MD_QWEN_START.replace("{inst_img_rects}", inst_img_rects)
 
