@@ -50,7 +50,7 @@ def gen_questions_on_pic_by_gpt(container_name, img_desc, model="gpt-4o", questi
 if __name__ == '__main__':
     from ctn2md.utils.util_file import get_root_dir
     from ctn2md.utils.util_logging import setup_logger_handlers
-    from ctn2md.utils_vllm.vllm_description_qwen import generate_image_description_by_qwen
+    from ctn2md.utils_vllm.vllm_img_description_qwen import generate_image_description_by_qwen
     dir_root = get_root_dir()
     setup_logger_handlers()
 

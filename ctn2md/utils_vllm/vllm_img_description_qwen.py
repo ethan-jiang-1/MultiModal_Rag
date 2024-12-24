@@ -58,7 +58,7 @@ def test_gen_qas_on_pic():
 
 if __name__ == '__main__':
     from ctn2md.utils.util_logging import setup_logger_handlers
-    from ctn2md.utils_vllm.vllm_description_qwen_prompt import TEXT_PROMPT_INST_VLLM_GEN_QAS
+    from ctn2md.utils_vllm.vllm_img_description_qwen_prompt import TEXT_PROMPT_INST_VLLM_GEN_QAS
 
     dir_root = get_root_dir()
     setup_logger_handlers()
