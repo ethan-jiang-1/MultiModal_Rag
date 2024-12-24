@@ -11,7 +11,7 @@ load_dotenv()
 
 from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from ctn2md.utils_llm.llm_base import get_gpt_messages_multimodal, chat_gpt_json
-from ctn2md.utils_vllm.vllm_img2region_gpt_prompt import SYSTEM_PROMPT_IMG2REGION, USER_PROMPT_IMG2REGION
+from ctn2md.utils_vllm_exp.vllm_img2region_gpt_prompt import SYSTEM_PROMPT_IMG2REGION, USER_PROMPT_IMG2REGION
 
 
 def generate_regions_from_image_gpt(pname_image, model="gpt-4o", question_num=None):

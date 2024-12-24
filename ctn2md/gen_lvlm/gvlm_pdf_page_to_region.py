@@ -10,8 +10,8 @@ if './' not in sys.path:
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lvlm.lvlm_base import get_job_id
 from ctn2md.utils.util_logging import setup_logger_handlers
-#from ctn2md.utils_vllm.vllm_img2region_gpt import generate_regions_from_image_gpt
-from ctn2md.utils_vllm.vllm_img2region_qwen import generate_regions_from_image_qwen
+#from ctn2md.utils_vllm_exp.vllm_img2region_gpt import generate_regions_from_image_gpt
+from ctn2md.utils_vllm_exp.vllm_img2region_qwen import generate_regions_from_image_qwen
 
 
 """
