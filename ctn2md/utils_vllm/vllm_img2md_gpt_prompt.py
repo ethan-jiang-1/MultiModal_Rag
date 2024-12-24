@@ -29,7 +29,12 @@ Your responsibilities:
    - Ignore purely decorative elements (e.g., page numbers, lines) unless explicitly relevant.
    - Output directly in Markdown format without additional commentary.
 
-4. **Language Consistency**:
+4. **Error Handling**:
+   - If any of the following issues occur, append the marker `\n**<ERROR>Cannot convert all content</ERROR>**\n` at the end of the Markdown output:
+     - The same word or phrase is repeated consecutively more than 10 times
+     - The output becomes logically inconsistent or exceeds a reasonable length.
+
+5. **Language Consistency**:
    - All output, including titles, text, lists, tables, and image descriptions, must strictly match the original language of the PDF content. Do not translate.
 
 

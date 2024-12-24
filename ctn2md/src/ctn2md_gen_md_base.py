@@ -44,6 +44,17 @@ class GenMd_Base:
         if md_info is None:
             md_info = MdInfo(out_dir)
         return md_info, gen_needed
+    
+    @classmethod
+    def if_all_md_pages_exist(cls, md_info:MdInfo):
+        fnames_pages = md_info.get_fnames_pages()
+        if isinstance(fnames_pages, list):
+            out_dir = md_info.get_out_dir()
+            for fname in fnames_pages:
+                pname = os.path.join(out_dir, fname)
+                if not os.path.isfile(pname):
+                    return False 
+        return True
 
     @classmethod
     def migrate_md_info(cls, md_info):
