@@ -32,7 +32,7 @@ def generate_full_mds_from_image_ark(pname_image, rects_img=None, model="ep-2024
             inst_img_rects = PROMPT_INSTRUCT_IMG2MD_ARK_IMG_RECTS.replace("{img_rects}", img_rects)
    
         user_prompt = PROMPT_INSTRUCT_IMG2MD_ARK.replace("{inst_img_rects}", inst_img_rects)
-        rich.print(user_prompt)
+        #rich.print(user_prompt)
 
         temperature = 0.1
         top_p = 0.9
