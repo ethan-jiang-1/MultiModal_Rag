@@ -60,7 +60,7 @@ def _generate_unique_name(image_path):
     return unique_name
 
 
-def _upload_image(image_path):
+def upload_image_to_oss(image_path):
     import oss2
     access_key_id = os.environ["OSS_ACCESS_KEY_ID"]
     access_key_secret = os.environ["OSS_ACCESS_KEY_SECRET"]
@@ -89,7 +89,7 @@ def _upload_image(image_path):
 
 def get_gpt_messages_multimodal(system_prompt, user_prompt, image_path):
     """生成支持多模态的消息结构"""
-    img_url = _upload_image(image_path)
+    img_url = upload_image_to_oss(image_path)
     
     # 构造多模态消息
     messages = [
