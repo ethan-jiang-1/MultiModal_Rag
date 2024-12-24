@@ -1,4 +1,5 @@
 from openai import AzureOpenAI
+from openai import OpenAI
 from dotenv import load_dotenv, find_dotenv
 import sys
 import os
@@ -92,18 +93,21 @@ def get_gpt_messages_multimodal(system_prompt, user_prompt, image_path):
     img_url = upload_image_to_oss(image_path)
     
     # 构造多模态消息
-    messages = [
-        {
-            "role": "system",
-            "content": [{"type": "text", "text": str(system_prompt)}] 
-        },
+    messages = []
+    if system_prompt is not None:
+        messages.append(
+            {
+                "role": "system",
+                "content": [{"type": "text", "text": str(system_prompt)}] 
+            })
+    messages.append(
         {
             "role": "user",
             "content": [{"type": "text", "text": str(user_prompt)},
                         {"type": "image_url",  # 明确指定类型为 image
                          "image_url": {"url": img_url}}]
         }
-    ]
+    )
     
     return messages
 
@@ -121,6 +125,21 @@ def get_dashscope_client():
         api_key=os.getenv("DASHSCOPE_API_KEY"),
         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
     )
+    return client
+
+def get_ark_client():
+    #from volcenginesdkarkruntime import Ark
+
+    # # 从环境变量中获取API Key
+    # client = Ark(
+    #     api_key=os.getenv('ARK_API_KEY'),
+    #     base_url=""
+    # )
+    client = OpenAI(
+        api_key=os.environ.get("ARK_API_KEY"),
+        base_url="https://ark.cn-beijing.volces.com/api/v3",
+    )
+
     return client
 
 def jsons_load_repair(content):

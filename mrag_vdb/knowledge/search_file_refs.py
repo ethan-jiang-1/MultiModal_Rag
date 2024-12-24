@@ -23,6 +23,7 @@ from mrag_vdb.common.vdb_base import QdrantClientContextManager
 from mrag_vdb.common.chunked_meta_info import ChunkedSectionInfo
 from mrag_vdb.utils_llm.llm_image_relevance_gpt import check_img_relevance_by_gpt
 from mrag_vdb.utils_llm.llm_image_relevance_qwen import check_img_relevance_by_qwen
+from mrag_vdb.utils_llm.llm_image_relevance_ark import check_img_relevance_by_ark
 from mrag_vdb.common.runtime_settings import ModelGptSel
 
 MIN_IMG_RELEVANCE_SCORE = 2.0
@@ -215,6 +216,8 @@ def _check_if_imgs_are_related_to_qa(user_query: str, llm_answer: str, knowledge
         resp = check_img_relevance_by_gpt(user_query, llm_answer, knowledge_context, numbered_image_descriptions, model=model)
     elif model.startswith("qwen"):
         resp = check_img_relevance_by_qwen(user_query, llm_answer, knowledge_context, numbered_image_descriptions, model=model) 
+    elif model.startswith("ep"):
+        resp = check_img_relevance_by_ark(user_query, llm_answer, knowledge_context, numbered_image_descriptions, model=model) 
     else:
         raise ValueError(f"not support model: {model}")
     rich.print(numbered_image_descriptions)

@@ -13,7 +13,7 @@ from mrag_vdb.utils_llm.llm_image_relevance_qwen_prompt import SYSTEM_PROMPT_IMA
 from mrag_vdb.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from mrag_vdb.utils_llm.llm_base import get_gpt_messages, chat_gpt_json, get_dashscope_client
 
-def check_img_relevance_by_qwen(user_query:str, llm_answer: str, knowledge_context: str, numbered_image_descriptions: str, model:str = "gpt-4o-mini", question_num:int = None):
+def check_img_relevance_by_qwen(user_query:str, llm_answer: str, knowledge_context: str, numbered_image_descriptions: str, model:str = "qwen-max", question_num:int = None):
     if question_num is None:
         question_num = get_next_question_num()
 
@@ -38,7 +38,7 @@ def check_img_relevance_by_qwen(user_query:str, llm_answer: str, knowledge_conte
                              track_id=f"sdk_sum{question_num}")
 
         set_question_num(question_num)
-        save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="cirbg") 
+        save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="cirbq") 
 
         return resp
     except Exception as ex: 

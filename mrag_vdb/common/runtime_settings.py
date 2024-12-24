@@ -1,7 +1,7 @@
 
 class ModelGptSel:
     _g_gpt_model = "gpt-4o-mini"
-    SUPPORTED_MODELS = ["gpt-4o", "gpt-4o-mini", "qwen-max", "qwen-plus-1127", "qwen-turbo-1101"]
+    SUPPORTED_MODELS = ["gpt-4o", "gpt-4o-mini", "qwen-max", "qwen-plus-1127", "qwen-turbo-1101", "ep-20241220101727-tcdfv", "ep-20241220101421-4tj5f"]
 
     @classmethod
     def get_gpt_model(cls) -> str:

@@ -18,6 +18,7 @@ from mrag_vdb.query.query2section_raw import query2section_raw_on_multiple_colle
 from mrag_vdb.query.query2section_reranked import query2sortedsections_reranked
 from mrag_vdb.utils_llm.llm_knowledge_gen_gpt import knowlege_gen_by_gpt
 from mrag_vdb.utils_llm.llm_knowledge_gen_qwen import knowlege_gen_by_qwen
+from mrag_vdb.utils_llm.llm_knowledge_gen_ark import knowlege_gen_by_ark
 from mrag_vdb.knowledge._knowledge_base import markdown_to_html_with_ids
 from mrag_vdb.common.rag_answer import RagAnswer
 from mrag_vdb.knowledge.search_file_refs import search_for_file_refs
@@ -60,6 +61,8 @@ def gen_answer_from_knowledge_snippets(query: str, knowledge_snippets: str):
         resp = knowlege_gen_by_gpt(query, knowledge_snippets, model=model_gen)
     elif model_gen.startswith("qwen"):
         resp = knowlege_gen_by_qwen(query, knowledge_snippets, model=model_gen)
+    elif model_gen.startswith("ep"):
+        resp = knowlege_gen_by_ark(query, knowledge_snippets, model=model_gen)
     else:
         raise ValueError(f"not support model: {model_gen}")
     return resp
