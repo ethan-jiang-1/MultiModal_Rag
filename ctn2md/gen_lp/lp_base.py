@@ -14,12 +14,13 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-#from ctn2md.src.md_info_base import MIFN
-#from ctn2md.utils.util_logging import setup_logger_handlers
+
 from ctn2md.utils_llm.llm_gen_vllm_instruction_gpt import gen_vllm_instruction_by_gpt
 from ctn2md.utils_llm.llm_gen_vllm_instruction_qwen import gen_vllm_instruction_by_qwen
+from ctn2md.utils_llm.llm_gen_vllm_instruction_ark import gen_vllm_instruction_by_ark
 from ctn2md.utils_vllm.vllm_img_description_qwen import generate_image_description_by_qwen
 from ctn2md.utils_vllm.vllm_img_description_gpt import generate_image_description_by_gpt
+from ctn2md.utils_vllm.vllm_img_description_ark import generate_image_description_by_ark
 from ctn2md.src.md_info_base import MIFN
 
 g_question_num = 6000
@@ -124,8 +125,12 @@ def _get_page_instruction(md_info, doc_title, content_around):
     mctl_lp_img_relevance_model = md_info.get_md_control("mctl_lp_img_relevance_model", "qwen")
     if mctl_lp_img_relevance_model == "qwen":
         instruction = gen_vllm_instruction_by_qwen(doc_title, content_around, question_num=g_question_num)
-    else:
+    elif mctl_lp_img_relevance_model == "gpt":
         instruction = gen_vllm_instruction_by_gpt(doc_title, content_around, question_num=g_question_num)
+    elif mctl_lp_img_relevance_model == "ark":
+        instruction = gen_vllm_instruction_by_ark(doc_title, content_around, question_num=g_question_num)
+    else:
+        raise ValueError(f"unsupport model {mctl_lp_img_relevance_model}")
     g_question_num += 1
     return instruction
 
@@ -134,8 +139,12 @@ def _gen_figure_info(md_info, doc_title, content_around, image_path):
     mctl_lp_img_caption_model = md_info.get_md_control("mctl_lp_img_caption_model", "qwen")
     if mctl_lp_img_caption_model == "qwen":
         resp = generate_image_description_by_qwen(image_path, instruction=instruction)
-    else:
+    elif mctl_lp_img_caption_model == "gpt":
         resp = generate_image_description_by_gpt(image_path, instruction=instruction)        
+    elif mctl_lp_img_caption_model == "ark":
+        resp = generate_image_description_by_ark(image_path, instruction=instruction)     
+    else:
+        raise ValueError(f"unsupport model: {mctl_lp_img_caption_model}")   
     if resp is None:
         raise ValueError("resp is None")
     resp_json = json_repair.repair_json(resp, return_objects=True, ensure_ascii=True)

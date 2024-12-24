@@ -51,6 +51,7 @@ def vllm_parse_non_text_rects_in_page_by_gpt(md_info, page, page_index, pname_pa
     Returns:
     - A list of bounds representing rectangular regions as (x_min, y_min, x_max, y_max).
     """
+    logging.error("vllm_parse_non_text_rects_in_page_by_gpt: not implemented yet, but using qwen")
     return vllm_parse_non_text_rects_in_page_by_qwen(md_info, page, page_index, pname_page_name)
     """
     try:
@@ -177,6 +178,22 @@ def vllm_parse_non_text_rects_in_page_by_qwen(md_info, page, page_index, pname_p
         # Log the error and return an empty list in case of failure
         logging.exception(f"Error parsing non-text rectangles for page {page_index}: {e}")
         return []
+    
+def vllm_parse_non_text_rects_in_page_by_ark(md_info, page, page_index, pname_page_name):
+    """
+    Parse non-text rectangular regions in a PDF page using GPT and return their bounds.
+
+    Parameters:
+    - md_info: Metadata information (not used in this function, reserved for future extensions).
+    - page: The page object containing media box size and other page properties.
+    - page_index: The index of the page (useful for debugging/logging).
+    - pname_page_name: The file path of the image extracted from the PDF page.
+
+    Returns:
+    - A list of bounds representing rectangular regions as (x_min, y_min, x_max, y_max).
+    """
+    logging.error("vllm_parse_non_text_rects_in_page_by_ark: not implemented yet, but using qwen")
+    return vllm_parse_non_text_rects_in_page_by_qwen(md_info, page, page_index, pname_page_name)
 
 if __name__ == "__main__":
     

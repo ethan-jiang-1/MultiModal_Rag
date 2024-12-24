@@ -19,7 +19,7 @@ from llama_parse.utils import Language
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.utils.util_file import get_crc32_id
 
-_MIB_INFO_VER = "0.8.1"
+_MIB_INFO_VER = "0.8.2"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
@@ -97,13 +97,13 @@ _DEFAULT_MDCONTROL = {
     "mctl_move_aux_files": True,
     "mctl_treat_doc_as_ctntype": "auto",
 
-    "mctl_fix_heading_model": "gpt", # gpt/qwen
-    "mctl_summarize_model": "qwen", # gpt/qwen
+    "mctl_fix_heading_model": "ark", # gpt/qwen/ark
+    "mctl_summarize_model": "ark", # gpt/qwen/ark
 
     # controls required by llamaparse conversion
     "mctl_lp_min_img_relevance_score": 0.2,
-    "mctl_lp_img_relevance_model": "qwen", # qwen/gpt
-    "mctl_lp_img_caption_model": "qwen", # qwen/gpt
+    "mctl_lp_img_relevance_model": "ark", # qwen/gpt/ark
+    "mctl_lp_img_caption_model": "ark", # qwen/gpt/ark
     "mctl_lp_need_image_ref": True,
     "mctl_lp_langauge": Language.SIMPLIFIED_CHINESE,
     "mctl_lp_take_screenshot": False,
@@ -122,8 +122,8 @@ _DEFAULT_MDCONTROL = {
     "mctl_lvlm_notouch_pages": [], # the target pages no need to be touched, 
                                    # list of page numbers,  The first page of the document is page 1
     
-    "mctl_lvlm_img2md_model": "gpt", # gpt/qwen
-    "mctl_lvlm_region_model": "gs0",  # gpt/qwen/gs1/gs0
+    "mctl_lvlm_img2md_model": "ark", # gpt/qwen/ark
+    "mctl_lvlm_region_model": "gs0",  # gpt/qwen/ark/gs1/gs0
 
     "mctl_lvlm_paint_page_content_area_ratios":(0.15, 0.15, 0.1, 0.1),
     "mctl_lvlm_paint_max_area_ratio": 0.7,

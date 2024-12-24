@@ -18,6 +18,7 @@ if "./" not in sys.path:
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.utils_llm.llm_fix_heading_lvl_gpt import fix_heading_lvl_markdown_by_gpt
 from ctn2md.utils_llm.llm_fix_heading_lvl_qwen import fix_heading_lvl_markdown_by_qwen
+from ctn2md.utils_llm.llm_fix_heading_lvl_ark import fix_heading_lvl_markdown_by_ark
 from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
 from ctn2md.src.md_process_plc import inject_plc_comment_to_page, separate_heading_and_plc_comment, get_all_normalized_headings_with_plc_info, has_injected_plc_comment
 from ctn2md.utils.util_markdown import read_markdown_file
@@ -132,15 +133,19 @@ def _cal_new_fhl_map(md_info, fhl_org):
     now = datetime.now()
     question_num = now.hour * 100 + now.minute
     logging.info(f"question_num: {question_num}")
-    mctl_fix_heading_model = md_info.get_md_control("mctl_fix_heading_model", "gpt")
     fhl_quality = md_info.get(MIFN.FHL_QUALITY, FHL_QUALITY_TYPE.MEDIUM)
     ctn_type = md_info.get_ctn_type()
+    mctl_fix_heading_model = md_info.get_md_control("mctl_fix_heading_model", "gpt")
     if mctl_fix_heading_model == "gpt":
         model = "gpt-4o" # so far, only gpt-4o can handle this well,  gpt-4o-mini does not.
         fhl_map = fix_heading_lvl_markdown_by_gpt(fhl_org, fhl_quality=fhl_quality, ctn_type=ctn_type, model=model, question_num=question_num)
     elif mctl_fix_heading_model == "qwen":
         model = "qwen-max"  # TODO: ethan_qwen_prompt qwen-max is not there yet, need to revisit the prompt
         fhl_map = fix_heading_lvl_markdown_by_qwen(fhl_org, fhl_quality=fhl_quality, ctn_type=ctn_type, model=model, question_num=question_num)
+    elif mctl_fix_heading_model == "ark":
+        model = "ep-20241220101727-tcdfv"
+        fhl_map = fix_heading_lvl_markdown_by_ark(fhl_org, fhl_quality=fhl_quality, ctn_type=ctn_type, model=model, question_num=question_num)
+
     else:
         raise ValueError(f"not implemented yet for using {mctl_fix_heading_model} in fix_headings_plc_by_llm")
 

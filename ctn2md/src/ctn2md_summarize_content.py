@@ -14,6 +14,7 @@ if "./" not in sys.path:
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.utils_llm.llm_summarize_content_gpt import summarize_doc_keywords_by_gpt
 from ctn2md.utils_llm.llm_summarize_content_qwen import summarize_doc_keywords_by_qwen
+from ctn2md.utils_llm.llm_summarize_content_ark import summarize_doc_keywords_by_ark
 from ctn2md.utils.util_markdown import remove_comment, read_markdown_file
 from ctn2md.src.md_info_base import MdInfo, MIFN
 
@@ -38,6 +39,8 @@ def summarize_content_by_llm(md_info_path, src_step_num=None, dst_step_num=None)
         resp = summarize_doc_keywords_by_gpt(doc_title, full_content)
     elif mctl_summarize_model == "qwen":
         resp = summarize_doc_keywords_by_qwen(doc_title, full_content)
+    elif mctl_summarize_model == "ark":
+        resp = summarize_doc_keywords_by_ark(doc_title, full_content)
     else:
         raise ValueError(f"not implemented yet for using {mctl_summarize_model} in sumamrize document")
     rich.print(resp)

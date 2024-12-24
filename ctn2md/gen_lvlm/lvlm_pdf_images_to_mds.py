@@ -17,6 +17,7 @@ from ctn2md.src.md_info_base import MIFN
 from ctn2md.gen_lvlm.lvlm_base import is_in_repair_mode, is_still_in_gen_mode
 from ctn2md.utils_vllm.vllm_img2md_gpt import generate_full_mds_from_image_gpt
 from ctn2md.utils_vllm.vllm_img2md_qwen import generate_full_mds_from_image_qwen
+from ctn2md.utils_vllm.vllm_img2md_ark import generate_full_mds_from_image_ark
 
 FAILED_GEN_CONTENT_MSG = "**Failed to generate content**:"
 
@@ -72,8 +73,12 @@ def convert_images_to_mds(md_info, image_infos):
                 try:
                     if mctl_lvlm_img2md_model == "qwen":
                         md_page = generate_full_mds_from_image_qwen(pname_image, rects_img)
-                    else:
+                    elif mctl_lvlm_img2md_model == "gpt":
                         md_page = generate_full_mds_from_image_gpt(pname_image, rects_img)
+                    elif mctl_lvlm_img2md_model == "ark":
+                        md_page = generate_full_mds_from_image_ark(pname_image, rects_img)
+                    else:
+                        raise ValueError(f"unsupported model {mctl_lvlm_img2md_model}")
                 except Exception as ex:
                     md_page = f"\n{FAILED_GEN_CONTENT_MSG}\n\n {fname_page_md}\n\n reason: {str(ex)}\n\n"
 

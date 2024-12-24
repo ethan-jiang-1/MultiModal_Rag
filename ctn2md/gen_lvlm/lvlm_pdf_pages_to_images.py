@@ -17,7 +17,7 @@ from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lvlm.lvlm_base import get_image_cnt_type, LVLM_IMG_CNT_TYPE
 from ctn2md.gen_lvlm.gs0_pdf_page_to_region import gs0_parse_non_text_rects_in_page
 from ctn2md.gen_lvlm.gs1_pdf_page_to_region import gs1_parse_non_text_rects_in_page
-from ctn2md.gen_lvlm.gvlm_pdf_page_to_region import vllm_parse_non_text_rects_in_page_by_gpt, vllm_parse_non_text_rects_in_page_by_qwen
+from ctn2md.gen_lvlm.gvlm_pdf_page_to_region import vllm_parse_non_text_rects_in_page_by_gpt, vllm_parse_non_text_rects_in_page_by_qwen, vllm_parse_non_text_rects_in_page_by_ark
 from ctn2md.gen_lvlm.lvlm_base import get_job_id
 from ctn2md.gen_lvlm.lvlm_base import is_still_in_gen_mode
 from ctn2md.gen_lvlm._draw_redrect_on_page import draw_redrect_on_page
@@ -35,6 +35,8 @@ def _get_non_text_rects(md_info, page, page_index, pname_page_name, mctl_lvlm_re
         rects_non_text = vllm_parse_non_text_rects_in_page_by_gpt(md_info, page, page_index, pname_page_name) 
     elif mctl_lvlm_region_model == "qwen":
         rects_non_text = vllm_parse_non_text_rects_in_page_by_qwen(md_info, page, page_index, pname_page_name)
+    elif mctl_lvlm_region_model == "ark":
+        rects_non_text = vllm_parse_non_text_rects_in_page_by_ark(md_info, page, page_index, pname_page_name)
     elif mctl_lvlm_region_model == "gs0":
         rects_non_text = gs0_parse_non_text_rects_in_page(md_info, page, page_index, pname_page_name)
     elif mctl_lvlm_region_model == "gs1":
