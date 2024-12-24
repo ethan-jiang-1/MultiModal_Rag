@@ -130,7 +130,11 @@ def _get_page_instruction(md_info, doc_title, content_around):
 
 def _gen_figure_info(md_info, doc_title, content_around, image_path):
     instruction = _get_page_instruction(md_info, doc_title, content_around)
-    resp = generate_image_description_by_qwen(image_path, instruction=instruction)
+    mctl_lp_img_caption_model = md_info.get_md_control("mctl_lp_img_caption_model", "qwen")
+    if mctl_lp_img_caption_model == "qwen":
+        resp = generate_image_description_by_qwen(image_path, instruction=instruction)
+    else:
+        resp = generate_image_description_by_qwen(image_path, instruction=instruction)        
     if resp is None:
         raise ValueError("resp is None")
     resp_json = json_repair.repair_json(resp, return_objects=True, ensure_ascii=True)
