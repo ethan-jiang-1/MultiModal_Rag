@@ -19,6 +19,7 @@ if "./" not in sys.path:
 from ctn2md.utils_llm.llm_gen_vllm_instruction_gpt import gen_vllm_instruction_by_gpt
 from ctn2md.utils_llm.llm_gen_vllm_instruction_qwen import gen_vllm_instruction_by_qwen
 from ctn2md.utils_vllm.vllm_img_description_qwen import generate_image_description_by_qwen
+from ctn2md.utils_vllm.vllm_img_description_gpt import generate_image_description_by_gpt
 from ctn2md.src.md_info_base import MIFN
 
 g_question_num = 6000
@@ -134,7 +135,7 @@ def _gen_figure_info(md_info, doc_title, content_around, image_path):
     if mctl_lp_img_caption_model == "qwen":
         resp = generate_image_description_by_qwen(image_path, instruction=instruction)
     else:
-        resp = generate_image_description_by_qwen(image_path, instruction=instruction)        
+        resp = generate_image_description_by_gpt(image_path, instruction=instruction)        
     if resp is None:
         raise ValueError("resp is None")
     resp_json = json_repair.repair_json(resp, return_objects=True, ensure_ascii=True)

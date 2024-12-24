@@ -103,7 +103,7 @@ _DEFAULT_MDCONTROL = {
     # controls required by llamaparse conversion
     "mctl_lp_min_img_relevance_score": 0.2,
     "mctl_lp_img_relevance_model": "qwen", # qwen/gpt
-    "mctl_lp_img_caption_model": "qwen", # qwen
+    "mctl_lp_img_caption_model": "qwen", # qwen/gpt
     "mctl_lp_need_image_ref": True,
     "mctl_lp_langauge": Language.SIMPLIFIED_CHINESE,
     "mctl_lp_take_screenshot": False,
