@@ -89,7 +89,8 @@ if __name__ == "__main__":
 
     #pname_final_info = "_work/ctn2md_mrag__1__座椅STO间隙_P1_lp/_final_info.json"
     #pname_final_info = "_work/ctn2md_mrag__5__back_panel_与环境匹配工程校核_P2_md/_final_info.json"
-    pname_final_info = "_work/ctn2md_papers____AI+应用_百花齐放_新质生产力前景广阔pdf_lvlm/_final_info.json"
+    #pname_final_info = "_work/ctn2md_papers____AI+应用_百花齐放_新质生产力前景广阔pdf_lvlm/_final_info.json"
+    pname_final_info = "_work/ctn2md_mrag__1__座椅STO间隙_P1_lp/_final_info.json"
 
     skip_build_vdb = False
     #skip_build_vdb = True
