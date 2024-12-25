@@ -32,9 +32,11 @@ KNOWLEGE_FORMAT = """
 </KnowledgeSnippet>\n
 """
 
+# TODO: ethan_pending: how to smart select collections
 def find_collection_names(query: str) -> List[str]:
     return ["papers"]
 
+# TODO: ethan_pending: how to smart rewrite...
 def query_rewerite(query: str, collection_names: List[str]) -> str:
     return query 
 
