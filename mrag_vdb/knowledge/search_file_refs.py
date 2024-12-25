@@ -233,7 +233,7 @@ def _check_if_imgs_are_related_to_qa(user_query: str, llm_answer: str, knowledge
     for ndx, id_n_score in enumerate(sorted_id_to_scores):
         id = int(id_n_score["id"])
         id -= 1
-        relevance_score = id_n_score["relevance_score"]
+        relevance_score = float(id_n_score["relevance_score"])
         if id >= 0 and id < len(fname_and_titles):
             fname = fname_and_titles[id][0]
             ref_img_fname_relevance_scores.append((fname, relevance_score))
