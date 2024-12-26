@@ -6,6 +6,8 @@ import openai
 
 load_dotenv()
 
+# TODO: ethan_embedding:  we should support multiple embedding from different provider
+
 EMBEDDING_TEXT_MODEL = "text-embedding-3-small"
 EMBEDDING_VEC_LEN = 1536
 
