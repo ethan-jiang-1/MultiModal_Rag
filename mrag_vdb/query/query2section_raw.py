@@ -12,18 +12,18 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from mrag_vdb.utils.util_logging import setup_logger_handlers
-from mrag_vdb.common.vdb_base import VDB_PATH
+from mrag_vdb.common.vdb_base import get_vdb_path
 from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
 from mrag_vdb.query._recover_section_from_chunks import query_initial_points, recover_scored_sections_from_chunk_from_vdb, LIMIT_QUERY, sort_scored_sections_by_score
-from mrag_vdb.utils.utili_embedding import get_text_embedding
+from mrag_vdb.utils.util_embedding import get_embedding_vec
 from mrag_vdb.common.vdb_base import QdrantClientContextManager
 
 def query2section_raw_on_single_collection(collection_name: str, query: str, limit: int = LIMIT_QUERY) -> List[ScoredRecoveredSection]:
     """
     查询集合中的 chunk 并恢复完整的 section。
     """
-    with QdrantClientContextManager(path=VDB_PATH) as client:
-        query_vector = get_text_embedding(query)
+    with QdrantClientContextManager(path=get_vdb_path()) as client:
+        query_vector = get_embedding_vec(query)
 
         initial_scored_chunks = query_initial_points(client, collection_name, query_vector, limit=limit)
 
@@ -36,10 +36,10 @@ def query2section_raw_on_multiple_collection(collection_names: list[str], query:
     """
     查询集合中的 chunk 并恢复完整的 section。
     """
-    with QdrantClientContextManager(path=VDB_PATH) as client:
+    with QdrantClientContextManager(path=get_vdb_path()) as client:
         all_merged_scored_sections = []
         for collection_name in collection_names:
-            query_vector = get_text_embedding(query)
+            query_vector = get_embedding_vec(query)
 
             initial_scored_chunks = query_initial_points(client, collection_name, query_vector, limit=limit)
 

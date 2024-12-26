@@ -1,5 +1,5 @@
 
-import tiktoken
+#import tiktoken
 import rich
 import logging   
 
@@ -32,15 +32,6 @@ def get_chinese_analyzer():
 
     return _ChineseTokenizer()
 
-g_tk_encoding = None
-
-def get_token_encoding():
-    global g_tk_encoding
-    if g_tk_encoding is None:
-        embedding_encoding = "cl100k_base"
-        g_tk_encoding = tiktoken.get_encoding(embedding_encoding)
-    return g_tk_encoding
-
 
 if __name__ == "__main__":
     import sys
@@ -48,13 +39,6 @@ if __name__ == "__main__":
 
     from mrag_vdb.utils.util_logging import setup_logger_handlers
     setup_logger_handlers()
-
-    encoding = get_token_encoding()
-    rich.print(encoding)
-    ret1 = encoding.encode("1, 2, 3")
-    rich.print(ret1)
-    ret2 = encoding.decode(ret1)
-    rich.print(ret2)
 
     logging.info("start load tokenizer...")
     chinese_tokenizer = get_chinese_analyzer()

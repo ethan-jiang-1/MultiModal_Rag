@@ -12,7 +12,7 @@ if "./" not in sys.path:
 
 from mrag_vdb.build._convert_doc_to_chunks import convert_sections_to_chunks, DocMetaInfo
 from mrag_vdb.utils.util_logging import setup_logger_handlers
-from mrag_vdb.common.vdb_base import VDB_PATH, get_doc_meta_pathname, get_ref_root
+from mrag_vdb.common.vdb_base import get_vdb_path, get_doc_meta_pathname, get_ref_root
 from mrag_vdb.build._inject_chunks_to_vdb import inject_doc_chunks_into_vdb
 from mrag_vdb.common.map_doc_to_collection import MapDocToCol
 from mrag_vdb.common.vdb_base import QdrantClientContextManager
@@ -74,7 +74,7 @@ def upsert_doc_to_vdb(pname_final_info: str, max_chunk_num:int = None, skip_buil
     logging.info(f"upsert_doc_to_vdb: {collection_name} <- {pname_final_info}")
     
     if not skip_build_vdb:
-        with QdrantClientContextManager(path=VDB_PATH) as client:
+        with QdrantClientContextManager(path=get_vdb_path()) as client:
             inject_doc_chunks_into_vdb(client, collection_name, doc_meta_info, all_csis, max_chunk_num=max_chunk_num)
 
     _save_doc_meta_info(doc_meta_info)

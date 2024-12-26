@@ -15,8 +15,8 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
-from mrag_vdb.common.vdb_base import REF_PATH
-from mrag_vdb.common.vdb_base import VDB_PATH
+from mrag_vdb.common.vdb_base import get_ref_path
+from mrag_vdb.common.vdb_base import get_vdb_path
 from mrag_vdb.utils.util_file import get_root_dir
 from mrag_vdb.utils.util_logging import setup_logger_handlers
 from mrag_vdb.common.vdb_base import QdrantClientContextManager
@@ -30,7 +30,7 @@ MIN_IMG_RELEVANCE_SCORE = 2.0
 
 def _get_ref_pname(collection_name:str, unique_doc_id:str, fname:str):
     dir_root = get_root_dir()
-    pathname = os.path.join(dir_root, REF_PATH, f"{collection_name}_{unique_doc_id}", fname)
+    pathname = os.path.join(dir_root, get_ref_path(), f"{collection_name}_{unique_doc_id}", fname)
     return pathname
 
 def _scan_markdown_for_ref_imgs(md_content: str) -> Tuple[List[str], List[str]]:
@@ -80,7 +80,7 @@ def _get_section_by_seq_no(collection_name: str, doc_unique_id: str, seq_no: int
     根据 doc_unique_id + sec_seq_no 直接查询 Qdrant,
     返回对应的 ScoredSection（若无则返回 None）。
     """
-    with QdrantClientContextManager(path=VDB_PATH) as client:
+    with QdrantClientContextManager(path=get_vdb_path()) as client:
         filter_query = Filter(
             must=[
                 FieldCondition(key="doc_unique_id", match={"value": doc_unique_id}),
