@@ -40,8 +40,44 @@ class _EmbeddinigEncoderOpenAIsmall():
     def get_embedding_encoder_name(cls):
         return cls._EMBEDDING_TEXT_MODEL  
 
+class _EmbeddinigEncoderArkSmall():
+    _EMBEDDING_TEXT_MODEL = "doubao-embedding-large"
+    _EMBEDDING_MODEL_NAME = "ep-20241220102000-c4f7m"
+    _EMBEDDING_VEC_LEN = 2560
+    _g_client = None 
 
-_EmbeddinigEncoder = _EmbeddinigEncoderOpenAIsmall
+    @classmethod
+    def get_client(cls):
+        from openai import OpenAI
+        if cls._g_client is None:
+            cls._client = OpenAI(
+                api_key=os.environ.get("ARK_API_KEY"),
+                base_url="https://ark.cn-beijing.volces.com/api/v3",
+            )
+        return cls._client
+
+    @classmethod
+    def get_embeding_len(cls) -> int:
+        return cls._EMBEDDING_VEC_LEN
+    
+    @classmethod
+    def get_embedding_vec(cls, text) -> list[float]:
+        text = text.replace("\n", " ")
+        client = cls.get_client()
+        embeddings = client.embeddings.create(
+            model=cls._EMBEDDING_MODEL_NAME,
+            input=[text],
+            encoding_format="float"
+        )
+        return embeddings.data[0].embedding
+    
+    @classmethod
+    def get_embedding_encoder_name(cls):
+        return cls._EMBEDDING_TEXT_MODEL  
+
+# ** Do not change the embedding encoder unless you know what you are doing **
+#_EmbeddinigEncoder = _EmbeddinigEncoderOpenAIsmall
+_EmbeddinigEncoder = _EmbeddinigEncoderArkSmall
 
 def get_embeding_len() -> int:
     return _EmbeddinigEncoder._EMBEDDING_VEC_LEN
@@ -55,6 +91,16 @@ def get_embedding_encoder_name():
 
 
 if __name__ == "__main__":
-    embedding = get_embedding_vec("hello")
+    text = "hello"
+
+    embedding = get_embedding_vec(text)
+    rich.print(embedding[:16])
+    print(len(embedding))
+
+    embedding = _EmbeddinigEncoderOpenAIsmall.get_embedding_vec(text)
+    rich.print(embedding[:16])
+    print(len(embedding))
+
+    embedding = _EmbeddinigEncoderArkSmall.get_embedding_vec(text)
     rich.print(embedding[:16])
     print(len(embedding))
