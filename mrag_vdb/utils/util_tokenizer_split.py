@@ -6,6 +6,7 @@ load_dotenv()
 class _TokenizerRemoteOpenAI():
     _TOKENIZER_TEXT_MODEL = "cl100k_base"
     _g_tk_encoding = None
+
     def _get_tokenizer(cls):
         import tiktoken
         if cls._g_tk_encoding is None:
