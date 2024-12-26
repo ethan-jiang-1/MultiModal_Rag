@@ -43,7 +43,7 @@ class _EmbeddinigEncoderOpenAIsmall():
 _EmbeddinigEncoder = _EmbeddinigEncoderOpenAIsmall
 
 def get_embeding_len() -> int:
-    return _EmbeddinigEncoder.get_embeding_len
+    return _EmbeddinigEncoder._EMBEDDING_VEC_LEN
 
 def get_embedding_vec(text) -> list[float]:
     return _EmbeddinigEncoder.get_embedding_vec(text)
