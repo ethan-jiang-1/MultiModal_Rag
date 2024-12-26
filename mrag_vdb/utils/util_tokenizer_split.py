@@ -6,24 +6,30 @@ load_dotenv()
 class _TokenizerRemoteOpenAI():
     _TOKENIZER_TEXT_MODEL = "cl100k_base"
     _g_tk_encoding = None
-    
+    def _get_tokenizer(cls):
+        import tiktoken
+        if cls._g_tk_encoding is None:
+            cls._g_tk_encoding = tiktoken.get_encoding(cls._TOKENIZER_TEXT_MODEL)
+        return cls._g_tk_encoding  
+
     @classmethod
     def get_tokens(cls, text:str) -> list[int]:
-        import tiktoken
-
-        def _get_token_encoding(cls) -> tiktoken.Encoding:
-            if cls._g_tk_encoding is None:
-                cls._g_tk_encoding = tiktoken.get_encoding(cls._TOKENIZER_TEXT_MODEL)
-            return cls._g_tk_encoding  
-
-        encoding = _get_token_encoding(cls)
-        return encoding.encode(text)
+        tokenizer = cls._get_tokenizer(cls)
+        return tokenizer.encode(text)
     
 class _TokenizerLocalRWKV():
+    _g_rwkv_tokenizer = None
+
+    @classmethod
+    def _get_tokenizer(cls):
+        if cls._g_rwkv_tokenizer is None:
+            import pyrwkv_tokenizer
+            cls._g_rwkv_tokenizer = pyrwkv_tokenizer.RWKVTokenizer()
+        return cls._g_rwkv_tokenizer
+    
     @classmethod
     def get_tokens(cls, text:str) -> list[int]:
-        import pyrwkv_tokenizer
-        tokenizer = pyrwkv_tokenizer.RWKVTokenizer()
+        tokenizer = cls._get_tokenizer()
         return tokenizer.encode(text)
     
 #_Tokenizer = _TokenizerOpenAI
