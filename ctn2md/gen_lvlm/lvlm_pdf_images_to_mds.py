@@ -35,8 +35,8 @@ def _does_page_need_gen(md_info:MdInfo, page_index:int, pname_page_md:str) -> bo
 
     return False
 
-def _gen_page_md_by_lvlm(mctl_lvlm_img2md_model:str, pname_image:str, rects_img:List[str], page_index:int, pname_page_md:str, fname_page_md:str):
-    logging.info(f"GPMBL: generate page {page_index}...")
+def _gen_page_md_by_lvlm(mctl_lvlm_img2md_model:str, pname_image:str, rects_img:List[str], pname_page_md:str):
+    logging.info(f"GPMBL: generate page {os.path.basename(pname_page_md)}...")
 
     try:
         if mctl_lvlm_img2md_model == "qwen":
@@ -48,7 +48,7 @@ def _gen_page_md_by_lvlm(mctl_lvlm_img2md_model:str, pname_image:str, rects_img:
         else:
             raise ValueError(f"unsupported model {mctl_lvlm_img2md_model}")
     except Exception as ex:
-        md_page = f"\n{FAILED_GEN_CONTENT_MSG}\n\n {fname_page_md}\n\n reason: {str(ex)}\n\n"
+        md_page = f"\n{FAILED_GEN_CONTENT_MSG}\n\n {os.path.basename(pname_page_md)}\n\n reason: {str(ex)}\n\n"
 
     with open(pname_page_md, "w", encoding="utf-8") as f:
         f.write(md_page)   
@@ -89,7 +89,7 @@ def convert_images_to_mds(md_info:MdInfo, image_infos: List[Tuple[str, List[str]
         pname_page_md = os.path.join(aux_dir, fname_page_md)
         if _does_page_need_gen(md_info, page_index, pname_page_md): 
             if page_index not in mctl_lvlm_notouch_pages:
-                _gen_page_md_by_lvlm(mctl_lvlm_img2md_model, pname_image, rects_img, page_index, pname_page_md, fname_page_md)
+                _gen_page_md_by_lvlm(mctl_lvlm_img2md_model, pname_image, rects_img, pname_page_md)
                 cnt_page_gen += 1
             fnames_page_md_gen.append(fname_page_md)
         else:
