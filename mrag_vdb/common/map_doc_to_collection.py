@@ -5,6 +5,7 @@ from pydantic import BaseModel
 import logging
 import json
 import re
+from qdrant_client.http.models import CollectionInfo
 
 load_dotenv()
 
@@ -27,6 +28,7 @@ def decompose_doc_unique_id(doc_unique_id):
 
 class MapDocToCol(BaseModel):
     map_doc2col: dict
+    lst_doc2col: list
 
     def save_to_file(self, path_map_doc2col):
         dir_name = os.path.dirname(path_map_doc2col)
@@ -41,8 +43,8 @@ class MapDocToCol(BaseModel):
             return MapDocToCol(map_doc2col={})
         with open(path_map_doc2col, "r", encoding="utf-8") as f:
             data = json.load(f)  # 从文件加载 JSON 数据
-        map_d2c = cls.model_validate(data) 
-        return map_d2c
+        d2c_info = cls.model_validate(data) 
+        return d2c_info
 
     @classmethod
     def validate_doc_title(cls, md2c, doc_unique_id):
@@ -81,6 +83,28 @@ class MapDocToCol(BaseModel):
         else:
             logging.info(f"existing map doc {doc_unique_id} to  collection_name:{collection_name}")
         return collection_name
+    
+    @classmethod
+    def _construct_doc2col(cls, doc_meta_info:DocMetaInfo, collection_name:str, collection: CollectionInfo,  item_added:int):
+        return {"collection_name": collection_name, 
+                "item_added": item_added, 
+                "collection_config": collection.config.model_dump(),
+                "doc_meta_info": doc_meta_info}
+
+    @classmethod
+    def update_collection_name_for_doc(cls, doc_meta_info:DocMetaInfo, collection_name:str, collection: CollectionInfo,  item_added:int):
+        path_map_doc2col = get_map_doc2col_pathname()
+        d2c_info = cls.load_from_file(path_map_doc2col)
+        for item in d2c_info.lst_doc2col:
+            if item["collection_name"] == collection_name:
+                update_item = cls._construct_doc2col(doc_meta_info, collection_name, collection, item_added)
+                for key, val in update_item.items():
+                    item[key] = val
+                d2c_info.save_to_file(path_map_doc2col)
+                return 
+        d2c_info.lst_doc2col.append(cls._construct_doc2col(doc_meta_info, collection_name, collection, item_added))
+        d2c_info.save_to_file(path_map_doc2col)
+
 
 if __name__ == "__main__":
     from mrag_vdb.build._convert_doc_to_chunks import build_doc_meta_info, DocMetaInfo
