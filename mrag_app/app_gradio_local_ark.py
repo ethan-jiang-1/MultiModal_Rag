@@ -14,7 +14,7 @@ from mrag_vdb.common.runtime_settings import ModelGptSel
 
 # 启动界面
 if __name__ == "__main__":
-    ModelGptSel.set_gpt_model("ep-20241220101421-4tj5f")
+    ModelGptSel.set_gpt_model("ep-20241220101727-tcdfv")
     setup_logger_handlers()
     ProgressLogger._setup_handler()
 
