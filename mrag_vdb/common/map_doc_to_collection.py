@@ -102,7 +102,7 @@ class MapDocToCol(BaseModel):
         path_map_doc2col = get_map_doc2col_pathname()
         d2c_info = cls.load_from_file(path_map_doc2col)
         for item in d2c_info.lst_doc2col:
-            if item["collection_name"] == collection_name:
+            if item["doc_unique_id"] == doc_meta_info.doc_unique_id:
                 update_item = cls._construct_doc2col(doc_meta_info, collection_name, collection, item_added)
                 for key, val in update_item.items():
                     item[key] = val
