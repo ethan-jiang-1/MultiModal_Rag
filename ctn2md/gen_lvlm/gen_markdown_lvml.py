@@ -42,7 +42,7 @@ def _construct_s0_md_from_pages(md_info):
         f.write(full_md_text)
     return pathname_step0
 
-def generate_markdown_lvlm(md_info, lvlm_model="gpt-4o"):
+def generate_markdown_lvlm(md_info:MdInfo, lvlm_model="gpt-4o"):
     doc_pathname = md_info.get_doc_pathname()
     if (doc_pathname is None) or (not os.path.isfile(doc_pathname)):
         raise ValueError(f"doc_pathname is not valid {doc_pathname}")
@@ -68,7 +68,8 @@ if __name__ == "__main__":
     need_normal_step=False
     need_preminum_step=True
     
-    md_info_path = "_output/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
+    #md_info_path = "_output/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
+    md_info_path = "_output/ctn2md_papers__DeepSeek_V3_lvlm/_info.json"
 
     md_info = MdInfo(md_info_path)
 

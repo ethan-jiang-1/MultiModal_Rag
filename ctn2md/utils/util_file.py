@@ -7,11 +7,11 @@ if "./" not in sys.path:
 
 load_dotenv()
 
-def get_root_dir():
+def get_root_dir() -> str:
     root_dir = os.path.abspath(os.path.dirname(find_dotenv()))  
     return root_dir
 
-def get_crc32_id(unique_str):
+def get_crc32_id(unique_str:str) -> str:
     import binascii
     # 将字符串转换为字节
     input_bytes = unique_str.encode('utf-8')

@@ -5,9 +5,7 @@ import logging
 import rich
 
 import fitz  # PyMuPDF
-#import shapely.geometry as sg
-#from shapely.geometry.base import BaseGeometry
-#from shapely.validation import explain_validity
+import pymupdf
 
 if './' not in sys.path:
     sys.path.append("./")
@@ -27,7 +25,7 @@ IMG_EXT = "jpg"  # or "png"
 JPG_QUALITY = 90 # 95
 
 
-def _get_non_text_rects(md_info, page, page_index, pname_page_name, mctl_lvlm_region_model=None):
+def _get_non_text_rects(md_info:MdInfo, page:pymupdf.Page, page_index:int, pname_page_name:str, mctl_lvlm_region_model:str = None):
     if mctl_lvlm_region_model is None:
         mctl_lvlm_region_model = md_info.get_md_control("mctl_lvlm_region_model", "qwen")
     logging.info(f"cal rects for {page_index} starts...")
@@ -47,7 +45,7 @@ def _get_non_text_rects(md_info, page, page_index, pname_page_name, mctl_lvlm_re
     return rects_non_text
 
 
-def _assign_final_doc_cnt_type(md_info, pdf_document):
+def _assign_final_doc_cnt_type(md_info:MdInfo, pdf_document:fitz.Document):
     from ctn2md.utils.util_ctn_type import CTN_TYPE
     doc_type = md_info.get_doc_type()
     md_info[MIFN.DOC_CTN_TYPE] = CTN_TYPE.get_ctn_type_by_doc_type(doc_type)
@@ -59,7 +57,7 @@ def _assign_final_doc_cnt_type(md_info, pdf_document):
                 md_info[MIFN.DOC_CTN_TYPE] = CTN_TYPE.PPT
         md_info.save()
 
-def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None, mctl_lvlm_region_model=None) -> List[Tuple[str, str, List[str]]]:
+def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes: List[int] = None, mctl_lvlm_region_model:str = None) -> List[Tuple[str, str, List[str]]]:
     """
     Parse PDF to images and save to output_dir.
     """
@@ -151,7 +149,7 @@ def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes=None, mctl_lvlm_region
     pdf_document.close()
     return image_infos
 
-def clean_previous_images(output_dir, job_id):
+def clean_previous_images(output_dir:str, job_id:str):
     if not os.path.isdir(output_dir):
         return
     names = os.listdir(output_dir)

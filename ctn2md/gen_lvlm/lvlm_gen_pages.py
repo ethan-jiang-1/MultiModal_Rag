@@ -20,7 +20,7 @@ from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lvlm.lvlm_base import is_still_in_gen_mode
 
 
-def gen_pages_lvlm(md_info, mdcontrols=None, skip_gen_mds=False, sel_page_indexes=None):
+def gen_pages_lvlm(md_info:MdInfo, mdcontrols=None, skip_gen_mds=False, sel_page_indexes=None):
     pathname_doc = md_info.get_doc_pathname()
     job_id = get_job_id(pathname_doc)
     md_info[MIFN.LVLM_CUR_JOB_ID] = job_id
@@ -51,12 +51,14 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     #doc_pathname = "datasrc/exam/raw_docs/attention_is_all_you_need.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/LongRAG.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/LongRAG.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/papers/DeepSeek_V3.pdf"
+
     #sel_page_indexes = []
     sel_page_indexes = None
 
     #mdcontrols = None
-    mdcontrols = {"mctl_lvlm_region_model": "qwen"}  
+    mdcontrols = {"mctl_lvlm_region_model": "gs0"}  
     skip_gen_mds = True
 
     output_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix='lvlm')

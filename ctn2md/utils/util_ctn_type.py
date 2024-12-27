@@ -9,7 +9,7 @@ class CTN_TYPE:
     UNKNOWN = "UNKNOWN"
 
     @classmethod
-    def get_ctn_type_by_doc_type(cls, doc_type):
+    def get_ctn_type_by_doc_type(cls, doc_type:str) -> str:
         if isinstance(doc_type, str):
             doc_type = doc_type.replace(".", "")
             doc_type = doc_type.lower()
@@ -27,7 +27,7 @@ class CTN_TYPE:
         return cls.UNKNOWN
 
     @classmethod
-    def get_ctn_type_by_doc_pathname(cls, doc_pathname):
+    def get_ctn_type_by_doc_pathname(cls, doc_pathname:str) -> str: 
         ext_name = doc_pathname.split(".")[-1]
         return cls.get_ctn_type_by_doc_type(ext_name)
 

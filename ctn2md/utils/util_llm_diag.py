@@ -2,6 +2,7 @@ import sys
 import logging
 import json
 import os
+from typing import List, Any
 from dotenv import load_dotenv, find_dotenv
 
 if './' not in sys.path:
@@ -15,16 +16,16 @@ LLM_DIAG_SEP = "\n\n~~~~--------~~~~\n\n"
 LLM_DIAG_LED = "~~~~"
 LLM_DIAG_ROL = ":::: "
 
-def _get_root_dir():
+def _get_root_dir() -> str:
     root_dir = os.path.abspath(os.path.dirname(find_dotenv()))  
     return root_dir
 
-def _json_loads_repair(response_json_string):
+def _json_loads_repair(response_json_string: str) -> dict:
     import json_repair
     ret = json_repair.repair_json(response_json_string, return_objects=True)
     return ret
 
-def get_chat_messages(system_prompt, user_prompt):
+def get_chat_messages(system_prompt:str, user_prompt:str) -> list:
     messages = [
         {
             "role": "system",
@@ -37,21 +38,28 @@ def get_chat_messages(system_prompt, user_prompt):
     ]
     return messages
 
-def set_question_num(quetion_num):
+def set_question_num(quetion_num:int):
     os.environ[ENV_QUESION_NUM] = str(quetion_num)
 
-def get_question_num():
+def get_question_num() -> int:
     question_num = int(os.environ.get(ENV_QUESION_NUM, "0"))   
     return question_num 
 
-def get_next_question_num():
+def get_next_question_num() -> int:
     question_num = get_question_num()
     question_num += 1
     set_question_num(question_num)
     return question_num
 
 
-def save_llm_diag_messages(messages, response, model="gpt4-o", top_p=0.8, temperature=0.2, max_tokens=None, prefix=None, is_json_response=True, question_num=None):
+def save_llm_diag_messages(messages:List[dict], response: Any, 
+                           model="gpt4-o", 
+                           top_p=0.8, 
+                           temperature=0.2,
+                           max_tokens=None, 
+                           prefix=None, 
+                           is_json_response=True, 
+                           question_num=None):
     try:
         if question_num is None:
             question_num = get_question_num()
@@ -89,7 +97,14 @@ def save_llm_diag_messages(messages, response, model="gpt4-o", top_p=0.8, temper
     except Exception as ex:
         logging.exception(ex)
 
-def save_llm_diag_prompt(prompt, response, system_prompt=None, model="gpt4-o", top_p=0.8, temperature=0.2, prefix=None, is_json_response=True, question_num=None):
+def save_llm_diag_prompt(prompt:str, response:Any, 
+                         system_prompt=None, 
+                         model="gpt4-o", 
+                         top_p=0.8, 
+                         temperature=0.2, 
+                         prefix=None, 
+                         is_json_response=True,
+                         question_num=None):
     if system_prompt is None:
         system_prompt = ""
     messages = [
@@ -104,7 +119,7 @@ def save_llm_diag_prompt(prompt, response, system_prompt=None, model="gpt4-o", t
     ]
     return save_llm_diag_messages(messages, response, model=model, top_p=top_p, temperature=temperature, prefix=prefix, is_json_response=is_json_response, question_num=question_num)
 
-def load_llm_diag(filename):
+def load_llm_diag(filename:str) -> tuple[List[dict], Any, dict]:
     file_content = ""
     with open(filename, 'r', encoding='utf-8') as f:
         lines = f.readlines()
