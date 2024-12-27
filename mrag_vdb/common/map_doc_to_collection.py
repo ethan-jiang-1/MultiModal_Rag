@@ -6,6 +6,7 @@ import logging
 import json
 import re
 from qdrant_client.http.models import CollectionInfo
+from datetime import datetime
 
 load_dotenv()
 
@@ -15,6 +16,7 @@ if "./" not in sys.path:
 from mrag_vdb.common.doc_meta_info import DocMetaInfo
 from mrag_vdb.common.vdb_base import get_map_doc2col_pathname
 from mrag_vdb.utils.util_logging import setup_logger_handlers
+from mrag_vdb.common.text_embedding import get_embedding_encoder_name, get_embeding_len
 
 def decompose_doc_unique_id(doc_unique_id):
     pattern = r"^(.+?)_([a-f0-9]+)$"
@@ -86,10 +88,14 @@ class MapDocToCol(BaseModel):
     
     @classmethod
     def _construct_doc2col(cls, doc_meta_info:DocMetaInfo, collection_name:str, collection: CollectionInfo,  item_added:int):
-        return {"collection_name": collection_name, 
+        item = {"collection_name": collection_name, 
                 "item_added": item_added, 
-                "collection_config": collection.config.model_dump(),
-                "doc_meta_info": doc_meta_info}
+                "vectors_size": collection.config.params.vectors.size,
+                "embedding_encoder": get_embedding_encoder_name(),
+                "embedding_len": get_embeding_len(),
+                "doc_unique_id": doc_meta_info.doc_unique_id,
+                "date_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+        return item
 
     @classmethod
     def update_collection_name_for_doc(cls, doc_meta_info:DocMetaInfo, collection_name:str, collection: CollectionInfo,  item_added:int):

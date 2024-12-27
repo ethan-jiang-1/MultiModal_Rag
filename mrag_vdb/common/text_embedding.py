@@ -41,7 +41,7 @@ class _EmbeddinigEncoderOpenAIsmall():
         return cls._EMBEDDING_TEXT_MODEL  
 
 class _EmbeddinigEncoderArkSmall():
-    _EMBEDDING_TEXT_MODEL = "doubao-embedding-large"
+    _EMBEDDING_TEXT_MODEL = "doubao-embedding-small"
     _EMBEDDING_MODEL_NAME = "ep-20241220102000-c4f7m"
     _EMBEDDING_VEC_LEN = 2560
     _g_client = None 
