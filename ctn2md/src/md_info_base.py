@@ -123,51 +123,53 @@ class DefaultModelSource:
 
 # Names of the field in _info_ctrl.json (read_only)
 # dictionary used to control inner flow...
-_DEFAULT_MDCONTROL = {
-    "version": _MIB_INFO_VER,
-    "mctl_move_aux_files": True,
-    "mctl_treat_doc_as_ctntype": "auto",
+def _get_defualt_md_contrl():
+    _DEFAULT_MDCONTROL = {
+        "version": _MIB_INFO_VER,
+        "mctl_move_aux_files": True,
+        "mctl_treat_doc_as_ctntype": "auto",
 
-    "mctl_fix_heading_model": DefaultModelSource.get_fix_heading_model(), # gpt/qwen/ark
-    "mctl_summarize_model": DefaultModelSource.get_summarize_model(), # gpt/qwen/ark
+        "mctl_fix_heading_model": DefaultModelSource.get_fix_heading_model(), # gpt/qwen/ark
+        "mctl_summarize_model": DefaultModelSource.get_summarize_model(), # gpt/qwen/ark
 
-    # controls required by llamaparse conversion
-    "mctl_lp_min_img_relevance_score": 0.2,
-    "mctl_lp_img_relevance_model": DefaultModelSource.get_lp_img_relevance_model(), # qwen/gpt/ark
-    "mctl_lp_img_caption_model": DefaultModelSource.get_lp_img_caption_model(), # qwen/gpt/ark
-    "mctl_lp_need_image_ref": True,
-    "mctl_lp_langauge": Language.SIMPLIFIED_CHINESE,
-    "mctl_lp_take_screenshot": False,
-    "mctl_lp_disable_ocr": False,
-    "mctl_lp_premium_pages": [], # The target pages to extract text from documents in perminum mode. 
-                                 # list of page numbers. The first page of the document is page 1
-    "mctl_lp_notouch_pages": [], # the target pages no need to be touched, 
-                                 # list of page numbers,  The first page of the document is page 1
+        # controls required by llamaparse conversion
+        "mctl_lp_min_img_relevance_score": 0.2,
+        "mctl_lp_img_relevance_model": DefaultModelSource.get_lp_img_relevance_model(), # qwen/gpt/ark
+        "mctl_lp_img_caption_model": DefaultModelSource.get_lp_img_caption_model(), # qwen/gpt/ark
+        "mctl_lp_need_image_ref": True,
+        "mctl_lp_langauge": Language.SIMPLIFIED_CHINESE,
+        "mctl_lp_take_screenshot": False,
+        "mctl_lp_disable_ocr": False,
+        "mctl_lp_premium_pages": [], # The target pages to extract text from documents in perminum mode. 
+                                     # list of page numbers. The first page of the document is page 1
+        "mctl_lp_notouch_pages": [], # the target pages no need to be touched, 
+                                     # list of page numbers,  The first page of the document is page 1
 
-    "mctl_lp_img_to_heading": {}, # dictionary: key: embed_img_name/page_img_name (without job_id) to val: PlcId:plc_id
+        "mctl_lp_img_to_heading": {}, # dictionary: key: embed_img_name/page_img_name (without job_id) to val: PlcId:plc_id
 
-    # controls required by lvlm conversion
-    "mctl_lvlm_images_ignore": "", # list of image need to be ignore, seprated by comma
-    "mctl_lvlm_repair_pages": [], # the target pages need to be repaired, 
-                                  # list of page numbers,  The first page of the document is page 1
-    "mctl_lvlm_notouch_pages": [], # the target pages no need to be touched, 
-                                   # list of page numbers,  The first page of the document is page 1
-    
-    "mctl_lvlm_img2md_model": DefaultModelSource.get_lvlm_img2md_model(), # gpt/qwen/ark
-    "mctl_lvlm_region_model": DefaultModelSource.get_lvlm_region_model(), # gpt/qwen/ark/gs1/gs0
+        # controls required by lvlm conversion
+        "mctl_lvlm_images_ignore": "", # list of image need to be ignore, seprated by comma
+        "mctl_lvlm_repair_pages": [], # the target pages need to be repaired, 
+                                      # list of page numbers,  The first page of the document is page 1
+        "mctl_lvlm_notouch_pages": [], # the target pages no need to be touched, 
+                                       # list of page numbers,  The first page of the document is page 1
+        
+        "mctl_lvlm_img2md_model": DefaultModelSource.get_lvlm_img2md_model(), # gpt/qwen/ark
+        "mctl_lvlm_region_model": DefaultModelSource.get_lvlm_region_model(), # gpt/qwen/ark/gs1/gs0
 
-    "mctl_lvlm_paint_page_content_area_ratios":(0.15, 0.15, 0.1, 0.1),
-    "mctl_lvlm_paint_max_area_ratio": 0.7,
-    "mctl_lvlm_paint_max_outside_ratio": 0.1,
-    "mctl_lvlm_paint_min_coverage_ratio": 0.7,
-    "mctl_lvlm_paint_content_area_buffer_ratio": 0.05,
-    "mctl_lvlm_paint_text_distance_ratio": (0.015, 0.015, 0.015, 0.028), 
+        "mctl_lvlm_paint_page_content_area_ratios":(0.15, 0.15, 0.1, 0.1),
+        "mctl_lvlm_paint_max_area_ratio": 0.7,
+        "mctl_lvlm_paint_max_outside_ratio": 0.1,
+        "mctl_lvlm_paint_min_coverage_ratio": 0.7,
+        "mctl_lvlm_paint_content_area_buffer_ratio": 0.05,
+        "mctl_lvlm_paint_text_distance_ratio": (0.015, 0.015, 0.015, 0.028), 
 
-    "mctl_lvlm_table_line_distance_ratio": 0.03,
-    "mctl_lvlm_table_short_line_ratio":0.03,
-    "mctl_lvlm_table_text_distance_ratio": (0.02, 0.02, 0.02, 0.02)
+        "mctl_lvlm_table_line_distance_ratio": 0.03,
+        "mctl_lvlm_table_short_line_ratio":0.03,
+        "mctl_lvlm_table_text_distance_ratio": (0.02, 0.02, 0.02, 0.02)
 
-}
+    }
+    return _DEFAULT_MDCONTROL
 
 class MdInfo:
     def __init__(self, md_info_path_or_out_dir:str):
@@ -331,7 +333,7 @@ class MdInfo:
 
     def _load_md_control(self):
         if not os.path.isfile(self._md_info_control_path):
-            json_str = json.dumps(_DEFAULT_MDCONTROL, indent=4, ensure_ascii=False)
+            json_str = json.dumps(_get_defualt_md_contrl(), indent=4, ensure_ascii=False)
             with open(self._md_info_control_path, 'w+', encoding='utf8') as f:
                 f.write(json_str) 
 
