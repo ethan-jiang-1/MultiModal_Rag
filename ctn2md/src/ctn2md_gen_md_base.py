@@ -2,7 +2,7 @@ from typing import Tuple
 from dotenv import load_dotenv
 import os
 import sys
-#import logging
+import logging
 #import rich
 #import random
 #import re
@@ -54,6 +54,7 @@ class GenMd_Base:
             for fname in fnames_pages:
                 pname = os.path.join(out_dir, fname)
                 if not os.path.isfile(pname):
+                    logging.warning(f"page {pname} does not exist")
                     return False 
         return True
 

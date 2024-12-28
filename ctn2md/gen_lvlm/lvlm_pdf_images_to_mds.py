@@ -16,13 +16,20 @@ from ctn2md.utils_vllm.vllm_img2md_ark import generate_full_mds_from_image_ark
 
 FAILED_GEN_CONTENT_MSG = "**Failed to generate content**:"
 
-def _does_page_need_gen(md_info:MdInfo, page_index:int, pname_page_md:str) -> bool:
+def is_failed_page_by_lvlm(pname_page_md:str) -> bool:
     if not os.path.isfile(pname_page_md):
         return True
 
     with open(pname_page_md, "r", encoding="utf-8") as f:
         content = f.read()
-    if content.startswith(FAILED_GEN_CONTENT_MSG):
+    failed = content.find(FAILED_GEN_CONTENT_MSG) != -1
+    return failed
+
+def _does_page_need_gen(md_info:MdInfo, page_index:int, pname_page_md:str) -> bool:
+    if not os.path.isfile(pname_page_md):
+        return True
+
+    if is_failed_page_by_lvlm(pname_page_md):
         return True
 
     if is_still_in_gen_mode(md_info): 

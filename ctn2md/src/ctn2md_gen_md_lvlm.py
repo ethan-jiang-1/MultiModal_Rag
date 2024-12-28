@@ -48,7 +48,22 @@ class GenMd_Lvlm(GenMd_Base):
             gen_needed = True
         if not cls.if_all_md_pages_exist(md_info):
             gen_needed = True
+        if cls.if_any_md_page_has_error(md_info):
+            gen_needed = True    
         return md_info, gen_needed
+    
+    @classmethod
+    def if_any_md_page_has_error(cls, md_info:MdInfo) -> bool:
+        from ctn2md.gen_lvlm.lvlm_pdf_images_to_mds import is_failed_page_by_lvlm 
+        fnames_pages = md_info.get_fnames_pages()
+        if isinstance(fnames_pages, list):
+            out_dir = md_info.get_out_dir()
+            for fname in fnames_pages:
+                pname = os.path.join(out_dir, fname)
+                if is_failed_page_by_lvlm(pname):
+                    logging.warning(f"page {pname} has error")
+                    return True
+        return False
 
     @classmethod
     def generate_markdown(cls,
