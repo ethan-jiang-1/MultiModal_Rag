@@ -28,6 +28,8 @@ _MIB_FNAME_FINAL_INFO = "_final_info.json"
 _MIB_DEFAULT_OUT_ROOT = "_output"
 _MIB_CTN2MD_LEAD = "ctn2md"
 
+MODEL_SOURCE = "MODEL_SOURCE"
+
 class FHL_QUALITY_TYPE:
     HIGH = "high"
     MEDIUM = "medium"
@@ -91,6 +93,34 @@ class MIFN(PUBLIC_MIFN):  # Markdown Field Name
     LVLM_CUR_JOB_ID = "lvlm_cur_job_id"
     LVLM_IMAGE_INFOS = "lvlm_image_infos"
 
+class DefaultModelSource:
+    @classmethod
+    def get_fix_heading_model(cls):
+        fix_heading_model = os.getenv(MODEL_SOURCE, "gpt")
+        return fix_heading_model
+    
+    @classmethod
+    def get_summarize_model(cls):
+        summarize_model = os.getenv(MODEL_SOURCE, "gpt")
+        return summarize_model
+    
+    @classmethod
+    def get_lvlm_img2md_model(cls):
+        img2md_model = os.getenv(MODEL_SOURCE, "gpt")
+        return img2md_model
+    
+    @classmethod
+    def get_lvlm_region_model(cls):
+        return "gs0" # gpt/qwen/ark/gs1/gs0
+    
+    @classmethod
+    def get_lp_img_relevance_model(cls):
+        return os.getenv(MODEL_SOURCE, "gpt")
+    
+    @classmethod
+    def get_lp_img_caption_model(cls):
+        return os.getenv(MODEL_SOURCE, "gpt")
+
 # Names of the field in _info_ctrl.json (read_only)
 # dictionary used to control inner flow...
 _DEFAULT_MDCONTROL = {
@@ -98,13 +128,13 @@ _DEFAULT_MDCONTROL = {
     "mctl_move_aux_files": True,
     "mctl_treat_doc_as_ctntype": "auto",
 
-    "mctl_fix_heading_model": "ark", # gpt/qwen/ark
-    "mctl_summarize_model": "ark", # gpt/qwen/ark
+    "mctl_fix_heading_model": DefaultModelSource.get_fix_heading_model(), # gpt/qwen/ark
+    "mctl_summarize_model": DefaultModelSource.get_summarize_model(), # gpt/qwen/ark
 
     # controls required by llamaparse conversion
     "mctl_lp_min_img_relevance_score": 0.2,
-    "mctl_lp_img_relevance_model": "ark", # qwen/gpt/ark
-    "mctl_lp_img_caption_model": "ark", # qwen/gpt/ark
+    "mctl_lp_img_relevance_model": DefaultModelSource.get_lp_img_relevance_model(), # qwen/gpt/ark
+    "mctl_lp_img_caption_model": DefaultModelSource.get_lp_img_caption_model(), # qwen/gpt/ark
     "mctl_lp_need_image_ref": True,
     "mctl_lp_langauge": Language.SIMPLIFIED_CHINESE,
     "mctl_lp_take_screenshot": False,
@@ -123,8 +153,8 @@ _DEFAULT_MDCONTROL = {
     "mctl_lvlm_notouch_pages": [], # the target pages no need to be touched, 
                                    # list of page numbers,  The first page of the document is page 1
     
-    "mctl_lvlm_img2md_model": "ark", # gpt/qwen/ark
-    "mctl_lvlm_region_model": "gs0",  # gpt/qwen/ark/gs1/gs0
+    "mctl_lvlm_img2md_model": DefaultModelSource.get_lvlm_img2md_model(), # gpt/qwen/ark
+    "mctl_lvlm_region_model": DefaultModelSource.get_lvlm_region_model(), # gpt/qwen/ark/gs1/gs0
 
     "mctl_lvlm_paint_page_content_area_ratios":(0.15, 0.15, 0.1, 0.1),
     "mctl_lvlm_paint_max_area_ratio": 0.7,

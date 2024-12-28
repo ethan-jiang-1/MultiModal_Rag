@@ -15,7 +15,7 @@ if __name__ == "__main__":
     os.chdir(_root_dir)
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.src.md_info_base import MdInfo, MODEL_SOURCE
 from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_llm
 from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_heirarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_llm
@@ -121,8 +121,8 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/kmp/3_20240131104523599_rearranged.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/kmp/tianyang_1_20.pdf"
 
+    os.environ["MODEL_SOURCE"] = "qwen"
     mdcontrols = None
-    #mdcontrols = {"mctl_lvlm_region_model": "qwen"}  
 
     out_dir = None
     enforced_gen = False 
