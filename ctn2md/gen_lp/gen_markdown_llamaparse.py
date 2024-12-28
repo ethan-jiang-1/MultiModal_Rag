@@ -18,7 +18,7 @@ from ctn2md.gen_lp.lp_gen_normal_pages import gen_normal_pages
 from ctn2md.gen_lp.lp_gen_premium_pages import gen_premium_pages
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 
-def _construct_s0_md_from_pages(md_info:MdInfo):
+def _construct_s0_md_from_md_pages(md_info:MdInfo):
     out_dir = md_info.get_out_dir()
     aux_dir = md_info.get_aux_dir()
     fnames_pages = md_info[MIFN.FNAMES_MD_PAGES]
@@ -78,7 +78,7 @@ def generate_markdown_llamaparse(md_info:MdInfo, need_normal_step:int = True, ne
         if (mctl_lp_premium_pages is not None) and (len(mctl_lp_premium_pages) != 0):
             gen_premium_pages(md_info)
 
-    pathname_step0 = _construct_s0_md_from_pages(md_info)
+    pathname_step0 = _construct_s0_md_from_md_pages(md_info)
     md_info.add_step_into_md_info_mdflow(pathname_step0, actor="generate_markdown_llamaparse")
     md_info.save()
 

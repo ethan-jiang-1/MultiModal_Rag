@@ -13,6 +13,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.src.md_info_base import MdInfo
+from ctn2md.src.md_page_spe import SpecialPage
 
 def n2u_replace_fnames(md_info:MdInfo, mifn_fnames:str, unique_job_id:str, new_job_id:str) -> int:
     out_dir = md_info.get_out_dir()
@@ -26,9 +27,16 @@ def n2u_replace_fnames(md_info:MdInfo, mifn_fnames:str, unique_job_id:str, new_j
             dst_fname = os.path.join(out_dir, unique_fname)
             
             if os.path.isfile(src_fname):
+                if src_fname.endswith(".md"):
+                    if os.path.isfile(dst_fname):
+                        if SpecialPage.does_page_have_touched_mark(dst_fname):
+                            os.unlink(src_fname)
+                            continue
+        
                 if os.path.isfile(dst_fname):
                     os.unlink(dst_fname)
-                shutil.move(src_fname, dst_fname)
+                else:
+                    shutil.move(src_fname, dst_fname)
                 md_info_mifn_fnames[ndx] = unique_fname
             else:
                 if not os.path.isfile(dst_fname):

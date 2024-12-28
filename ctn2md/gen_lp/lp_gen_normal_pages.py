@@ -42,7 +42,7 @@ def _get_llamaparse_normal(md_info) -> LlamaParse:
     return parser
 
 
-def _dump_normal_md_page_from_lp_json_result(json_result: List[dict], md_info:MdInfo):
+def _dump_normal_md_pages(json_result: List[dict], md_info:MdInfo):
     out_dir = md_info.get_out_dir()
     os.makedirs(out_dir, exist_ok=True)
 
@@ -148,7 +148,7 @@ def gen_normal_pages(md_info:MdInfo):
     remove_misc_files_previous_round(md_info)
     _dump_json_result(json_result, md_info)
 
-    _dump_normal_md_page_from_lp_json_result(json_result, md_info)
+    _dump_normal_md_pages(json_result, md_info)
 
     md_info.save()
     _n2u_restore_unique_name_normal_full(md_info)

@@ -54,7 +54,7 @@ def _get_llamaparse_premium(md_info:MdInfo) -> LlamaParse:
     )
     return parser
 
-def _dump_preminum_md_page_content_from_lp_json_result(json_result:List[dict], md_info:MdInfo) -> str:
+def _dump_preminum_md_pages(json_result:List[dict], md_info:MdInfo) -> str:
     out_dir = md_info.get_out_dir()
     os.makedirs(out_dir, exist_ok=True)
 
@@ -150,7 +150,7 @@ def gen_premium_pages(md_info:MdInfo):
 
     _dump_json_result_premium(json_result, md_info)
 
-    cur_job_id = _dump_preminum_md_page_content_from_lp_json_result(json_result, md_info)
+    cur_job_id = _dump_preminum_md_pages(json_result, md_info)
    
     n2u_restore_unique_name_premium(md_info, cur_job_id)
     md_info.save()
