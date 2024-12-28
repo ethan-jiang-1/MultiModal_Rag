@@ -12,9 +12,9 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-#from ctn2md.src.md_info_base import MIFN
+from ctn2md.src.md_info_base import MdInfo
 
-def n2u_replace_fnames(md_info, mifn_fnames, unique_job_id, new_job_id):
+def n2u_replace_fnames(md_info:MdInfo, mifn_fnames:str, unique_job_id:str, new_job_id:str) -> int:
     out_dir = md_info.get_out_dir()
     changed = 0
     md_info_mifn_fnames = md_info[mifn_fnames]
@@ -38,7 +38,7 @@ def n2u_replace_fnames(md_info, mifn_fnames, unique_job_id, new_job_id):
             changed += 1
     return changed
 
-def n2u_update_md_content(md_info, pathname_md, unique_job_id, new_job_id):
+def n2u_update_md_content(md_info:MdInfo, pathname_md:str, unique_job_id:str, new_job_id:str):
     with open(pathname_md, "r") as f: 
         md_text = f.read()
 

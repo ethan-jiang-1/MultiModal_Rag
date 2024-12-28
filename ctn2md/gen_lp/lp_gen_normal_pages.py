@@ -1,12 +1,12 @@
+from typing import List
 from dotenv import load_dotenv
 import os
 import sys
 import logging
 import rich
-#import random
-#import re
 import json
-#import shutil
+from llama_parse import LlamaParse
+from llama_parse.utils import Language
 
 load_dotenv()
 
@@ -19,9 +19,7 @@ from ctn2md.gen_lp.lp_unique_job import n2u_replace_fnames, n2u_update_md_conten
 from ctn2md.gen_lp.lp_page2markdown import Page2Markdown
 from ctn2md.gen_lp.lp_base import prepare_pages_images, remove_misc_files_previous_round
 
-def _get_llamaparse_normal(md_info):
-    from llama_parse import LlamaParse
-    from llama_parse.utils import Language
+def _get_llamaparse_normal(md_info) -> LlamaParse:
 
     language = md_info.get_md_control("mctl_lp_langauge", Language.SIMPLIFIED_CHINESE)
     #TODO: ethan_take_screenshot can be realiy replace by pyMuPDF which has much faster dumping performance
@@ -44,7 +42,7 @@ def _get_llamaparse_normal(md_info):
     return parser
 
 
-def _dump_normal_md_page_from_lp_json_result(json_result, md_info):
+def _dump_normal_md_page_from_lp_json_result(json_result: List[dict], md_info:MdInfo):
     out_dir = md_info.get_out_dir()
     os.makedirs(out_dir, exist_ok=True)
 
@@ -69,7 +67,8 @@ def _dump_normal_md_page_from_lp_json_result(json_result, md_info):
         for page_ndx, page in enumerate(pages):
             p2m = Page2Markdown(job_id, page, total_pages, md_info, pages_images)
             p2m.analyse()
-            fname_page = p2m.save_page_markdown()
+            if p2m.need_generate():
+                fname_page = p2m.save_page_markdown()
             fnames_pages.append(fname_page)
         md_info[MIFN.LP_I2H_NORMAL] = pages_images
     
@@ -84,7 +83,7 @@ def _dump_normal_md_page_from_lp_json_result(json_result, md_info):
         md_info[MIFN.LP_JOB_ID_HISTORY].append(cur_job_id)
     md_info.save()
 
-def _dump_images(parser, json_result, md_info):
+def _dump_images(parser:LlamaParse, json_result:List[dict], md_info:MdInfo):
     out_dir = md_info.get_out_dir()
     images = parser.get_images(json_result, out_dir)
     fnames_imgs = [os.path.basename(item["path"]) for item in images if item["name"].startswith("img_")]
@@ -92,14 +91,14 @@ def _dump_images(parser, json_result, md_info):
     md_info[MIFN.FNAMES_IMGS] = fnames_imgs
     md_info[MIFN.FNAMES_SNPS] = fnames_snps
 
-def _dump_tables(parser, json_result, md_info):
+def _dump_tables(parser:LlamaParse, json_result:List[dict], md_info:MdInfo):
     out_dir = md_info.get_out_dir()
     tables = parser.get_xlsx(json_result, out_dir)
     fnames_tbls = [os.path.basename(item["path"]) for item in tables]
     md_info[MIFN.FNAMES_MD_TBLS] = fnames_tbls   
 
 
-def _n2u_restore_unique_name_normal_full(md_info):
+def _n2u_restore_unique_name_normal_full(md_info:MdInfo):
     new_job_id = md_info.get(MIFN.LP_CUR_JOB_ID)
     unique_job_id = md_info.get_unique_job_id()
     if unique_job_id == new_job_id:
@@ -115,7 +114,7 @@ def _n2u_restore_unique_name_normal_full(md_info):
         pathname_page = os.path.join(out_dir, fname_md_page)
         n2u_update_md_content(md_info, pathname_page, unique_job_id, new_job_id)
 
-def _dump_json_result(json_result, md_info):
+def _dump_json_result(json_result:List[dict], md_info:MdInfo):
     aux_folder = md_info.get_aux_dir()
     fname_json_result = os.path.join(aux_folder, "json_result_normal.json")
 
@@ -123,7 +122,7 @@ def _dump_json_result(json_result, md_info):
         json.dump(json_result, f, ensure_ascii=False, indent=4)
     md_info[MIFN.LP_FNAME_JSON_RESULT_NORMAL] = fname_json_result
 
-def gen_normal_pages(md_info):
+def gen_normal_pages(md_info:MdInfo):
     parser = _get_llamaparse_normal(md_info)
 
     fname_json_result = md_info.get(MIFN.LP_FNAME_JSON_RESULT_NORMAL, None)

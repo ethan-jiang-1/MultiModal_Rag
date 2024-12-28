@@ -1,4 +1,5 @@
 
+from typing import List, Tuple
 from dotenv import load_dotenv
 import os
 import sys
@@ -21,7 +22,7 @@ from ctn2md.utils_llm.llm_gen_vllm_instruction_ark import gen_vllm_instruction_b
 from ctn2md.utils_vllm.vllm_img_description_qwen import generate_image_description_by_qwen
 from ctn2md.utils_vllm.vllm_img_description_gpt import generate_image_description_by_gpt
 from ctn2md.utils_vllm.vllm_img_description_ark import generate_image_description_by_ark
-from ctn2md.src.md_info_base import MIFN
+from ctn2md.src.md_info_base import MIFN, MdInfo
 
 g_question_num = 6000
 
@@ -38,7 +39,7 @@ def _del_attr(image_copy, att_name):
     if att is not None:
         del image_copy[att_name]
 
-def prepare_pages_images(pages, md_info):
+def prepare_pages_images(pages: List[dict], md_info:MdInfo) -> List[dict]:
     pages_images = []
     job_id = md_info.get_unique_job_id()
     for page in pages:
@@ -66,7 +67,7 @@ def prepare_pages_images(pages, md_info):
     return pages_images
 
 
-def get_page_images(pages_images, page_no, total_pages):
+def get_page_images(pages_images: List[dict], page_no:int, total_pages:int) -> List[dict]:
     images =[]
     for image in pages_images:
         image_page_no = image["page_no"]
@@ -75,7 +76,7 @@ def get_page_images(pages_images, page_no, total_pages):
                 images.append(image)
     return images
 
-def remove_misc_files_previous_round(md_info):
+def remove_misc_files_previous_round(md_info:MdInfo):
     """
     清理指定目录及其子目录下，以特定规则命名的文件：
     1. 以类似 UUID 前缀命名的文件。
@@ -120,7 +121,7 @@ def remove_misc_files_previous_round(md_info):
                 except Exception as e:
                     logging.exception(f"删除失败: {src_path}, 错误: {e}")
 
-def _get_page_instruction(md_info, doc_title, content_around):
+def _get_page_instruction(md_info:MdInfo, doc_title:str, content_around:str) -> str:
     global g_question_num
     mctl_lp_img_relevance_model = md_info.get_md_control("mctl_lp_img_relevance_model", "qwen")
     if mctl_lp_img_relevance_model == "qwen":
@@ -134,7 +135,7 @@ def _get_page_instruction(md_info, doc_title, content_around):
     g_question_num += 1
     return instruction
 
-def _gen_figure_info(md_info, doc_title, content_around, image_path):
+def _gen_figure_info(md_info:MdInfo, doc_title:str, content_around:str, image_path:str) -> dict:
     instruction = _get_page_instruction(md_info, doc_title, content_around)
     mctl_lp_img_caption_model = md_info.get_md_control("mctl_lp_img_caption_model", "qwen")
     if mctl_lp_img_caption_model == "qwen":
@@ -151,7 +152,7 @@ def _gen_figure_info(md_info, doc_title, content_around, image_path):
     rich.print(resp_json)
     return resp_json
 
-def _analyse_image_content_core(md_info, image_path, content_around=""):
+def _analyse_image_content_core(md_info:MdInfo, image_path:str, content_around:str = ""):
     """
     模拟多模态处理函数，分析图像的内容是否有意义。
     
@@ -182,7 +183,7 @@ def _analyse_image_content_core(md_info, image_path, content_around=""):
 
     return relevance_score, figure_name, picture_discription
 
-def analyse_image_content(md_info, image_path, content_around=""):
+def analyse_image_content(md_info:MdInfo, image_path:str, content_around:str = "") -> Tuple[float, str, str]:   
     pathname_img2desp = os.path.join(md_info.get_aux_dir(), "json_image_desp.json")
     json_cache = {}
     if os.path.isfile(pathname_img2desp):

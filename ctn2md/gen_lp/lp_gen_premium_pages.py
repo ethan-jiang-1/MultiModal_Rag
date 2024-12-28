@@ -1,10 +1,12 @@
+from typing import List
 from dotenv import load_dotenv
 import os
 import sys
 import logging
 import rich
-#import random
 import json
+from llama_parse import LlamaParse
+from llama_parse.utils import Language
 
 load_dotenv()
 
@@ -21,10 +23,7 @@ LP_PARSE_INSTRUCT = """The output needs to be formatted as Markdown, with requir
 The output should be in the original language of the article (Chinese or English). 
 If tables are detected, they should be distinctly identified within the Markdown flow."""
 
-def _get_llamaparse_premium(md_info):
-    from llama_parse import LlamaParse
-    from llama_parse.utils import Language
-
+def _get_llamaparse_premium(md_info:MdInfo) -> LlamaParse:
     language = md_info.get_md_control("mctl_lp_langauge", Language.SIMPLIFIED_CHINESE)
     take_screenshot = False  # md_info.get_md_control("mctl_lp_take_screenshot", False)
     disable_ocr = False  # md_info.get_md_control("mctl_lp_disable_ocr", False)
@@ -55,7 +54,7 @@ def _get_llamaparse_premium(md_info):
     )
     return parser
 
-def _dump_preminum_md_page_content_from_lp_json_result(json_result, md_info):
+def _dump_preminum_md_page_content_from_lp_json_result(json_result:List[dict], md_info:MdInfo) -> str:
     out_dir = md_info.get_out_dir()
     os.makedirs(out_dir, exist_ok=True)
 
@@ -86,7 +85,7 @@ def _dump_preminum_md_page_content_from_lp_json_result(json_result, md_info):
     cur_job_id = job_ids_set.pop()
     return cur_job_id
 
-def _dump_images_premium(parser, json_result, md_info):
+def _dump_images_premium(parser:LlamaParse, json_result:List[dict], md_info:MdInfo):
     out_dir = md_info.get_out_dir()
     images = parser.get_images(json_result, out_dir)
     fnames_imgs = [os.path.basename(item["path"]) for item in images if item["name"].startswith("img_")]
@@ -94,13 +93,13 @@ def _dump_images_premium(parser, json_result, md_info):
     md_info[MIFN.LP_FFNAMES_P_IMGS] = fnames_imgs
     md_info[MIFN.LP_FNAMES_P_SNPS] = fnames_snps
 
-def _dump_tables_premium(parser, json_result, md_info):
+def _dump_tables_premium(parser:LlamaParse, json_result:List[dict], md_info:MdInfo):
     out_dir = md_info.get_out_dir()
     tables = parser.get_xlsx(json_result, out_dir)
     fnames_tbls = [os.path.basename(item["path"]) for item in tables]
     md_info[MIFN.LP_FNAMES_P_TBLS] = fnames_tbls 
 
-def _dump_json_result_premium(json_result, md_info):
+def _dump_json_result_premium(json_result:List[dict], md_info:MdInfo):
     aux_folder = md_info.get_aux_dir()
     fname_json_result = os.path.join(aux_folder, "json_result_premium.json")
 
@@ -108,7 +107,7 @@ def _dump_json_result_premium(json_result, md_info):
         json.dump(json_result, f, ensure_ascii=False, indent=4)
     md_info[MIFN.LP_FNAME_JSON_RESULT_PREMIUM] = fname_json_result
 
-def n2u_restore_unique_name_premium(md_info, new_job_id):
+def n2u_restore_unique_name_premium(md_info:MdInfo, new_job_id:str):
     unique_job_id = md_info.get_unique_job_id()
     if unique_job_id == new_job_id:
         return 
@@ -129,7 +128,7 @@ def n2u_restore_unique_name_premium(md_info, new_job_id):
             if fname_page in fname_p_page:
                 md_info[ndx] = fname_p_page
 
-def gen_premium_pages(md_info):
+def gen_premium_pages(md_info:MdInfo):
     parser = _get_llamaparse_premium(md_info)
 
     fname_json_result = md_info.get(MIFN.LP_FNAME_JSON_RESULT_PREMIUM, None)

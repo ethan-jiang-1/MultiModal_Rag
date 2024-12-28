@@ -1,3 +1,4 @@
+from typing import List
 from dotenv import load_dotenv
 import os
 import sys
@@ -143,7 +144,7 @@ def _find_closest_heading(image, headings, page, y_threshold_ratio=None, x_toler
     return closest_heading
 
 class Page2Markdown():
-    def __init__(self, job_id, page, total_pages, md_info, pages_images):
+    def __init__(self, job_id:str, page:dict, total_pages:int, md_info:MdInfo, pages_images:List[dict]):
         self.job_id = job_id
         self.page = page 
         self.total_pages = total_pages
@@ -177,14 +178,18 @@ class Page2Markdown():
         self.analysed = False
         self.analyse()
 
-    def analyse(self):
+    def analyse(self)->bool:
         if self.analysed:
-            return
+            return self.analyse
         self.md_page_plc_init = inject_plc_comment_to_page(self.md_page, self.page_no, self.total_pages, self.md_info)
 
         self.analyse_ocr()
         self.analyse_images()
         self.analysed = True
+        return self.analyse
+
+    def need_generate(self)->bool:
+        return True
 
     def analyse_ocr(self):
         self.ocr_all_text = " "
@@ -214,7 +219,7 @@ class Page2Markdown():
         self.md_info_cur_page["ocr_len_orc"] = len(self.ocr_all_text)
         self.md_info_cur_page["ocr_len_full"] = len(all_page_text)
 
-    def is_ocr_page(self):
+    def is_ocr_page(self) -> bool:
         if self.ocr_text_ratio > 0.90:
             return True
         return False
@@ -255,7 +260,7 @@ class Page2Markdown():
                 image["pi_status"] = f"{PAGE_IMG_STATUS.REMOVED}: {reason}"
                 self.images_unselected.append(image)
 
-    def _find_heading_for_plc_id(self, plc_id):
+    def _find_heading_for_plc_id(self, plc_id:str):
         if plc_id.find(":") != -1:
             plc_id = plc_id.split(":")[1]
         if self.md_page_plc_init_lines is None:

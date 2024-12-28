@@ -18,7 +18,7 @@ from ctn2md.gen_lp.lp_gen_normal_pages import gen_normal_pages
 from ctn2md.gen_lp.lp_gen_premium_pages import gen_premium_pages
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 
-def _construct_s0_md_from_pages(md_info):
+def _construct_s0_md_from_pages(md_info:MdInfo):
     out_dir = md_info.get_out_dir()
     aux_dir = md_info.get_aux_dir()
     fnames_pages = md_info[MIFN.FNAMES_MD_PAGES]
@@ -44,7 +44,7 @@ def _construct_s0_md_from_pages(md_info):
         f.write(full_md_text)
     return pathname_step0
 
-def _assign_final_doc_cnt_type(md_info, json_result):
+def _assign_final_doc_cnt_type(md_info:MdInfo, json_result:list[dict]):
     doc_type = md_info.get_doc_type()
     md_info[MIFN.DOC_CTN_TYPE] = CTN_TYPE.get_ctn_type_by_doc_type(doc_type)
     if json_result is not None and len(json_result) > 0:
@@ -61,7 +61,7 @@ def _assign_final_doc_cnt_type(md_info, json_result):
                                 md_info[MIFN.DOC_CTN_TYPE] = CTN_TYPE.PPT
         md_info.save()
 
-def generate_markdown_llamaparse(md_info, need_normal_step=True, need_preminum_step=True):
+def generate_markdown_llamaparse(md_info:MdInfo, need_normal_step:int = True, need_preminum_step:int = True) -> str:
     doc_pathname = md_info.get_doc_pathname()
     if (doc_pathname is None) or (not os.path.isfile(doc_pathname)):
         raise ValueError(f"doc_pathname is not valid {doc_pathname}")

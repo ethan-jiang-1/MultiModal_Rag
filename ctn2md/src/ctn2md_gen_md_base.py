@@ -57,6 +57,48 @@ class GenMd_Base:
                     logging.warning(f"page {pname} does not exist")
                     return False 
         return True
+    
+    @classmethod
+    def is_final_md_info_outdated(cls, md_info: MdInfo) -> bool:
+        # 获取最终 JSON 文件的路径
+        pname_final_info = md_info.get_fname_final_json()
+        
+        # 检查 pname_final_info 文件是否存在
+        if not os.path.isfile(pname_final_info):
+            logging.error(f"Final JSON file '{pname_final_info}' does not exist.")
+            return False
+        
+        # 获取 pname_final_info 的修改时间
+        final_info_mtime = os.path.getmtime(pname_final_info)
+
+        # 获取页面文件名列表
+        fnames_pages = md_info.get_fnames_pages()
+        if not isinstance(fnames_pages, list):
+            logging.error("fnames_pages is not a valid list.")
+            return False
+
+        # 获取输出目录
+        out_dir = md_info.get_out_dir()
+
+        # 遍历页面文件并检查是否有文件修改时间更新
+        for fname in fnames_pages:
+            pname = os.path.join(out_dir, fname)
+
+            # 检查文件是否存在
+            if not os.path.isfile(pname):
+                logging.warning(f"Page file '{pname}' does not exist.")
+                return False
+            
+            # 获取文件的修改时间
+            page_mtime = os.path.getmtime(pname)
+            
+            # 如果页面文件的修改时间比最终 JSON 文件晚，则说明有改动
+            if page_mtime > final_info_mtime:
+                logging.info(f"Page file '{pname}' is newer than final JSON file '{pname_final_info}'.")
+                return True
+
+        # 如果没有任何页面文件比最终 JSON 文件更新，则返回 False
+        return False
 
     @classmethod
     def migrate_md_info(cls, md_info:MdInfo):
