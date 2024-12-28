@@ -34,11 +34,6 @@ def _does_page_need_gen(md_info:MdInfo, page_index:int, pname_page_md:str) -> bo
 
     if is_still_in_gen_mode(md_info): 
         return False
-    else:
-        if is_in_repair_mode(md_info):
-            mctl_lvlm_repair_pages = md_info.get_md_control("mctl_lvlm_repair_pages",[])
-            if page_index in mctl_lvlm_repair_pages:
-                return True
 
     return False
 

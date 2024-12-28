@@ -48,13 +48,6 @@ def get_job_id(unique_str:str) -> str:
     from ctn2md.utils.util_file import get_crc32_id
     return get_crc32_id(unique_str)
 
-
-def is_in_repair_mode(md_info:MdInfo) -> bool:
-    mctl_lvlm_repair_pages = md_info.get_md_control("mctl_lvlm_repair_pages",[])  
-    if len(mctl_lvlm_repair_pages) > 0:
-        return True
-    return False
-
 def is_still_in_gen_mode(md_info:MdInfo) -> bool:
     fname_final_sum = md_info.get(PUBLIC_MIFN.FNAME_FINAL_SUM, None)
     if fname_final_sum is None:

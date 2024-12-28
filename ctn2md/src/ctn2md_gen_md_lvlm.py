@@ -43,9 +43,6 @@ class GenMd_Lvlm(GenMd_Base):
     @classmethod
     def does_gen_needed(cls, doc_pathname:str, out_dir:str, enforced_gen:bool) -> Tuple[MdInfo, bool]:
         md_info, gen_needed = GenMd_Base.does_gen_needed(doc_pathname, out_dir, enforced_gen)
-        mctl_lvlm_repair_pages = md_info.get_md_control("mctl_lvlm_repair_pages", [])
-        if len(mctl_lvlm_repair_pages) != 0:
-            gen_needed = True
         if not cls.if_all_md_pages_exist(md_info):
             gen_needed = True
         if cls.if_any_md_page_has_error(md_info):

@@ -20,7 +20,7 @@ from llama_parse.utils import Language
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.utils.util_file import get_crc32_id
 
-_MIB_INFO_VER = "0.8.3"
+_MIB_INFO_VER = "0.9.0"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
@@ -150,8 +150,7 @@ def _get_defualt_md_contrl():
 
         # controls required by lvlm conversion
         "mctl_lvlm_images_ignore": "", # list of image need to be ignore, seprated by comma
-        "mctl_lvlm_repair_pages": [], # the target pages need to be repaired, 
-                                      # list of page numbers,  The first page of the document is page 1
+
         "mctl_lvlm_notouch_pages": [], # the target pages no need to be touched, 
                                        # list of page numbers,  The first page of the document is page 1
         
@@ -312,10 +311,22 @@ class MdInfo:
         with open(self._md_info_path, 'w+', encoding='utf8') as f:
             f.write(json_str) 
         return self._md_info_path
+    
+    def _is_able_to_migrate(self,  version_in_md_info:str):
+        current_version = _MIB_INFO_VER # major.minor.build_no
+        cmajor, cminor, cbn = current_version.split(".")
+        vmajor, vminor, vbn = version_in_md_info.split(".")
+        if cmajor != vmajor:
+            return False 
+        if cminor != vminor:
+            return False 
+        return True
 
     def _migrate(self):
         if os.path.isfile(self._md_info_path):
             self._info = self.load()
+            if not self._is_able_to_migrate(self._info[MIFN.VERSION]):
+                raise ValueError(f"Version is not compatiable, Please delete the outputfolder {self.get_out_dir()} and retry.")
             self._info[MIFN.VERSION] = _MIB_INFO_VER
         else:
             self._info = {MIFN.VERSION: _MIB_INFO_VER}
