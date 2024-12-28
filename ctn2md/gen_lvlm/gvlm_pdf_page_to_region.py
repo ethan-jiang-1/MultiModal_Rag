@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+from typing import List
 import rich
 import fitz  
 
@@ -38,7 +39,7 @@ from ctn2md.utils_vllm_exp.vllm_img2region_qwen import generate_regions_from_ima
 - `x` 值从左到右增加，`y` 值从下到上增加。
 """
 
-def vllm_parse_non_text_rects_in_page_by_gpt(md_info, page, page_index, pname_page_name):
+def vllm_parse_non_text_rects_in_page_by_gpt(md_info:MdInfo, page:fitz.Page, page_index:int, pname_page_name:str):
     """
     Parse non-text rectangular regions in a PDF page using GPT and return their bounds.
 
@@ -92,7 +93,8 @@ def vllm_parse_non_text_rects_in_page_by_gpt(md_info, page, page_index, pname_pa
         return []
     """
 
-def vllm_parse_non_text_rects_in_page_by_qwen(md_info, page, page_index, pname_page_name):
+from typing import Tuple
+def vllm_parse_non_text_rects_in_page_by_qwen(md_info:MdInfo, page:fitz.Page, page_index:int, pname_page_name:str) -> List[Tuple[float, float, float, float]]:
     """
     Parse non-text rectangular regions in a PDF page using GPT and return their bounds.
 
@@ -179,7 +181,7 @@ def vllm_parse_non_text_rects_in_page_by_qwen(md_info, page, page_index, pname_p
         logging.exception(f"Error parsing non-text rectangles for page {page_index}: {e}")
         return []
     
-def vllm_parse_non_text_rects_in_page_by_ark(md_info, page, page_index, pname_page_name):
+def vllm_parse_non_text_rects_in_page_by_ark(md_info:MdInfo, page:fitz.Page, page_index:int, pname_page_name:str) -> List[Tuple[float, float, float, float]]:
     """
     Parse non-text rectangular regions in a PDF page using GPT and return their bounds.
 

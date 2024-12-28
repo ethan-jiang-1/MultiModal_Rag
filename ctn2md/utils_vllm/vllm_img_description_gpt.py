@@ -13,8 +13,11 @@ from ctn2md.utils_llm.llm_base import get_gpt_messages_multimodal, chat_gpt_plai
 from ctn2md.utils.util_file import get_root_dir
 from ctn2md.utils_vllm.vllm_img_description_gpt_prompt import TEXT_IMG_DESCRIPTION
 
-def generate_image_description_by_gpt(image_path, instruction=None, model='gpt-4o-mini', retries=5, backoff_in_seconds=1):
-
+def generate_image_description_by_gpt(image_path:str, 
+                                      instruction:str = None, 
+                                      model:str = "gpt-4o", 
+                                      retries:int = 5, 
+                                      backoff_in_seconds:int = 1) -> str:
     if instruction is None:
         instruction = TEXT_IMG_DESCRIPTION
 

@@ -1,3 +1,4 @@
+from typing import List, Tuple
 from dotenv import load_dotenv
 import os
 import sys
@@ -104,7 +105,7 @@ class HeadingStack:
         }
 
 
-def _filter_headings_for_hierarchy_comments(md_text, md_info):
+def _filter_headings_for_hierarchy_comments(md_text:str, md_info: MdInfo) -> str:
     """
     在 Markdown 文本的每个标题前插入基于层级的描述注释，
     同时生成标题的章节编号，确保一级标题独立编号，子章节正确继承父级编号。
@@ -160,7 +161,7 @@ def _filter_headings_for_hierarchy_comments(md_text, md_info):
     # 返回处理后的 Markdown 文本
     return "\n".join(processed_lines)
 
-def _clear_section_files(output_dir):
+def _clear_section_files(output_dir: str):
     if not os.path.isdir(output_dir):
         return 
 
@@ -179,7 +180,7 @@ def _clear_section_files(output_dir):
                 logging.exception(f"Failed to delete {file_path}: {e}")
         
 
-def _split_sections_to_files_with_desc_and_sequence(markdown_text, md_info):
+def _split_sections_to_files_with_desc_and_sequence(markdown_text:str, md_info:MdInfo) -> List[str]:
     """
     将带有 `<!-- [ordered_name] ... [ordered_name] [desc] ... [desc] -->` 标记的 Markdown 文本
     切割为多个部分，保存到指定目录，并使用 `ordered_name` 作为文件名（在前面加上4位递增的数字作为前缀，再跟上一个 `_`）。
@@ -245,7 +246,7 @@ def _split_sections_to_files_with_desc_and_sequence(markdown_text, md_info):
     return created_filenames
 
 
-def _save_current_section(output_dir, file_index, created_filenames, section_content, ordered_name, desc, saved_no_ordered_name, crc32_id):
+def _save_current_section(output_dir:str, file_index:int, created_filenames:List[str], section_content:str, ordered_name:str, desc:str, saved_no_ordered_name:str, crc32_id:str) -> int:
     """
     保存当前段落到文件。
 
@@ -288,7 +289,7 @@ def _save_current_section(output_dir, file_index, created_filenames, section_con
     return file_index
 
 
-def _save_section_to_file(output_dir, file_index, ordered_name, desc, section_content, crc32_id):
+def _save_section_to_file(output_dir:str, file_index:int, ordered_name:str, desc:str, section_content:str, crc32_id:str)-> str:
     """
     将一个 Markdown 段落保存到文件。
     :param output_dir: 输出目录路径
@@ -320,7 +321,7 @@ def _save_section_to_file(output_dir, file_index, ordered_name, desc, section_co
         logging.exception(e)
         return None
 
-def _extract_ordered_and_desc(line):
+def _extract_ordered_and_desc(line: str) -> Tuple[str, str]:
     """
     从一行中提取 `ordered_name` 和 `desc` 的内容。
     :param line: 包含注释的 Markdown 行
@@ -343,7 +344,7 @@ def _extract_ordered_and_desc(line):
         logging.exception(e)
         return None, None
 
-def inject_section_heirarchy(md_info_path, src_step_num=None, dst_step_num=None):
+def inject_section_heirarchy(md_info_path:str, src_step_num:int = None, dst_step_num:int = None)-> str:
     logging.info(f"##MDFLOW##: fix_section_heirarchy started src_step_num:{src_step_num} dst_step_num:{dst_step_num}...")
     md_info = MdInfo(md_info_path)
 

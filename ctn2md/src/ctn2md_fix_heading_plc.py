@@ -1,3 +1,4 @@
+from typing import Tuple
 from dotenv import load_dotenv
 #import os
 import sys
@@ -23,7 +24,7 @@ from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
 from ctn2md.src.md_process_plc import inject_plc_comment_to_page, separate_heading_and_plc_comment, get_all_normalized_headings_with_plc_info, has_injected_plc_comment
 from ctn2md.utils.util_markdown import read_markdown_file
 
-def _normalize_markdown_heading_plc(md_text, md_info):
+def _normalize_markdown_heading_plc(md_text:str, md_info:MdInfo) -> str:
     """
     规整化 Markdown 的 heading 写法，确保所有 heading 的 # 与内容之间仅有一个空格。
 
@@ -52,14 +53,14 @@ def _normalize_markdown_heading_plc(md_text, md_info):
                 
     return normalized_md
 
-def _fix_markdown_with_no_heading(md_text, md_info):
+def _fix_markdown_with_no_heading(md_text:str, md_info:MdInfo) -> str:
     doc_title = md_info.get_doc_title()
     heading_line = "# " + doc_title + "\n\n"
     new_md_text = heading_line + md_text
     return inject_plc_comment_to_page(new_md_text, 1, 1, md_info)
 
 
-def _update_markdown_heading_content(md_text, md_info, fhl_map):
+def _update_markdown_heading_content(md_text:str, md_info:MdInfo, fhl_map:dict) -> Tuple[str, list]:
     """
     替换 Markdown 文本中的标题内容，根据 fhl_map 提供的替换规则。
 
@@ -116,7 +117,7 @@ def _update_markdown_heading_content(md_text, md_info, fhl_map):
     return new_md_text, unprocessed_heading_lines_map
 
 
-def _collect_fhl_info(md_info, md_full_text):
+def _collect_fhl_info(md_info:MdInfo, md_full_text:str) -> Tuple[dict, str]:
     md_full_text_new = _normalize_markdown_heading_plc(md_full_text, md_info)
     fhl_org = md_info[MIFN.FHL_ORG]
 
@@ -129,7 +130,7 @@ def _collect_fhl_info(md_info, md_full_text):
 
     return fhl_org, md_full_text_new
 
-def _cal_new_fhl_map(md_info, fhl_org):
+def _cal_new_fhl_map(md_info:MdInfo, fhl_org:dict) -> dict:
     now = datetime.now()
     question_num = now.hour * 100 + now.minute
     logging.info(f"question_num: {question_num}")
@@ -153,7 +154,7 @@ def _cal_new_fhl_map(md_info, fhl_org):
     rich.print(fhl_map)
     return fhl_map
 
-def fix_headings_plc_by_llm(md_info_path, src_step_num=None, dst_step_num=None):
+def fix_headings_plc_by_llm(md_info_path:str, src_step_num:int = None, dst_step_num:int = None) -> str:
     logging.info(f"##MDFLOW##: fix_headings_plc_by_llm started src_step_num:{src_step_num} dst_step_num:{dst_step_num}...")
     md_info = MdInfo(md_info_path)
 

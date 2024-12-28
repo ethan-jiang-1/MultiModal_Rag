@@ -1,3 +1,4 @@
+from typing import List
 from dotenv import load_dotenv
 import os
 import sys
@@ -20,7 +21,7 @@ from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lvlm.lvlm_base import is_still_in_gen_mode
 
 
-def gen_pages_lvlm(md_info:MdInfo, mdcontrols=None, skip_gen_mds=False, sel_page_indexes=None):
+def gen_pages_lvlm(md_info:MdInfo, mdcontrols:dict = None, skip_gen_mds: bool = False, sel_page_indexes: List[int] = None) -> str:
     pathname_doc = md_info.get_doc_pathname()
     job_id = get_job_id(pathname_doc)
     md_info[MIFN.LVLM_CUR_JOB_ID] = job_id

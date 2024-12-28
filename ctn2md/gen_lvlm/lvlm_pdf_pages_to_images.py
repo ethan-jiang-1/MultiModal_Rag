@@ -25,7 +25,7 @@ IMG_EXT = "jpg"  # or "png"
 JPG_QUALITY = 90 # 95
 
 
-def _get_non_text_rects(md_info:MdInfo, page:pymupdf.Page, page_index:int, pname_page_name:str, mctl_lvlm_region_model:str = None):
+def _get_non_text_rects(md_info:MdInfo, page:pymupdf.Page, page_index:int, pname_page_name:str, mctl_lvlm_region_model:str = None) -> List[Tuple[float, float, float, float]]:
     if mctl_lvlm_region_model is None:
         mctl_lvlm_region_model = md_info.get_md_control("mctl_lvlm_region_model", "qwen")
     logging.info(f"cal rects for {page_index} starts...")

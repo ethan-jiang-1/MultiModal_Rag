@@ -25,10 +25,10 @@ from ctn2md.src.ctn2md_summarize_content import summarize_content_by_llm
 from ctn2md.src.make_final_result import make_final_json, reset_md_flow
 from ctn2md.src.ctn2md_gen_md_plain import GenMd_Plain
 
-def _do_content2md_convert_core_md(doc_pathname, 
-                                   out_dir=None, 
-                                   enforced_gen=False, 
-                                   mdcontrols=None):
+def _do_content2md_convert_core_md(doc_pathname:str, 
+                                   out_dir:str = None, 
+                                   enforced_gen:bool = False, 
+                                   mdcontrols:dict = None) -> str:
     if out_dir is None:
         out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=GenMd_Plain.OD_SUFFIX)
     logging.warning(f"work out_dir: {out_dir}")
@@ -69,7 +69,7 @@ def _do_content2md_convert_core_md(doc_pathname,
 
     return pathname_final_json
 
-def do_content2md_convert(doc_pathname, out_dir=None, enforced_gen=False, mdcontrols=None):
+def do_content2md_convert(doc_pathname:str, out_dir:str = None, enforced_gen:bool = False, mdcontrols:dict = None) -> str:
     pathname_final_json = None
     try:
         pathname_final_json = _do_content2md_convert_core_md(doc_pathname,

@@ -19,7 +19,7 @@ from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src.ctn2md_gen_md_base import GenMd_Base
 from ctn2md.utils.util_markdown import find_all_image_refs
 
-def _copy_img_files_in_markdown(doc_pathname, out_dir):
+def _copy_img_files_in_markdown(doc_pathname:str, out_dir:str) -> list:
     """
     Scans the Markdown file for image references, copies the images from `src_dir` to `out_dir`.
 
@@ -54,7 +54,7 @@ def _copy_img_files_in_markdown(doc_pathname, out_dir):
             logging.info(f"Warning: File not found - {src_path}")
     return image_refs
 
-def _copy_orginal_files(md_info:MdInfo, doc_pathname:str):
+def _copy_orginal_files(md_info:MdInfo, doc_pathname:str) -> str:
     pathname_s0_md = md_info.name_step_pathname(0)
     shutil.copy(doc_pathname, pathname_s0_md)
     logging.info(f"copy file from {doc_pathname} to {pathname_s0_md}")

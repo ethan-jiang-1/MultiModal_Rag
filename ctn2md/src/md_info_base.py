@@ -1,3 +1,4 @@
+from typing import List, Tuple
 from dotenv import load_dotenv as _load_dotenv
 import os
 import sys
@@ -139,7 +140,7 @@ _DEFAULT_MDCONTROL = {
 }
 
 class MdInfo:
-    def __init__(self, md_info_path_or_out_dir):
+    def __init__(self, md_info_path_or_out_dir:str):
         if not isinstance(md_info_path_or_out_dir, str):
             raise ValueError(f"MdInfo.init: expect string as path here: {md_info_path_or_out_dir}")
 
@@ -162,7 +163,7 @@ class MdInfo:
         return repr(self._info)
     
     @classmethod
-    def _get_suggested_md_info_path(cls, md_info_path_or_out_dir):
+    def _get_suggested_md_info_path(cls, md_info_path_or_out_dir:str):
         if os.path.isdir(md_info_path_or_out_dir):
             md_info_path = os.path.join(md_info_path_or_out_dir, _MIB_FNAME_MD_INFO)
             return md_info_path
@@ -171,7 +172,7 @@ class MdInfo:
         raise ValueError(f"not able to suggest md_info_path for {md_info_path_or_out_dir}")
 
     @classmethod
-    def find_md_info_path(cls, out_dir_or_file_in_out_dir):
+    def find_md_info_path(cls, out_dir_or_file_in_out_dir:str) -> str:
         if os.path.isfile(out_dir_or_file_in_out_dir):
             dir_name = os.path.dirname(out_dir_or_file_in_out_dir)
         elif os.path.isdir(out_dir_or_file_in_out_dir):
@@ -185,7 +186,7 @@ class MdInfo:
         return None
 
     @classmethod
-    def extract_doc_title(cls, pathname_org_doc):
+    def extract_doc_title(cls, pathname_org_doc:str) -> str:
         """
         提取文档标题，
         :param pathname_org_doc: 原始文档路径
@@ -220,7 +221,7 @@ class MdInfo:
         return doc_title
     
     @classmethod
-    def _recover_kbname_and_doc_title(cls, dirname):
+    def _recover_kbname_and_doc_title(cls, dirname:str) -> Tuple[str, str]:
         # 固定前缀和可能的后缀
         prefix = _MIB_CTN2MD_LEAD
         suffixes = ["_lvlm", "_lp", "_md", "_usio"]
@@ -243,7 +244,7 @@ class MdInfo:
             raise ValueError("not able to recover kb_name and doc_title")
 
     @classmethod
-    def get_suggested_out_dir(cls, pathname_org_doc, suffix=""):
+    def get_suggested_out_dir(cls, pathname_org_doc:str, suffix:str = "")->str:
         dir_name = os.path.dirname(pathname_org_doc)
         kb_name = os.path.basename(dir_name)
         doc_title = cls.extract_doc_title(pathname_org_doc)
@@ -259,21 +260,21 @@ class MdInfo:
         return out_dir
 
     @classmethod
-    def get_fname_final_json(cls):
+    def get_fname_final_json(cls) -> str:
         return _MIB_FNAME_FINAL_INFO
 
     @classmethod
-    def get_fname_md_info(cls):
+    def get_fname_md_info(cls) -> str:
         return _MIB_FNAME_MD_INFO
 
-    def load(self):
+    def load(self) -> dict:
         if os.path.isfile(self._md_info_path):
             with open(self._md_info_path, 'r', encoding='utf-8') as file:
                 data = file.read()
             self._info= json_repair.repair_json(data, return_objects=True, ensure_ascii=True)
         return self._info
 
-    def save(self):
+    def save(self) -> str:
         json_str = json.dumps(self._info, indent=4, ensure_ascii=False)
         with open(self._md_info_path, 'w+', encoding='utf8') as f:
             f.write(json_str) 
@@ -310,7 +311,7 @@ class MdInfo:
 
         self._md_control = md_control
 
-    def update_mdcontrols(self, mdcontrols):
+    def update_mdcontrols(self, mdcontrols: dict):
         if isinstance(mdcontrols, dict):
             for key, val in mdcontrols.items():
                 old_val = None
@@ -323,25 +324,25 @@ class MdInfo:
                     logging.info(f"alter md_controls {key}: form {old_val} to {val}")
         self.save()
 
-    def get_out_dir(self):
+    def get_out_dir(self) -> str:
         os.makedirs(self._out_dir, exist_ok=True)
         return self._out_dir
 
-    def get_aux_dir(self):
+    def get_aux_dir(self) -> str:
         aux_dir = os.path.join(self._out_dir, "_aux")
         os.makedirs(aux_dir, exist_ok=True)
         return aux_dir
 
-    def get_md_info_path(self):
+    def get_md_info_path(self) -> str:
         return self._md_info_path
 
-    def get_unique_job_id(self):
+    def get_unique_job_id(self) -> str:
         job_ids = self._info.get(MIFN.LP_JOB_ID_HISTORY, [])
         if len(job_ids) > 0:
             return job_ids[0]
         return self.get_doc_title()
 
-    def set_doc_pathname(self, doc_pathname):
+    def set_doc_pathname(self, doc_pathname: str) -> str:
         if MIFN.PATHNAME_ORG_DOC not in self._info:
             self._info[MIFN.PATHNAME_ORG_DOC] = doc_pathname
             self._info[MIFN.FNAME_ORG_DOC] = os.path.basename(doc_pathname)
@@ -358,24 +359,24 @@ class MdInfo:
         except Exception as ex:
             logging.exception(ex)
     
-    def set_gen_engine(self, gen_engine_name):
+    def set_gen_engine(self, gen_engine_name:str):
         self._info[MIFN.GEN_ENGINE] = gen_engine_name
 
-    def get_gen_engine(self):
+    def get_gen_engine(self) -> str:
         return self._info.get(MIFN.GEN_ENGINE, None)
 
-    def get_doc_pathname(self):
+    def get_doc_pathname(self) -> str:
         return self.get(MIFN.PATHNAME_ORG_DOC)
     
-    def get_doc_title(self):
+    def get_doc_title(self) -> str:
         return self.extract_doc_title(self.get(MIFN.PATHNAME_ORG_DOC))
     
-    def get_md_control(self, mdctrl_name, default_val):
+    def get_md_control(self, mdctrl_name:str, default_val:object)->object:
         if mdctrl_name in os.environ:
             return os.environ[mdctrl_name]
         return self._md_control.get(mdctrl_name, default_val)
 
-    def get_md_control_notouch(self, mdctrl_name, default_val):
+    def get_md_control_notouch(self, mdctrl_name:str, default_val:object)->List[str]:
         lst = self._md_control.get(mdctrl_name, default_val)
         if len(lst) > 0:
             xset = set()
@@ -395,16 +396,16 @@ class MdInfo:
             lst = sorted(lst)
         return lst
 
-    def set_md_params(self, mdparam_name, val):
+    def set_md_params(self, mdparam_name:str, val:object) -> object:
         if isinstance(mdparam_name, str):
             self._info[MIFN.MDPARAMS][mdparam_name] = val
             return val 
         return None 
     
-    def get_md_params(self, mdparam_name, default_val):
+    def get_md_params(self, mdparam_name:str, default_val:object) -> object:
         return self._info[MIFN.MDPARAMS].get(mdparam_name, default_val)
 
-    def name_step_pathname(self, step_num):
+    def name_step_pathname(self, step_num:int) -> str:
         pathname_org_doc = self._info.get(MIFN.PATHNAME_ORG_DOC, None)
         if pathname_org_doc is not None:
             basename = os.path.basename(pathname_org_doc)
@@ -423,7 +424,7 @@ class MdInfo:
             return pathname_step_md
         return None
 
-    def name_src_n_dst_step_pathname(self, src_step_num, dst_step_num=None):
+    def name_src_n_dst_step_pathname(self, src_step_num:int, dst_step_num:int = None) -> Tuple[str, str]:
         if src_step_num is None:
             src_step_num = self.get_last_step_num()
         pathname_src_step_md = self.name_step_pathname(src_step_num)
@@ -432,7 +433,7 @@ class MdInfo:
         pathname_dst_step_md = self.name_step_pathname(dst_step_num)
         return pathname_src_step_md, pathname_dst_step_md 
 
-    def get_last_step_num(self):
+    def get_last_step_num(self) -> int:
         mdflow = self._info.get(MIFN.MDFLOW, None)
         if mdflow is None:
             raise ValueError("no mdflow in MdInfo")
@@ -441,14 +442,14 @@ class MdInfo:
         return src_step_num
 
     @classmethod
-    def get_step_num_from_pathname(cls, pathname):
+    def get_step_num_from_pathname(cls, pathname:str) -> int:
         pattern = r'_s(\d+)\.md$'
         match = re.search(pattern, pathname)
         if match:
             return int(match.group(1))
         return None
 
-    def add_step_into_md_info_mdflow(self, pathname_step_md, actor=None, extra=None):
+    def add_step_into_md_info_mdflow(self, pathname_step_md:str, actor:str = None, extra: dict = None)->str:
         basename = os.path.basename(pathname_step_md)
         step_num = self.get_step_num_from_pathname(pathname_step_md)
         if isinstance(step_num, int):
@@ -465,35 +466,35 @@ class MdInfo:
             return self.save()
         return None
 
-    def get_doc_type(self):
+    def get_doc_type(self) -> str:
         pathname_org_doc = self._info.get(MIFN.PATHNAME_ORG_DOC, None)
         if pathname_org_doc is not None:
             return pathname_org_doc.split(".")[-1].lower()
         return ""
 
-    def get_ctn_type(self):
+    def get_ctn_type(self) -> str:
         doc_type = self.get_doc_type()
         ctn_type = CTN_TYPE.get_ctn_type_by_doc_type(doc_type)
         # if we have ctn_type defined, using ctn_type
         ctn_type = self._info.get(MIFN.DOC_CTN_TYPE, ctn_type)
         return ctn_type
 
-    def get_fnames_pages(self):
+    def get_fnames_pages(self) -> List[str]:
         return self.get(MIFN.FNAMES_MD_PAGES, {})
 
-    def get(self, key, default=None):
+    def get(self, key:str, default=None) -> object:
         return self._info.get(key, default)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key:str) -> object:
         return self._info.get(key)
 
-    def set(self, key, value):
+    def set(self, key:str, value:object):
         self._info[key] = value
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key:str, value:object):
         self._info[key] = value
 
-    def __contains__(self, key):
+    def __contains__(self, key:str):
         # 这个方法会在使用in操作符时被调用
         return key in self._info
 

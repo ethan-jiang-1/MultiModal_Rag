@@ -54,7 +54,7 @@ def _gen_page_md_by_lvlm(mctl_lvlm_img2md_model:str, pname_image:str, rects_img:
         f.write(md_page)   
 
 
-def convert_images_to_mds(md_info:MdInfo, image_infos: List[Tuple[str, List[str]]], sel_page_ndxs=None):
+def convert_images_to_mds(md_info:MdInfo, image_infos: List[Tuple[str, List[str]]], sel_page_ndxs:List[int] = None) -> int:
     output_dir = md_info.get_out_dir()
     aux_dir = md_info.get_aux_dir()
 

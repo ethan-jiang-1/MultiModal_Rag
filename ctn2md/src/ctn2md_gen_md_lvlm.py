@@ -1,3 +1,4 @@
+from typing import Tuple
 from dotenv import load_dotenv
 import os
 import sys
@@ -17,7 +18,7 @@ from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src.ctn2md_gen_md_base import GenMd_Base
 
-def _gen_md_lvlm(doc_pathname, out_dir, lvlm_model="gpt-4o"):
+def _gen_md_lvlm(doc_pathname:str, out_dir:str, lvlm_model:str = "gpt-4o") -> str:
     from ctn2md.gen_lvlm.gen_markdown_lvml import generate_markdown_lvlm
     logging.info(f"##MDFLOW##: gen_md_lvlm started...")
 
@@ -40,7 +41,7 @@ class GenMd_Lvlm(GenMd_Base):
 
 
     @classmethod
-    def does_gen_needed(cls, doc_pathname, out_dir, enforced_gen):
+    def does_gen_needed(cls, doc_pathname:str, out_dir:str, enforced_gen:bool) -> Tuple[MdInfo, bool]:
         md_info, gen_needed = GenMd_Base.does_gen_needed(doc_pathname, out_dir, enforced_gen)
         mctl_lvlm_repair_pages = md_info.get_md_control("mctl_lvlm_repair_pages", [])
         if len(mctl_lvlm_repair_pages) != 0:
@@ -51,10 +52,10 @@ class GenMd_Lvlm(GenMd_Base):
 
     @classmethod
     def generate_markdown(cls,
-                          doc_pathname, 
-                          out_dir=None, 
-                          enforced_gen=False, 
-                          mdcontrols=None):
+                          doc_pathname:str, 
+                          out_dir:str = None, 
+                          enforced_gen:bool = False, 
+                          mdcontrols:bool = None) -> str:
         if not cls.does_support_doc_type(doc_pathname):
             raise ValueError(f"GenMd_Lvlm does not support '{doc_pathname}'")
 

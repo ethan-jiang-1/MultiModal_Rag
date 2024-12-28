@@ -1,3 +1,4 @@
+from typing import Tuple
 from dotenv import load_dotenv
 import os
 import sys
@@ -22,7 +23,7 @@ class GenMd_Base:
     OD_SUFFIX = ""
 
     @classmethod
-    def does_gen_needed(cls, doc_pathname, out_dir, enforced_gen):
+    def does_gen_needed(cls, doc_pathname:str, out_dir:str, enforced_gen:bool) -> Tuple[MdInfo, bool]:
         if out_dir is None:
             out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=cls.OD_SUFFIX)
 
@@ -46,7 +47,7 @@ class GenMd_Base:
         return md_info, gen_needed
     
     @classmethod
-    def if_all_md_pages_exist(cls, md_info:MdInfo):
+    def if_all_md_pages_exist(cls, md_info:MdInfo) -> bool:
         fnames_pages = md_info.get_fnames_pages()
         if isinstance(fnames_pages, list):
             out_dir = md_info.get_out_dir()
@@ -57,18 +58,18 @@ class GenMd_Base:
         return True
 
     @classmethod
-    def migrate_md_info(cls, md_info):
+    def migrate_md_info(cls, md_info:MdInfo):
         return 
 
     @classmethod
-    def does_support_doc_type(cls, doc_pathname):
+    def does_support_doc_type(cls, doc_pathname:str) -> bool:
         ctn_type = CTN_TYPE.get_ctn_type_by_doc_pathname(doc_pathname)
         if ctn_type in cls.SUPPORT_CNT_TYPES:
             return True
         return False
 
     @classmethod
-    def need_followup_step(cls, step_name):
+    def need_followup_step(cls, step_name:str) -> bool:
         if step_name == "fix_headings_plc_by_llm":
             return True 
         return True

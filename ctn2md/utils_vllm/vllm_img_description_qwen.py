@@ -14,7 +14,11 @@ from ctn2md.utils_vllm.vllm_img_description_qwen_prompt import TEXT_IMG_DESCRIPT
 
 #model='qwen-vl-max-1119'
 #model='qwen-vl-max-0809'
-def generate_image_description_by_qwen(image_path, instruction=None, model='qwen-vl-max-1119', retries=5, backoff_in_seconds=1):
+def generate_image_description_by_qwen(image_path:str, 
+                                      instruction:str = None, 
+                                      model:str = "qwen-vl-max-1119", 
+                                      retries:int = 5, 
+                                      backoff_in_seconds:int = 1) -> str:
 
     if instruction is None:
         instruction = TEXT_IMG_DESCRIPTION

@@ -17,7 +17,7 @@ from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lvlm.lvlm_gen_pages import gen_pages_lvlm
 from ctn2md.utils.util_markdown import read_markdown_file
    
-def _construct_s0_md_from_pages(md_info):
+def _construct_s0_md_from_pages(md_info:MdInfo) -> str:
     out_dir = md_info.get_out_dir()
     aux_dir = md_info.get_aux_dir()
     fnames_pages = md_info[MIFN.FNAMES_MD_PAGES]
@@ -42,7 +42,7 @@ def _construct_s0_md_from_pages(md_info):
         f.write(full_md_text)
     return pathname_step0
 
-def generate_markdown_lvlm(md_info:MdInfo, lvlm_model="gpt-4o"):
+def generate_markdown_lvlm(md_info:MdInfo, lvlm_model:str = "gpt-4o") -> str:
     doc_pathname = md_info.get_doc_pathname()
     if (doc_pathname is None) or (not os.path.isfile(doc_pathname)):
         raise ValueError(f"doc_pathname is not valid {doc_pathname}")

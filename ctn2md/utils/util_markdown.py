@@ -1,6 +1,7 @@
 import re
+from typing import List
 
-def extract_pure_text_from_markdown(md_content):
+def extract_pure_text_from_markdown(md_content: str) -> str:
     """
     从 Markdown 内容中提取纯文本内容。
     :param md_content: str, Markdown 格式内容
@@ -24,13 +25,13 @@ def extract_pure_text_from_markdown(md_content):
     # 返回提取后的纯文本内容
     return md_content
 
-def remove_comment(line):
+def remove_comment(line: str) -> str:
     """
     移除行中的 <!-- ... --> 注释。
     """
     return re.sub(r'<!--.*?-->', '', line).strip()
 
-def read_markdown_file(md_pathname):
+def read_markdown_file(md_pathname: str) -> str:
     """
     读取 Markdown 文件内容。
     """
@@ -46,7 +47,7 @@ def read_markdown_file(md_pathname):
             continue
     return content
 
-def find_all_image_refs(md_pathname):
+def find_all_image_refs(md_pathname: str) -> List[str]:
     # Read the content of the Markdown file
     content = read_markdown_file(md_pathname)
 

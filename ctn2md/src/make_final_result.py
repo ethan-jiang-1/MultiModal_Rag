@@ -16,7 +16,7 @@ from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN, PUBLIC_MIFN
 from ctn2md.utils.util_markdown import find_all_image_refs
 
-def _copy_last_step_as_final(md_info):
+def _copy_last_step_as_final(md_info:MdInfo)->str:
     last_step_num = md_info.get_last_step_num()
     pathname_step_md = md_info.name_step_pathname(last_step_num)
     pathname_final_md = md_info.name_step_pathname(-1)
@@ -26,7 +26,7 @@ def _copy_last_step_as_final(md_info):
     shutil.copy(pathname_step_md, pathname_final_md)
     return pathname_final_md
 
-def _move_aux_files_pages(md_info, out_dir, aux_dir):
+def _move_aux_files_pages(md_info:MdInfo, out_dir:str, aux_dir:str):
     os.makedirs(aux_dir, exist_ok=True)
     fnames_pages = md_info.get_fnames_pages()
     if len(fnames_pages) == 0:
@@ -52,7 +52,7 @@ def _move_aux_files_pages(md_info, out_dir, aux_dir):
             if fname_page in fname_page_aux:
                 md_info_fanems_pages[ndx] = fname_page_aux
 
-def _move_aux_files_images(md_info, out_dir, aux_dir):
+def _move_aux_files_images(md_info:MdInfo, out_dir:str, aux_dir:str):
     last_step_num = md_info.get_last_step_num()
     pathname_step_md = md_info.name_step_pathname(last_step_num)
     image_refs = find_all_image_refs(pathname_step_md)
@@ -78,7 +78,7 @@ def _move_aux_files_images(md_info, out_dir, aux_dir):
             dst_fname = dst_pathname.replace(out_dir + "/", "")
             fnames_images[ndx] = dst_fname
 
-def _move_aux_files_tables(md_info, out_dir, aux_dir):
+def _move_aux_files_tables(md_info:MdInfo, out_dir:str, aux_dir:str):
     os.makedirs(aux_dir, exist_ok=True)
     fnames_tbls = md_info.get(MIFN.FNAMES_MD_TBLS, [])
     if len(fnames_tbls) == 0:
@@ -97,7 +97,7 @@ def _move_aux_files_tables(md_info, out_dir, aux_dir):
             dst_fname = dst_pathname.replace(out_dir + "/", "")
             fnames_tbls[ndx] = dst_fname
 
-def _move_aux_files(md_info):
+def _move_aux_files(md_info:MdInfo):
     out_dir = md_info.get_out_dir()
     aux_dir = md_info.get_aux_dir()
 
@@ -106,7 +106,7 @@ def _move_aux_files(md_info):
     _move_aux_files_images(md_info, out_dir, aux_dir)
     _move_aux_files_tables(md_info, out_dir, aux_dir)
 
-def _add_sum_json_to_finial_info(md_info, md_final_info):
+def _add_sum_json_to_finial_info(md_info:MdInfo, md_final_info:dict):
     out_dir = md_info.get_out_dir()
     pname_final_sum = os.path.join(out_dir, md_info[PUBLIC_MIFN.FNAME_FINAL_SUM])
     with open(pname_final_sum, 'r', encoding="utf-8") as f:
@@ -118,7 +118,7 @@ def _add_sum_json_to_finial_info(md_info, md_final_info):
             md_final_info[PUBLIC_MIFN.DOC_LOGIC_TITLE] = val 
             md_final_info[PUBLIC_MIFN.DOC_NAME_TITLE] = md_info.get_doc_title()
 
-def _copy_final_result_json(md_info):
+def _copy_final_result_json(md_info:MdInfo)->str:
     md_final_info = {}
     _add_sum_json_to_finial_info(md_info, md_final_info)
 
@@ -149,7 +149,7 @@ def _copy_final_result_json(md_info):
     logging.info(f"pathname_final_json: {pathname_final_json}")
     return pathname_final_json
 
-def make_final_json(md_info_path):
+def make_final_json(md_info_path:str)->str:
     logging.info(f"##MDFLOW##: make_final_md started...")
     md_info = MdInfo(md_info_path)
 
@@ -166,7 +166,7 @@ def make_final_json(md_info_path):
     logging.info(f"##MDFLOW##: Final md can be found at: \'{pathname_final_md}\'")
     return pathname_final_json
 
-def reset_md_flow(md_info_path):
+def reset_md_flow(md_info_path:str):
     md_info = MdInfo(md_info_path)
     dict_md_flow = md_info.get(MIFN.MDFLOW, None)
     if dict_md_flow is not None:

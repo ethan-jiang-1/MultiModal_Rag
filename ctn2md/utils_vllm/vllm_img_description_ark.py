@@ -13,7 +13,11 @@ from ctn2md.utils_llm.llm_base import get_gpt_messages_multimodal, chat_gpt_plai
 from ctn2md.utils.util_file import get_root_dir
 from ctn2md.utils_vllm.vllm_img_description_ark_prompt import TEXT_IMG_DESCRIPTION
 
-def generate_image_description_by_ark(image_path, instruction=None, model="ep-20241220100411-qb77p", retries=5, backoff_in_seconds=1):
+def generate_image_description_by_ark(image_path:str, 
+                                      instruction:str = None, 
+                                      model:str = "ep-20241220100411-qb77p", 
+                                      retries:int = 5, 
+                                      backoff_in_seconds:int = 1) -> str:
 
     if instruction is None:
         instruction = TEXT_IMG_DESCRIPTION

@@ -18,7 +18,7 @@ from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src.ctn2md_gen_md_base import GenMd_Base
 
 
-def gen_md_unstructured(doc_pathname, out_dir):
+def gen_md_unstructured(doc_pathname:str, out_dir:str) -> str:
     from ctn2md.gen_usio.gen_markdown_unstructured import generate_markdown_unstructured
     logging.info(f"##MDFLOW##: gen_md_unstructured started...")
 
@@ -39,10 +39,10 @@ class GenMd_Unstructured(GenMd_Base):
 
     @classmethod
     def generate_markdown(cls,
-                          doc_pathname, 
-                          out_dir=None, 
-                          enforced_gen=False, 
-                          mdcontrols=None):
+                          doc_pathname:str, 
+                          out_dir:str = None, 
+                          enforced_gen: bool = False, 
+                          mdcontrols: dict = None) -> str:
         if not cls.does_support_doc_type(doc_pathname):
             raise ValueError(f"GenMd_Unstructured does not support '{doc_pathname}'")
 

@@ -1,3 +1,4 @@
+from typing import List, Tuple
 from dotenv import load_dotenv
 #import os
 import sys
@@ -10,6 +11,7 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
+from ctn2md.src.md_info_base import MdInfo
 
 """
     注释中参数解释 <!-- PLC: ... -->:
@@ -29,7 +31,7 @@ if "./" not in sys.path:
 _PLC_COMMENT = """<!-- PLC: Page:{current_page}/{total_pages}, Line:{line_number}/{total_lines}, Chars:{content_char_count}/{total_char_count}, PlcId:{plc_id} -->"""
 _PLC_ID = "p{pid}s{sid}"
 
-def extract_plc_info_from_comment(line):
+def extract_plc_info_from_comment(line:str) -> dict:
     """
     提取 Markdown 行中 <!-- PLC: ... --> 的结构化内容。
 
@@ -58,7 +60,7 @@ def extract_plc_info_from_comment(line):
         }
     return None
 
-def separate_heading_and_plc_comment(line, with_plc_id=False):
+def separate_heading_and_plc_comment(line:str, with_plc_id:bool = False) -> Tuple[str, str]:
     """
     分解 Markdown 标题行，提取前半部分的标题和后续的 PLC 注释。
 
@@ -87,7 +89,7 @@ def separate_heading_and_plc_comment(line, with_plc_id=False):
         return heading, plc_comment
     return line, ""  # 如果不匹配，返回原始行和 None
 
-def _count_chars(text):
+def _count_chars(text:str) -> int:
     """
     统计文本中的字符数，忽略 Markdown 特殊符号和图片引用。
     """
@@ -97,14 +99,14 @@ def _count_chars(text):
     text = re.sub(r'\s+', '', text)             # 去掉空白符
     return len(text)
 
-def has_injected_plc_comment(line):
+def has_injected_plc_comment(line:str) -> bool:
     if line is None:
         return False 
     if line.find("<!-- PLC:") != -1:
         return True 
     return False
 
-def inject_plc_comment_to_page(md_page, page_number, total_pages, md_info):
+def inject_plc_comment_to_page(md_page:str, page_number:int, total_pages:int, md_info:MdInfo) -> str:
     """
     注入统计信息到 Markdown 文档标题行。
     :param md_page: str, 当前页面的 Markdown 内容
@@ -180,7 +182,7 @@ def inject_plc_comment_to_page(md_page, page_number, total_pages, md_info):
     return '\n'.join(result_lines)
 
 
-def _find_first_plc_info_no_heading(heading_pattern, org_lines):
+def _find_first_plc_info_no_heading(heading_pattern:str, org_lines:List[str]) -> dict:
     lines_without_heading = []
     first_plc_line_ndx = None
     first_plc_info_no_heading = None
@@ -208,7 +210,7 @@ def _find_first_plc_info_no_heading(heading_pattern, org_lines):
             break
     return None 
 
-def get_all_normalized_headings_with_plc_info(md_text, fix_first_line_no_heading=True):
+def get_all_normalized_headings_with_plc_info(md_text:str, fix_first_line_no_heading:bool = True)->Tuple[List[str], List[Tuple[str, str]], str]:
     # 定义正则匹配 Markdown Heading 的模式
     heading_pattern = r"^(#{1,6})(\s*)(.+)$"
 

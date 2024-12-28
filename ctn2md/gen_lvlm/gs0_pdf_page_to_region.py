@@ -86,7 +86,7 @@ def _adsorb_rects_to_rects(source_rects: List[BaseGeometry], target_rects: List[
     return new_source_rects, target_rects
 
 
-def _merge_all_rects(page, rect_list):
+def _merge_all_rects(page: fitz.Page, rect_list: List[BaseGeometry]) -> List[BaseGeometry]:
     merged_rects = _merge_rects(rect_list, distance=10, horizontal_distance=100)
     merged_rects = [rect for rect in merged_rects if explain_validity(rect) == 'Valid Geometry']
 

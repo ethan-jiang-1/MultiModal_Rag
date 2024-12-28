@@ -17,7 +17,7 @@ from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src.ctn2md_gen_md_base import GenMd_Base
 
-def _gen_md_llamaparse(doc_pathname, out_dir):
+def _gen_md_llamaparse(doc_pathname:str, out_dir:str) -> str:
     from ctn2md.gen_lp.gen_markdown_llamaparse import generate_markdown_llamaparse
 
     logging.info(f"##MDFLOW##: gen_md_llamaparse started...")
@@ -40,10 +40,10 @@ class GenMd_LlamaParse(GenMd_Base):
     
     @classmethod
     def generate_markdown(cls,
-                          doc_pathname, 
-                          out_dir=None, 
-                          enforced_gen=False, 
-                          mdcontrols=None):
+                          doc_pathname:str, 
+                          out_dir:str = None, 
+                          enforced_gen:bool = False, 
+                          mdcontrols:dict = None):
         if not cls.does_support_doc_type(doc_pathname):
             raise ValueError(f"GenMd_LlamaParse does not support '{doc_pathname}'")
 
@@ -61,7 +61,7 @@ class GenMd_LlamaParse(GenMd_Base):
         return md_info.get_md_info_path()
 
     @classmethod
-    def migrate_md_info(cls, md_info):
+    def migrate_md_info(cls, md_info:MdInfo):
         if not isinstance(md_info, dict):
             return 
 

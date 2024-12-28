@@ -22,10 +22,10 @@ from ctn2md.src.ctn2md_summarize_content import summarize_content_by_llm
 from ctn2md.src.make_final_result import make_final_json, reset_md_flow
 from ctn2md.src.ctn2md_gen_md_lvlm import GenMd_Lvlm
 
-def _do_content2md_convert_core_lvlm(doc_pathname, 
-                                     out_dir=None, 
-                                     enforced_gen=False, 
-                                     mdcontrols=None):
+def _do_content2md_convert_core_lvlm(doc_pathname:str, 
+                                     out_dir:str = None, 
+                                     enforced_gen:bool = False, 
+                                     mdcontrols:dict = None)->str:
     if out_dir is None:
         out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=GenMd_Lvlm.OD_SUFFIX)
     logging.warning(f"work out_dir: {out_dir}")
@@ -66,7 +66,7 @@ def _do_content2md_convert_core_lvlm(doc_pathname,
 
     return pathname_final_json
 
-def do_content2md_convert(doc_pathname, out_dir=None, enforced_gen=False, mdcontrols=None):
+def do_content2md_convert(doc_pathname:str, out_dir:str = None, enforced_gen:bool = False, mdcontrols: dict = None):
     pathname_final_json = None
     try:
         pathname_final_json = _do_content2md_convert_core_lvlm(doc_pathname,
@@ -104,10 +104,10 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/papers/Survey of different Large Language Model Architectures.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/Winning Solution For Meta KDD Cup’ 24 2410.00005v1.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/深度学习在视电阻率快速反演中的研究.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/papers/DeepSeek_V3.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/papers/DeepSeek_V3.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/papers/Long-Context LLMs Meet RAG_compressed.pdf"
 
     #doc_pathname = "datasrc/exam/raw_docs/papers/ChatGPT intimates a tantalizing future_compressed.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/papers/Long-Context LLMs Meet RAG_compressed.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/YOU ONLY 2409.13695v1.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/LongRAG.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/DIFFERENTIAL TRANSFORMER 2410.05258v1.pdf"
