@@ -188,9 +188,6 @@ class Page2Markdown():
         self.analysed = True
         return self.analyse
 
-    def need_generate(self)->bool:
-        return True
-
     def analyse_ocr(self):
         self.ocr_all_text = " "
         tmc = 0
@@ -340,7 +337,7 @@ class Page2Markdown():
         return fname_page
 
     def get_page_md_fname(self):
-        return f"{self.job_id}-content_p{self.page_no}.md"
+        return f"{self.job_id}-page_{self.page_no}.md"
 
     def _need_gen_md_page(self, pname_page_md):
         if not os.path.isfile(pname_page_md):
@@ -348,14 +345,24 @@ class Page2Markdown():
         mctl_lp_notouch_pages = self.md_info.get_md_control_notouch("mctl_lp_notouch_pages", [])
         if self.page_no in mctl_lp_notouch_pages:
             return False
+        pname_final_info_json = self.md_info.get_fname_final_json()
+        mtime_final = os.path.getmtime(pname_final_info_json)
+        mtime_page = os.path.getmtime(pname_page_md)
+        if mtime_final < mtime_page:
+            return False
         return True
+    
+    def get_page_md_path(self) -> str:
+        aux_dir = self.md_info.get_aux_dir()
+        out_dir = self.md_info.get_out_dir()
+        fname_page_md = self.get_page_md_fname()
+        pname_page_md = os.path.join(aux_dir, fname_page_md)
+        fname_page_md = pname_page_md[len(out_dir)+1:] # exclude out_dir from pname_page_md 
+        return pname_page_md, fname_page_md
 
     def save_md_page(self, md_page_all):
         try:
-            out_dir = self.md_info.get_out_dir()
-            fname_page_md = self.get_page_md_fname()
-            pname_page_md = os.path.join(out_dir, fname_page_md)
-
+            pname_page_md, fname_page_md = self.get_page_md_path()
             if self._need_gen_md_page(pname_page_md):
                 with open(pname_page_md, "w", encoding="utf8") as f:
                     f.write(md_page_all)

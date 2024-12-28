@@ -27,6 +27,7 @@ _MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
 _MIB_FNAME_FINAL_INFO = "_final_info.json"
 _MIB_DEFAULT_OUT_ROOT = "_output"
 _MIB_CTN2MD_LEAD = "ctn2md"
+_MIB_AUX_SUBDIR = "_aux"
 
 ENV_MODEL_SOURCE = "MODEL_SOURCE"
 
@@ -361,7 +362,7 @@ class MdInfo:
         return self._out_dir
 
     def get_aux_dir(self) -> str:
-        aux_dir = os.path.join(self._out_dir, "_aux")
+        aux_dir = os.path.join(self._out_dir, _MIB_AUX_SUBDIR)
         os.makedirs(aux_dir, exist_ok=True)
         return aux_dir
 

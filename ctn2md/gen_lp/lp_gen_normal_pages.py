@@ -67,8 +67,7 @@ def _dump_normal_md_page_from_lp_json_result(json_result: List[dict], md_info:Md
         for page_ndx, page in enumerate(pages):
             p2m = Page2Markdown(job_id, page, total_pages, md_info, pages_images)
             p2m.analyse()
-            if p2m.need_generate():
-                fname_page = p2m.save_page_markdown()
+            fname_page = p2m.save_page_markdown()
             fnames_pages.append(fname_page)
         md_info[MIFN.LP_I2H_NORMAL] = pages_images
     
