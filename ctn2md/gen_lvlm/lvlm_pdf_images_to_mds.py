@@ -9,31 +9,17 @@ if './' not in sys.path:
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MIFN, MdInfo
-from ctn2md.gen_lvlm.lvlm_base import is_in_repair_mode, is_still_in_gen_mode
 from ctn2md.utils_vllm.vllm_img2md_gpt import generate_full_mds_from_image_gpt
 from ctn2md.utils_vllm.vllm_img2md_qwen import generate_full_mds_from_image_qwen
 from ctn2md.utils_vllm.vllm_img2md_ark import generate_full_mds_from_image_ark
+from ctn2md.src.md_page_spe import SpecialPage
 
-FAILED_GEN_CONTENT_MSG = "**Failed to generate content**:"
-
-def is_failed_page_by_lvlm(pname_page_md:str) -> bool:
+def _does_page_need_gen(pname_page_md:str, md_info:MdInfo) -> bool:
     if not os.path.isfile(pname_page_md):
         return True
 
-    with open(pname_page_md, "r", encoding="utf-8") as f:
-        content = f.read()
-    failed = content.find(FAILED_GEN_CONTENT_MSG) != -1
-    return failed
-
-def _does_page_need_gen(md_info:MdInfo, page_index:int, pname_page_md:str) -> bool:
-    if not os.path.isfile(pname_page_md):
+    if SpecialPage.does_page_have_failed_mark(pname_page_md):
         return True
-
-    if is_failed_page_by_lvlm(pname_page_md):
-        return True
-
-    if is_still_in_gen_mode(md_info): 
-        return False
 
     return False
 
@@ -50,7 +36,7 @@ def _gen_page_md_by_lvlm(mctl_lvlm_img2md_model:str, pname_image:str, rects_img:
         else:
             raise ValueError(f"unsupported model {mctl_lvlm_img2md_model}")
     except Exception as ex:
-        md_page = f"\n{FAILED_GEN_CONTENT_MSG}\n\n {os.path.basename(pname_page_md)}\n\n reason: {str(ex)}\n\n"
+        md_page = f"\n{SpecialPage.PAGE_FAILED_GEN_CONTENT_MARK}\n\n {os.path.basename(pname_page_md)}\n\n reason: {str(ex)}\n\n"
 
     with open(pname_page_md, "w", encoding="utf-8") as f:
         f.write(md_page)   
@@ -68,9 +54,8 @@ def convert_images_to_mds(md_info:MdInfo, image_infos: List[Tuple[str, List[str]
     fnames_snps = []
     fnames_page_md_gen = []
     mctl_lvlm_img2md_model = md_info.get_md_control("mctl_lvlm_img2md_model", "gpt")
-    mctl_lvlm_notouch_pages = md_info.get_md_control_notouch("mctl_lvlm_notouch_pages",[])
 
-    logging.info(f"GITM: generate pages from images, is_in_repair_mode: {is_in_repair_mode(md_info)}")
+    logging.info(f"GITM: generate pages from images")
     cnt_page_gen = 0
     for ndx, image_info in enumerate(image_infos):
         page_index = ndx + 1
@@ -89,8 +74,8 @@ def convert_images_to_mds(md_info:MdInfo, image_infos: List[Tuple[str, List[str]
 
         fname_page_md = f"page_{page_index}.md"
         pname_page_md = os.path.join(aux_dir, fname_page_md)
-        if _does_page_need_gen(md_info, page_index, pname_page_md): 
-            if page_index not in mctl_lvlm_notouch_pages:
+        if _does_page_need_gen(pname_page_md, md_info): 
+            if not SpecialPage.does_page_have_touched_mark(pname_page_md):
                 _gen_page_md_by_lvlm(mctl_lvlm_img2md_model, pname_image, rects_img, pname_page_md)
                 cnt_page_gen += 1
             fnames_page_md_gen.append(fname_page_md)
@@ -98,14 +83,14 @@ def convert_images_to_mds(md_info:MdInfo, image_infos: List[Tuple[str, List[str]
             logging.info(f"skip gen {pname_page_md}")
             fnames_page_md_gen.append(fname_page_md)
 
-        if not is_in_repair_mode(md_info):
+        if sel_page_ndxs is None:
             fnames_imgs.extend(fname_rect_images)
             fnames_snps.append(fname_page_name) 
             pnames_page_md.append(pname_page_md[len(output_dir) + 1:])
 
-    logging.info(f"GITM: pages have been generated: {fnames_page_md_gen} from images is_in_repair_mode: {is_in_repair_mode(md_info)}")
+    logging.info(f"GITM: pages have been generated: {fnames_page_md_gen} from images")
     
-    if not is_in_repair_mode(md_info) and sel_page_ndxs is None:
+    if sel_page_ndxs is None:
         md_info[MIFN.FNAMES_MD_PAGES] = pnames_page_md
         md_info[MIFN.FNAMES_IMGS] = fnames_imgs
         md_info[MIFN.FNAMES_SNPS] = fnames_snps

@@ -81,7 +81,6 @@ def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes: List[int] = None, mct
     pdf_document = fitz.open(pdf_path)
     image_infos = []
 
-    mctl_lvlm_notouch_pages = md_info.get_md_control_notouch("mctl_lvlm_notouch_pages",[])
     for page_index, page in enumerate(pdf_document):
         page_index += 1
 
@@ -94,11 +93,7 @@ def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes: List[int] = None, mct
             if sel_page_indexes is not None:
                 if page_index not in sel_page_indexes:
                     logging.info(f"skip {page_index} due to sel_page_indexes")
-                    continue
-            else:
-                if page_index in mctl_lvlm_notouch_pages:
-                    logging.info(f"skip {page_index} due to mctl_lvlm_notouch_pages")
-                    continue        
+                    continue     
 
         logging.info(f'parse page: {page_index}')
         fname_rect_images = []

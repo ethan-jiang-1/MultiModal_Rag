@@ -135,6 +135,7 @@ def _get_page_instruction(md_info:MdInfo, doc_title:str, content_around:str) -> 
     g_question_num += 1
     return instruction
 
+
 def _gen_figure_info(md_info:MdInfo, doc_title:str, content_around:str, image_path:str) -> dict:
     instruction = _get_page_instruction(md_info, doc_title, content_around)
     mctl_lp_img_caption_model = md_info.get_md_control("mctl_lp_img_caption_model", "qwen")

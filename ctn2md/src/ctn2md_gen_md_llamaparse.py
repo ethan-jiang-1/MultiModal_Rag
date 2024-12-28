@@ -42,7 +42,9 @@ class GenMd_LlamaParse(GenMd_Base):
         if not cls.if_all_md_pages_exist(md_info):
             gen_needed = True
         if cls.is_final_md_info_outdated(md_info):
-            gen_needed = True    
+            gen_needed = True
+        if cls.if_any_md_page_touched(md_info):
+            gen_needed = True       
         return md_info, gen_needed
 
     @classmethod

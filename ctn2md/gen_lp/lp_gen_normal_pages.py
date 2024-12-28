@@ -66,8 +66,12 @@ def _dump_normal_md_page_from_lp_json_result(json_result: List[dict], md_info:Md
         total_pages = len(pages)
         for page_ndx, page in enumerate(pages):
             p2m = Page2Markdown(job_id, page, total_pages, md_info, pages_images)
-            p2m.analyse()
-            fname_page = p2m.save_page_markdown()
+            try:
+                p2m.analyse()
+                fname_page = p2m.save_page_markdown()
+            except Exception as ex:
+                logging.error(f"Exception occured on generating: {fname_page} : {ex}")
+                logging.exception(ex)
             fnames_pages.append(fname_page)
         md_info[MIFN.LP_I2H_NORMAL] = pages_images
     

@@ -19,6 +19,7 @@ from ctn2md.src.md_process_plc import inject_plc_comment_to_page, has_injected_p
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.gen_lp.lp_base import get_page_images, PAGE_IMG_STATUS, analyse_image_content
+from ctn2md.src.md_page_spe import SpecialPage
 
 # 常量定义
 MIN_WIDTH = 198   # 图像最小宽度（像素）
@@ -26,6 +27,15 @@ MIN_HEIGHT = 198  # 图像最小高度（像素）
 MIN_AREA = 128 * 128 # 图像最小面积（像素）
 
 MIN_IMG_RELEVANCE_SCORE = 2.0  # 0 - 10
+
+def _does_page_need_gen(pname_page_md:str, md_info:MdInfo) -> bool:
+    if not os.path.isfile(pname_page_md):
+        return True
+    
+    if SpecialPage.does_page_have_failed_mark(pname_page_md):
+        return True
+
+    return False
 
 def _select_meanful_image_by_size(fname_image, md_info):
     """
@@ -338,19 +348,6 @@ class Page2Markdown():
 
     def get_page_md_fname(self):
         return f"{self.job_id}-page_{self.page_no}.md"
-
-    def _need_gen_md_page(self, pname_page_md):
-        if not os.path.isfile(pname_page_md):
-            return True
-        mctl_lp_notouch_pages = self.md_info.get_md_control_notouch("mctl_lp_notouch_pages", [])
-        if self.page_no in mctl_lp_notouch_pages:
-            return False
-        pname_final_info_json = self.md_info.get_fname_final_json()
-        mtime_final = os.path.getmtime(pname_final_info_json)
-        mtime_page = os.path.getmtime(pname_page_md)
-        if mtime_final < mtime_page:
-            return False
-        return True
     
     def get_page_md_path(self) -> str:
         aux_dir = self.md_info.get_aux_dir()
@@ -363,9 +360,10 @@ class Page2Markdown():
     def save_md_page(self, md_page_all):
         try:
             pname_page_md, fname_page_md = self.get_page_md_path()
-            if self._need_gen_md_page(pname_page_md):
-                with open(pname_page_md, "w", encoding="utf8") as f:
-                    f.write(md_page_all)
+            if _does_page_need_gen(pname_page_md, self.md_info):
+                if not SpecialPage.does_page_have_touched_mark(pname_page_md):
+                    with open(pname_page_md, "w", encoding="utf8") as f:
+                        f.write(md_page_all)
             return fname_page_md
         except Exception as ex:
             logging.exception(ex)
@@ -385,7 +383,7 @@ class Page2Markdown():
 
         relevance_score, figure_name, picture_discription = analyse_image_content(self.md_info, pname_image, content_around=content_around)
         if relevance_score is None:
-            return None, "not_relevance"
+            raise ValueError(f"Faild to generate description for {fname_image}")
         if relevance_score < self.md_info.get_md_control("mctl_lp_min_img_relevance_score", MIN_IMG_RELEVANCE_SCORE): 
             return None, "low_relevance"
 

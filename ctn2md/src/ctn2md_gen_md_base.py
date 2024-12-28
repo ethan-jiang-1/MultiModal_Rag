@@ -3,10 +3,7 @@ from dotenv import load_dotenv
 import os
 import sys
 import logging
-#import rich
-#import random
-#import re
-#import shutil
+
 
 load_dotenv()
 
@@ -15,6 +12,7 @@ if "./" not in sys.path:
 
 #from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo
+from ctn2md.src.md_page_spe import SpecialPage
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 
 
@@ -50,23 +48,29 @@ class GenMd_Base:
     def if_all_md_pages_exist(cls, md_info:MdInfo) -> bool:
         fnames_pages = md_info.get_fnames_pages()
         if isinstance(fnames_pages, list):
+            if len(fnames_pages) == 0:
+                return False 
+
             out_dir = md_info.get_out_dir()
             for fname in fnames_pages:
                 pname = os.path.join(out_dir, fname)
                 if not os.path.isfile(pname):
                     logging.warning(f"page {pname} does not exist")
-                    return False 
+                    return False
+        else:
+            raise ValueError("fnames_pages ?!") 
         return True
     
     @classmethod
     def is_final_md_info_outdated(cls, md_info: MdInfo) -> bool:
         # 获取最终 JSON 文件的路径
-        pname_final_info = md_info.get_fname_final_json()
+        out_dir = md_info.get_out_dir()
+        pname_final_info = os.path.join(out_dir, md_info.get_fname_final_json())
         
         # 检查 pname_final_info 文件是否存在
         if not os.path.isfile(pname_final_info):
-            logging.error(f"Final JSON file '{pname_final_info}' does not exist.")
-            return False
+            logging.info(f"Final JSON file '{pname_final_info}' does not exist.")
+            return True
         
         # 获取 pname_final_info 的修改时间
         final_info_mtime = os.path.getmtime(pname_final_info)
@@ -75,10 +79,7 @@ class GenMd_Base:
         fnames_pages = md_info.get_fnames_pages()
         if not isinstance(fnames_pages, list):
             logging.error("fnames_pages is not a valid list.")
-            return False
-
-        # 获取输出目录
-        out_dir = md_info.get_out_dir()
+            return True
 
         # 遍历页面文件并检查是否有文件修改时间更新
         for fname in fnames_pages:
@@ -87,7 +88,7 @@ class GenMd_Base:
             # 检查文件是否存在
             if not os.path.isfile(pname):
                 logging.warning(f"Page file '{pname}' does not exist.")
-                return False
+                return True
             
             # 获取文件的修改时间
             page_mtime = os.path.getmtime(pname)
@@ -98,6 +99,22 @@ class GenMd_Base:
                 return True
 
         # 如果没有任何页面文件比最终 JSON 文件更新，则返回 False
+        return False
+    
+    @classmethod
+    def if_any_md_page_touched(cls, md_info:MdInfo) -> bool:
+        fnames_pages = md_info.get_fnames_pages()
+        if isinstance(fnames_pages, list):
+            if len(fnames_pages) == 0:
+                return False 
+
+            out_dir = md_info.get_out_dir()
+            for fname in fnames_pages:
+                pname = os.path.join(out_dir, fname)
+                if os.path.isfile(pname):
+                    if SpecialPage.does_page_have_touched_mark(pname):
+                        logging.warning(f"page {pname} has tourched")
+                        return True
         return False
 
     @classmethod

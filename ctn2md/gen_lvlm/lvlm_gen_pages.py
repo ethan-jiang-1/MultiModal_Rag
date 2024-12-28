@@ -13,7 +13,7 @@ load_dotenv()
 if "./" not in sys.path:
     sys.path.append("./")
 
-from ctn2md.gen_lvlm.lvlm_base import get_job_id, is_in_repair_mode
+from ctn2md.gen_lvlm.lvlm_base import get_job_id
 from ctn2md.gen_lvlm.lvlm_pdf_pages_to_images import parse_pdf_to_images
 from ctn2md.gen_lvlm.lvlm_pdf_images_to_mds import convert_images_to_mds
 from ctn2md.utils.util_logging import setup_logger_handlers
@@ -29,7 +29,7 @@ def gen_pages_lvlm(md_info:MdInfo, mdcontrols:dict = None, skip_gen_mds: bool = 
     if isinstance(mdcontrols, dict):
         md_info.update_mdcontrols(mdcontrols)
 
-    logging.info(f"GPL: generate image pages job_id:{job_id} is_in_repair_mode: {is_in_repair_mode(md_info)}")
+    logging.info(f"GPL: generate image pages job_id:{job_id}")
     # image_infos
     # image_infos.append((fname_page_name, fname_page_rect_name, fname_rect_images))
     # Step1: convert all pdf pages to images (image_infos: with region images)
@@ -42,7 +42,7 @@ def gen_pages_lvlm(md_info:MdInfo, mdcontrols:dict = None, skip_gen_mds: bool = 
     if not skip_gen_mds or is_still_in_gen_mode(md_info):
         logging.info(f"GPL: convert images to mds")
         convert_images_to_mds(md_info, image_infos)
-        logging.info(f"GPL: page generated is_in_repair_mode: {is_in_repair_mode(md_info)}")
+        logging.info(f"GPL: page generated")
     else:
         logging.warning(f"GPL: skip convert images to mds")
 
