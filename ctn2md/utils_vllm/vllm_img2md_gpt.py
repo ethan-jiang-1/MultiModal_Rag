@@ -53,7 +53,10 @@ def generate_full_mds_from_image_gpt(pname_image:str, rects_img:List[str] = None
         set_question_num(question_num)
         save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="vllm_gpt") 
 
-        content = resp
+        if not isinstance(resp, str):
+            raise ValueError(f"resp is not str: {resp}")
+
+        content = resp        
         if '```markdown' in content:
             content = content.replace('```markdown\n', '')
             last_backticks_pos = content.rfind('```')

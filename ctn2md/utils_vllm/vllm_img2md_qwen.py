@@ -40,6 +40,10 @@ def generate_full_mds_from_image_qwen(pname_image:str, rects_img:List[str] = Non
     for loop in range(4):
         logging.info(f"GFMFI: start loop:{loop}")
         response = chat_qwen_mm(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds, track_id="gfmdiq")
+        if not isinstance(response, str):
+            logging.error("GFMFI: response is not str")
+            continue
+        
         text_content = response.replace("```markdown", "").replace("```", "")
         full_content += text_content
         if text_content.find("[ocr_end]") != -1:
@@ -57,6 +61,8 @@ def generate_full_mds_from_image_qwen(pname_image:str, rects_img:List[str] = Non
                  'content':[{'text': PROMPT_INSTRUCT_IMG2MD_QWEN_CONTINUE}]})
         else:
             messages[1]["content"] = [{'text': full_content}]
+
+
     full_content = full_content.replace("[ocr_end]", "")
     #rich.print(messages)
     logging.info(f"GFMFI: total output length {len(full_content)}")
