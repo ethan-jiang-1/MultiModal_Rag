@@ -3,9 +3,7 @@ import os
 import sys
 import logging
 import rich
-#import random
-#import re
-#import shutil
+from typing import Tuple
 
 load_dotenv()
 
@@ -38,6 +36,15 @@ class GenMd_LlamaParse(GenMd_Base):
     SUPPORT_CNT_TYPES = [CTN_TYPE.PDF, CTN_TYPE.PPT, CTN_TYPE.DOC, CTN_TYPE.XLS]
     OD_SUFFIX = "lp"
     
+    @classmethod
+    def does_gen_needed(cls, doc_pathname:str, out_dir:str, enforced_gen:bool) -> Tuple[MdInfo, bool]:
+        md_info, gen_needed = GenMd_Base.does_gen_needed(doc_pathname, out_dir, enforced_gen)
+        if not cls.if_all_md_pages_exist(md_info):
+            gen_needed = True
+        if cls.is_final_md_info_outdated(md_info):
+            gen_needed = True    
+        return md_info, gen_needed
+
     @classmethod
     def generate_markdown(cls,
                           doc_pathname:str, 
