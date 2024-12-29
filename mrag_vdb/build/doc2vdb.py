@@ -1,3 +1,4 @@
+from typing import Optional
 from dotenv import load_dotenv
 import os
 import sys
@@ -17,13 +18,13 @@ from mrag_vdb.build._inject_chunks_to_vdb import inject_doc_chunks_into_vdb
 from mrag_vdb.common.map_doc_to_collection import MapDocToCol
 from mrag_vdb.common.vdb_base import QdrantClientContextManager
 
-def _save_doc_meta_info(doc_meta_info:DocMetaInfo):
+def _save_doc_meta_info(doc_meta_info:DocMetaInfo) -> None:
     pname_meta_doc = get_doc_meta_pathname(doc_meta_info)
     with open(pname_meta_doc, "w", encoding="utf-8") as f:
         f.write(doc_meta_info.model_dump_json(indent=4))
 
 
-def _copy_all_ref_files(doc_meta_info:DocMetaInfo, pname_final_info: str):
+def _copy_all_ref_files(doc_meta_info:DocMetaInfo, pname_final_info: str) -> None:
     dir_src = os.path.dirname(pname_final_info)
     dir_dst = get_ref_root(doc_meta_info)
 
@@ -62,7 +63,7 @@ def _copy_all_ref_files(doc_meta_info:DocMetaInfo, pname_final_info: str):
         shutil.copy(src_path, dst_path)
 
 
-def upsert_doc_to_vdb(pname_final_info: str, max_chunk_num:int = None, skip_build_vdb:bool = False):
+def upsert_doc_to_vdb(pname_final_info: str, max_chunk_num:Optional[int] = None, skip_build_vdb:bool = False) -> str:
     if not pname_final_info.endswith("_final_info.json"):
         raise ValueError("only take _final_info.json as input")
 

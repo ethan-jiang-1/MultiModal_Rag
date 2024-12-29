@@ -1,3 +1,4 @@
+from typing import Tuple
 from dotenv import load_dotenv
 import os
 import sys
@@ -16,7 +17,7 @@ from mrag_vdb.common.doc_meta_info import DocMetaInfo
 
 
 # Have to track back to original doc, as we are going to use folder name of the org doc as collection_name
-def _get_org_doc_and_collection_name(final_md_info):
+def _get_org_doc_and_collection_name(final_md_info:dict) -> Tuple[str, str]:
     pname_org_doc = final_md_info.get(PUBLIC_MIFN.PATHNAME_ORG_DOC)
     if pname_org_doc.endswith(".md"):
         src_doc = final_md_info.get(PUBLIC_MIFN.PATHNAME_SRC_DOC, None)
