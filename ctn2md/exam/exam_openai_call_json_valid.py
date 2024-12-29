@@ -1,8 +1,7 @@
 from dotenv import load_dotenv # , find_dotenv
 import sys
 import rich
-#import os
-##import pandas as pd
+
 if "./" not in sys.path:
     sys.path.append("./")
 

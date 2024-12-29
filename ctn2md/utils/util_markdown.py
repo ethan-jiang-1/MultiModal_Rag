@@ -48,11 +48,15 @@ def read_markdown_file(md_pathname: str) -> str:
     return content
 
 def find_all_image_refs(md_pathname: str) -> List[str]:
-    # Read the content of the Markdown file
+    """
+    查找Markdown文件中的所有图片引用。
+    
+    Args:
+        md_pathname: Markdown文件路径
+        
+    Returns:
+        包含所有图片URL的列表
+    """
     content = read_markdown_file(md_pathname)
-
-    # Find all image URLs in the Markdown file (ignoring tooltips or labels)
     image_refs = re.findall(r'!\[.*?\]\(([^\)]+?)\s*(?:\".*?\")?\)', content)
-
-    # Process each image reference
     return image_refs

@@ -32,50 +32,54 @@ global_state_module.g_progress_handler = None
 _LOGGER_NAME_LLM = "llm_call"
 _LOGGER_NAME_PRG = "app_gradio"
 
-def get_logger_llm():
+# 添加常量
+DEFAULT_LOG_FORMAT = '%(asctime)s - PID:%(process)d - %(levelname)s - %(message)s'
+DEFAULT_COLOR_FORMAT = '%(log_color)s %(asctime)s %(process)d %(levelname)-8s%(reset)s %(blue)s%(message)s'
+
+def get_logger_llm() -> logging.Logger:
     logger_llm = logging.getLogger(_LOGGER_NAME_LLM)
     logger_llm.propagate = False
     return logger_llm
 
-def get_logger_progress():
+def get_logger_progress() -> logging.Logger:
     logger_prg = logging.getLogger(_LOGGER_NAME_PRG)
     logger_prg.propagate = False
     return logger_prg
 
-def _get_log_dir():
+def _get_log_dir() -> str:
     log_dir = os.path.abspath(os.path.dirname(find_dotenv()))
     log_dir = os.path.join(log_dir, "logs")
     os.makedirs(log_dir, exist_ok=True)
     return log_dir
 
-def _get_log_prefix():
+def _get_log_prefix() -> str:
     return os.environ.get("APP_LOG_PREFIX", "ctn2md")
 
-def _get_log_pathname_main():
+def _get_log_pathname_main() -> str:
     log_dir = _get_log_dir()
     srs_name = f"{_get_log_prefix()}.log"
     log_srs_file = os.path.join(log_dir, srs_name)
     return log_srs_file
 
-def _get_log_pathname_error():
+def _get_log_pathname_error() -> str:
     log_dir = _get_log_dir()
     sre_name = f"{_get_log_prefix()}_error.log"
     log_sre_file = os.path.join(log_dir, sre_name)
     return log_sre_file
 
-def _get_log_pathname_llm():
+def _get_log_pathname_llm() -> str:
     log_dir = _get_log_dir()
     srs_name = f"{_get_log_prefix()}_llm.log"
     log_srl_file = os.path.join(log_dir, srs_name)
     return log_srl_file
 
-def _get_log_pathname_progress():
+def _get_log_pathname_progress() -> str:
     log_dir = _get_log_dir()
     srs_name = f"{_get_log_prefix()}_prg.log"
     log_srp_file = os.path.join(log_dir, srs_name)
     return log_srp_file
 
-def _get_handler_stdout():
+def _get_handler_stdout() -> logging.StreamHandler:
     if global_state_module.g_stdout_handler is not None:
         return global_state_module.g_stdout_handler
 
@@ -99,7 +103,7 @@ def _get_handler_stdout():
     global_state_module.g_stdout_handler.setLevel(logging.DEBUG)  # 为handler设置级别
     return global_state_module.g_stdout_handler
 
-def _get_handler_main():
+def _get_handler_main() -> TimedRotatingFileHandler:
     if global_state_module.g_main_handler is not None:
         return global_state_module.g_main_handler
 
@@ -112,7 +116,7 @@ def _get_handler_main():
     return global_state_module.g_main_handler
 
 
-def _get_handler_error():
+def _get_handler_error() -> TimedRotatingFileHandler:
     if global_state_module.g_error_handler is not None:
         return global_state_module.g_error_handler
 
@@ -124,7 +128,7 @@ def _get_handler_error():
     global_state_module.g_error_handler.setLevel(logging.ERROR)  # 为handler设置级别
     return global_state_module.g_error_handler
 
-def _get_handler_progress():
+def _get_handler_progress() -> TimedRotatingFileHandler:
     if global_state_module.g_progress_handler is not None:
         return global_state_module.g_progress_handler
 
@@ -136,7 +140,7 @@ def _get_handler_progress():
     global_state_module.g_progress_handler.setLevel(logging.INFO)  # 为handler设置级别
     return global_state_module.g_progress_handler
 
-def hook_handlers(logger):
+def hook_handlers(logger: logging.Logger) -> None:
     if logger is None:
         return 
 
@@ -165,7 +169,7 @@ def hook_handlers(logger):
         logger.addHandler(handler_error)
 
 
-def _setup_logger_llm():
+def _setup_logger_llm() -> None:
     logger_llm = logging.getLogger(_LOGGER_NAME_LLM)
     logger_llm.propagate = False
 
@@ -177,7 +181,7 @@ def _setup_logger_llm():
     srl_handler.setLevel(logging.DEBUG)  # 为handler设置级别
     logger_llm.addHandler(srl_handler)
 
-def _setup_logger_prg():
+def _setup_logger_prg() -> None:
     logger_prg = logging.getLogger(_LOGGER_NAME_PRG)
     logger_prg.propagate = False
 
@@ -189,7 +193,7 @@ def _setup_logger_prg():
     srl_handler.setLevel(logging.DEBUG)  # 为handler设置级别
     logger_prg.addHandler(srl_handler)
 
-def setup_logger_handlers(level=logging.INFO):
+def setup_logger_handlers(level: int = logging.INFO) -> None:  
     if global_state_module.g_logger_inited:
         return 
     global_state_module.g_logger_inited = True
@@ -212,7 +216,7 @@ def setup_logger_handlers(level=logging.INFO):
     _setup_logger_prg()
 
 
-def _move_log_files(log_filename):
+def _move_log_files(log_filename: str) -> None:
     import shutil
     try:
         log_filename_bak = log_filename + ".bak"
@@ -229,7 +233,7 @@ def _move_log_files(log_filename):
         logging.exception(str(ex))
 
 
-def reset_log_files():
+def reset_log_files() -> None:
     logging.info("RLF: move log (srs, sre) files")
     log_srs_file = _get_log_pathname_main()
     _move_log_files(log_srs_file)

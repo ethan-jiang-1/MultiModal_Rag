@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 import os
 import sys
-#import logging
 import rich
 import random
 
@@ -11,7 +10,7 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.ctn2md_converter import do_content2md_convert
+from ctn2md.ctn2md_converter_lp import do_content2md_convert
 
 if __name__ == "__main__":
     #doc_pathname = "datasrc/test/raw_docs/AIGC时代的人力资源管理进化(徐刚).pdf"
