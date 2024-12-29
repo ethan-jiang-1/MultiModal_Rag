@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import List, Tuple # , Optional  # , Dict
+from typing import List, Tuple, Optional
 import logging
 import rich
 
@@ -25,7 +25,11 @@ IMG_EXT = "jpg"  # or "png"
 JPG_QUALITY = 90 # 95
 
 
-def _get_non_text_rects(md_info:MdInfo, page:pymupdf.Page, page_index:int, pname_page_name:str, mctl_lvlm_region_model:str = None) -> List[Tuple[float, float, float, float]]:
+def _get_non_text_rects(md_info:MdInfo, 
+                        page:pymupdf.Page, 
+                        page_index:int, 
+                        pname_page_name:str, 
+                        mctl_lvlm_region_model:Optional[str] = None) -> List[Tuple[float, float, float, float]]:
     if mctl_lvlm_region_model is None:
         mctl_lvlm_region_model = md_info.get_md_control("mctl_lvlm_region_model", "qwen")
     logging.info(f"cal rects for {page_index} starts...")
@@ -57,7 +61,9 @@ def _assign_final_doc_cnt_type(md_info:MdInfo, pdf_document:fitz.Document):
                 md_info[MIFN.DOC_CTN_TYPE] = CTN_TYPE.PPT
         md_info.save()
 
-def parse_pdf_to_images(md_info: MdInfo, sel_page_indexes: List[int] = None, mctl_lvlm_region_model:str = None) -> List[Tuple[str, str, List[str]]]:
+def parse_pdf_to_images(md_info: MdInfo, 
+                        sel_page_indexes: Optional[List[int]] = None, 
+                        mctl_lvlm_region_model: Optional[str] = None) -> List[Tuple[str, str, List[str]]]:
     """
     Parse PDF to images and save to output_dir.
     """

@@ -67,8 +67,9 @@ def _merge_rects(rect_list: List[BaseGeometry], distance: float = 20, horizontal
     return rect_list
 
 
-def _adsorb_rects_to_rects(source_rects: List[BaseGeometry], target_rects: List[BaseGeometry], distance: float = 10) -> \
-        Tuple[List[BaseGeometry], List[BaseGeometry]]:
+def _adsorb_rects_to_rects(source_rects: List[BaseGeometry], 
+                           target_rects: List[BaseGeometry], 
+                           distance: float = 10) -> Tuple[List[BaseGeometry], List[BaseGeometry]]:
     """
     Adsorb a set of rectangles to another set of rectangles.
     """
@@ -106,7 +107,10 @@ def _merge_all_rects(page: fitz.Page, rect_list: List[BaseGeometry]) -> List[Bas
     merged_rects = [rect for rect in merged_rects if rect.bounds[2] - rect.bounds[0] > 20 and rect.bounds[3] - rect.bounds[1] > 20]
     return merged_rects
 
-def gs0_parse_non_text_rects_in_page(md_info: MdInfo, page: fitz.Page, page_index: int, pname_page_name: str) -> List[Tuple[float, float, float, float]]:
+def gs0_parse_non_text_rects_in_page(md_info: MdInfo, 
+                                     page: fitz.Page, 
+                                     page_index: int, 
+                                     pname_page_name: str) -> List[Tuple[float, float, float, float]]:
     """
     Parse drawings in the page and merge adjacent rectangles.
     """

@@ -3,9 +3,6 @@ import os
 import sys
 import logging
 import rich
-#import random
-#import re
-#import shutil
 
 load_dotenv()
 

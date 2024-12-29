@@ -1,7 +1,7 @@
 import os
 import sys
 import logging
-from typing import List
+from typing import List, Tuple
 import rich
 import fitz  
 
@@ -11,7 +11,6 @@ if './' not in sys.path:
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lvlm.lvlm_base import get_job_id
 from ctn2md.utils.util_logging import setup_logger_handlers
-#from ctn2md.utils_vllm_exp.vllm_img2region_gpt import generate_regions_from_image_gpt
 from ctn2md.utils_vllm_exp.vllm_img2region_qwen import generate_regions_from_image_qwen
 
 
@@ -39,7 +38,7 @@ from ctn2md.utils_vllm_exp.vllm_img2region_qwen import generate_regions_from_ima
 - `x` 值从左到右增加，`y` 值从下到上增加。
 """
 
-def vllm_parse_non_text_rects_in_page_by_gpt(md_info:MdInfo, page:fitz.Page, page_index:int, pname_page_name:str):
+def vllm_parse_non_text_rects_in_page_by_gpt(md_info:MdInfo, page:fitz.Page, page_index:int, pname_page_name:str) -> List[Tuple[float, float, float, float]]:
     """
     Parse non-text rectangular regions in a PDF page using GPT and return their bounds.
 
