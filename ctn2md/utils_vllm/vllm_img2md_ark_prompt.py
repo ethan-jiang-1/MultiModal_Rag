@@ -1,63 +1,67 @@
 PROMPT_INSTRUCT_IMG2MD_ARK = """
 # Task
-Convert the given PDF page into Markdown format, maintaining EXACT image positions and correct image identification.
+Convert the given PDF page into Markdown format, maintaining EXACT image positions and content formatting.
 
-# Critical Rules for Images
-1. Strict Image Identification:
-   - Each image MUST use its EXACT filename from its red rectangle
-   - Match each image's content with its correct filename
-   - Example: If `5ec48698-img_1_1.jpg` shows a data chart, use that EXACT filename for the chart
-   - NO mixing up or swapping of filenames
+# Core Principles
+1. Strict Content Preservation:
+   - Convert content AS IS without "improvements"
+   - Keep original spacing, layout, and formatting
+   - NO decorative elements or style enhancements
+   - STOP if you find yourself repeating the same pattern more than 16 times
+   - For repetitive content (like TOC entries), use the same format but DO NOT extend unnecessarily
 
-2. Strict Position Preservation:
-   - Process document in EXACT top-to-bottom order
-   - Insert each image WHERE IT APPEARS in the PDF
-   - STOP and insert image Markdown as soon as you encounter an image
-   - NEVER collect images for later insertion
+2. Image Processing Rules:
+   - Process ONLY images with red rectangles and filenames
+   - Use EXACT filenames from red rectangles
+   - Place images at their ORIGINAL positions
+   - Match content with correct filenames
+   - NO image collection at document end
 
-3. Image Markdown Format:
+3. Pattern Recognition:
+   - If you detect repetitive patterns (like dots in TOC)
+   - If the same pattern appears more than 16 times
+   - STOP the repetition and continue with next content
+   - Use simple, clean formatting instead
+
+# Markdown Conversion
+1. Text Content:
+   - Convert to plain Markdown
+   - Keep original formatting
+   - Preserve spacing and alignment
+   - NO format "improvements"
+   - Avoid unnecessary repetition
+
+2. Image Format:
    ```markdown
    ![Title](<EXACT-Filename> "Description of THIS specific image's content")
    ```
-   - Filename: Must match the red rectangle label
-   - Title and Description: Must describe THIS image's actual content
-   - Verify filename matches content before inserting
-
-# Processing Steps
-1. For EACH content element from TOP to BOTTOM:
-   - If it's text → Convert to Markdown
-   - If it's an image → IMMEDIATELY insert image Markdown with correct filename
-   - Continue to next element
-   
-2. For EACH image:
-   - Look at the image content
-   - Find its matching filename in red rectangle
-   - Verify content matches filename
-   - Insert AT CURRENT POSITION
-   - Check off image from tracking list
+   - Filename: Must match red rectangle label
+   - Title/Description: Describe actual image content
+   - Insert at original position
 
 # Quality Control
-1. Image Position Check:
-   - Each image appears WHERE it was in PDF
-   - NO images grouped at end
-   
-2. Image Identification Check:
-   - Each filename matches its image content
-   - NO swapped or mixed-up filenames
-   
-3. Completeness Check:
-   - ALL images processed
-   - Each image used exactly once
+1. Content Check:
+   - All text converted exactly as shown
+   - NO added formatting or styling
+   - Original layout preserved
+   - NO excessive repetition
+
+2. Image Check:
+   - All valid images included
    - Correct filename-content pairs
+   - Original positions maintained
+   - NO skipped images
 
 # Image Information
 {inst_img_rects}
 
 # Expected Output
-- Images in their ORIGINAL positions
-- CORRECT filename-content matching
-- NO image collection at end
-- NO skipped images
+- Clean, minimal Markdown
+- Images at original positions
+- Exact content preservation
+- NO format enhancements
+- NO excessive repetition
+- NO collected images at end
 """
 
 PROMPT_INSTRUCT_IMG2MD_ARK_IMG_RECTS = """
