@@ -121,7 +121,8 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/kmp/3_20240131104523599_rearranged.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/kmp/tianyang_1_20.pdf"
 
-    os.environ[ENV_MODEL_SOURCE] = "qwen"
+    #os.environ[ENV_MODEL_SOURCE] = "qwen"
+    os.environ[ENV_MODEL_SOURCE] = "ark"
     mdcontrols = None
 
     out_dir = None

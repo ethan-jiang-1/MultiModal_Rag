@@ -181,6 +181,8 @@ class MonitorContextLLM:
         logging.info(f"MonitorContextLLM enter model:{self.model}")
         self.d1 = time.time()
         self._monitor_call(exc_type)
+        if exc_type is not None:
+            logging.exception(self.track_id)
 
     def _monitor_call(self, exc_type):
         try:
