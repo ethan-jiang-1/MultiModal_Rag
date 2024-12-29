@@ -4,7 +4,7 @@ import sys
 import os
 import logging
 import rich
-
+from typing import Optional
 
 if "./" not in sys.path:
     sys.path.append("./")
@@ -15,7 +15,10 @@ from ctn2md.utils_llm.llm_base import get_gpt_messages_multimodal, chat_gpt_plai
 from ctn2md.utils_vllm.vllm_img2md_ark_prompt import PROMPT_INSTRUCT_IMG2MD_ARK, PROMPT_INSTRUCT_IMG2MD_ARK_IMG_RECTS
 
 
-def generate_full_mds_from_image_ark(pname_image:str, rects_img:List[str] = None, model:str = "ep-20241220100411-qb77p", question_num:int = None) -> str:
+def generate_full_mds_from_image_ark(pname_image:str, 
+                                     rects_img:List[str] = None, 
+                                     model:str = "ep-20241220100411-qb77p", 
+                                     question_num:Optional[int] = None) -> str:
     if question_num is None:
         question_num = get_next_question_num()
 

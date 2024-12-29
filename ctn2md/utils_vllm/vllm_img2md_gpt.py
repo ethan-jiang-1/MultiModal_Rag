@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from dotenv import load_dotenv
 import sys
 import os
@@ -15,7 +15,10 @@ from ctn2md.utils_llm.llm_base import get_gpt_messages_multimodal, chat_gpt_plai
 from ctn2md.utils_vllm.vllm_img2md_gpt_prompt import SYSTEM_PROMPT_IMG2MD, USER_PROMPT_IMG2MD, USER_PROMPT_INST_IMG_RECTS
 
 
-def generate_full_mds_from_image_gpt(pname_image:str, rects_img:List[str] = None, model:str = "gpt-4o", question_num:int = None)->str:
+def generate_full_mds_from_image_gpt(pname_image:str, 
+                                     rects_img:List[str] = None, 
+                                     model:str = "gpt-4o", 
+                                     question_num:Optional[int] = None) -> str:
     if question_num is None:
         question_num = get_next_question_num()
 

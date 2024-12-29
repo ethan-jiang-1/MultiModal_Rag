@@ -1,14 +1,10 @@
-#import time
-#import random
+
 import os
 import logging
 import sys
 from typing import List
-#import json
 import rich
 from dotenv import load_dotenv
-
-#import json_repair
 
 
 if "./" not in sys.path:
@@ -19,7 +15,11 @@ load_dotenv()
 from ctn2md.utils_vllm.vllm_img2md_qwen_prompt import PROMPT_INSTRUCT_IMG2MD_QWEN_START, PROMPT_INSTRUCT_IMG2MD_QWEN_START_IMG_RECTS, PROMPT_INSTRUCT_IMG2MD_QWEN_CONTINUE
 from ctn2md.utils_vllm.vllm_base import chat_qwen_mm
 
-def generate_full_mds_from_image_qwen(pname_image:str, rects_img:List[str] = None, model:str = 'qwen-vl-max-1119', retries:int = 5, backoff_in_seconds:int = 1)->str:
+def generate_full_mds_from_image_qwen(pname_image:str, 
+                                      rects_img:List[str] = None, 
+                                      model:str = 'qwen-vl-max-1119', 
+                                      retries:int = 5, 
+                                      backoff_in_seconds:int = 1)->str:
          
     inst_img_rects = ""
     if rects_img is not None and len(rects_img) > 0:
