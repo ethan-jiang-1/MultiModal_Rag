@@ -1,70 +1,110 @@
-
 PROMPT_INSTRUCT_IMG2MD_ARK = """
-# Task:
-Convert the given PDF page into Markdown format, maintaining the original layout and structure.
+# Task
+Convert the given PDF page into Markdown format, maintaining EXACT image positions and correct image identification.
 
-- **General Rules**:
-  - Recognize and convert all content types, including text, lists, tables, and images, into Markdown.
-  - Only include images that are explicitly marked within `red_rects` and provided in the `red_rects` list.
-  - Place images within the Markdown flow, ensuring they appear naturally and logically at the appropriate position based on the PDF's layout and reading order.
+# Critical Rules for Images
+1. Strict Image Identification:
+   - Each image MUST use its EXACT filename from its red rectangle
+   - Match each image's content with its correct filename
+   - Example: If `5ec48698-img_1_1.jpg` shows a data chart, use that EXACT filename for the chart
+   - NO mixing up or swapping of filenames
 
-- **Image Handling**:
-  - For each image in `red_rects`, use the following format:
-    ```markdown
-    ![Title](<FileName> "<Caption>")
-    ```
-  - **Red Boxed Images (`red_rects`)**:
-    - Images within red boxes (`red_rects`) are annotated in the top-left corner with their file names (e.g., `5ec48698-img_1_1.jpg`).
-    - Use this file name as the **FileName** field in the Markdown image syntax.
-  - **Title**:
-    - Extract a concise, meaningful title from the image content.
-    - The title must match the language of the PDF content.
-  - **FileName**:
-    - Use the exact file name as labeled in the `red_rects` list.
-  - **Caption**:
-    - Provide a detailed description in the original language of the PDF, including:
-      - Key information about the image (e.g., data, trends, or subjects).
-      - Observations or insights drawn from the image.
-      - Any relevant background or context.
+2. Strict Position Preservation:
+   - Process document in EXACT top-to-bottom order
+   - Insert each image WHERE IT APPEARS in the PDF
+   - STOP and insert image Markdown as soon as you encounter an image
+   - NEVER collect images for later insertion
 
-- **Special Rules for Image Placement**:
-  - **Do not include images that are not marked within `red_rects`.**
-  - Insert each image into the Markdown flow at the most natural position, directly following the related text or table. Avoid relocating images to the end of the Markdown output or grouping them together.
+3. Image Markdown Format:
+   ```markdown
+   ![Title](<EXACT-Filename> "Description of THIS specific image's content")
+   ```
+   - Filename: Must match the red rectangle label
+   - Title and Description: Must describe THIS image's actual content
+   - Verify filename matches content before inserting
 
-- **Language Consistency**:
-  - Ensure all output, including titles and captions, is written in the original language of the PDF. **Do not translate.**
+# Processing Steps
+1. For EACH content element from TOP to BOTTOM:
+   - If it's text → Convert to Markdown
+   - If it's an image → IMMEDIATELY insert image Markdown with correct filename
+   - Continue to next element
+   
+2. For EACH image:
+   - Look at the image content
+   - Find its matching filename in red rectangle
+   - Verify content matches filename
+   - Insert AT CURRENT POSITION
+   - Check off image from tracking list
 
-# `red_rects` Information:
+# Quality Control
+1. Image Position Check:
+   - Each image appears WHERE it was in PDF
+   - NO images grouped at end
+   
+2. Image Identification Check:
+   - Each filename matches its image content
+   - NO swapped or mixed-up filenames
+   
+3. Completeness Check:
+   - ALL images processed
+   - Each image used exactly once
+   - Correct filename-content pairs
+
+# Image Information
 {inst_img_rects}
 
-# Output:
-Provide the full content in Markdown format.
-
+# Expected Output
+- Images in their ORIGINAL positions
+- CORRECT filename-content matching
+- NO image collection at end
+- NO skipped images
 """
 
 PROMPT_INSTRUCT_IMG2MD_ARK_IMG_RECTS = """
-- **Red Rectangles (`red_rects`)**:
-  The following `red_rects` mark specific image regions in the PDF. Each red box is labeled in its top-left corner with the corresponding file name:
+- **Red Rectangles (`red_rects`) Identification**:
+  - Each image region is marked with a red rectangular border in the PDF
+  - File names are located in the top-left corner of each red box
+  - Format: The file names follow the pattern `XXXXXXXX-img_YY_ZZ.jpg`:
+    - XXXXXXXX: 8-character document ID
+    - YY: page number in the document
+    - ZZ: image sequence number on that page
 {img_rects}
 
-- **Instructions**:
-  - For each `red_rect`, generate a Markdown image entry:
+- **Markdown Image Generation**:
+  - For each `red_rect`, create a Markdown image entry:
     ```markdown
     ![Title](<FileName> "<Caption>")
     ```
-  - Requirements:
-    - **Title**: A short, meaningful title in the same language as the PDF content.
-    - **FileName**: Use the exact file name annotated in the top-left corner of the red box.
-    - **Caption**: Provide a detailed, contextually rich description in the same language, focusing on:
-      - Key data, trends, and observations from the image.
-      - The image’s relevance to the surrounding content.
+  - Component Requirements:
+    - **Title**: 
+      - Brief (3-10 words)
+      - Descriptive of the image content
+      - Same language as the PDF
+      - Example: "Temperature Distribution Graph" or "System Architecture Diagram"
+    
+    - **FileName**: 
+      - Use the EXACT filename from the red box
+      - Do not modify or reformat the filename
+    
+    - **Caption**: 
+      - Structure:
+        1. Main content description (1-2 sentences)
+        2. Key features or data points (if applicable)
+        3. Relationship to surrounding text (1 sentence)
+      - Length: 2-4 sentences
+      - Language: Same as the PDF content
+      - Focus: Technical accuracy and context relevance
 
-  - **Placement Rules**:
-    - Place each image **immediately after the content it relates to**, based on the natural reading order of the PDF.
-    - Ensure the Markdown flow reflects the PDF’s layout, with images appearing logically within the text.
-    - **Do not include images that are not explicitly marked within `red_rects`.**
+  - **Image Placement Rules**:
+    - Place each image in its natural reading order within the Markdown text
+    - Insert the image where it logically appears in the original document flow
+    - Keep the original document's content sequence
+    - Maintain the relationship between text and images
 
-  - **Validation**:
-    - Verify all `red_rects` are processed exactly once and embedded at the correct position in the Markdown output.
+  - **Quality Control**:
+    1. Verify each `red_rect` is processed exactly once
+    2. Check filename accuracy against the red box label
+    3. Ensure all images are placed in logical reading order
+    4. Validate that no unmarked images are included
 """
 
