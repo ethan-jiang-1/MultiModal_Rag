@@ -2,7 +2,7 @@ import subprocess
 import os
 from dotenv import find_dotenv
 
-def get_git_version():
+def get_git_version() -> str:
     cur_dir = os.getcwd()
 
     root_dir = os.path.abspath(os.path.dirname(find_dotenv()))  

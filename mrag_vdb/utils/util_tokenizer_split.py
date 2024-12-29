@@ -1,5 +1,7 @@
 from dotenv import load_dotenv
 import rich
+import tiktoken
+import pyrwkv_tokenizer
 
 load_dotenv()
 
@@ -7,8 +9,7 @@ class _TokenizerRemoteOpenAI():
     _TOKENIZER_TEXT_MODEL = "cl100k_base"
     _g_tk_encoding = None
 
-    def _get_tokenizer(cls):
-        import tiktoken
+    def _get_tokenizer(cls) -> tiktoken.Encoding:
         if cls._g_tk_encoding is None:
             cls._g_tk_encoding = tiktoken.get_encoding(cls._TOKENIZER_TEXT_MODEL)
         return cls._g_tk_encoding  
@@ -22,9 +23,8 @@ class _TokenizerLocalRWKV():
     _g_rwkv_tokenizer = None
 
     @classmethod
-    def _get_tokenizer(cls):
+    def _get_tokenizer(cls) -> pyrwkv_tokenizer.RWKVTokenizer:
         if cls._g_rwkv_tokenizer is None:
-            import pyrwkv_tokenizer
             cls._g_rwkv_tokenizer = pyrwkv_tokenizer.RWKVTokenizer()
         return cls._g_rwkv_tokenizer
     

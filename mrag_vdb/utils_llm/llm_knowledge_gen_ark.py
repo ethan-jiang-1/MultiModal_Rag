@@ -1,3 +1,4 @@
+from typing import Dict, Optional
 from dotenv import load_dotenv
 import sys
 import os
@@ -13,7 +14,10 @@ from mrag_vdb.utils.util_llm_diag import save_llm_diag_messages, set_question_nu
 from mrag_vdb.utils_llm.llm_base import get_gpt_messages, chat_gpt_json, get_ark_client
 
 
-def knowlege_gen_by_ark(user_input, knowledge, model="ep-20241220101421-4tj5f", question_num=None):
+def knowlege_gen_by_ark(user_input:str, 
+                        knowledge:str, 
+                        model:str = "ep-20241220101421-4tj5f", 
+                        question_num:Optional[int] = None) -> Dict:
     if question_num is None:
         question_num = get_next_question_num()
 

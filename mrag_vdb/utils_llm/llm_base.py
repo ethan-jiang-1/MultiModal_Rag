@@ -12,6 +12,7 @@ import csv
 import rich 
 import re
 from datetime import datetime
+from typing import Optional, List, Dict
 #import json
 
 if "./" not in sys.path:
@@ -29,7 +30,7 @@ load_dotenv()
 
 DEFAULT_RETRY_NUM = 5
 
-def get_gpt_messages(system_prompt, user_prompt):
+def get_gpt_messages(system_prompt:str, user_prompt:str) -> list:
     messages=[
         {
             "role": "system",
@@ -40,11 +41,9 @@ def get_gpt_messages(system_prompt, user_prompt):
             "content": str(user_prompt)
         },
     ]
-    #messages_str = json.dumps(messages)
-    #messages_loaded = json.loads(messages_str)
     return messages
 
-def _generate_unique_name(image_path):
+def _generate_unique_name(image_path:str) -> str:
     # 将路径中的文件名提取出来
     filename = re.search(r'[^/\\]*$', image_path).group()
     
@@ -61,7 +60,7 @@ def _generate_unique_name(image_path):
     return unique_name
 
 
-def upload_image_to_oss(image_path):
+def upload_image_to_oss(image_path:str) -> str:
     import oss2
     access_key_id = os.environ["OSS_ACCESS_KEY_ID"]
     access_key_secret = os.environ["OSS_ACCESS_KEY_SECRET"]
@@ -88,7 +87,7 @@ def upload_image_to_oss(image_path):
     logging.info(f"url:{url} to access upload {image_path} in oss")
     return url
 
-def get_gpt_messages_multimodal(system_prompt, user_prompt, image_path):
+def get_gpt_messages_multimodal(system_prompt:str, user_prompt:str, image_path:str) -> list:
     """生成支持多模态的消息结构"""
     img_url = upload_image_to_oss(image_path)
     
@@ -112,14 +111,14 @@ def get_gpt_messages_multimodal(system_prompt, user_prompt, image_path):
     return messages
 
 
-def get_azure_gpt_client():
+def get_azure_gpt_client() -> AzureOpenAI:
     client = AzureOpenAI(api_key=os.getenv("OPENAI_API_KEY"),
                          azure_endpoint=os.getenv("OPENAI_BASE_URL"),
                          api_version=os.environ.get("AZURE_OPENAI_VERSION"))
     return client
 
 
-def get_dashscope_client():
+def get_dashscope_client() -> OpenAI:
     from openai import OpenAI
     client = OpenAI(
         api_key=os.getenv("DASHSCOPE_API_KEY"),
@@ -127,14 +126,7 @@ def get_dashscope_client():
     )
     return client
 
-def get_ark_client():
-    #from volcenginesdkarkruntime import Ark
-
-    # # 从环境变量中获取API Key
-    # client = Ark(
-    #     api_key=os.getenv('ARK_API_KEY'),
-    #     base_url=""
-    # )
+def get_ark_client() -> OpenAI:
     client = OpenAI(
         api_key=os.environ.get("ARK_API_KEY"),
         base_url="https://ark.cn-beijing.volces.com/api/v3",
@@ -142,7 +134,7 @@ def get_ark_client():
 
     return client
 
-def jsons_load_repair(content):
+def jsons_load_repair(content:str) -> dict:
     resp = json_repair.repair_json(content, 
                                    ensure_ascii=True, 
                                    return_objects=True)
@@ -153,7 +145,7 @@ class MonitorContextLLM:
     c_fname = "ctn_llm_monitor.csv" 
 
     @classmethod
-    def _get_monitor_filename(cls):
+    def _get_monitor_filename(cls) -> str:
         if cls.c_monitor_filename is None:
             dir_root = os.path.dirname(find_dotenv())
             dir_logs = os.path.join(dir_root, "logs")
@@ -162,7 +154,7 @@ class MonitorContextLLM:
             cls.c_monitor_filename = filename
         return cls.c_monitor_filename
 
-    def __init__(self, messages, model, track_id, attempt):
+    def __init__(self, messages:list, model:str, track_id:str, attempt:int):
         self.messages = messages
         self.model = model
         self.track_id = track_id
@@ -181,8 +173,10 @@ class MonitorContextLLM:
         logging.info(f"MonitorContextLLM enter model:{self.model}")
         self.d1 = time.time()
         self._monitor_call(exc_type)
+        if exc_type is not None:
+            logging.exception(self.track_id)
 
-    def _monitor_call(self, exc_type):
+    def _monitor_call(self, exc_type:Exception):
         try:
             filename = self._get_monitor_filename()
 
@@ -219,18 +213,45 @@ class MonitorContextLLM:
         except Exception as ex:  # noqa
             logging.exception(ex)
 
-def chat_gpt_json(messages, 
-                  model="gpt-4o-mini", 
-                  temperature=0.1, 
-                  top_p=0.9,
-                  retries=DEFAULT_RETRY_NUM,
-                  backoff_factor=2,
-                  backoff_sec=1,
-                  delay_base_sec=5,
-                  track_id=None,
-                  client=None):
-    if client is None:
-        client = get_azure_gpt_client()
+def chat_gpt_json(
+    messages: List[Dict[str, str]], 
+    model: str = "gpt-4o-mini", 
+    temperature: float = 0.1, 
+    top_p: float = 0.9,
+    retries: int = DEFAULT_RETRY_NUM,
+    backoff_factor: float = 2,
+    backoff_sec: float = 1,
+    delay_base_sec: float = 5,
+    track_id: Optional[str] = None,
+    client: Optional[OpenAI] = None,
+) -> dict:
+    """
+    使用GPT模型进行JSON格式的对话。
+
+    Args:
+        messages: 对话消息列表
+        model: 模型名称
+        temperature: 温度参数
+        top_p: top-p采样参数
+        retries: 重试次数
+        backoff_factor: 退避因子
+        backoff_sec: 初始退避时间
+        delay_base_sec: 基础延迟时间
+        track_id: 追踪ID
+        client: OpenAI客户端实例，如果为None则使用默认Azure客户端
+
+    Returns:
+        dict: GPT响应的JSON内容
+
+    Raises:
+        ValueError: 参数验证失败
+        openai.BadRequestError: API请求错误
+    """
+    if not messages:
+        raise ValueError("Messages cannot be empty")
+
+    client = client or get_azure_gpt_client()
+    
     for attempt in range(retries):
         try:
             with MonitorContextLLM(messages, model, track_id, attempt) as mc:
@@ -257,16 +278,18 @@ def chat_gpt_json(messages,
             logging.exception(e)
             raise
 
-def chat_gpt_plain(messages, 
-                  model="gpt-4o-mini", 
-                  temperature=0.1, 
-                  top_p=0.9,
-                  retries=DEFAULT_RETRY_NUM,
-                  backoff_factor=2,
-                  backoff_sec=1,
-                  delay_base_sec=5,
-                  track_id=None,
-                  client=None):
+def chat_gpt_plain(
+    messages: list,
+    model: str = "gpt-4o-mini",
+    temperature: float = 0.1,
+    top_p: float = 0.9,
+    retries: int = DEFAULT_RETRY_NUM,
+    backoff_factor: float = 2,
+    backoff_sec: float = 1,
+    delay_base_sec: float = 5,
+    track_id: Optional[str] = None,
+    client: Optional[OpenAI] = None
+) -> str:
     if client is None:
         client = get_azure_gpt_client()
     for attempt in range(retries):

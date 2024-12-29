@@ -7,6 +7,6 @@ if "./" not in sys.path:
 
 load_dotenv()
 
-def get_root_dir():
+def get_root_dir() -> str:
     root_dir = os.path.abspath(os.path.dirname(find_dotenv()))  
     return root_dir

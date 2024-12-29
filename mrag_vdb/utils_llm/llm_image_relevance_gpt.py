@@ -1,4 +1,5 @@
 #from typing import List
+from typing import Dict, Optional
 from dotenv import load_dotenv
 import sys
 import os
@@ -13,7 +14,12 @@ from mrag_vdb.utils_llm.llm_image_relevance_gpt_prompt import SYSTEM_PROMPT_IMAG
 from mrag_vdb.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from mrag_vdb.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
 
-def check_img_relevance_by_gpt(user_query:str, llm_answer: str, knowledge_context: str, numbered_image_descriptions: str, model:str = "gpt-4o-mini", question_num:int = None):
+def check_img_relevance_by_gpt(user_query:str, 
+                               llm_answer: str, 
+                               knowledge_context: str, 
+                               numbered_image_descriptions: str, 
+                               model:str = "gpt-4o-mini", 
+                               question_num:Optional[int] = None) -> Dict:
     if question_num is None:
         question_num = get_next_question_num()
 

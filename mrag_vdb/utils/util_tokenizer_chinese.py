@@ -1,5 +1,6 @@
 
 #import tiktoken
+from typing import Generator
 import rich
 import logging   
 
@@ -13,7 +14,7 @@ def get_chinese_analyzer():
 
         def __call__(self, value, positions=False, chars=False,
                     keeporiginal=False, removestops=True,
-                    start_pos=0, start_char=0, mode='', **kwargs):
+                    start_pos=0, start_char=0, mode='', **kwargs) -> Generator[Token, None, None]:
 
             t = Token(positions, chars, removestops=removestops, mode=mode,
                     **kwargs)
