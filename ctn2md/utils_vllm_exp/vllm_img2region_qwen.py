@@ -1,14 +1,9 @@
-#import time
-#import random
 import os
 import logging
 import sys
-#import json
 import rich
 import json_repair
 from dotenv import load_dotenv
-
-#import json_repair
 
 
 if "./" not in sys.path:
@@ -19,7 +14,10 @@ load_dotenv()
 from ctn2md.utils_vllm_exp.vllm_img2region_qwen_prompt import PROMPT_INSTRUCT_IMG2REGION_QWEN
 from ctn2md.utils_vllm.vllm_base import chat_qwen_mm
 
-def generate_regions_from_image_qwen(pname_image, model='qwen-vl-max-1119', retries=5, backoff_in_seconds=1):
+def generate_regions_from_image_qwen(pname_image:str, 
+                                     model:str = 'qwen-vl-max-1119', 
+                                     retries:int = 5, 
+                                     backoff_in_seconds:int = 1) -> dict:
     
     prompt = PROMPT_INSTRUCT_IMG2REGION_QWEN
 

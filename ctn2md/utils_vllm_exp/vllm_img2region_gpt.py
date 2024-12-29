@@ -3,7 +3,7 @@ import sys
 import os
 import logging
 import rich
-
+from typing import Optional
 
 if "./" not in sys.path:
     sys.path.append("./")
@@ -14,7 +14,9 @@ from ctn2md.utils_llm.llm_base import get_gpt_messages_multimodal, chat_gpt_json
 from ctn2md.utils_vllm_exp.vllm_img2region_gpt_prompt import SYSTEM_PROMPT_IMG2REGION, USER_PROMPT_IMG2REGION
 
 
-def generate_regions_from_image_gpt(pname_image, model="gpt-4o", question_num=None):
+def generate_regions_from_image_gpt(pname_image:str, 
+                                    model:str = "gpt-4o", 
+                                    question_num:Optional[int] = None) -> dict:
     if question_num is None:
         question_num = get_next_question_num()
 
