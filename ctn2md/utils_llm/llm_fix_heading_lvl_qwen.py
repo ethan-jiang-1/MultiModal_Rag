@@ -4,8 +4,7 @@ import os
 import logging
 import rich
 import json
-#import time
-
+from typing import Optional
 
 if "./" not in sys.path:
     sys.path.append("./")
@@ -18,7 +17,11 @@ from ctn2md.utils_llm.llm_base import get_gpt_messages, chat_gpt_json, get_dashs
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src.md_info_base import FHL_QUALITY_TYPE
 
-def fix_heading_lvl_markdown_by_qwen(fhl_org, fhl_quality=FHL_QUALITY_TYPE.LOW, ctn_type=CTN_TYPE.PDF, model="qwen-max",  question_num=None):
+def fix_heading_lvl_markdown_by_qwen(fhl_org: dict,
+                                   fhl_quality: FHL_QUALITY_TYPE = FHL_QUALITY_TYPE.LOW,
+                                   ctn_type: CTN_TYPE = CTN_TYPE.PDF,
+                                   model: str = "qwen-max",
+                                   question_num: Optional[int] = None) -> dict:
     if question_num is None:
         question_num = get_next_question_num()
 

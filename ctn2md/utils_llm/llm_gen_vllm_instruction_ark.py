@@ -2,7 +2,8 @@ from dotenv import load_dotenv
 import sys
 import os
 import logging
-import rich 
+import rich
+from typing import Optional
 
 if "./" not in sys.path:
     sys.path.append("./")
@@ -14,7 +15,10 @@ from ctn2md.utils_llm.llm_base import get_gpt_messages, chat_gpt_json, get_ark_c
 from ctn2md.utils_vllm.vllm_img_description_ark_prompt import TEXT_PROMPT_INST_VLLM_IMG_RELEVANCE
 
 
-def gen_vllm_instruction_by_ark(doc_title, page_content, model="ep-20241220100411-qb77p", question_num=None):
+def gen_vllm_instruction_by_ark(doc_title: str, 
+                                page_content: str, 
+                                model: str = "ep-20241220100411-qb77p", 
+                                question_num: Optional[int] = None) -> str:
     if question_num is None:
         question_num = get_next_question_num()
 

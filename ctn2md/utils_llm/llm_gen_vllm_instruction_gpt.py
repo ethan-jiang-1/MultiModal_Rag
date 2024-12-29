@@ -3,7 +3,7 @@ import sys
 import os
 import logging
 import rich 
-
+from typing import Optional
 if "./" not in sys.path:
     sys.path.append("./")
 load_dotenv()
@@ -13,8 +13,10 @@ from ctn2md.utils_llm.llm_gen_vllm_instruction_gpt_prompt import SYSTEM_PROMPT_G
 from ctn2md.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
 from ctn2md.utils_vllm.vllm_img_description_gpt_prompt import TEXT_PROMPT_INST_VLLM_IMG_RELEVANCE
 
-
-def gen_vllm_instruction_by_gpt(doc_title, page_content, model="gpt-4o-mini", question_num=None):
+def gen_vllm_instruction_by_gpt(doc_title: str,
+                             page_content: str,
+                             model: str = "gpt-4o-mini",
+                             question_num: Optional[int] = None) -> str:
     if question_num is None:
         question_num = get_next_question_num()
 

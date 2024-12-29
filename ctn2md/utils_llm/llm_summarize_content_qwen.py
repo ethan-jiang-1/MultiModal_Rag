@@ -2,7 +2,8 @@ from dotenv import load_dotenv
 import sys
 import os
 import logging
-import rich 
+import rich
+from typing import Optional
 
 if "./" not in sys.path:
     sys.path.append("./")
@@ -13,7 +14,10 @@ from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num,
 from ctn2md.utils_llm.llm_base import get_gpt_messages, chat_gpt_json, get_dashscope_client
 
 
-def summarize_doc_keywords_by_qwen(doc_title, full_content, model="qwen-turbo-1101", question_num=None):
+def summarize_doc_keywords_by_qwen(doc_title:str, 
+                                   full_content:str, 
+                                   model:str = "qwen-turbo-1101", 
+                                   question_num:Optional[int] = None) -> dict:
     if question_num is None:
         question_num = get_next_question_num()
 
