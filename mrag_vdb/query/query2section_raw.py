@@ -18,7 +18,9 @@ from mrag_vdb.query._recover_section_from_chunks import query_initial_points, re
 from mrag_vdb.common.text_embedding import get_embedding_vec
 from mrag_vdb.common.vdb_base import QdrantClientContextManager
 
-def query2section_raw_on_single_collection(collection_name: str, query: str, limit: int = LIMIT_QUERY) -> List[ScoredRecoveredSection]:
+def query2section_raw_on_single_collection(collection_name: str, 
+                                           query: str, 
+                                           limit: int = LIMIT_QUERY) -> List[ScoredRecoveredSection]:
     """
     查询集合中的 chunk 并恢复完整的 section。
     """
@@ -32,7 +34,9 @@ def query2section_raw_on_single_collection(collection_name: str, query: str, lim
     return merged_scored_sections
 
 
-def query2section_raw_on_multiple_collection(collection_names: list[str], query: str, limit: int = LIMIT_QUERY) -> List[ScoredRecoveredSection]:
+def query2section_raw_on_multiple_collection(collection_names: list[str], 
+                                             query: str, 
+                                             limit: int = LIMIT_QUERY) -> List[ScoredRecoveredSection]:
     """
     查询集合中的 chunk 并恢复完整的 section。
     """

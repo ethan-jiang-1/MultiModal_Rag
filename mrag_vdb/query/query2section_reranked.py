@@ -1,7 +1,6 @@
 from typing import List
 from dotenv import load_dotenv
 import sys
-#import logging
 import rich
 
 # 加载环境变量
@@ -19,7 +18,8 @@ WEIGHT_DISTANCE = 0
 WEIGHT_RERANK = 8
 WEIFHT_BM25 = 1
 
-def query2sortedsections_reranked(query: str, scored_sections_raw: List[ScoredRecoveredSection]) -> List[ScoredRecoveredSection]:
+def query2sortedsections_reranked(query: str, 
+                                  scored_sections_raw: List[ScoredRecoveredSection]) -> List[ScoredRecoveredSection]:
     distance_weight = WEIGHT_DISTANCE
     rerank_weight = WEIGHT_RERANK
     bm25_weight = WEIFHT_BM25
