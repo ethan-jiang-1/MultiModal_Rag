@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 from dotenv import load_dotenv
 import os
 import sys
@@ -37,7 +37,7 @@ def _does_page_need_gen(pname_page_md:str, md_info:MdInfo) -> bool:
 
     return False
 
-def _select_meanful_image_by_size(fname_image, md_info):
+def _select_meanful_image_by_size(fname_image:str, md_info:MdInfo) -> Tuple[bool, str]:
     """
     检查图像的合理性，并返回描述和新图像路径。
     :param image_file: 图像文件名
@@ -67,7 +67,8 @@ def _select_meanful_image_by_size(fname_image, md_info):
         return None, "access error"
     return True, None
 
-def _find_closest_heading(image, headings, page, y_threshold_ratio=None, x_tolerance_ratio=None):
+def _find_closest_heading(image:dict, headings:List[dict], page:dict, 
+                          y_threshold_ratio:float = None, x_tolerance_ratio:float = None) -> dict:
     """
     根据页面的尺寸和图像的位置动态计算 y_threshold 和 x_tolerance，寻找视觉上最近的 heading。
 
@@ -468,7 +469,8 @@ if __name__ == "__main__":
     #md_info_path = "_output/ctn2md_LongRAG/_info.json"
     #md_info_path = "_output/ctn2md_业绩案例_上汽内外饰DRE外包框架服务合同/_info.json"
     #md_info_path = "_output/ctn2md_业绩案例_上汽内外饰部CAD外包框架服务合同/_info.json"
-    md_info_path = "_output/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
+    #md_info_path = "_output/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
+    md_info_path = "_output/ctn2md_mrag__4__前后排座椅间距定义_P1_lp/_info.json"
     page_ndx = 3
 
 
@@ -485,7 +487,7 @@ if __name__ == "__main__":
     page = pages[page_ndx]
     total_pages = len(pages)
 
-    p2m = Page2Markdown(job_id, page, total_pages, md_info)
+    p2m = Page2Markdown(job_id, page, total_pages, md_info, [])
     p2m.analyse()
     fname_page = p2m.save_page_markdown()
     md_info.save()

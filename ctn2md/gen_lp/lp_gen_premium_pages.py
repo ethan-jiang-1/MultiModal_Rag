@@ -128,7 +128,7 @@ def n2u_restore_unique_name_premium(md_info:MdInfo, new_job_id:str):
             if fname_page in fname_p_page:
                 md_info[ndx] = fname_p_page
 
-def gen_premium_pages(md_info:MdInfo):
+def gen_premium_pages(md_info:MdInfo) -> List[dict]:
     parser = _get_llamaparse_premium(md_info)
 
     fname_json_result = md_info.get(MIFN.LP_FNAME_JSON_RESULT_PREMIUM, None)

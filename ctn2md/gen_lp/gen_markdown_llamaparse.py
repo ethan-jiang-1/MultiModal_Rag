@@ -61,7 +61,9 @@ def _assign_final_doc_cnt_type(md_info:MdInfo, json_result:list[dict]):
                                 md_info[MIFN.DOC_CTN_TYPE] = CTN_TYPE.PPT
         md_info.save()
 
-def generate_markdown_llamaparse(md_info:MdInfo, need_normal_step:int = True, need_preminum_step:int = True) -> str:
+def generate_markdown_llamaparse(md_info:MdInfo, 
+                                 need_normal_step:int = True, 
+                                 need_preminum_step:int = True) -> str:
     doc_pathname = md_info.get_doc_pathname()
     if (doc_pathname is None) or (not os.path.isfile(doc_pathname)):
         raise ValueError(f"doc_pathname is not valid {doc_pathname}")
@@ -96,7 +98,8 @@ if __name__ == "__main__":
     need_normal_step=False
     need_preminum_step=True
     
-    md_info_path = "_output/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
+    #md_info_path = "_output/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
+    md_info_path = "_output/ctn2md_mrag__4__前后排座椅间距定义_P1_lp/_info.json"
 
     md_info = MdInfo(md_info_path)
 

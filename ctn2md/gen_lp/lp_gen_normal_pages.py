@@ -125,7 +125,7 @@ def _dump_json_result(json_result:List[dict], md_info:MdInfo):
         json.dump(json_result, f, ensure_ascii=False, indent=4)
     md_info[MIFN.LP_FNAME_JSON_RESULT_NORMAL] = fname_json_result
 
-def gen_normal_pages(md_info:MdInfo):
+def gen_normal_pages(md_info:MdInfo) -> List[dict]:
     parser = _get_llamaparse_normal(md_info)
 
     fname_json_result = md_info.get(MIFN.LP_FNAME_JSON_RESULT_NORMAL, None)

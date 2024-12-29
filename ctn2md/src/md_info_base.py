@@ -547,7 +547,7 @@ if __name__ == "__main__":
     pathnames.append("_output/ctn2md_23/AIGC时代的人力资源管理进化(徐刚)___pdf_s0.md")
     pathnames.append("_output/ctn2md_23/AIGC时代的人力资源管理进化(徐刚)___pdf_s10.md")
     pathnames.append("_output/ctn2md_23/AIGC时代的人力资源管理进化(徐刚)___pdf_s.md")
-    pathnames.append("AIGC时代的人力资源管理进化(徐刚)___pdf_s100.md")
+    #pathnames.append("AIGC时代的人力资源管理进化(徐刚)___pdf_s100.md")
  
     for ndx, pathname in enumerate(pathnames):
         num = MdInfo.get_step_num_from_pathname(pathname)
@@ -566,10 +566,11 @@ if __name__ == "__main__":
     md_info = MdInfo(md_info_path)
     rich.print(md_info)
 
-    md_info_path = "_output/ctn2md_21/AIGC时代的人力资源管理进化(徐刚)___pdf_s0.md"
+    #md_info_path = "_output/ctn2md_21/AIGC时代的人力资源管理进化(徐刚)___pdf_s0.md"
+    md_info_path = "_output/ctn2md_mrag__4__前后排座椅间距定义_P1_lp/_info.json"
     md_info = MdInfo(md_info_path)
     rich.print(md_info)
 
     md_info_path = "_output/ctn2md_21"
     md_info = MdInfo(md_info_path)
-    rich.print(md_info)
+    rich.print(md_info) 

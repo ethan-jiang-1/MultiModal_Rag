@@ -15,7 +15,10 @@ if "./" not in sys.path:
 from ctn2md.src.md_info_base import MdInfo
 from ctn2md.src.md_page_spe import SpecialPage
 
-def n2u_replace_fnames(md_info:MdInfo, mifn_fnames:str, unique_job_id:str, new_job_id:str) -> int:
+def n2u_replace_fnames(md_info:MdInfo, 
+                       mifn_fnames:str, 
+                       unique_job_id:str, 
+                       new_job_id:str) -> int:
     out_dir = md_info.get_out_dir()
     changed = 0
     md_info_mifn_fnames = md_info[mifn_fnames]
@@ -46,7 +49,10 @@ def n2u_replace_fnames(md_info:MdInfo, mifn_fnames:str, unique_job_id:str, new_j
             changed += 1
     return changed
 
-def n2u_update_md_content(md_info:MdInfo, pathname_md:str, unique_job_id:str, new_job_id:str):
+def n2u_update_md_content(md_info:MdInfo, 
+                          pathname_md:str, 
+                          unique_job_id:str,
+                          new_job_id:str) -> str:
     with open(pathname_md, "r") as f: 
         md_text = f.read()
 

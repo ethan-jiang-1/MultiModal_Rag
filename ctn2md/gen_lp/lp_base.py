@@ -34,7 +34,7 @@ class PAGE_IMG_STATUS:
     IRRELEVANCE = "irrelevance"
     REF_FILTERED = "ref_filtered"
 
-def _del_attr(image_copy, att_name):
+def _del_attr(image_copy:dict, att_name:str):
     att = image_copy.get(att_name, None)
     if att is not None:
         del image_copy[att_name]
@@ -153,7 +153,9 @@ def _gen_figure_info(md_info:MdInfo, doc_title:str, content_around:str, image_pa
     rich.print(resp_json)
     return resp_json
 
-def _analyse_image_content_core(md_info:MdInfo, image_path:str, content_around:str = ""):
+def _analyse_image_content_core(md_info:MdInfo, 
+                                image_path:str, 
+                                content_around:str = "") -> Tuple[float, str, str]:
     """
     模拟多模态处理函数，分析图像的内容是否有意义。
     
@@ -184,7 +186,9 @@ def _analyse_image_content_core(md_info:MdInfo, image_path:str, content_around:s
 
     return relevance_score, figure_name, picture_discription
 
-def analyse_image_content(md_info:MdInfo, image_path:str, content_around:str = "") -> Tuple[float, str, str]:   
+def analyse_image_content(md_info:MdInfo, 
+                          image_path:str, 
+                          content_around:str = "") -> Tuple[float, str, str]:   
     pathname_img2desp = os.path.join(md_info.get_aux_dir(), "json_image_desp.json")
     json_cache = {}
     if os.path.isfile(pathname_img2desp):
