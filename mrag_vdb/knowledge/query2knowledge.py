@@ -1,10 +1,7 @@
 from typing import List
 from dotenv import load_dotenv
 import sys
-#import os
-#import logging
 import rich
-#import re
 
 # 加载环境变量
 load_dotenv()
@@ -57,7 +54,7 @@ def form_knowledge_snippets(scored_sections_reranked:List[ScoredRecoveredSection
         knowledge_all += knowledge + "\n\n"
     return knowledge_all
 
-def gen_answer_from_knowledge_snippets(query: str, knowledge_snippets: str):
+def gen_answer_from_knowledge_snippets(query: str, knowledge_snippets: str) -> dict:
     model_gen = ModelGptSel.get_gpt_model()
     if model_gen.startswith("gpt"):
         resp = knowlege_gen_by_gpt(query, knowledge_snippets, model=model_gen)

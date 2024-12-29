@@ -28,7 +28,7 @@ from mrag_vdb.common.runtime_settings import ModelGptSel
 
 MIN_IMG_RELEVANCE_SCORE = 2.0
 
-def _get_ref_pname(collection_name:str, unique_doc_id:str, fname:str):
+def _get_ref_pname(collection_name:str, unique_doc_id:str, fname:str) -> str:
     dir_root = get_root_dir()
     pathname = os.path.join(dir_root, get_ref_path(), f"{collection_name}_{unique_doc_id}", fname)
     return pathname
@@ -65,7 +65,7 @@ def _scan_markdown_for_ref_imgs(md_content: str) -> Tuple[List[str], List[str]]:
 
     return ref_img_fnames, ref_img_titles
 
-def _construct_ref_imgs_map(ref_img_fnames: List[str], ref_img_titles: List[str], ref_section: ScoredRecoveredSection):
+def _construct_ref_imgs_map(ref_img_fnames: List[str], ref_img_titles: List[str], ref_section: ScoredRecoveredSection) -> dict:
     ref_imgs_map = {}
     for ref_img_fname, ref_img_title in zip(ref_img_fnames, ref_img_titles):
         if ref_img_fname not in ref_imgs_map:
@@ -201,7 +201,10 @@ def _find_ref_imgs_map(query: str, answer: str, ref_section: ScoredRecoveredSect
     # 3. 若依然没有，返回空
     return {}, True
 
-def _check_if_imgs_are_related_to_qa(user_query: str, llm_answer: str, knowledge_context: str, fname_and_titles: List[Tuple[str, str]]) -> List[Tuple[str, float]]:
+def _check_if_imgs_are_related_to_qa(user_query: str, 
+                                     llm_answer: str, 
+                                     knowledge_context: str, 
+                                     fname_and_titles: List[Tuple[str, str]]) -> List[Tuple[str, float]]:
     image_titles = [item[1] for item in fname_and_titles]
     rich.print(image_titles)
 
