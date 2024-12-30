@@ -36,27 +36,46 @@ def upload_image_to_oss(image_path:str) -> str:
     # 生成带日期路径的对象名
     object_name = _generate_unique_name(image_path)
     
-    # 检查对象是否已存在
-    if not bucket.object_exists(object_name):
-        logging.info(f"Uploading {image_path} to oss as {object_name}")
-        headers = {
-            'Content-Disposition': 'inline',
-            'x-oss-object-acl': oss2.OBJECT_ACL_PUBLIC_READ
-        }
-        with open(image_path, 'rb') as file:
-            result = bucket.put_object(object_name, file, headers=headers)
-    else:
-        # 获取已存在文件的信息
-        result = bucket.head_object(object_name)
+    try:
+        # 检查对象是否已存在
+        if not bucket.object_exists(object_name):
+            logging.info(f"Uploading {image_path} to oss as {object_name}")
+            headers = {
+                'Content-Disposition': 'inline',
+                'x-oss-object-acl': oss2.OBJECT_ACL_PUBLIC_READ
+            }
+            with open(image_path, 'rb') as file:
+                result = bucket.put_object(object_name, file, headers=headers)
+            
+            # 验证上传结果
+            if result.status != 200:
+                raise oss2.exceptions.OssError(f"Upload failed with status {result.status}")
+        else:
+            # 获取已存在文件的信息
+            result = bucket.head_object(object_name)
+            if result.status != 200:
+                raise oss2.exceptions.OssError(f"Head object failed with status {result.status}")
 
-    # 获取基础URL
-    base_url = bucket.sign_url('GET', object_name, 0).split('?')[0]
+        # 验证文件确实存在且可访问
+        meta = bucket.get_object_meta(object_name)
+        if meta.status != 200:
+            raise oss2.exceptions.OssError(f"Cannot access uploaded file, status: {meta.status}")
+
+        # 获取基础URL
+        base_url = bucket.sign_url('GET', object_name, 0).split('?')[0]
+            
+        # 构建带ETag和过期时间的URL
+        final_url = f"{base_url}?ETag={result.etag}"
+        logging.info(f"public url with ETag:{final_url} to access {object_name} in oss")
         
-    # 构建带ETag和过期时间的URL
-    final_url = f"{base_url}?ETag={result.etag}"
-    logging.info(f"public url with ETag:{final_url} to access {object_name} in oss")
-    
-    return final_url
+        return final_url
+
+    except oss2.exceptions.OssError as e:
+        logging.error(f"OSS operation failed for {object_name}: {str(e)}")
+        raise
+    except Exception as e:
+        logging.error(f"Unexpected error during OSS operation for {object_name}: {str(e)}")
+        raise
 
 if __name__ == "__main__":
     image_path = "_work/md_pdf_pages/b545fabd-page_2.jpg"
