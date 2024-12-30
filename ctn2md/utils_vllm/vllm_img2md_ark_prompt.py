@@ -8,20 +8,27 @@ Convert the given PDF page into Markdown format, maintaining EXACT image positio
    - Keep original spacing, layout, and formatting
    - NO decorative elements or style enhancements
    - STOP if you find yourself repeating the same pattern more than 16 times
-   - For repetitive content (like TOC entries), use the same format but DO NOT extend unnecessarily
+   - For repetitive patterns (like "..." in TOC), use simple spacing instead
+   - Focus on meaningful content over decorative elements
 
-2. Image Processing Rules:
+2. Content Priority:
+   - Focus on key information and structure
+   - For repetitive decorative elements (like "..." or "___"):
+     * IGNORE these patterns after they appear more than 10 times
+     * Use simple spacing to connect content
+     * Preserve the actual content they connect
+   - Prioritize:
+     * Main text and headings
+     * Tables and meaningful structure
+     * Images and their captions
+     * Actual content relationships
+
+3. Image Processing Rules:
    - Process ONLY images with red rectangles and filenames
    - Use EXACT filenames from red rectangles
    - Place images at their ORIGINAL positions
    - Match content with correct filenames
    - NO image collection at document end
-
-3. Pattern Recognition:
-   - If you detect repetitive patterns (like dots in TOC)
-   - If the same pattern appears more than 16 times
-   - STOP the repetition and continue with next content
-   - Use simple, clean formatting instead
 
 # Markdown Conversion
 1. Text Content:
@@ -29,7 +36,7 @@ Convert the given PDF page into Markdown format, maintaining EXACT image positio
    - Keep original formatting
    - Preserve spacing and alignment
    - NO format "improvements"
-   - Avoid unnecessary repetition
+   - Skip repetitive decorative patterns
 
 2. Image Format:
    ```markdown
