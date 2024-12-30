@@ -14,6 +14,9 @@ from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num,
 from ctn2md.utils_llm.llm_base import get_gpt_messages_multimodal, chat_gpt_plain, get_ark_client
 from ctn2md.utils_vllm.vllm_img2md_ark_prompt import PROMPT_INSTRUCT_IMG2MD_ARK, PROMPT_INSTRUCT_IMG2MD_ARK_IMG_RECTS
 
+#TODO: ethan_ark_bug:
+# DEEPSEEK-V3 P2 - ...
+# DEEPSEEK-V3 P28 - heading
 
 def generate_full_mds_from_image_ark(pname_image:str, 
                                      rects_img:List[str] = None, 
