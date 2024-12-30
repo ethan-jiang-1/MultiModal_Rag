@@ -29,7 +29,8 @@ _MIB_DEFAULT_OUT_ROOT = "_output"
 _MIB_CTN2MD_LEAD = "ctn2md"
 _MIB_AUX_SUBDIR = "_aux"
 
-ENV_MODEL_SOURCE = "MODEL_SOURCE"
+ENV_MODEL_LLXM = "ENV_MODEL_LLXM"  # gpt/qwen/ark
+ENV_MODEL_REGION = "ENV_MODEL_REGION"  # gs0/gs1/gpt/qwen/ark
 
 class FHL_QUALITY_TYPE:
     HIGH = "high"
@@ -97,30 +98,28 @@ class MIFN(PUBLIC_MIFN):  # Markdown Field Name
 class DefaultModelSource:
     @classmethod
     def get_fix_heading_model(cls):
-        fix_heading_model = os.getenv(ENV_MODEL_SOURCE, "gpt")
-        return fix_heading_model
+        return os.getenv(ENV_MODEL_LLXM, "gpt")
     
     @classmethod
     def get_summarize_model(cls):
-        summarize_model = os.getenv(ENV_MODEL_SOURCE, "gpt")
-        return summarize_model
+        return os.getenv(ENV_MODEL_LLXM, "gpt")
     
     @classmethod
     def get_lvlm_img2md_model(cls):
-        img2md_model = os.getenv(ENV_MODEL_SOURCE, "gpt")
-        return img2md_model
-    
-    @classmethod
-    def get_lvlm_region_model(cls):
-        return "gs0" # gpt/qwen/ark/gs1/gs0
-    
+        return os.getenv(ENV_MODEL_LLXM, "gpt")
+
     @classmethod
     def get_lp_img_relevance_model(cls):
-        return os.getenv(ENV_MODEL_SOURCE, "gpt")
+        return os.getenv(ENV_MODEL_LLXM, "gpt")
     
     @classmethod
     def get_lp_img_caption_model(cls):
-        return os.getenv(ENV_MODEL_SOURCE, "gpt")
+        return os.getenv(ENV_MODEL_LLXM, "gpt")
+
+    @classmethod
+    def get_lvlm_region_model(cls):
+        return os.getenv(ENV_MODEL_REGION, "gs0") # gs0/gs1/gpt/qwen/ark
+    
 
 # Names of the field in _info_ctrl.json (read_only)
 # dictionary used to control inner flow...

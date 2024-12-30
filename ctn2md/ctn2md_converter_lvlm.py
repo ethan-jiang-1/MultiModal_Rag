@@ -15,7 +15,7 @@ if __name__ == "__main__":
     os.chdir(_root_dir)
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, ENV_MODEL_SOURCE
+from ctn2md.src.md_info_base import MdInfo, ENV_MODEL_LLXM, ENV_MODEL_REGION
 from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_llm
 from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_heirarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_llm
@@ -103,8 +103,8 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/papers/attention_is_all_you_need.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/Survey of different Large Language Model Architectures.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/Winning Solution For Meta KDD Cup’ 24 2410.00005v1.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/papers/深度学习在视电阻率快速反演中的研究.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/papers/DeepSeek_V3.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/papers/深度学习在视电阻率快速反演中的研究.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/papers/DeepSeek_V3.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/Long-Context LLMs Meet RAG_compressed.pdf"
 
     #doc_pathname = "datasrc/exam/raw_docs/papers/ChatGPT intimates a tantalizing future_compressed.pdf"
@@ -122,7 +122,8 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/kmp/tianyang_1_20.pdf"
 
     #os.environ[ENV_MODEL_SOURCE] = "qwen"
-    os.environ[ENV_MODEL_SOURCE] = "ark"
+    os.environ[ENV_MODEL_LLXM] = "ark"
+    os.environ[ENV_MODEL_REGION] = "gs0"
     mdcontrols = None
 
     out_dir = None
