@@ -1,121 +1,104 @@
 PROMPT_INSTRUCT_IMG2MD_ARK = """
 # Task
-Convert the given PDF page into Markdown format, maintaining EXACT image positions and content formatting.
+Convert PDF page to Markdown, preserving visual structure and image positions.
 
-# Core Principles
-1. Strict Content Preservation:
-   - Convert content AS IS without "improvements"
-   - Keep original spacing, layout, and formatting
-   - NO decorative elements or style enhancements
-   - STOP if you find yourself repeating the same pattern more than 16 times
-   - For repetitive patterns (like "..." in TOC), use simple spacing instead
+# Core Rules
+1. Content Conversion
+   - Convert ALL visual content to clean Markdown:
+     * Figure captions (e.g., "Figure X: ...")
+     * Explanatory text
+     * Technical descriptions
+     * References to figures/sections
+   - Preserve original layout and spacing
    - Focus on meaningful content over decorative elements
+   - Skip repetitive patterns after 10+ occurrences, such as ..... or ---- .
+   - Critical Text Rules:
+     * Capture ALL figure captions completely
+     * Include ALL explanatory paragraphs
+     * Maintain ALL technical details
+     * Preserve cross-references
+     * Keep numerical data and measurements
 
-2. Content Priority:
-   - Focus on key information and structure
-   - For repetitive decorative elements (like "..." or "___"):
-     * IGNORE these patterns after they appear more than 10 times
-     * Use simple spacing to connect content
-     * Preserve the actual content they connect
-   - Prioritize:
-     * Main text and headings
-     * Tables and meaningful structure
-     * Images and their captions
-     * Actual content relationships
+2. Structure Recognition
+   - Convert visual headings based on:
+     * Hierarchical numbering (e.g., 1., 1.1., I. II. 一. 二， 第一章，第二章etc.)
+     * Visual prominence (size, weight, spacing)
+     * Standalone positioning
+     * Content flow breaks
+   - Use appropriate heading levels (#, ##, ###)
 
-3. Image Processing Rules:
-   - Process ONLY images with red rectangles and filenames
-   - Use EXACT filenames from red rectangles
-   - Place images at their ORIGINAL positions
-   - Match content with correct filenames
-   - NO image collection at document end
+3. Image Processing
+   - Process images marked with red rectangles
+   - Format: ![Title](<EXACT-Filename> "Description")
+   - Critical Rules:
+     * Each filename MUST be used EXACTLY ONCE
+     * Each red rectangle corresponds to ONE unique image
+     * Never reuse the same filename for different images
+     * Verify filename-content match before using
+   - Place at original positions
+   - Title: Brief description (3-10 words)
+   - Caption: Content description + context (2-4 sentences)
 
-# Markdown Conversion
-1. Text Content:
-   - Convert to plain Markdown
-   - Keep original formatting
-   - Preserve spacing and alignment
-   - NO format "improvements"
-   - Skip repetitive decorative patterns
+# Quality Requirements
+1. Content
+   - 100% content preservation for:
+     * Main text and paragraphs
+     * Titles and headings
+     * Captions and descriptions
+     * Lists and enumerations
+     * Tables and structured content
+     * Footnotes and references
+   - Clean, minimal formatting
+   - Natural reading flow
+   - No content omission
 
-2. Image Format:
-   ```markdown
-   ![Title](<EXACT-Filename> "Description of THIS specific image's content")
-   ```
-   - Filename: Must match red rectangle label
-   - Title/Description: Describe actual image content
-   - Insert at original position
+2. Images
+   - All marked images included ONCE only
+   - One-to-one mapping: one filename → one image
+   - No filename reuse
+   - Correct filename usage
+   - Original positioning
+   - Meaningful titles/captions
 
-# Quality Control
-1. Content Check:
-   - All text converted exactly as shown
-   - NO added formatting or styling
+3. Structure
+   - Clear heading hierarchy
+   - Logical content flow
    - Original layout preserved
-   - NO excessive repetition
-
-2. Image Check:
-   - All valid images included
-   - Correct filename-content pairs
-   - Original positions maintained
-   - NO skipped images
 
 # Image Information
 {inst_img_rects}
-
-# Expected Output
-- Clean, minimal Markdown
-- Images at original positions
-- Exact content preservation
-- NO format enhancements
-- NO excessive repetition
-- NO collected images at end
 """
 
 PROMPT_INSTRUCT_IMG2MD_ARK_IMG_RECTS = """
-- **Red Rectangles (`red_rects`) Identification**:
-  - Each image region is marked with a red rectangular border in the PDF
-  - File names are located in the top-left corner of each red box
-  - Format: The file names follow the pattern `XXXXXXXX-img_YY_ZZ.jpg`:
-    - XXXXXXXX: 8-character document ID
-    - YY: page number in the document
-    - ZZ: image sequence number on that page
-{img_rects}
+# Image Region Processing
+1. Red Rectangle Identification
+   - Each image marked with red border
+   - Filename located in top-left of red box
+   - {img_rects}
 
-- **Markdown Image Generation**:
-  - For each `red_rect`, create a Markdown image entry:
-    ```markdown
-    ![Title](<FileName> "<Caption>")
-    ```
-  - Component Requirements:
-    - **Title**: 
-      - Brief (3-10 words)
-      - Descriptive of the image content
-      - Same language as the PDF
-      - Example: "Temperature Distribution Graph" or "System Architecture Diagram"
-    
-    - **FileName**: 
-      - Use the EXACT filename from the red box
-      - Do not modify or reformat the filename
-    
-    - **Caption**: 
-      - Structure:
-        1. Main content description (1-2 sentences)
-        2. Key features or data points (if applicable)
-        3. Relationship to surrounding text (1 sentence)
-      - Length: 2-4 sentences
-      - Language: Same as the PDF content
-      - Focus: Technical accuracy and context relevance
+2. Markdown Image Format
+   - Required format: ![Title](<Filename> "Caption")
+   - Components:
+     * Title: Brief visual description (3-10 words)
+     * Filename: EXACT match from red box
+     * Caption: Content description (2-4 sentences)
 
-  - **Image Placement Rules**:
-    - Place each image in its natural reading order within the Markdown text
-    - Insert the image where it logically appears in the original document flow
-    - Keep the original document's content sequence
-    - Maintain the relationship between text and images
+3. Placement Rules
+   - Maintain original document position
+   - Follow natural reading flow
+   - Preserve text-image relationships
 
-  - **Quality Control**:
-    1. Verify each `red_rect` is processed exactly once
-    2. Check filename accuracy against the red box label
-    3. Ensure all images are placed in logical reading order
-    4. Validate that no unmarked images are included
+4. Quality Standards
+   - Process each red rectangle exactly once
+   - Use precise filenames
+   - Ensure logical placement
+   - Provide meaningful descriptions
+
+# Format Validation
+- Start with '![' for all images
+- Use exact filenames without modification
+- Include both title and caption
+- Maintain proper markdown syntax
 """
+
 

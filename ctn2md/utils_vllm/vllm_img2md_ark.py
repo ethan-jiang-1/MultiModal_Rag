@@ -96,8 +96,14 @@ if __name__ == "__main__":
     #              '5ec48698-img_1_2.jpg',
     #              '5ec48698-img_1_1.jpg']
     
-    pname_image = "_work/md_pdf_pages/b545fabd-page_2.jpg"
-    rects_img = []
+    #pname_image = "_work/md_pdf_pages/b545fabd-page_2.jpg"
+    #rects_img = []
+
+    #pname_image = "_work/md_pdf_pages/b545fabd-page_2_rects.jpg"
+    #rects_img = []
+
+    pname_image = "_work/md_pdf_pages/b545fabd-page_28_rects.jpg"
+    rects_img = ['b545fabd-img_28_1.jpg', 'b545fabd-img_28_2.jpg']
 
     full_path = os.path.join(dir_root, pname_image)
     container_name = os.path.basename(os.path.dirname(pname_image))

@@ -177,10 +177,13 @@ if __name__ == "__main__":
     #mctl_lvlm_region_model = "gs0"
 
     #doc_pathname = "datasrc/exam/raw_docs/Survey of different Large Language Model Architectures.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/papers/ “AI+应用”百花齐放，新质生产力前景广阔pdf.pdf"
-    sel_page_indexes = [1]
-    mctl_lvlm_region_model = "gs0"
+    #doc_pathname = "datasrc/exam/raw_docs/papers/ “AI+应用”百花齐放，新质生产力前景广阔pdf.pdf"
+    #sel_page_indexes = [1]
+    #mctl_lvlm_region_model = "gs0"
 
+    doc_pathname = "datasrc/exam/raw_docs/papers/DeepSeek_V3.pdf"
+    sel_page_indexes = [2, 28]
+    mctl_lvlm_region_model = "gs0"
 
     output_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix='lvlm')
 
