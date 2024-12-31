@@ -3,15 +3,13 @@ import os
 from dotenv import load_dotenv
 import requests
 import json
+import logging
+import rich
 
 if './' not in sys.path:
     sys.path.append("./")
 
 load_dotenv()
-
-def _get_file_content(filePath: str) -> bytes:
-    with open(filePath, 'rb') as fp:
-        return fp.read()
 
 class TextinOcr(object):
     def __init__(self, app_id, app_secret):
@@ -44,18 +42,21 @@ class TextinOcr(object):
             'x-ti-app-id': self._app_id,
             'x-ti-secret-code': self._app_secret
         }
-
         return requests.post(url, data=image, headers=headers, params=options)
 
 
 def convert_image_to_md(pname_image: str) -> str:
-    # 请登录后前往 “工作台-账号设置-开发者信息” 查看 app-id/app-secret
     x_ti_app_id = os.getenv('X_TI_APP_ID')
     x_ti_secret_code = os.getenv('X_TI_SECRET_CODE')
     textin = TextinOcr(x_ti_app_id, x_ti_secret_code)
 
+    def _get_file_content(filePath: str) -> bytes:
+        with open(filePath, 'rb') as fp:
+            return fp.read()
+
     image = _get_file_content(pname_image)
 
+    logging.info(f"CIM: requesting {pname_image} to textin")
     resp = textin.recognize_pdf2md(image, {
         'page_start': 0,
         'page_count': 1000,  # 设置解析页数为1000页
@@ -66,7 +67,7 @@ def convert_image_to_md(pname_image: str) -> str:
         'apply_document_tree': 1,
         'dpi': 144  # 分辨率设置为144 dpi
     })
-    print("request time: ", resp.elapsed.total_seconds())
+    logging.info(f"CIM: request time: {resp.elapsed.total_seconds()} from textin")
 
     result = json.loads(resp.text)
     # with open(f'_work/testin/result_{os.path.basename(pname_image)}.json', 'w', encoding='utf-8') as fw:
@@ -76,6 +77,6 @@ def convert_image_to_md(pname_image: str) -> str:
 
 
 if __name__ == "__main__":
-    #pname_image = "datasrc/exam/raw_docs/LongRAG.pdf"
-    #convert_image_to_md(pname_image)
-    pass
+    pname_image = "_work/md_pdf_pages/5ec48698-page_1.jpg"
+    result = convert_image_to_md(pname_image)
+    rich.print(result)
