@@ -100,18 +100,23 @@ def jsons_load_repair(content:str) -> dict:
     return resp
 
 class MonitorContextLLM:
-    c_monitor_filename = None
-    c_fname = "ctn_llm_monitor.csv" 
+    LEADING_PREFIX = "ctn"
 
     @classmethod
-    def _get_monitor_filename(cls) -> str:
-        if cls.c_monitor_filename is None:
-            dir_root = os.path.dirname(find_dotenv())
-            dir_logs = os.path.join(dir_root, "logs")
-            os.makedirs(dir_logs, exist_ok=True)
-            filename = os.path.join(dir_logs, cls.c_fname)
-            cls.c_monitor_filename = filename
-        return cls.c_monitor_filename
+    def _get_monitor_filename(cls, model:str) -> str:
+        dir_root = os.path.dirname(find_dotenv())
+        dir_logs = os.path.join(dir_root, "logs")
+        os.makedirs(dir_logs, exist_ok=True)
+        if model.startswith("gpt"):
+            fname = f"{cls.LEADING_PREFIX}_monitor_gpt.csv"
+        elif model.startswith("qwen"):
+            fname = f"{cls.LEADING_PREFIX}_monitor_qwen.csv"
+        elif model.startswith("ep-"):
+            fname = f"{cls.LEADING_PREFIX}_monitor_ark.csv"
+        else:
+            fname = f"{cls.LEADING_PREFIX}_monotor_ukn.csv"
+        filename = os.path.join(dir_logs, fname)
+        return filename
 
     def __init__(self, messages:list, model:str, track_id:str, attempt:int):
         self.messages = messages
@@ -137,7 +142,7 @@ class MonitorContextLLM:
 
     def _monitor_call(self, exc_type:Exception):
         try:
-            filename = self._get_monitor_filename()
+            filename = self._get_monitor_filename(self.model)
             
             # Check if file exists and is empty
             file_exists = os.path.exists(filename)

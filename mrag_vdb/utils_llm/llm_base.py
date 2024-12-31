@@ -10,7 +10,6 @@ import logging
 import time
 import csv
 import rich 
-import re
 from datetime import datetime
 from typing import Optional, List, Dict
 #import json
@@ -18,6 +17,8 @@ from typing import Optional, List, Dict
 if "./" not in sys.path:
     sys.path.append("./")
 load_dotenv()
+
+from mrag_vdb.utils_llm.llm_base_oss import upload_image_to_oss
 
 """
 | Task            | `temperature`  | `top_p`       | Comment                                                              |
@@ -43,49 +44,7 @@ def get_gpt_messages(system_prompt:str, user_prompt:str) -> list:
     ]
     return messages
 
-def _generate_unique_name(image_path:str) -> str:
-    # 将路径中的文件名提取出来
-    filename = re.search(r'[^/\\]*$', image_path).group()
-    
-    # 替换掉文件名中的特殊字符
-    safe_filename = re.sub(r'[^\w\-_.]', '', filename)
-    
-    # 获取当前日期并格式化为YYYYMMDD格式
-    current_date = datetime.now().strftime('%Y%m%d')
-    
-    # 将日期添加到文件名中
-    unique_name = f"{current_date}_{safe_filename}"
-    
-    # 返回URL安全的名称
-    return unique_name
 
-
-def upload_image_to_oss(image_path:str) -> str:
-    import oss2
-    access_key_id = os.environ["OSS_ACCESS_KEY_ID"]
-    access_key_secret = os.environ["OSS_ACCESS_KEY_SECRET"]
-    endpoint = os.environ["OSS_ENDPOINT"]   # 例如：'https://oss-cn-hangzhou.aliyuncs.com'
-    bucket_name = os.environ["OSS_BUCKET_NAME"]  # '<your-bucket-name>'
-
-    logging.info(f"upload {image_path} to oss")
-    # 初始化OSS存储
-    auth = oss2.Auth(access_key_id, access_key_secret)
-    bucket = oss2.Bucket(auth, endpoint, bucket_name)
-
-    # 上传文件
-    def upload_file(file_path, object_name):
-        with open(file_path, 'rb') as file:
-            # 设置Content-Disposition为inline，使得文件在浏览器中直接打开
-            bucket.put_object(object_name, file, headers={'Content-Disposition': 'inline'})
-
-    # 调用示例
-    object_name = _generate_unique_name(image_path)
-    upload_file(image_path, object_name)
-
-    url = bucket.sign_url('GET', object_name, 3600)
-
-    logging.info(f"url:{url} to access upload {image_path} in oss")
-    return url
 
 def get_gpt_messages_multimodal(system_prompt:str, user_prompt:str, image_path:str) -> list:
     """生成支持多模态的消息结构"""
@@ -141,18 +100,23 @@ def jsons_load_repair(content:str) -> dict:
     return resp
 
 class MonitorContextLLM:
-    c_monitor_filename = None
-    c_fname = "ctn_llm_monitor.csv" 
+    LEADING_PREFIX = "mrag"
 
     @classmethod
-    def _get_monitor_filename(cls) -> str:
-        if cls.c_monitor_filename is None:
-            dir_root = os.path.dirname(find_dotenv())
-            dir_logs = os.path.join(dir_root, "logs")
-            os.makedirs(dir_logs, exist_ok=True)
-            filename = os.path.join(dir_logs, cls.c_fname)
-            cls.c_monitor_filename = filename
-        return cls.c_monitor_filename
+    def _get_monitor_filename(cls, model:str) -> str:
+        dir_root = os.path.dirname(find_dotenv())
+        dir_logs = os.path.join(dir_root, "logs")
+        os.makedirs(dir_logs, exist_ok=True)
+        if model.startswith("gpt"):
+            fname = f"{cls.LEADING_PREFIX}_monitor_gpt.csv"
+        elif model.startswith("qwen"):
+            fname = f"{cls.LEADING_PREFIX}_monitor_qwen.csv"
+        elif model.startswith("ep-"):
+            fname = f"{cls.LEADING_PREFIX}_monitor_ark.csv"
+        else:
+            fname = f"{cls.LEADING_PREFIX}_monotor_ukn.csv"
+        filename = os.path.join(dir_logs, fname)
+        return filename
 
     def __init__(self, messages:list, model:str, track_id:str, attempt:int):
         self.messages = messages
@@ -178,37 +142,65 @@ class MonitorContextLLM:
 
     def _monitor_call(self, exc_type:Exception):
         try:
-            filename = self._get_monitor_filename()
-
-            # d0 = response.created
+            filename = self._get_monitor_filename(self.model)
+            
+            # Check if file exists and is empty
+            file_exists = os.path.exists(filename)
+            file_empty = file_exists and os.path.getsize(filename) == 0
+            
             dt = self.d1 - self.d0
             dt = round(dt, 2)
             self.d0 = round(self.d0, 2)
             sec_span = round(dt, 2)
             ts0 = datetime.fromtimestamp(self.d0).strftime("%Y%m%d:%H:%M:%S")
  
-            model = self.model
-            if self.response is not None:
-                choice0 = self.response.choices[0]
-                finish_reason = choice0.finish_reason
-
-                model = self.response.model
-
-                usage = self.response.usage
-                prompt_tokens = usage.prompt_tokens
-                total_tokens = usage.total_tokens
-                completion_tokens = usage.completion_tokens
-
-                output_ratio_per_sec = round(float(completion_tokens) / sec_span, 2)
-                token_per_ms = round((1.0/output_ratio_per_sec) * 1000.0, 2)
-
-                with open(filename, 'a', newline='') as file:
-                    writer = csv.writer(file)
-                    writer.writerow([ts0, finish_reason, model, sec_span, total_tokens, prompt_tokens, completion_tokens, token_per_ms, str(self.track_id), self.attempt])
-            else:
-                with open(filename, 'a', newline='') as file:
-                    writer = csv.writer(file)
-                    writer.writerow([ts0, str(exc_type), model, sec_span, 0, 0, 0, 0.0, str(self.track_id), self.attempt])
+            model_actual = self.model
+            
+            with open(filename, 'a', newline='', encoding='utf-8') as file:
+                writer = csv.writer(file, quoting=csv.QUOTE_NONNUMERIC)
+                # Write headers if file is empty or doesn't exist
+                if not file_exists or file_empty:
+                    writer.writerow(['timestamp', 'finish_reason', 'model_requested', 'model_actual', 
+                                   'sec_span', 'total_tokens', 'prompt_tokens', 'completion_tokens', 
+                                   'token_per_ms', 'track_id', 'attempt'])
+                
+                if self.response is not None:
+                    choice0 = self.response.choices[0]
+                    finish_reason = choice0.finish_reason
+                    model_requested = self.model
+                    model_actual = self.response.model
+                    usage = self.response.usage
+                    completion_tokens = usage.completion_tokens
+                    output_ratio_per_sec = round(float(completion_tokens) / sec_span, 2)
+                    token_per_ms = round((1.0/output_ratio_per_sec) * 1000.0, 2)
+                    
+                    writer.writerow([
+                        ts0,                                    # 字符串
+                        finish_reason,                          # 字符串
+                        model_requested,                        # 字符串
+                        model_actual,                          # 字符串
+                        sec_span,                              # 数值
+                        usage.total_tokens,                    # 数值
+                        usage.prompt_tokens,                   # 数值
+                        usage.completion_tokens,               # 数值
+                        token_per_ms,                         # 数值
+                        str(self.track_id),                    # 字符串
+                        self.attempt                           # 数值
+                    ])
+                else:
+                    writer.writerow([
+                        ts0,                # 字符串
+                        str(exc_type),      # 字符串
+                        self.model,         # 字符串
+                        model_actual,       # 字符串
+                        sec_span,           # 数值
+                        0,                  # 数值
+                        0,                  # 数值
+                        0,                  # 数值
+                        0.0,                # 数值
+                        str(self.track_id), # 字符串
+                        self.attempt        # 数值
+                    ])
 
         except Exception as ex:  # noqa
             logging.exception(ex)
