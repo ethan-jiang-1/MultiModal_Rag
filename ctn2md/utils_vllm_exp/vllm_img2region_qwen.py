@@ -12,7 +12,8 @@ if "./" not in sys.path:
 load_dotenv()
 
 from ctn2md.utils_vllm_exp.vllm_img2region_qwen_prompt import PROMPT_INSTRUCT_IMG2REGION_QWEN
-from ctn2md.utils_vllm.vllm_base import chat_qwen_mm
+from ctn2md.utils_llm.llm_base import get_dashscope_client, get_gpt_messages_multimodal, chat_gpt_plain
+
 
 def generate_regions_from_image_qwen(pname_image:str, 
                                      model:str = 'qwen-vl-max-1119', 
@@ -20,25 +21,16 @@ def generate_regions_from_image_qwen(pname_image:str,
                                      backoff_in_seconds:int = 1) -> dict:
     
     prompt = PROMPT_INSTRUCT_IMG2REGION_QWEN
+    if not os.path.isfile(pname_image):
+        raise ValueError(f"file {pname_image} not exit")
 
-    messages = [{'role': 'user',
-                 'content': [{'image': pname_image}, {'text': prompt}]}]
+    messages = get_gpt_messages_multimodal(None, prompt, pname_image)
 
-    try:
-    
-        # The model name 'qwen-vl-max-0809' is the identity of 'Qwen2-VL-72B'.
-        logging.info(f"GRFIQ: generate_regions_from_image_qwen started... {pname_image}")
+    client = get_dashscope_client()
 
-        response = chat_qwen_mm(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds, track_id="gfmdiq")
-
-        resp = json_repair.repair_json(response, return_objects=True)
-        #rich.print(resp)
-
-        logging.info(f"GRFIQ: generate_regions_from_image_qwen ended. {pname_image}")
-        return resp
-    except Exception as ex:
-        logging.exception(ex)
-        raise ex 
+    logging.info(f"GRFIQ: convert pdf page {pname_image} to regions by gpt started...")
+    resp_str = chat_gpt_plain(messages, model=model, client=client, temperature=0.01, top_p=0.95, retries=retries, backoff_sec=backoff_in_seconds)    
+    return json_repair.repair_json(resp_str, return_objects=True)
 
 
 if __name__ == '__main__':

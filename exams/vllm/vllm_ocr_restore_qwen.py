@@ -12,9 +12,9 @@ if "./" not in sys.path:
 
 load_dotenv()
 
-from ctn2md.utils_vllm.vllm_ocr_restore_qwen_prompt import PROMPT_INSTRUCT_OCR_QWEN_START, PROMPT_INSTRUCT_OCR_QWEN_CONTINUE
-from ctn2md.utils_vllm.vllm_ocr_restore_qwen_prompt import PROMPT_INSTRUCT_OCR_QWEN_SINGLE
-from ctn2md.utils_vllm.vllm_base import chat_qwen_mm
+from exams.vllm.vllm_ocr_restore_qwen_prompt import PROMPT_INSTRUCT_OCR_QWEN_START, PROMPT_INSTRUCT_OCR_QWEN_CONTINUE
+from exams.vllm.vllm_ocr_restore_qwen_prompt import PROMPT_INSTRUCT_OCR_QWEN_SINGLE
+from exams.vllm.vllm_qwen_mm import chat_qwen_mm
 
 def generate_long_mds_from_image_by_qwen(image_url, doc_title=None, model='qwen-vl-max-1119', retries=5, backoff_in_seconds=1):
          

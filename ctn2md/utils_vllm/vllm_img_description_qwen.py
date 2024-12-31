@@ -1,5 +1,6 @@
 import os
 import sys
+from typing import Optional
 import rich
 from dotenv import load_dotenv
 
@@ -8,14 +9,14 @@ if "./" not in sys.path:
 
 load_dotenv()
 
-from ctn2md.utils_vllm.vllm_base import chat_qwen_mm
+from ctn2md.utils_llm.llm_base import get_dashscope_client, get_gpt_messages_multimodal, chat_gpt_plain
 from ctn2md.utils.util_file import get_root_dir
 from ctn2md.utils_vllm.vllm_img_description_qwen_prompt import TEXT_IMG_DESCRIPTION
 
 #model='qwen-vl-max-1119'
 #model='qwen-vl-max-0809'
-def generate_image_description_by_qwen(image_path:str, 
-                                      instruction:str = None, 
+def generate_image_description_by_qwen(pname_image:str, 
+                                      instruction:Optional[str] = None, 
                                       model:str = "qwen-vl-max-1119", 
                                       retries:int = 5, 
                                       backoff_in_seconds:int = 1) -> str:
@@ -23,22 +24,15 @@ def generate_image_description_by_qwen(image_path:str,
     if instruction is None:
         instruction = TEXT_IMG_DESCRIPTION
 
-    if not os.path.isfile(image_path):
-        raise ValueError(f"file {image_path} not exit")
+    if not os.path.isfile(pname_image):
+        raise ValueError(f"file {pname_image} not exit")
 
-    messages = [{
-        'role': 'user',
-        'content': [
-            {
-                'image': image_path
-            },
-            {
-                'text': instruction
-            },
-        ]
-    }]
-    response = chat_qwen_mm(messages, model=model, retries=retries, backoff_in_seconds=backoff_in_seconds, track_id="gid")
-    return response
+    messages = get_gpt_messages_multimodal(None, instruction, pname_image)
+
+    client = get_dashscope_client()
+
+    resp_str = chat_gpt_plain(messages, model=model, client=client, temperature=0.01, top_p=0.95, retries=retries, backoff_sec=backoff_in_seconds)    
+    return resp_str
 
 def test_gen_qas_on_pic():
     image_path = "_work/md_pdf_pages/5ec48698-page_1.jpg"
