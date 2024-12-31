@@ -1,12 +1,9 @@
-from typing import Tuple
+from typing import Optional, Tuple
 from dotenv import load_dotenv
 import os
 import sys
 import logging
 import rich
-#import random
-#import re
-#import shutil
 
 load_dotenv()
 
@@ -71,7 +68,7 @@ class GenMd_Lvlm(GenMd_Base):
                           doc_pathname:str, 
                           out_dir:str = None, 
                           enforced_gen:bool = False, 
-                          mdcontrols:bool = None) -> str:
+                          mdcontrols:Optional[dict] = None) -> str:
         if not cls.does_support_doc_type(doc_pathname):
             raise ValueError(f"GenMd_Lvlm does not support '{doc_pathname}'")
 
