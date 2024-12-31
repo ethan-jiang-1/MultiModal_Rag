@@ -10,9 +10,10 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
+from ctn2md.utils.util_markdown import read_markdown_file
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lvlm.lvlm_gen_pages import gen_pages_lvlm
-from ctn2md.utils.util_markdown import read_markdown_file
+
    
 def _construct_s0_md_from_pages(md_info:MdInfo) -> str:
     out_dir = md_info.get_out_dir()

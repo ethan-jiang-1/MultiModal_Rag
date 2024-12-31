@@ -16,8 +16,8 @@ from ctn2md.gen_lvlm.lvlm_base import get_image_cnt_type, LVLM_IMG_CNT_TYPE
 from ctn2md.gen_lvlm.gs0_pdf_page_to_region import gs0_parse_non_text_rects_in_page
 from ctn2md.gen_lvlm.gs1_pdf_page_to_region import gs1_parse_non_text_rects_in_page
 from ctn2md.gen_lvlm.gvlm_pdf_page_to_region import vllm_parse_non_text_rects_in_page_by_gpt, vllm_parse_non_text_rects_in_page_by_qwen, vllm_parse_non_text_rects_in_page_by_ark
-from ctn2md.gen_lvlm.lvlm_base import get_job_id
-from ctn2md.gen_lvlm.lvlm_base import is_still_in_gen_mode
+from ctn2md.gen_comm.gen_base import get_job_id
+from ctn2md.gen_comm.gen_base import is_still_in_gen_mode
 from ctn2md.gen_lvlm._draw_redrect_on_page import draw_redrect_on_page
 
 IMG_EXT = "jpg"  # or "png"

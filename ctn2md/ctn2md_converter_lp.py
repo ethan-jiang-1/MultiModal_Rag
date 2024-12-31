@@ -1,3 +1,4 @@
+from typing import Optional
 from dotenv import load_dotenv
 import os
 import sys
@@ -23,9 +24,9 @@ from ctn2md.src.make_final_result import make_final_json, reset_md_flow
 from ctn2md.src.ctn2md_gen_md_llamaparse import GenMd_LlamaParse
 
 def _do_content2md_convert_core_lp(doc_pathname:str, 
-                                   out_dir:str = None, 
+                                   out_dir:Optional[str] = None, 
                                    enforced_gen:bool = False, 
-                                   mdcontrols:dict = None) -> str:
+                                   mdcontrols:Optional[dict] = None) -> str:
     if out_dir is None:
         out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=GenMd_LlamaParse.OD_SUFFIX)
     logging.warning(f"work out_dir: {out_dir}")

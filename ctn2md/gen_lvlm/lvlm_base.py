@@ -1,11 +1,6 @@
 from dotenv import load_dotenv
 import os
 import sys
-#import logging
-#import rich
-#import random
-#import re
-#import shutil
 
 load_dotenv()
 
@@ -13,7 +8,8 @@ if "./" not in sys.path:
     sys.path.append("./")
 
 #from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, PUBLIC_MIFN
+from ctn2md.src.md_info_base import MdInfo
+
 class LVLM_IMG_CNT_TYPE:
     GRAPH = "graph"
     IMAGE = "image"
@@ -43,14 +39,4 @@ def get_image_cnt_type(md_info:MdInfo, pname_image:str) -> str:
         return LVLM_IMG_CNT_TYPE.IGNORE
     return LVLM_IMG_CNT_TYPE.GRAPH
 
-    
-def get_job_id(unique_str:str) -> str:
-    from ctn2md.utils.util_file import get_crc32_id
-    return get_crc32_id(unique_str)
-
-def is_still_in_gen_mode(md_info:MdInfo) -> bool:
-    fname_final_sum = md_info.get(PUBLIC_MIFN.FNAME_FINAL_SUM, None)
-    if fname_final_sum is None:
-        return True 
-    return False
 

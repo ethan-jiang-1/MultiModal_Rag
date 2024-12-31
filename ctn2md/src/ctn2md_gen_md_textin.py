@@ -17,7 +17,7 @@ from ctn2md.src.ctn2md_gen_md_base import GenMd_Base
 
 
 def gen_md_textin(doc_pathname:str, out_dir:str) -> str:
-    from ctn2md.gen_ti.gen_markdown_textin import generate_markdown_textin
+    from ctn2md.gen_ti.gen_markdown_textin import generate_markdown_ti
     logging.info(f"##MDFLOW##: gen_md_textin started...")
 
     md_info = MdInfo(out_dir)
@@ -25,7 +25,7 @@ def gen_md_textin(doc_pathname:str, out_dir:str) -> str:
     md_info.set_doc_pathname(doc_pathname)
     md_info[MIFN.FHL_QUALITY] = FHL_QUALITY_TYPE.HIGH
 
-    md_info_path = generate_markdown_textin(md_info)
+    md_info_path = generate_markdown_ti(md_info)
 
     logging.info(f"##MDFLOW##: gen_md_textin end")
     return md_info_path
@@ -85,7 +85,8 @@ class GenMd_TextIn(GenMd_Base):
 
 
 if __name__ == "__main__":
-    doc_pathname = "datasrc/exam/raw_docs/papers/ “AI+应用”百花齐放，新质生产力前景广阔pdf.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/papers/ “AI+应用”百花齐放，新质生产力前景广阔pdf.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/papers/深度学习在视电阻率快速反演中的研究.pdf"
 
     out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=GenMd_TextIn.OD_SUFFIX)
 
