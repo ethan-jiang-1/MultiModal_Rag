@@ -182,7 +182,9 @@ def convert_images_to_mds(md_info:MdInfo, fnames_page_image: List[str], sel_page
                 continue
 
         pname_image = os.path.join(output_dir, fname_page_name)
+        logging.info(f"GITM: generate page {page_index} from {pname_image}")
 
+        fnames_ref_name = []
         fname_page_md = f"page_{page_index}.md"
         pname_page_md = os.path.join(aux_dir, fname_page_md)
         if _does_page_need_gen(pname_page_md, md_info): 
