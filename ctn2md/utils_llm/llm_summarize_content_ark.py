@@ -55,34 +55,10 @@ if __name__ == "__main__":
     dir_root = get_root_dir()
     os.chdir(dir_root)
 
-    doc_title = "5. back panel 与环境匹配工程校核_P2"
-    page_content = """  
-<!-- [ordered_name] 1) 前后排座椅间距定义 [ordered_name] [desc] 前后排座椅间距定义 [desc] -->
-# 前后排座椅间距定义
-
-金轲 2023-11
-
-适途科技
-
-**目录**
-
-
-<!-- [ordered_name] 2) 设计要求 [ordered_name] [desc] 设计要求 [desc] -->
-# 设计要求
-
-
-<!-- [ordered_name] 2.1.1) 设计要求 [ordered_name] [desc] 设计要求 __ PL2 __ 设计要求 [desc] -->
-### 设计要求
-
-设计的座椅位置的数量 - 中国法规
-
-截图后测量以下参数，看是否满足要求
-
-| 序号 | 描述 | 法规要求 | 设计目标值 |
-|---|---|---|---|
-| S 9 . 2 | 前后排座椅距离 | ＞ 600.0 mm | 后排座 ＞ 612 mm |
-| e | （第一排和第二排或第二排和第三排） | | 椅 |"""
-
+    doc_title = "DeepSeek_V3"
+    pname_page_content = "_work/ctn2md_papers__DeepSeek_V3_ti/DeepSeek_V3___pdf.md"
+    with open(pname_page_content, "r", encoding="utf-8") as f:
+        page_content = f.read()
 
     resp= summarize_doc_keywords_by_ark(doc_title, page_content)
     rich.print(resp)
