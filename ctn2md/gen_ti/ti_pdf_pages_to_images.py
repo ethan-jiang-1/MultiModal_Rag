@@ -39,7 +39,7 @@ def parse_pdf_to_images(md_info: MdInfo,
 
     output_dir = md_info.get_out_dir()
     pdf_path = md_info.get_doc_pathname()
-    job_id = md_info[MIFN.LVLM_CUR_JOB_ID]
+    job_id = md_info[MIFN.TI_CUR_JOB_ID]
 
     if not os.path.isdir(output_dir):
         raise ValueError(f"output dir does not exit {output_dir}")
@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
     md_info = MdInfo(output_dir)
     md_info.set_doc_pathname(doc_pathname)
-    md_info[MIFN.LVLM_CUR_JOB_ID] = job_id
+    md_info[MIFN.TI_CUR_JOB_ID] = job_id
     
 
     image_infos = parse_pdf_to_images(md_info, sel_page_indexes=sel_page_indexes)

@@ -20,7 +20,7 @@ from ctn2md.src.md_info_base import MdInfo, MIFN
 def gen_pages_ti(md_info:MdInfo, mdcontrols:dict = None, skip_gen_mds: bool = False, sel_page_indexes: List[int] = None) -> str:
     pathname_doc = md_info.get_doc_pathname()
     job_id = get_job_id(pathname_doc)
-    md_info[MIFN.LVLM_CUR_JOB_ID] = job_id
+    md_info[MIFN.TI_CUR_JOB_ID] = job_id
 
     if isinstance(mdcontrols, dict):
         md_info.update_mdcontrols(mdcontrols)
@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
     md_info = MdInfo(output_dir)
     md_info.set_doc_pathname(doc_pathname)
-    md_info[MIFN.LVLM_CUR_JOB_ID] = job_id
+    md_info[MIFN.TI_CUR_JOB_ID] = job_id
     
     ret = gen_pages_ti(md_info, mdcontrols=mdcontrols, skip_gen_mds=skip_gen_mds)
     rich.print(ret)

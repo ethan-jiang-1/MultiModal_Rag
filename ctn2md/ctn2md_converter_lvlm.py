@@ -16,7 +16,7 @@ if __name__ == "__main__":
     os.chdir(_root_dir)
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, ENV_MODEL_LLXM, ENV_MODEL_REGION
+from ctn2md.src.md_info_base import MdInfo, ENV_MODEL_FLOW, ENV_MODEL_GEN_LVLM, ENV_MODEL_GEN_LVLM_REGION
 from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_llm
 from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_heirarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_llm
@@ -123,8 +123,9 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/kmp/tianyang_1_20.pdf"
 
     #os.environ[ENV_MODEL_SOURCE] = "qwen"
-    os.environ[ENV_MODEL_LLXM] = "ark"
-    os.environ[ENV_MODEL_REGION] = "gs0"
+    os.environ[ENV_MODEL_FLOW] = "ark"
+    os.environ[ENV_MODEL_GEN_LVLM] = "ark"
+    os.environ[ENV_MODEL_GEN_LVLM_REGION] = "gs0"
     mdcontrols = None
 
     out_dir = None

@@ -20,7 +20,7 @@ from llama_parse.utils import Language
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.utils.util_file import get_crc32_id
 
-_MIB_INFO_VER = "0.9.0"
+_MIB_INFO_VER = "0.9.1"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
@@ -29,9 +29,11 @@ _MIB_DEFAULT_OUT_ROOT = "_output"
 _MIB_CTN2MD_LEAD = "ctn2md"
 _MIB_AUX_SUBDIR = "_aux"
 
-ENV_MODEL_LLXM = "ENV_MODEL_LLXM"  # gpt/qwen/ark
-ENV_MODEL_REGION = "ENV_MODEL_REGION"  # gs0/gs1/gpt/qwen/ark
-
+ENV_MODEL_FLOW = "ENV_MODEL_FLOW"  # models used for flow mode: gpt/qwen/ark
+ENV_MODEL_GEN_LP = "ENV_MODEL_GEN_LP"  # models used for lp mode: gpt/qwen/ark
+ENV_MODEL_GEN_LVLM = "ENV_MODEL_GEN_LVLM"  # models used for lvlm mode: gpt/qwen/ark
+ENV_MODEL_GEN_LVLM_REGION = "ENV_MODEL_GEN_LVLM_REGION"  # models used for lvlm mode: gpt/qwen/ark/gs1/gs0
+ENV_MODEL_GEN_TI = "ENV_MODEL_GEN_TI"  # models used for textin mode: gpt/qwen/ark
 class FHL_QUALITY_TYPE:
     HIGH = "high"
     MEDIUM = "medium"
@@ -78,47 +80,60 @@ class MIFN(PUBLIC_MIFN):  # Markdown Field Name
     LP_FFNAMES_P_IMGS = "lp_fnames_p_imgs"
     LP_FNAMES_P_TBLS = "lp_fnames_p_tbls"
     LP_FNAMES_P_SNPS = "lp_fnames_p_snps"
-
     LP_CUR_JOB_ID = "lp_cur_job_id"
     LP_JOB_ID_HISTORY = "lp_job_ids"
     LP_CUR_JOB_METADATA = "lp_cur_job_metadata"
-
     LP_FNAME_JSON_RESULT_NORMAL = "lp_fname_json_result_normal"
     LP_FNAME_JSON_RESULT_PREMIUM = "lp_fname_json_result_premium"
-
     LP_I2H_NORMAL = "lp_img2hd_normal"
     LP_I2H_PREMIUM = "lp_img2hd_premium"
-
     LP_P2M_INFO = "lp_p2m_info"
 
     # fields required by lvlm converter
     LVLM_CUR_JOB_ID = "lvlm_cur_job_id"
     LVLM_IMAGE_INFOS = "lvlm_image_infos"
 
+    # fields required by textin converter
+    TI_CUR_JOB_ID = "ti_cur_job_id"
+    TI_MAP_PAGE2REF_IMGS = "ti_map_page2ref_imgs"    
+
 class DefaultModelSource:
     @classmethod
-    def get_fix_heading_model(cls):
-        return os.getenv(ENV_MODEL_LLXM, "gpt")
+    def get_flow_fix_heading_model(cls) -> str:
+        return os.getenv(ENV_MODEL_FLOW, "ark")
     
     @classmethod
-    def get_summarize_model(cls):
-        return os.getenv(ENV_MODEL_LLXM, "gpt")
+    def get_flow_summarize_model(cls) -> str:
+        return os.getenv(ENV_MODEL_FLOW, "ark")
     
     @classmethod
-    def get_lvlm_img2md_model(cls):
-        return os.getenv(ENV_MODEL_LLXM, "gpt")
+    def get_gen_lvlm_img2md_model(cls) -> str:
+        return os.getenv(ENV_MODEL_GEN_LVLM, "gpt")
+    
+    @classmethod
+    def get_gen_lvlm_img_relevance_model(cls) -> str:
+        return os.getenv(ENV_MODEL_GEN_LVLM, "gpt")
+    
+    @classmethod
+    def get_gen_lvlm_region_model(cls) -> str:
+        return os.getenv(ENV_MODEL_GEN_LVLM_REGION, "gs0")
+    
+    @classmethod
+    def get_gen_lp_img_relevance_model(cls) -> str:
+        return os.getenv(ENV_MODEL_GEN_LP, "ark")
+    
+    @classmethod
+    def get_gen_lp_img_caption_model(cls) -> str:
+        return os.getenv(ENV_MODEL_GEN_LP, "ark")
+    
+    @classmethod
+    def get_gen_ti_img_relevance_model(cls) -> str:
+        return os.getenv(ENV_MODEL_GEN_TI, "ark")
+    
+    @classmethod
+    def get_gen_ti_img_caption_model(cls) -> str:
+        return os.getenv(ENV_MODEL_GEN_TI, "ark")
 
-    @classmethod
-    def get_lp_img_relevance_model(cls):
-        return os.getenv(ENV_MODEL_LLXM, "gpt")
-    
-    @classmethod
-    def get_lp_img_caption_model(cls):
-        return os.getenv(ENV_MODEL_LLXM, "gpt")
-
-    @classmethod
-    def get_lvlm_region_model(cls):
-        return os.getenv(ENV_MODEL_REGION, "gs0") # gs0/gs1/gpt/qwen/ark
     
 
 # Names of the field in _info_ctrl.json (read_only)
@@ -129,13 +144,13 @@ def _get_defualt_md_contrl():
         "mctl_move_aux_files": True,
         "mctl_treat_doc_as_ctntype": "auto",
 
-        "mctl_fix_heading_model": DefaultModelSource.get_fix_heading_model(), # gpt/qwen/ark
-        "mctl_summarize_model": DefaultModelSource.get_summarize_model(), # gpt/qwen/ark
+        "mctl_fix_heading_model": DefaultModelSource.get_flow_fix_heading_model(), # gpt/qwen/ark
+        "mctl_summarize_model": DefaultModelSource.get_flow_summarize_model(), # gpt/qwen/ark
 
         # controls required by llamaparse conversion
         "mctl_lp_min_img_relevance_score": 0.2,
-        "mctl_lp_img_relevance_model": DefaultModelSource.get_lp_img_relevance_model(), # qwen/gpt/ark
-        "mctl_lp_img_caption_model": DefaultModelSource.get_lp_img_caption_model(), # qwen/gpt/ark
+        "mctl_lp_img_relevance_model": DefaultModelSource.get_gen_lp_img_relevance_model(), # qwen/gpt/ark
+        "mctl_lp_img_caption_model": DefaultModelSource.get_gen_lp_img_caption_model(), # qwen/gpt/ark
         "mctl_lp_need_image_ref": True,
         "mctl_lp_langauge": Language.SIMPLIFIED_CHINESE,
         "mctl_lp_take_screenshot": False,
@@ -148,8 +163,8 @@ def _get_defualt_md_contrl():
         # controls required by lvlm conversion
         "mctl_lvlm_images_ignore": "", # list of image need to be ignore, seprated by comma
         
-        "mctl_lvlm_img2md_model": DefaultModelSource.get_lvlm_img2md_model(), # gpt/qwen/ark
-        "mctl_lvlm_region_model": DefaultModelSource.get_lvlm_region_model(), # gpt/qwen/ark/gs1/gs0
+        "mctl_lvlm_img2md_model": DefaultModelSource.get_gen_lvlm_img2md_model(), # gpt/qwen/ark
+        "mctl_lvlm_region_model": DefaultModelSource.get_gen_lvlm_region_model(), # gpt/qwen/ark/gs1/gs0
 
         "mctl_lvlm_paint_page_content_area_ratios":(0.15, 0.15, 0.1, 0.1),
         "mctl_lvlm_paint_max_area_ratio": 0.7,
@@ -160,8 +175,10 @@ def _get_defualt_md_contrl():
 
         "mctl_lvlm_table_line_distance_ratio": 0.03,
         "mctl_lvlm_table_short_line_ratio":0.03,
-        "mctl_lvlm_table_text_distance_ratio": (0.02, 0.02, 0.02, 0.02)
+        "mctl_lvlm_table_text_distance_ratio": (0.02, 0.02, 0.02, 0.02),
 
+        "mctl_ti_img_relevance_model": DefaultModelSource.get_gen_ti_img_relevance_model(), # qwen/gpt/ark
+        "mctl_ti_img_caption_model": DefaultModelSource.get_gen_ti_img_caption_model(), # qwen/gpt/ark
     }
     return _DEFAULT_MDCONTROL
 

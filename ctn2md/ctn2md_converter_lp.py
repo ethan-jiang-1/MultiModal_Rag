@@ -22,6 +22,7 @@ from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_heirarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_llm
 from ctn2md.src.make_final_result import make_final_json, reset_md_flow
 from ctn2md.src.ctn2md_gen_md_llamaparse import GenMd_LlamaParse
+from ctn2md.src.md_info_base import ENV_MODEL_FLOW, ENV_MODEL_GEN_LP
 
 def _do_content2md_convert_core_lp(doc_pathname:str, 
                                    out_dir:Optional[str] = None, 
@@ -119,6 +120,9 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/kmp/Regioselective hydroxylation of cholecalciferol.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/kmp/3_20240131104523599_rearranged.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/kmp/tianyang_1_20.pdf"
+
+    os.environ[ENV_MODEL_FLOW] = "ark"
+    os.environ[ENV_MODEL_GEN_LP] = "ark"
 
     out_dir = None
     mdcontrols = None

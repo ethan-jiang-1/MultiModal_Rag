@@ -15,7 +15,7 @@ from ctn2md.utils_vllm.vllm_img_description_qwen_prompt import TEXT_IMG_DESCRIPT
 
 #model='qwen-vl-max-1119'
 #model='qwen-vl-max-0809'
-def generate_image_description_by_qwen(pname_image:str, 
+def generate_image_description_by_qwen(image_path_or_url:str, 
                                       instruction:Optional[str] = None, 
                                       model:str = "qwen-vl-max-1119", 
                                       retries:int = 5, 
@@ -24,10 +24,11 @@ def generate_image_description_by_qwen(pname_image:str,
     if instruction is None:
         instruction = TEXT_IMG_DESCRIPTION
 
-    if not os.path.isfile(pname_image):
-        raise ValueError(f"file {pname_image} not exit")
+    if not image_path_or_url.startswith(('http://', 'https://')):
+        if not os.path.isfile(image_path_or_url):
+            raise ValueError(f"Local file {image_path_or_url} does not exist")
 
-    messages = get_gpt_messages_multimodal(None, instruction, pname_image)
+    messages = get_gpt_messages_multimodal(None, instruction, image_path_or_url)
 
     client = get_dashscope_client()
 

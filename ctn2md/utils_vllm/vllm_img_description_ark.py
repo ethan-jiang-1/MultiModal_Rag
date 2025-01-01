@@ -1,5 +1,6 @@
 import os
 import sys
+from typing import Optional
 import rich
 from dotenv import load_dotenv
 
@@ -13,8 +14,8 @@ from ctn2md.utils_llm.llm_base import get_gpt_messages_multimodal, chat_gpt_plai
 from ctn2md.utils.util_file import get_root_dir
 from ctn2md.utils_vllm.vllm_img_description_ark_prompt import TEXT_IMG_DESCRIPTION
 
-def generate_image_description_by_ark(image_path:str, 
-                                      instruction:str = None, 
+def generate_image_description_by_ark(image_path_or_url:str, 
+                                      instruction:Optional[str] = None, 
                                       model:str = "ep-20241220100411-qb77p", 
                                       retries:int = 5, 
                                       backoff_in_seconds:int = 1) -> str:
@@ -22,10 +23,11 @@ def generate_image_description_by_ark(image_path:str,
     if instruction is None:
         instruction = TEXT_IMG_DESCRIPTION
 
-    if not os.path.isfile(image_path):
-        raise ValueError(f"file {image_path} not exit")
+    if not image_path_or_url.startswith(('http://', 'https://')):
+        if not os.path.isfile(image_path_or_url):
+            raise ValueError(f"Local file {image_path_or_url} does not exist")
 
-    messages = get_gpt_messages_multimodal(None, instruction, image_path)
+    messages = get_gpt_messages_multimodal(None, instruction, image_path_or_url)
     client = get_ark_client()
     response = chat_gpt_plain(messages, client=client, model=model)
     return response

@@ -46,9 +46,14 @@ def get_gpt_messages(system_prompt:str, user_prompt:str) -> list:
 
 
 
-def get_gpt_messages_multimodal(system_prompt:str, user_prompt:str, image_path:str) -> list:
+def get_gpt_messages_multimodal(system_prompt:str, user_prompt:str, image_path_or_url:str) -> list:
     """生成支持多模态的消息结构"""
-    img_url = upload_image_to_oss(image_path)
+    # 如果已经是远程URL，直接使用
+    if image_path_or_url.startswith(('http://', 'https://')):
+        img_url = image_path_or_url
+    else:
+        # 本地文件需要上传到OSS
+        img_url = upload_image_to_oss(image_path_or_url)
     
     # 构造多模态消息
     messages = []
