@@ -56,8 +56,8 @@ class ChunkedSectionInfo(BaseModel):
         description="Content to be encoded as vector"
     )
     sec_seq_no: int = Field(
-        description="Sequential number at section level, 0-based",
-        ge=0
+        description="Sequential number at section level, -1 means not assigned yet",
+        ge=-1
     )
 
     class Config:

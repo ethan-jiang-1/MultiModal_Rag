@@ -78,14 +78,17 @@ def inject_doc_chunks_into_vdb(client: QdrantClient,
                                doc_meta_info: DocMetaInfo, 
                                all_csis: list[ChunkedSectionInfo], 
                                max_chunk_num:Optional[int] = None) -> UpdateResult:
-    vectors = []
-    payloads = []
-
     stats0 = _prepare_collection_for_reinject_doc(client, collection_name, doc_meta_info)
 
     total = len(all_csis)
     sec_seq_no = -1
     cur_sec_id = "no"
+    batch_size = 8  # 每批处理8个点
+    final_ret = None
+
+    # 准备所有的向量和payload
+    vectors = []
+    payloads = []
     for ndx, csi in enumerate(all_csis):
         logging.info(f"converting doc_chunk {ndx+1}/{total} for {collection_name}")
         vector = get_embedding_vec(csi.content)
@@ -96,21 +99,26 @@ def inject_doc_chunks_into_vdb(client: QdrantClient,
         payload = csi.model_dump()
         vectors.append(vector)
         payloads.append(payload)
-        if max_chunk_num is None:
-            if ndx + 1 == max_chunk_num:
-                break
+        if max_chunk_num is not None and ndx + 1 == max_chunk_num:
+            break
 
-    points = [
-        PointStruct(id=str(uuid.uuid4()), vector=vectors[i], payload=payloads[i])  # 使用 UUID 作为 ID
-        for i in range(len(vectors))
-    ]
-    logging.info(f"total {len(points)} points need to be upsert")
+    # 分批处理
+    for i in range(0, len(vectors), batch_size):
+        batch_vectors = vectors[i:i + batch_size]
+        batch_payloads = payloads[i:i + batch_size]
+        
+        batch_points = [
+            PointStruct(id=str(uuid.uuid4()), vector=batch_vectors[j], payload=batch_payloads[j])
+            for j in range(len(batch_vectors))
+        ]
+        logging.info(f"upserting batch {i//batch_size + 1}, size: {len(batch_points)}")
 
-    ret = client.upsert(
-        collection_name=collection_name,
-        points=points,
-    )
-    rich.print(ret)
+        ret = client.upsert(
+            collection_name=collection_name,
+            points=batch_points,
+        )
+        final_ret = ret  # 保存最后一次的返回结果
+        rich.print(ret)
 
     doc_unique_id = doc_meta_info.doc_unique_id
     doc_title = doc_meta_info.doc_logic_title
@@ -118,7 +126,7 @@ def inject_doc_chunks_into_vdb(client: QdrantClient,
     rich.print(f"[yellow]after inject_doc_chunks_into_vdb [/yellow]  {stats1}")
 
     _update_doc_to_collection(client, stats0, stats1, collection_name, doc_meta_info, all_csis)
-    return ret
+    return final_ret
 
 if __name__ == "__main__":
     from mrag_vdb.common.vdb_base import get_vdb_path, QdrantClientContextManager
