@@ -19,7 +19,7 @@ if __name__ == "__main__":
     os.chdir(_root_dir)
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.src.md_info_base import MdInfo,ENV_MODEL_FLOW
 from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_llm
 from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_heirarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_llm
@@ -91,6 +91,7 @@ if __name__ == "__main__":
     #doc_pathname = "_output/ctn2md_AIGC时代的人力资源管理进化(徐刚)_lp/AIGC时代的人力资源管理进化(徐刚)___pdf.md"
     doc_pathname = "_work/ctn2md_mrag__5__back_panel_与环境匹配工程校核_P2_lp/5. back panel 与环境匹配工程校核_P2___pptx.md"
 
+    os.environ[ENV_MODEL_FLOW] = "ark"
     out_dir = None
     mdcontrols = None
     enforced_gen = False   

@@ -34,6 +34,7 @@ ENV_MODEL_GEN_LP = "ENV_MODEL_GEN_LP"  # models used for lp mode: gpt/qwen/ark
 ENV_MODEL_GEN_LVLM = "ENV_MODEL_GEN_LVLM"  # models used for lvlm mode: gpt/qwen/ark
 ENV_MODEL_GEN_LVLM_REGION = "ENV_MODEL_GEN_LVLM_REGION"  # models used for lvlm mode: gs0/gs1/gs2
 ENV_MODEL_GEN_TI = "ENV_MODEL_GEN_TI"  # models used for textin mode: gpt/qwen/ark
+
 class FHL_QUALITY_TYPE:
     HIGH = "high"
     MEDIUM = "medium"
