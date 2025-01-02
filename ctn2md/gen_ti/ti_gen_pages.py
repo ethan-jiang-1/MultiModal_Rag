@@ -54,7 +54,7 @@ if __name__ == "__main__":
     sel_page_indexes = None
 
     #mdcontrols = None
-    mdcontrols = {"mctl_lvlm_region_model": "gs0"}  
+    mdcontrols = {"mctl_lvlm_region_detect": "gs0"}  
     skip_gen_mds = True
 
     output_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix='lvlm')

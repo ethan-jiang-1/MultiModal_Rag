@@ -284,7 +284,7 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     #doc_pathname = "datasrc/exam/raw_docs/attention_is_all_you_need.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/LongRAG.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/papers/LongRAG.pdf"
     page_no = 8
 
     output_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix='lvlm')
@@ -300,6 +300,5 @@ if __name__ == "__main__":
     pdf_document = fitz.open(doc_pathname)
     page = pdf_document[page_no - 1] # 0-based index
 
-    merged_rects_bounds, rects_list = _gs1_parse_non_text_rects_in_page_core(md_info, page, page_no)
+    merged_rects_bounds= gs1_parse_non_text_rects_in_page(md_info, page, page_no, None)
     rich.print(merged_rects_bounds)
-    rich.print(rects_list)

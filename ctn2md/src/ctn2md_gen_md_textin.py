@@ -32,7 +32,7 @@ def gen_md_textin(doc_pathname:str, out_dir:str) -> str:
 
 
 class GenMd_TextIn(GenMd_Base):
-    SUPPORT_CNT_TYPES = [CTN_TYPE.PDF, CTN_TYPE.PPT, CTN_TYPE.DOC]
+    SUPPORT_CNT_TYPES = [CTN_TYPE.PDF, CTN_TYPE.DOC]
     OD_SUFFIX = "ti"
 
     @classmethod

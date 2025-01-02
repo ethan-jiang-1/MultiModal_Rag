@@ -97,7 +97,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/mrag/4. 前后排座椅间距定义 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/5. back panel 与环境匹配工程校核_P2.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/6. 前后排座椅H点距离要求 P1.pptx"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/管理者角色定位与认知课程大纲.docx"
+    doc_pathname = "datasrc/exam/raw_docs/mrag/管理者角色定位与认知课程大纲.docx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/考勤修改统一规则.xlsx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/高效沟通之黄金三角模型课程大纲.docx"
 
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/papers/Survey of different Large Language Model Architectures.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/Winning Solution For Meta KDD Cup’ 24 2410.00005v1.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/深度学习在视电阻率快速反演中的研究.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/papers/DeepSeek_V3.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/papers/DeepSeek_V3.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/Long-Context LLMs Meet RAG_compressed.pdf"
 
     #doc_pathname = "datasrc/exam/raw_docs/papers/ChatGPT intimates a tantalizing future_compressed.pdf"
