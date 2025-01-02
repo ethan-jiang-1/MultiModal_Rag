@@ -20,7 +20,7 @@ from llama_parse.utils import Language
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.utils.util_file import get_crc32_id
 
-_MIB_INFO_VER = "0.9.1"
+_MIB_INFO_VER = "0.9.2"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
@@ -116,7 +116,7 @@ class DefaultModelSource:
     
     @classmethod
     def get_gen_lvlm_region_model(cls) -> str:
-        return os.getenv(ENV_MODEL_GEN_LVLM_REGION, "gs0")
+        return os.getenv(ENV_MODEL_GEN_LVLM_REGION, "gs2")
     
     @classmethod
     def get_gen_lp_img_relevance_model(cls) -> str:
