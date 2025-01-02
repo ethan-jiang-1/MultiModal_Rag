@@ -15,6 +15,7 @@ from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lvlm.lvlm_base import get_image_cnt_type, LVLM_IMG_CNT_TYPE
 from ctn2md.gen_lvlm.gs0_pdf_page_to_region import gs0_parse_non_text_rects_in_page
 from ctn2md.gen_lvlm.gs1_pdf_page_to_region import gs1_parse_non_text_rects_in_page
+from ctn2md.gen_lvlm.gs2_pdf_page_to_region import gs2_parse_non_text_rects_in_page
 from ctn2md.gen_lvlm.gvlm_pdf_page_to_region import vllm_parse_non_text_rects_in_page_by_gpt, vllm_parse_non_text_rects_in_page_by_qwen, vllm_parse_non_text_rects_in_page_by_ark
 from ctn2md.utils_gen.gen_base import get_job_id
 from ctn2md.utils_gen.gen_base import is_still_in_gen_mode
@@ -43,6 +44,8 @@ def _get_non_text_rects(md_info:MdInfo,
         rects_non_text = gs0_parse_non_text_rects_in_page(md_info, page, page_index, pname_page_name)
     elif mctl_lvlm_region_model == "gs1":
         rects_non_text = gs1_parse_non_text_rects_in_page(md_info, page, page_index, pname_page_name)
+    elif mctl_lvlm_region_model == "gs2":
+        rects_non_text = gs2_parse_non_text_rects_in_page(md_info, page, page_index, pname_page_name)
     else:
         raise ValueError(f"unspoorted mctl_lvlm_region_model {mctl_lvlm_region_model}")
     logging.info(f"cal rects for {page_index} done.")
@@ -183,7 +186,7 @@ if __name__ == "__main__":
 
     doc_pathname = "datasrc/exam/raw_docs/papers/DeepSeek_V3.pdf"
     sel_page_indexes = [2, 28]
-    mctl_lvlm_region_model = "gs0"
+    mctl_lvlm_region_model = "gs2"
 
     output_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix='lvlm')
 
