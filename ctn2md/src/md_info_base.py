@@ -20,7 +20,7 @@ from llama_parse.utils import Language
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.utils.util_file import get_crc32_id
 
-_MIB_INFO_VER = "0.9.2"
+_MIB_INFO_VER = "0.9.3"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
@@ -32,7 +32,7 @@ _MIB_AUX_SUBDIR = "_aux"
 ENV_MODEL_FLOW = "ENV_MODEL_FLOW"  # models used for flow mode: gpt/qwen/ark
 ENV_MODEL_GEN_LP = "ENV_MODEL_GEN_LP"  # models used for lp mode: gpt/qwen/ark
 ENV_MODEL_GEN_LVLM = "ENV_MODEL_GEN_LVLM"  # models used for lvlm mode: gpt/qwen/ark
-ENV_MODEL_GEN_LVLM_REGION = "ENV_MODEL_GEN_LVLM_REGION"  # models used for lvlm mode: gpt/qwen/ark/gs1/gs0
+ENV_MODEL_GEN_LVLM_REGION = "ENV_MODEL_GEN_LVLM_REGION"  # models used for lvlm mode: gs0/gs1/gs2
 ENV_MODEL_GEN_TI = "ENV_MODEL_GEN_TI"  # models used for textin mode: gpt/qwen/ark
 class FHL_QUALITY_TYPE:
     HIGH = "high"
@@ -115,7 +115,7 @@ class DefaultModelSource:
         return os.getenv(ENV_MODEL_GEN_LVLM, "gpt")
     
     @classmethod
-    def get_gen_lvlm_region_model(cls) -> str:
+    def get_gen_lvlm_region_detect(cls) -> str:
         return os.getenv(ENV_MODEL_GEN_LVLM_REGION, "gs2")
     
     @classmethod
@@ -164,7 +164,7 @@ def _get_defualt_md_contrl():
         "mctl_lvlm_images_ignore": "", # list of image need to be ignore, seprated by comma
         
         "mctl_lvlm_img2md_model": DefaultModelSource.get_gen_lvlm_img2md_model(), # gpt/qwen/ark
-        "mctl_lvlm_region_model": DefaultModelSource.get_gen_lvlm_region_model(), # gpt/qwen/ark/gs1/gs0
+        "mctl_lvlm_region_detect": DefaultModelSource.get_gen_lvlm_region_detect(), # gs0/gs1/gs2
 
         "mctl_lvlm_paint_page_content_area_ratios":(0.15, 0.15, 0.1, 0.1),
         "mctl_lvlm_paint_max_area_ratio": 0.7,

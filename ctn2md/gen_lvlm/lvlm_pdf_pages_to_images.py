@@ -16,7 +16,6 @@ from ctn2md.gen_lvlm.lvlm_base import get_image_cnt_type, LVLM_IMG_CNT_TYPE
 from ctn2md.gen_lvlm.gs0_pdf_page_to_region import gs0_parse_non_text_rects_in_page
 from ctn2md.gen_lvlm.gs1_pdf_page_to_region import gs1_parse_non_text_rects_in_page
 from ctn2md.gen_lvlm.gs2_pdf_page_to_region import gs2_parse_non_text_rects_in_page
-from ctn2md.gen_lvlm.gvlm_pdf_page_to_region import vllm_parse_non_text_rects_in_page_by_gpt, vllm_parse_non_text_rects_in_page_by_qwen, vllm_parse_non_text_rects_in_page_by_ark
 from ctn2md.utils_gen.gen_base import get_job_id
 from ctn2md.utils_gen.gen_base import is_still_in_gen_mode
 from ctn2md.gen_lvlm._draw_redrect_on_page import draw_redrect_on_page
@@ -30,24 +29,18 @@ def _get_non_text_rects(md_info:MdInfo,
                         page:pymupdf.Page, 
                         page_index:int, 
                         pname_page_name:str, 
-                        mctl_lvlm_region_model:Optional[str] = None) -> List[Tuple[float, float, float, float]]:
-    if mctl_lvlm_region_model is None:
-        mctl_lvlm_region_model = md_info.get_md_control("mctl_lvlm_region_model", "qwen")
+                        mctl_lvlm_region_detect:Optional[str] = None) -> List[Tuple[float, float, float, float]]:
+    if mctl_lvlm_region_detect is None:
+        mctl_lvlm_region_detect = md_info.get_md_control("mctl_lvlm_region_detect", "gs0")
     logging.info(f"cal rects for {page_index} starts...")
-    if mctl_lvlm_region_model == "gpt":
-        rects_non_text = vllm_parse_non_text_rects_in_page_by_gpt(md_info, page, page_index, pname_page_name) 
-    elif mctl_lvlm_region_model == "qwen":
-        rects_non_text = vllm_parse_non_text_rects_in_page_by_qwen(md_info, page, page_index, pname_page_name)
-    elif mctl_lvlm_region_model == "ark":
-        rects_non_text = vllm_parse_non_text_rects_in_page_by_ark(md_info, page, page_index, pname_page_name)
-    elif mctl_lvlm_region_model == "gs0":
+    if mctl_lvlm_region_detect == "gs0":
         rects_non_text = gs0_parse_non_text_rects_in_page(md_info, page, page_index, pname_page_name)
-    elif mctl_lvlm_region_model == "gs1":
+    elif mctl_lvlm_region_detect == "gs1":
         rects_non_text = gs1_parse_non_text_rects_in_page(md_info, page, page_index, pname_page_name)
-    elif mctl_lvlm_region_model == "gs2":
+    elif mctl_lvlm_region_detect == "gs2": 
         rects_non_text = gs2_parse_non_text_rects_in_page(md_info, page, page_index, pname_page_name)
     else:
-        raise ValueError(f"unspoorted mctl_lvlm_region_model {mctl_lvlm_region_model}")
+        raise ValueError(f"unspoorted mctl_lvlm_region_detect {mctl_lvlm_region_detect}")
     logging.info(f"cal rects for {page_index} done.")
     return rects_non_text
 
@@ -66,7 +59,7 @@ def _assign_final_doc_cnt_type(md_info:MdInfo, pdf_document:fitz.Document):
 
 def parse_pdf_to_images(md_info: MdInfo, 
                         sel_page_indexes: Optional[List[int]] = None, 
-                        mctl_lvlm_region_model: Optional[str] = None) -> List[Tuple[str, str, List[str]]]:
+                        mctl_lvlm_region_detect: Optional[str] = None) -> List[Tuple[str, str, List[str]]]:
     """
     Parse PDF to images and save to output_dir.
     """
@@ -83,8 +76,8 @@ def parse_pdf_to_images(md_info: MdInfo,
     if not is_still_in_gen_mode(md_info):
         clean_previous_images(output_dir, job_id)
 
-    if mctl_lvlm_region_model is None:
-        mctl_lvlm_region_model = md_info.get_md_control("mctl_lvlm_region_model", "qwen")
+    if mctl_lvlm_region_detect is None:
+        mctl_lvlm_region_detect = md_info.get_md_control("mctl_lvlm_region_detect", "gs0")
 
     # 打开PDF文件
     pdf_document = fitz.open(pdf_path)
@@ -114,8 +107,8 @@ def parse_pdf_to_images(md_info: MdInfo,
         except Exception as ex:
             logging.exception(ex)
   
-        logging.info(f"cal rects for page:{page_index} starts {mctl_lvlm_region_model}...")
-        rects_non_text = _get_non_text_rects(md_info, page, page_index, pname_page_name, mctl_lvlm_region_model=mctl_lvlm_region_model)
+        logging.info(f"cal rects for page:{page_index} starts {mctl_lvlm_region_detect}...")
+        rects_non_text = _get_non_text_rects(md_info, page, page_index, pname_page_name, mctl_lvlm_region_detect=mctl_lvlm_region_detect)
         logging.info(f"cal rects for page:{page_index} done.")
 
         for index, rect_non_text in enumerate(rects_non_text):
@@ -176,17 +169,16 @@ if __name__ == "__main__":
 
     #doc_pathname = "datasrc/exam/raw_docs/Survey of different Large Language Model Architectures.pdf"
     #sel_page_indexes = [3,4]
-    #mctl_lvlm_region_model = "qwen"
-    #mctl_lvlm_region_model = "gs0"
+    #mctl_lvlm_region_detect = "gs0"
 
     #doc_pathname = "datasrc/exam/raw_docs/Survey of different Large Language Model Architectures.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/ “AI+应用”百花齐放，新质生产力前景广阔pdf.pdf"
     #sel_page_indexes = [1]
-    #mctl_lvlm_region_model = "gs0"
+    #mctl_lvlm_region_detect = "gs0"
 
     doc_pathname = "datasrc/exam/raw_docs/papers/DeepSeek_V3.pdf"
     sel_page_indexes = [2, 28]
-    mctl_lvlm_region_model = "gs2"
+    mctl_lvlm_region_detect = "gs2"
 
     output_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix='lvlm')
 
@@ -199,5 +191,5 @@ if __name__ == "__main__":
     md_info[MIFN.LVLM_CUR_JOB_ID] = job_id
     
 
-    image_infos = parse_pdf_to_images(md_info, sel_page_indexes=sel_page_indexes, mctl_lvlm_region_model=mctl_lvlm_region_model)
+    image_infos = parse_pdf_to_images(md_info, sel_page_indexes=sel_page_indexes, mctl_lvlm_region_detect=mctl_lvlm_region_detect)
     rich.print(image_infos)
