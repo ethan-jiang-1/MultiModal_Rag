@@ -6,29 +6,105 @@
 
 该项目由三个主要模块组成：
 
-1. **CTN2MD** (Content to Markdown)
-   - 将各种格式文档（PDF、PPTX、DOCX等）转换为结构化的 Markdown
-   - 自动识别和优化文档结构，生成合理的 TOC (Table of Contents)
-   - 支持图片提取和智能描述生成
-   - 多模态内容处理（文本、图片、表格等）
-
-2. **MRAG_VDB** (MultiModal RAG Vector Database)
-   - 处理和存储 Markdown 文档到向量数据库
-   - 支持多模态内容的向量化和索引
-   - 提供高效的相似度搜索接口
-   - 集成重排序机制提升检索质量
-
-3. **MRAG_APP** (MultiModal RAG Application)
-   - 基于 Gradio 的交互式界面
-   - 支持多模态问答
-   - 可视化知识检索结果
-   - 用户友好的文档管理界面
-
-## 特性
-
-- 多格式文档支持
+### 1. [CTN2MD](ctn2md/README.md) (Content to Markdown)
+- 多引擎文档转换系统
+  - LVLM (Large Vision Language Model) 模式
+  - TextIn OCR 模式
+  - LlamaParse 模式
 - 智能文档结构化
-- 多模态内容处理
-- 高效向量检索
-- 交互式界面
-- 可扩展架构
+  - 自动标题层级优化
+  - 内容智能分段
+  - 图文关联分析
+- 批量处理能力
+  - 多格式文档支持
+  - 转换进度监控
+  - 可配置参数
+
+### 2. [MRAG_VDB](mrag_vdb/README.md) (MultiModal RAG Vector Database)
+- 文档向量化与存储
+  - 智能文档分块
+  - 向量数据持久化
+  - 多知识库管理
+- 高级检索功能
+  - 混合检索策略
+  - 可配置权重系统
+  - 重排序支持
+- 性能优化
+  - 批量处理
+  - 异步操作
+  - 缓存机制
+
+### 3. [MRAG_APP](mrag_app/README.md) (MultiModal RAG Application)
+- Web 交互界面
+  - 基于 Gradio 构建
+  - 实时进度显示
+  - 美观的 UI 设计
+- 多模型支持
+  - GPT-4/3.5 系列
+  - Qwen (通义千问)
+  - Ark
+  - 本地模型
+- 知识库管理
+  - 多知识库切换
+  - 检索参数配置
+  - 历史记录追踪
+
+## 快速开始
+
+### 安装
+```bash
+# 克隆项目
+git clone [repository_url]
+cd MultiModal_Rag
+
+# 安装依赖
+pip install -r requirements.txt
+
+# 安装开发依赖（可选）
+pip install -r requirements-dev.txt
+```
+
+### 基本使用流程
+
+1. 文档转换
+```python
+from ctn2md.ctn2md_converter_ti import do_content2md_convert
+do_content2md_convert("your_doc.pdf")
+```
+
+2. 向量数据库处理
+```python
+from mrag_vdb.batch_docs_to_vdb_mrag import upsert_batch_kbname_to_vdb
+upsert_batch_kbname_to_vdb("path/to/docs", "kb_name")
+```
+
+3. 启动应用界面
+```python
+python mrag_app/app_gradio.py
+```
+
+## 配置说明
+
+项目使用 `.env` 文件管理配置，主要包括：
+- 模型服务配置（GPT/Qwen/Ark）
+- 向量数据库设置
+- 文件路径配置
+- API 密钥配置
+
+## 系统要求
+
+- Python 3.12+
+- 足够的系统内存（建议 16GB+）
+- 支持的模型服务
+  - GPT/Qwen/Ark 等 LLM
+  - TextIn API（可选）
+  - LlamaParse（可选）
+- SSD 存储（推荐）
+
+## 开发指南
+
+详细的开发文档请参考各模块的 README：
+- [CTN2MD 开发文档](ctn2md/README.md)
+- [MRAG_VDB 开发文档](mrag_vdb/README.md)
+- [MRAG_APP 开发文档](mrag_app/README.md)
+
