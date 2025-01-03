@@ -6,6 +6,7 @@ import requests
 import re
 import rich
 import json_repair
+import time
 
 if './' not in sys.path:
     sys.path.append("./")
@@ -42,12 +43,23 @@ def _gen_page_md_by_ti(pname_image:str, pname_page_md:str):
     with open(pname_page_md, "w", encoding="utf-8") as f:
         f.write(md_page)
 
-def _download_remote_image(img_url:str, local_path:str):
-    response = requests.get(img_url, timeout=10)
-    response.raise_for_status()
-    with open(local_path, 'wb') as f:
-        f.write(response.content)
-
+def _download_remote_image(img_url: str, local_path: str):
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(img_url, timeout=10)
+            response.raise_for_status()
+            with open(local_path, 'wb') as f:
+                f.write(response.content)
+            return
+        except (requests.RequestException, IOError) as e:
+            if attempt == max_retries - 1:  # Last attempt
+                raise  # Re-raise the last exception if all retries failed
+            
+            # Calculate delay with exponential backoff: 1s, 2s, 4s
+            delay = (attempt + 1) * 1
+            logging.warning(f"Download attempt {attempt + 1} failed for {img_url}. Retrying in {delay}s... Error: {str(e)}")
+            time.sleep(delay)
 
 def _get_page_instruction(md_info:MdInfo, doc_title:str, content_around:str) -> str:
     global g_question_num
