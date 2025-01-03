@@ -1,15 +1,16 @@
 from typing import List
-import requests
-import json
+import httpx
+#import json
 import os
 import rich
 from dotenv import load_dotenv
+import logging
+import time
 
 load_dotenv()
 
 
 def jina_rerank(query_str:str, documents: List[str], top_n: int = None):
-
     url = 'https://api.jina.ai/v1/rerank'
     headers = {
         'Content-Type': 'application/json',
@@ -22,10 +23,20 @@ def jina_rerank(query_str:str, documents: List[str], top_n: int = None):
         "documents": documents
     }
 
-    response = requests.post(url, headers=headers, data=json.dumps(data))
-
-    results = response.json()["results"]
-    return results
+    max_retries = 3
+    with httpx.Client() as client:
+        for attempt in range(max_retries):
+            try:
+                response = client.post(url, headers=headers, json=data, timeout=10.0)
+                response.raise_for_status()
+                return response.json()["results"]
+            except (httpx.RequestError, httpx.HTTPStatusError) as e:
+                if attempt == max_retries - 1:  # Last attempt
+                    raise  # Re-raise the last exception if all retries failed
+                
+                delay = (attempt + 1) * 1
+                logging.warning(f"Request attempt {attempt + 1} failed. Retrying in {delay}s... Error: {str(e)}")
+                time.sleep(delay)
 
 if __name__ == "__main__":
     query_str = "Organic skincare products for sensitive skin"

@@ -1,15 +1,21 @@
 import sys
 import os
 from dotenv import load_dotenv
-import requests
+import httpx
 import json
 import logging
 import rich
+import time
+
 
 if './' not in sys.path:
     sys.path.append("./")
 
+from ctn2md.utils.util_logging import setup_logger_handlers
+
 load_dotenv()
+
+
 
 class TextinOcr(object):
     def __init__(self, app_id, app_secret):
@@ -17,7 +23,7 @@ class TextinOcr(object):
         self._app_secret = app_secret
         self.host = 'https://api.textin.com'
 
-    def recognize_pdf2md(self, image: bytes, options: dict) -> requests.Response:
+    def recognize_pdf2md(self, image: bytes, options: dict) -> httpx.Response:
         """
         pdf to markdown
         :param options: request params
@@ -42,7 +48,20 @@ class TextinOcr(object):
             'x-ti-app-id': self._app_id,
             'x-ti-secret-code': self._app_secret
         }
-        return requests.post(url, data=image, headers=headers, params=options)
+        max_retries = 3
+        with httpx.Client() as client:
+            for attempt in range(max_retries):
+                try:
+                    response = client.post(url, content=image, headers=headers, params=options, timeout=30.0)
+                    response.raise_for_status()
+                    return response
+                except (httpx.RequestError, httpx.HTTPStatusError) as e:
+                    if attempt == max_retries - 1:  # Last attempt
+                        raise  # Re-raise the last exception if all retries failed
+                    
+                    delay = (attempt + 1) * 1
+                    logging.warning(f"Request attempt {attempt + 1} failed. Retrying in {delay}s... Error: {str(e)}")
+                    time.sleep(delay)
 
 
 def convert_image_to_md(pname_image: str) -> str:
@@ -77,6 +96,8 @@ def convert_image_to_md(pname_image: str) -> str:
 
 
 if __name__ == "__main__":
+    setup_logger_handlers() 
+    
     pname_image = "_work/md_pdf_pages/5ec48698-page_1.jpg"
     result = convert_image_to_md(pname_image)
     rich.print(result)

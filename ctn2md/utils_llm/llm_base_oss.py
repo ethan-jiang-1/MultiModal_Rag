@@ -4,6 +4,7 @@ import os
 import logging
 import rich
 from datetime import datetime
+import httpx
 
 
 if "./" not in sys.path:
@@ -24,6 +25,7 @@ def _generate_unique_name(image_path: str) -> str:
 
 def upload_image_to_oss(image_path:str) -> str:
     import oss2
+    
     access_key_id = os.environ["OSS_ACCESS_KEY_ID"]
     access_key_secret = os.environ["OSS_ACCESS_KEY_SECRET"]
     endpoint = os.environ["OSS_ENDPOINT"]
@@ -61,16 +63,21 @@ def upload_image_to_oss(image_path:str) -> str:
         if meta.status != 200:
             raise oss2.exceptions.OssError(f"Cannot access uploaded file, status: {meta.status}")
 
-        # 获取基础URL
+        # 获取基础URL并验证可访问性
         base_url = bucket.sign_url('GET', object_name, 0).split('?')[0]
+        
+        # 使用 httpx 验证URL可访问性
+        with httpx.Client() as client:
+            response = client.head(base_url, timeout=10.0)
+            response.raise_for_status()
             
-        # 构建带ETag和过期时间的URL
+        # 构建带ETag的URL
         final_url = f"{base_url}?ETag={result.etag}"
         logging.info(f"public url with ETag:{final_url} to access {object_name} in oss")
         
         return final_url
 
-    except oss2.exceptions.OssError as e:
+    except (oss2.exceptions.OssError, httpx.RequestError) as e:
         logging.error(f"OSS operation failed for {object_name}: {str(e)}")
         raise
     except Exception as e:

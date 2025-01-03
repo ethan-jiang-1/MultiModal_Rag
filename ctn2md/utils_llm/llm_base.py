@@ -5,7 +5,7 @@ import sys
 import os
 import json_repair
 import openai 
-import requests
+import httpx
 import logging
 import time
 import csv
@@ -261,7 +261,7 @@ def chat_gpt_json(
                 mc.response = response
                 resp = jsons_load_repair(response.choices[0].message.content)
                 return resp
-        except (requests.exceptions.RequestException, ValueError, openai.RateLimitError) as e:
+        except (httpx.RequestError, ValueError, openai.RateLimitError) as e:
             if isinstance(e, openai.RateLimitError):
                 delay_base_sec += 10
             else:
@@ -299,7 +299,7 @@ def chat_gpt_plain(
                     top_p=top_p)
                 mc.response = response
                 return response.choices[0].message.content
-        except (requests.exceptions.RequestException, ValueError, openai.RateLimitError) as e:
+        except (httpx.RequestError, ValueError, openai.RateLimitError) as e:
             if isinstance(e, openai.RateLimitError):
                 delay_base_sec += 10
             else:

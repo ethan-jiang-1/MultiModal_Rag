@@ -1,4 +1,4 @@
-import requests
+import httpx
 import rich
 import os
 from dotenv import load_dotenv
@@ -8,6 +8,7 @@ import cv2
 #import numpy as np
 from pathlib import Path
 #import numpy as np
+import time
 
 load_dotenv()
 
@@ -76,19 +77,30 @@ def call_yolo_endpoint(image_path: str) -> DocLayoutResponse:
         DocLayoutResponse: 包含状态和所有预测结果的响应对象
     """
     url = os.getenv("DOCLAYOUT_ENDPOINT")
-    with open(image_path, "rb") as file:
-        files = {"file": file}
-        response = requests.post(url, files=files)
+    max_retries = 3
     
-    if response.status_code == 200:
-        json_data = response.json()
-        print("Status:", json_data["status"])
-        print("Predictions:", json_data["predictions"])
-        data = DocLayoutResponse(**json_data)
-        return data
-    else:
-        print(f"Error: {response.status_code} - {response.text}")
-        return None
+    with httpx.Client() as client:
+        for attempt in range(max_retries):
+            try:
+                with open(image_path, "rb") as file:
+                    files = {"file": file}
+                    response = client.post(url, files=files, timeout=10.0)
+                    response.raise_for_status()
+                
+                json_data = response.json()
+                print("Status:", json_data["status"])
+                print("Predictions:", json_data["predictions"])
+                data = DocLayoutResponse(**json_data)
+                return data
+                
+            except (httpx.RequestError, httpx.HTTPStatusError) as e:
+                if attempt == max_retries - 1:  # Last attempt
+                    print(f"Error: {str(e)}")
+                    return None
+                
+                delay = (attempt + 1) * 1
+                print(f"Request attempt {attempt + 1} failed. Retrying in {delay}s... Error: {str(e)}")
+                time.sleep(delay)
 
 def draw_predictions(
     image_path: str, 

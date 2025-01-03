@@ -5,7 +5,7 @@ import sys
 import os
 import json_repair
 import openai 
-import requests
+import httpx
 import logging
 import time
 import csv
@@ -46,9 +46,14 @@ def get_gpt_messages(system_prompt:str, user_prompt:str) -> list:
 
 
 
-def get_gpt_messages_multimodal(system_prompt:str, user_prompt:str, image_path:str) -> list:
+def get_gpt_messages_multimodal(system_prompt:str, user_prompt:str, image_path_or_url:str) -> list:
     """生成支持多模态的消息结构"""
-    img_url = upload_image_to_oss(image_path)
+    # 如果已经是远程URL，直接使用
+    if image_path_or_url.startswith(('http://', 'https://')):
+        img_url = image_path_or_url
+    else:
+        # 本地文件需要上传到OSS
+        img_url = upload_image_to_oss(image_path_or_url)
     
     # 构造多模态消息
     messages = []
@@ -100,7 +105,7 @@ def jsons_load_repair(content:str) -> dict:
     return resp
 
 class MonitorContextLLM:
-    LEADING_PREFIX = "mrag"
+    LEADING_PREFIX = "ctn"
 
     @classmethod
     def _get_monitor_filename(cls, model:str) -> str:
@@ -256,7 +261,7 @@ def chat_gpt_json(
                 mc.response = response
                 resp = jsons_load_repair(response.choices[0].message.content)
                 return resp
-        except (requests.exceptions.RequestException, ValueError, openai.RateLimitError) as e:
+        except (httpx.RequestError, ValueError, openai.RateLimitError) as e:
             if isinstance(e, openai.RateLimitError):
                 delay_base_sec += 10
             else:
@@ -294,7 +299,7 @@ def chat_gpt_plain(
                     top_p=top_p)
                 mc.response = response
                 return response.choices[0].message.content
-        except (requests.exceptions.RequestException, ValueError, openai.RateLimitError) as e:
+        except (httpx.RequestError, ValueError, openai.RateLimitError) as e:
             if isinstance(e, openai.RateLimitError):
                 delay_base_sec += 10
             else:

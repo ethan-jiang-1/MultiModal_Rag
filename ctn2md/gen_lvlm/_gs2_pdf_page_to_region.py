@@ -1,13 +1,17 @@
-import requests
-#import rich
+import httpx
 import os
 from dotenv import load_dotenv
 from pydantic import BaseModel, field_validator
 from typing import List, Tuple # , Optional
-#import cv2
-#import numpy as np
-#from pathlib import Path
-#import numpy as np
+import logging
+import time
+import sys 
+
+if './' not in sys.path:
+    sys.path.append('./')
+
+from ctn2md.utils.util_logging import setup_logger_handlers
+
 
 load_dotenv()
 
@@ -76,19 +80,29 @@ def call_doclayout_yolo_endpoint(image_path: str) -> DocLayoutResponse:
         DocLayoutResponse: 包含状态和所有预测结果的响应对象
     """
     url = os.getenv("DOCLAYOUT_ENDPOINT")
-    with open(image_path, "rb") as file:
-        files = {"file": file}
-        response = requests.post(url, files=files)
+    max_retries = 3
     
-    if response.status_code == 200:
-        json_data = response.json()
-        print("Status:", json_data["status"])
-        #print("Predictions:", json_data["predictions"])
-        data = DocLayoutResponse(**json_data)
-        return data
-    else:
-        print(f"Error: {response.status_code} - {response.text}")
-        return None
+    with httpx.Client() as client:
+        for attempt in range(max_retries):
+            try:
+                with open(image_path, "rb") as file:
+                    files = {"file": file}
+                    response = client.post(url, files=files, timeout=10.0)
+                    response.raise_for_status()
+                
+                json_data = response.json()
+                print("Status:", json_data["status"])
+                data = DocLayoutResponse(**json_data)
+                return data
+                
+            except (httpx.RequestError, httpx.HTTPStatusError) as e:
+                if attempt == max_retries - 1:  # Last attempt
+                    print(f"Error: {response.status_code} - {response.text}")
+                    return None
+                
+                delay = (attempt + 1) * 1
+                logging.warning(f"Request attempt {attempt + 1} failed. Retrying in {delay}s... Error: {str(e)}")
+                time.sleep(delay)
 
 def extract_picture_regions(
     response: DocLayoutResponse, 
@@ -117,6 +131,7 @@ def extract_picture_regions(
 
 # 使用示例：
 if __name__ == "__main__":
+    setup_logger_handlers() 
     image_path = r"_work/md_pdf_pages/cd725bb7-page_6.jpg"
     response = call_doclayout_yolo_endpoint(image_path)
     

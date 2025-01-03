@@ -1,8 +1,9 @@
-import requests
+import httpx
 import json
 import os
 from dotenv import load_dotenv
 import rich
+import time
 
 load_dotenv()
 def get_file_content(filePath):
@@ -40,8 +41,21 @@ class TextinOcr(object):
             'x-ti-app-id': self._app_id,
             'x-ti-secret-code': self._app_secret
         }
-
-        return requests.post(url, data=image, headers=headers, params=options)
+        
+        max_retries = 3
+        with httpx.Client() as client:
+            for attempt in range(max_retries):
+                try:
+                    response = client.post(url, content=image, headers=headers, params=options, timeout=30.0)
+                    response.raise_for_status()
+                    return response
+                except httpx.RequestError as e:
+                    if attempt == max_retries - 1:  # Last attempt
+                        raise  # Re-raise the last exception if all retries failed
+                    
+                    delay = (attempt + 1) * 1
+                    print(f"Request attempt {attempt + 1} failed. Retrying in {delay}s... Error: {str(e)}")
+                    time.sleep(delay)
 
 
 def main(pname_image):
