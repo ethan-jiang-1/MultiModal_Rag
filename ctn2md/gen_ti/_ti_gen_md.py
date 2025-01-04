@@ -6,15 +6,14 @@ import json
 import logging
 import rich
 import time
+import asyncio
+#from typing import Union
 
-
+load_dotenv()
 if './' not in sys.path:
     sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-
-load_dotenv()
-
 
 
 class TextinOcr(object):
@@ -22,82 +21,114 @@ class TextinOcr(object):
         self._app_id = app_id
         self._app_secret = app_secret
         self.host = 'https://api.textin.com'
-
-    def recognize_pdf2md(self, image: bytes, options: dict) -> httpx.Response:
-        """
-        pdf to markdown
-        :param options: request params
-        :param image: file bytes
-        :return: response
-
-        options = {
-            'pdf_pwd': None,
-            'dpi': 144,  # 设置dpi为144
-            'page_start': 0,
-            'page_count': 1000,  # 设置解析的页数为1000页
-            'apply_document_tree': 0,
-            'markdown_details': 1,
-            'page_details': 0,  # 不包含页面细节信息
-            'table_flavor': 'md',
-            'get_image': 'none',
-            'parse_mode': 'scan',  # 解析模式设为scan
-        }
-        """
-        url = self.host + '/ai/service/v1/pdf_to_markdown'
-        headers = {
+        self.max_retries = 3
+        self._headers = {
             'x-ti-app-id': self._app_id,
             'x-ti-secret-code': self._app_secret
         }
-        max_retries = 3
+
+    @staticmethod
+    def _get_file_content(filePath: str) -> bytes:
+        """提取公共的文件读取函数"""
+        with open(filePath, 'rb') as fp:
+            return fp.read()
+
+    @staticmethod
+    def _get_default_options() -> dict:
+        """提取公共的选项配置"""
+        return {
+            'page_start': 0,
+            'page_count': 1000,
+            'table_flavor': 'md',
+            'parse_mode': 'scan',
+            'page_details': 0,
+            'markdown_details': 1,
+            'apply_document_tree': 1,
+            'dpi': 144
+        }
+
+    def recognize_pdf2md(self, image: bytes, options: dict = None) -> httpx.Response:
+        """同步方法，添加默认选项支持"""
+        options = options or self._get_default_options()
+        url = self.host + '/ai/service/v1/pdf_to_markdown'
+        
         with httpx.Client() as client:
-            for attempt in range(max_retries):
+            for attempt in range(self.max_retries):
                 try:
-                    response = client.post(url, content=image, headers=headers, params=options, timeout=30.0)
+                    response = client.post(url, content=image, headers=self._headers, params=options, timeout=30.0)
                     response.raise_for_status()
                     return response
                 except (httpx.RequestError, httpx.HTTPStatusError) as e:
-                    if attempt == max_retries - 1:  # Last attempt
+                    if attempt == self.max_retries - 1:  # Last attempt
                         raise  # Re-raise the last exception if all retries failed
                     
                     delay = (attempt + 1) * 1
                     logging.warning(f"Request attempt {attempt + 1} failed. Retrying in {delay}s... Error: {str(e)}")
                     time.sleep(delay)
 
+    async def recognize_pdf2md_async(self, image: bytes, options: dict = None) -> httpx.Response:
+        """异步方法，添加默认选项支持"""
+        options = options or self._get_default_options()
+        url = self.host + '/ai/service/v1/pdf_to_markdown'
+
+        async with httpx.AsyncClient() as client:
+            for attempt in range(self.max_retries):
+                try:
+                    response = await client.post(url, content=image, headers=self._headers, params=options, timeout=30.0)
+                    response.raise_for_status()
+                    return response
+                except (httpx.RequestError, httpx.HTTPStatusError) as e:
+                    if attempt == self.max_retries - 1:
+                        raise
+                    delay = (attempt + 1) * 1
+                    logging.warning(f"Request attempt {attempt + 1} failed. Retrying in {delay}s... Error: {str(e)}")
+                    await asyncio.sleep(delay)
+
 
 def convert_image_to_md(pname_image: str) -> str:
+    """同步转换函数"""
     x_ti_app_id = os.getenv('X_TI_APP_ID')
     x_ti_secret_code = os.getenv('X_TI_SECRET_CODE')
     textin = TextinOcr(x_ti_app_id, x_ti_secret_code)
 
-    def _get_file_content(filePath: str) -> bytes:
-        with open(filePath, 'rb') as fp:
-            return fp.read()
-
-    image = _get_file_content(pname_image)
-
+    image = textin._get_file_content(pname_image)
+    
     logging.info(f"CIM: requesting {pname_image} to textin")
-    resp = textin.recognize_pdf2md(image, {
-        'page_start': 0,
-        'page_count': 1000,  # 设置解析页数为1000页
-        'table_flavor': 'md',
-        'parse_mode': 'scan',  # 设置解析模式为scan模式
-        'page_details': 0,  # 不包含页面细节
-        'markdown_details': 1,
-        'apply_document_tree': 1,
-        'dpi': 144  # 分辨率设置为144 dpi
-    })
+    resp = textin.recognize_pdf2md(image)  # 使用默认选项
     logging.info(f"CIM: request time: {resp.elapsed.total_seconds()} from textin")
 
     result = json.loads(resp.text)
-    # with open(f'_work/testin/result_{os.path.basename(pname_image)}.json', 'w', encoding='utf-8') as fw:
-    #     json.dump(result, fw, indent=4, ensure_ascii=False)
+    return result['result']['markdown']
 
+
+async def convert_image_to_md_async(pname_image: str) -> str:
+    """异步转换函数"""
+    x_ti_app_id = os.getenv('X_TI_APP_ID')
+    x_ti_secret_code = os.getenv('X_TI_SECRET_CODE')
+    textin = TextinOcr(x_ti_app_id, x_ti_secret_code)
+
+    image = textin._get_file_content(pname_image)
+
+    logging.info(f"CIMA: requesting {pname_image} to textin")
+    resp = await textin.recognize_pdf2md_async(image)  # 使用默认选项
+    logging.info(f"CIMA: request time: {resp.elapsed.total_seconds()} from textin")
+
+    result = json.loads(resp.text)
     return result['result']['markdown']
 
 
 if __name__ == "__main__":
-    setup_logger_handlers() 
+    setup_logger_handlers()
     
     pname_image = "_work/md_pdf_pages/5ec48698-page_1.jpg"
-    result = convert_image_to_md(pname_image)
-    rich.print(result)
+    
+    # 同步测试
+    result_sync = convert_image_to_md(pname_image)
+    rich.print("[Sync] Result:", result_sync[:100] + "...")
+
+    # 异步测试
+    async def test_async():
+        result_async = await convert_image_to_md_async(pname_image)
+        rich.print("[Async] Result:", result_async[:100] + "...")
+
+    asyncio.run(test_async())
