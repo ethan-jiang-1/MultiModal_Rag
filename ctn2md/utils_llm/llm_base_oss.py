@@ -5,11 +5,13 @@ import logging
 import rich
 from datetime import datetime
 import httpx
-
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 if "./" not in sys.path:
     sys.path.append("./")
 load_dotenv()
+
+ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif'}
 
 def _generate_unique_name(image_path: str) -> str:
     # 获取当前日期并格式化为年月路径
@@ -18,11 +20,11 @@ def _generate_unique_name(image_path: str) -> str:
     # 从原始文件名生成唯一名称
     base_name = os.path.basename(image_path)
     
-    # 组合路径：年月/文件名_时间戳
+    # 组合路径：年月/文件名
     object_name = f"{date_prefix}/{base_name}"
     return object_name
 
-
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
 def upload_image_to_oss(image_path:str) -> str:
     import oss2
     
@@ -30,6 +32,12 @@ def upload_image_to_oss(image_path:str) -> str:
     access_key_secret = os.environ["OSS_ACCESS_KEY_SECRET"]
     endpoint = os.environ["OSS_ENDPOINT"]
     bucket_name = os.environ["OSS_BUCKET_NAME"]
+
+    if not os.path.exists(image_path):
+        raise FileNotFoundError(f"Image file not found: {image_path}")
+    
+    if not os.path.splitext(image_path)[1].lower() in ALLOWED_EXTENSIONS:
+        raise ValueError(f"Unsupported file type: {image_path}")
 
     # 初始化OSS存储
     auth = oss2.Auth(access_key_id, access_key_secret)
