@@ -11,10 +11,9 @@ import csv
 import rich 
 from datetime import datetime
 from typing import Optional, List, Dict
-#import json
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 load_dotenv()
-
 
 """
 | Task            | `temperature`  | `top_p`       | Comment                                                              |
@@ -70,7 +69,7 @@ def jsons_load_repair(content:str) -> dict:
     return resp
 
 class MonitorContextLLM:
-    LEADING_PREFIX = "ctn"
+    LEADING_PREFIX = "mrag"
 
     @classmethod
     def _get_monitor_filename(cls, model:str) -> str:
@@ -175,15 +174,34 @@ class MonitorContextLLM:
         except Exception as ex:  # noqa
             logging.exception(ex)
 
+def wait_random_exponential_with_rate_limit(multiplier=1, min=4, max=60):
+    """自定义等待策略，对 RateLimitError 使用更长的等待时间"""
+    def wait_handler(retry_state):
+        # 获取最后一次异常
+        exc = retry_state.outcome.exception()
+        
+        # 基础等待时间
+        wait_time = wait_exponential(multiplier=multiplier, min=min, max=max).__call__(retry_state)
+        
+        # 如果是 RateLimitError，显著增加等待时间
+        if isinstance(exc, openai.RateLimitError):
+            wait_time = min(wait_time * 3, 300)  # 最多等待5分钟
+            logging.warning(f"Rate limit exceeded, increasing wait time to {wait_time} seconds")
+        
+        return wait_time
+    return wait_handler
+
+@retry(
+    stop=stop_after_attempt(DEFAULT_RETRY_NUM),
+    wait=wait_random_exponential_with_rate_limit(multiplier=1, min=4, max=60),
+    retry=retry_if_exception_type((httpx.RequestError, ValueError, openai.RateLimitError)),
+    before_sleep=lambda retry_state: logging.info(f"Retrying after {retry_state.next_action.sleep} seconds...")
+)
 def chat_gpt_json(
     messages: List[Dict[str, str]], 
     model: str = "gpt-4o-mini", 
     temperature: float = 0.1, 
     top_p: float = 0.9,
-    retries: int = DEFAULT_RETRY_NUM,
-    backoff_factor: float = 2,
-    backoff_sec: float = 1,
-    delay_base_sec: float = 5,
     track_id: Optional[str] = None,
     client: Optional[OpenAI] = None,
 ) -> dict:
@@ -195,10 +213,6 @@ def chat_gpt_json(
         model: 模型名称
         temperature: 温度参数
         top_p: top-p采样参数
-        retries: 重试次数
-        backoff_factor: 退避因子
-        backoff_sec: 初始退避时间
-        delay_base_sec: 基础延迟时间
         track_id: 追踪ID
         client: OpenAI客户端实例，如果为None则使用默认Azure客户端
 
@@ -214,69 +228,50 @@ def chat_gpt_json(
 
     client = client or get_azure_gpt_client()
     
-    for attempt in range(retries):
-        try:
-            with MonitorContextLLM(messages, model, track_id, attempt) as mc:
-                response = client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                    temperature=temperature,
-                    top_p=top_p,
-                    response_format={"type": "json_object"})
-                mc.response = response
-                resp = jsons_load_repair(response.choices[0].message.content)
-                return resp
-        except (httpx.RequestError, ValueError, openai.RateLimitError) as e:
-            if isinstance(e, openai.RateLimitError):
-                delay_base_sec += 10
-            else:
-                logging.error(f"Error on attempt {attempt+1}: {str(e)}")
-            if attempt == retries:
-                raise
-            backoff_sec = backoff_factor**attempt + delay_base_sec
-            logging.info(f"Retrying after backoff: {backoff_sec} seconds...")
-            time.sleep(backoff_sec)
-        except (openai.BadRequestError) as e:
-            logging.exception(e)
-            raise
+    try:
+        with MonitorContextLLM(messages, model, track_id, 0) as mc:
+            response = client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+                top_p=top_p,
+                response_format={"type": "json_object"})
+            mc.response = response
+            resp = jsons_load_repair(response.choices[0].message.content)
+            return resp
+    except openai.BadRequestError as e:
+        logging.exception(e)
+        raise
 
+@retry(
+    stop=stop_after_attempt(DEFAULT_RETRY_NUM),
+    wait=wait_random_exponential_with_rate_limit(multiplier=1, min=4, max=60),
+    retry=retry_if_exception_type((httpx.RequestError, ValueError, openai.RateLimitError)),
+    before_sleep=lambda retry_state: logging.info(f"Retrying after {retry_state.next_action.sleep} seconds...")
+)
 def chat_gpt_plain(
     messages: list,
     model: str = "gpt-4o-mini",
     temperature: float = 0.1,
     top_p: float = 0.9,
-    retries: int = DEFAULT_RETRY_NUM,
-    backoff_factor: float = 2,
-    backoff_sec: float = 1,
-    delay_base_sec: float = 5,
     track_id: Optional[str] = None,
     client: Optional[OpenAI] = None
 ) -> str:
     if client is None:
         client = get_azure_gpt_client()
-    for attempt in range(retries):
-        try:
-            with MonitorContextLLM(messages, model, track_id, attempt) as mc:
-                response = client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                    temperature=temperature,
-                    top_p=top_p)
-                mc.response = response
-                return response.choices[0].message.content
-        except (httpx.RequestError, ValueError, openai.RateLimitError) as e:
-            if isinstance(e, openai.RateLimitError):
-                delay_base_sec += 10
-            else:
-                logging.error(f"Error on attempt {attempt+1}: {str(e)}")
-            if attempt == retries:
-                raise
-            backoff_sec = backoff_factor**attempt + delay_base_sec
-            logging.info(f"Retrying after backoff: {backoff_sec} seconds...")
-            time.sleep(backoff_sec)
-        except (openai.BadRequestError) as e:
-            logging.exception(e)
-            raise
+    
+    try:
+        with MonitorContextLLM(messages, model, track_id, 0) as mc:
+            response = client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+                top_p=top_p)
+            mc.response = response
+            return response.choices[0].message.content
+    except openai.BadRequestError as e:
+        logging.exception(e)
+        raise
 
 
 if __name__ == "__main__":

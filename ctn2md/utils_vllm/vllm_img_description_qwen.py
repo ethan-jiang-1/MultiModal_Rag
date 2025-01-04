@@ -13,9 +13,7 @@ from ctn2md.utils_vllm.vllm_img_description_qwen_prompt import TEXT_IMG_DESCRIPT
 #model='qwen-vl-max-0809'
 def generate_image_description_by_qwen(image_path_or_url:str, 
                                       instruction:Optional[str] = None, 
-                                      model:str = "qwen-vl-max-1119", 
-                                      retries:int = 5, 
-                                      backoff_in_seconds:int = 1) -> str:
+                                      model:str = "qwen-vl-max-1119") -> str:
 
     if instruction is None:
         instruction = TEXT_IMG_DESCRIPTION
@@ -28,7 +26,7 @@ def generate_image_description_by_qwen(image_path_or_url:str,
 
     client = get_dashscope_client()
 
-    resp_str = chat_gpt_plain(messages, model=model, client=client, temperature=0.01, top_p=0.95, retries=retries, backoff_sec=backoff_in_seconds)    
+    resp_str = chat_gpt_plain(messages, model=model, client=client, temperature=0.01, top_p=0.95)    
     return resp_str
 
 def test_gen_qas_on_pic():

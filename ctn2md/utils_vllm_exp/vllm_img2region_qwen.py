@@ -11,9 +11,7 @@ from ctn2md.utils_llm.llm_base import get_dashscope_client, get_gpt_messages_mul
 
 
 def generate_regions_from_image_qwen(pname_image:str, 
-                                     model:str = 'qwen-vl-max-1119', 
-                                     retries:int = 5, 
-                                     backoff_in_seconds:int = 1) -> dict:
+                                     model:str = 'qwen-vl-max-1119') -> dict:
     
     prompt = PROMPT_INSTRUCT_IMG2REGION_QWEN
     if not os.path.isfile(pname_image):
@@ -24,7 +22,7 @@ def generate_regions_from_image_qwen(pname_image:str,
     client = get_dashscope_client()
 
     logging.info(f"GRFIQ: convert pdf page {pname_image} to regions by gpt started...")
-    resp_str = chat_gpt_plain(messages, model=model, client=client, temperature=0.01, top_p=0.95, retries=retries, backoff_sec=backoff_in_seconds)    
+    resp_str = chat_gpt_plain(messages, model=model, client=client, temperature=0.01, top_p=0.95)    
     return json_repair.repair_json(resp_str, return_objects=True)
 
 
