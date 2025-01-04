@@ -18,7 +18,6 @@ if "./" not in sys.path:
     sys.path.append("./")
 load_dotenv()
 
-from ctn2md.utils_llm.llm_base_oss import upload_image_to_oss
 
 """
 | Task            | `temperature`  | `top_p`       | Comment                                                              |
@@ -44,7 +43,32 @@ def get_gpt_messages(system_prompt:str, user_prompt:str) -> list:
     ]
     return messages
 
-
+def upload_image_to_cloud(image_path: str) -> str:
+    """统一的图片上传函数，根据环境变量选择上传到OSS或TOS
+    
+    Args:
+        image_path: 本地图片路径
+    
+    Returns:
+        str: 图片的公开访问URL
+        
+    Raises:
+        Exception: 上传失败时抛出异常
+    """
+    model_flow = os.environ.get("ENV_MODEL_FLOW", "").lower()
+    
+    try:
+        if model_flow == "ark":
+            from ctn2md.utils_llm.llm_base_tos import upload_image_to_tos
+            logging.info(f"Using TOS for upload: {image_path}")
+            return upload_image_to_tos(image_path)
+        else:
+            from ctn2md.utils_llm.llm_base_oss import upload_image_to_oss
+            logging.info(f"Using OSS for upload: {image_path}")
+            return upload_image_to_oss(image_path)
+    except Exception as e:
+        logging.error(f"Upload failed for {image_path}: {str(e)}")
+        raise
 
 def get_gpt_messages_multimodal(system_prompt:str, user_prompt:str, image_path_or_url:str) -> list:
     """生成支持多模态的消息结构"""
@@ -53,7 +77,7 @@ def get_gpt_messages_multimodal(system_prompt:str, user_prompt:str, image_path_o
         img_url = image_path_or_url
     else:
         # 本地文件需要上传到OSS
-        img_url = upload_image_to_oss(image_path_or_url)
+        img_url = upload_image_to_cloud(image_path_or_url)
     
     # 构造多模态消息
     messages = []
