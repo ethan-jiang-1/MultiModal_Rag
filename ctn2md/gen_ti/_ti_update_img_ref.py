@@ -4,6 +4,7 @@ from typing import List, Tuple
 import logging
 import re
 import asyncio
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 if './' not in sys.path:
     sys.path.append("./")
@@ -38,16 +39,15 @@ class ImageReferenceUpdater:
         with open(self.pname_page_md, 'w', encoding='utf-8') as f:
             f.write(content)
 
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     async def _process_image_async(
         self, 
         img_url: str, 
         img_ndx: int,
         content: str
     ) -> Tuple[str, str, str]:
-        """异步处理单个图片"""
-        # 生成本地文件名
-        img_ext = os.path.splitext(img_url)[1] or '.png'
-        local_fname = f"{self.job_id}_p{self.page_index}_{img_ndx}{img_ext}"
+        """异步处理单个图片，添加重试机制"""
+        local_fname = f"{self.job_id}_p{self.page_index}_{img_ndx}.png"
         local_path = os.path.join(self.output_dir, local_fname)
 
         try:
@@ -55,24 +55,31 @@ class ImageReferenceUpdater:
             try:
                 await asyncio.wait_for(
                     download_remote_image_ti_async(img_url, local_path),
-                    timeout=15  # 下载超时15秒
+                    timeout=15
                 )
-            except Exception as e:
-                logging.error(f"Failed to download image {img_url}: {str(e)}")
-                raise  # 下载失败直接抛出异常，不执行后续操作
-            
+            except Exception:
+                logging.exception(f"Failed to download image {img_url}")
+                raise
+
+            # 验证图片是否成功下载
+            if not os.path.exists(local_path) or os.path.getsize(local_path) == 0:
+                raise ValueError(f"Downloaded image is invalid: {local_path}")
+
             # 只有下载成功才执行描述生成
-            alt_text, description = await asyncio.wait_for(
-                get_img_alt_text_and_description_async(self.md_info, img_url, content),
-                timeout=15  # 描述生成超时15秒
-            )
+            try:
+                alt_text, description = await asyncio.wait_for(
+                    get_img_alt_text_and_description_async(self.md_info, img_url, content),
+                    timeout=15
+                )
+            except Exception:
+                logging.exception(f"Failed to generate description for {img_url}")
+                # 如果描述生成失败，使用默认值
+                alt_text = "Image"
+                description = "Failed to generate description"
 
             return local_fname, alt_text, description
-        except asyncio.TimeoutError:
-            logging.error(f"Timeout while processing image {img_url}")
-            raise
         except Exception as e:
-            logging.error(f"Error processing image {img_url}: {str(e)}")
+            logging.exception(f"Error in _process_image_async: {str(e)}")
             raise
 
     def _process_image_sync(

@@ -5,6 +5,7 @@ import sys
 import logging
 import rich
 import asyncio
+import time
 
 load_dotenv()
 
@@ -19,62 +20,79 @@ from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 
 def gen_pages_ti(md_info:MdInfo, mdcontrols:dict = None, skip_gen_mds: bool = False, sel_page_indexes: List[int] = None) -> str:
-    pathname_doc = md_info.get_doc_pathname()
-    job_id = get_job_id(pathname_doc)
-    md_info[MIFN.TI_CUR_JOB_ID] = job_id
+    start_time = time.time()
+    try:
+        pathname_doc = md_info.get_doc_pathname()
+        job_id = get_job_id(pathname_doc)
+        md_info[MIFN.TI_CUR_JOB_ID] = job_id
 
-    if isinstance(mdcontrols, dict):
-        md_info.update_mdcontrols(mdcontrols)
+        if isinstance(mdcontrols, dict):
+            md_info.update_mdcontrols(mdcontrols)
 
-    logging.info(f"GPL: generate image pages job_id:{job_id}")
-    # image_infos
-    # image_infos.append((fname_page_name, fname_page_rect_name, fname_rect_images))
-    # Step1: convert all pdf pages to images (image_infos: with region images)
-    fnames_page_image = parse_pdf_to_images(md_info, sel_page_indexes=sel_page_indexes)
-    rich.print(fnames_page_image)
-    md_info[MIFN.FNAMES_SNPS] = fnames_page_image
-    md_info.save()
+        logging.info(f"GPL: generate image pages job_id:{job_id}")
+        # Step1: convert all pdf pages to images
+        fnames_page_image = parse_pdf_to_images(md_info, sel_page_indexes=sel_page_indexes)
+        rich.print(fnames_page_image)
+        md_info[MIFN.FNAMES_SNPS] = fnames_page_image
+        md_info.save()
 
-    # Step2: Convert images (image_infos: with region images) to mds by LVLM
-    if not skip_gen_mds or is_still_in_gen_mode(md_info):
-        logging.info(f"GPL: convert images to mds")
-        convert_images_to_mds(md_info, fnames_page_image)
-        logging.info(f"GPL: page generated")
-    else:
-        logging.warning(f"GPL: skip convert images to mds")
+        # Step2: Convert images to mds by LVLM
+        if not skip_gen_mds or is_still_in_gen_mode(md_info):
+            logging.info(f"GPL: convert images to mds")
+            convert_images_to_mds(md_info, fnames_page_image)
+            logging.info(f"GPL: page generated")
+        else:
+            logging.warning(f"GPL: skip convert images to mds")
 
-    return md_info.save()
+        return md_info.save()
+    except Exception as e:
+        logging.error(f"Failed to process document {pathname_doc}")
+        logging.exception(e)
+        raise
+    finally:
+        elapsed_time = time.time() - start_time
+        logging.info(f"🕒 Synchronous processing completed in {elapsed_time:.2f} seconds")
 
 async def gen_pages_ti_async(md_info:MdInfo, mdcontrols:dict = None, skip_gen_mds: bool = False, sel_page_indexes: List[int] = None) -> str:
+    start_time = time.time()
     pathname_doc = md_info.get_doc_pathname()
-    job_id = get_job_id(pathname_doc)
-    md_info[MIFN.TI_CUR_JOB_ID] = job_id
+    try:
+        job_id = get_job_id(pathname_doc)
+        md_info[MIFN.TI_CUR_JOB_ID] = job_id
 
-    if isinstance(mdcontrols, dict):
-        md_info.update_mdcontrols(mdcontrols)
+        if isinstance(mdcontrols, dict):
+            md_info.update_mdcontrols(mdcontrols)
 
-    logging.info(f"GPL: generate image pages job_id:{job_id}")
-    # Step1: convert all pdf pages to images (这个操作很快，不需要异步)
-    fnames_page_image = parse_pdf_to_images(md_info, sel_page_indexes=sel_page_indexes)
-    rich.print(fnames_page_image)
-    md_info[MIFN.FNAMES_SNPS] = fnames_page_image
-    md_info.save()
+        logging.info(f"GPL: generate image pages job_id:{job_id} for {pathname_doc}")
+        # Step1: convert all pdf pages to images
+        fnames_page_image = parse_pdf_to_images(md_info, sel_page_indexes=sel_page_indexes)
+        rich.print(fnames_page_image)
+        md_info[MIFN.FNAMES_SNPS] = fnames_page_image
+        md_info.save()
 
-    # Step2: Convert images to mds by LVLM (需要远程IO，使用异步版本)
-    if not skip_gen_mds or is_still_in_gen_mode(md_info):
-        logging.info(f"GPL: convert images to mds")
-        await convert_images_to_mds_async(md_info, fnames_page_image)
-        logging.info(f"GPL: page generated")
-    else:
-        logging.warning(f"GPL: skip convert images to mds")
+        # Step2: Convert images to mds by LVLM
+        if not skip_gen_mds or is_still_in_gen_mode(md_info):
+            logging.info(f"GPL: convert images to mds")
+            await convert_images_to_mds_async(md_info, fnames_page_image)
+            logging.info(f"GPL: page generated")
+        else:
+            logging.warning(f"GPL: skip convert images to mds")
 
-    return md_info.save()
+        return md_info.save()
+    except Exception as e:
+        logging.error(f"Failed to process document {pathname_doc}")
+        logging.exception(e)
+        raise
+    finally:
+        elapsed_time = time.time() - start_time
+        logging.info(f"⚡ Asynchronous processing completed in {elapsed_time:.2f} seconds for {pathname_doc}")
 
 if __name__ == "__main__":
     setup_logger_handlers()
 
     #doc_pathname = "datasrc/exam/raw_docs/papers/DeepSeek_V3.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/papers/ “AI+应用”百花齐放，新质生产力前景广阔pdf.pdf"
 
     #sel_page_indexes = []
     sel_page_indexes = None
@@ -83,7 +101,7 @@ if __name__ == "__main__":
     mdcontrols = None
     skip_gen_mds = True
 
-    output_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix='lvlm')
+    output_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix='ti')
     os.makedirs(output_dir, exist_ok=True)
     job_id = get_job_id(doc_pathname)
 

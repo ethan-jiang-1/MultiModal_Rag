@@ -92,7 +92,7 @@ if __name__ == "__main__":
     md_info_path = "_output/ctn2md_papers____AI+应用_百花齐放_新质生产力前景广阔pdf_ti/_info.json"
     md_info = MdInfo(md_info_path)
 
-    need_sync = False     
+    need_sync = True
     if need_sync:
         # 同步测试
         print("\n=== Testing Synchronous Generation ===")
