@@ -12,7 +12,7 @@ if './' not in sys.path:
 from ctn2md.src.md_info_base import MIFN, MdInfo
 from ctn2md.utils_gen.gen_base import get_job_id
 
-from ctn2md.gen_ti._ti_img_decription import get_img_alt_text_and_description
+from ctn2md.gen_ti._ti_img_description import get_img_alt_text_and_description
 from ctn2md.gen_ti._ti_get_image import download_remote_image_ti
 
 
