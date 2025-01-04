@@ -1,10 +1,7 @@
 import os
-import sys
 from dotenv import load_dotenv
 
 load_dotenv()
-if './' not in sys.path:
-    sys.path.append('./')
 
 from ctn2md.utils.util_file import get_root_dir
 from ctn2md.utils.util_llm_diag import do_diag_reproduce

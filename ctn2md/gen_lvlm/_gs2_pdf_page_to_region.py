@@ -5,15 +5,9 @@ from pydantic import BaseModel, field_validator
 from typing import List, Tuple # , Optional
 import logging
 import time
-import sys 
-
-if './' not in sys.path:
-    sys.path.append('./')
+load_dotenv()
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-
-
-load_dotenv()
 
 """
 https://github.com/ppaanngggg/yolo-doclaynet

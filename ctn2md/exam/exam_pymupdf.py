@@ -1,13 +1,10 @@
 import fitz  # PyMuPDF
 import os
 import rich
-import sys 
 import logging
 from dotenv import load_dotenv
 
 load_dotenv()
-if './' not in sys.path:
-    sys.path.append('./')
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 
