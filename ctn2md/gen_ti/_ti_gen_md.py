@@ -5,8 +5,9 @@ import httpx
 import json
 import logging
 import rich
-import time
+#import time
 import asyncio
+from tenacity import retry, stop_after_attempt, wait_exponential
 #from typing import Union
 
 load_dotenv()
@@ -47,42 +48,70 @@ class TextinOcr(object):
             'dpi': 144
         }
 
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     def recognize_pdf2md(self, image: bytes, options: dict = None) -> httpx.Response:
-        """同步方法，添加默认选项支持"""
+        """同步方法，添加重试机制"""
         options = options or self._get_default_options()
         url = self.host + '/ai/service/v1/pdf_to_markdown'
-        
-        with httpx.Client() as client:
-            for attempt in range(self.max_retries):
+        try:
+            with httpx.Client() as client:
                 try:
-                    response = client.post(url, content=image, headers=self._headers, params=options, timeout=30.0)
+                    response = client.post(
+                        url,
+                        content=image,
+                        headers=self._headers, 
+                        params=options, 
+                        timeout=30.0
+                    )
                     response.raise_for_status()
                     return response
-                except (httpx.RequestError, httpx.HTTPStatusError) as e:
-                    if attempt == self.max_retries - 1:  # Last attempt
-                        raise  # Re-raise the last exception if all retries failed
-                    
-                    delay = (attempt + 1) * 1
-                    logging.warning(f"Request attempt {attempt + 1} failed. Retrying in {delay}s... Error: {str(e)}")
-                    time.sleep(delay)
+                except Exception as e:
+                    retry_state = getattr(self.recognize_pdf2md, 'retry_state', None)
+                    if retry_state and retry_state.attempt_number < 3:
+                        logging.warning(f"Attempt {retry_state.attempt_number}/3: PDF to Markdown conversion failed: {str(e)}")
+                    else:
+                        logging.exception("Final attempt for PDF to Markdown conversion failed")
+                    raise
+        except Exception as e:
+            retry_state = getattr(self.recognize_pdf2md, 'retry_state', None)
+            if retry_state and retry_state.attempt_number < 3:
+                logging.warning(f"Attempt {retry_state.attempt_number}/3: Error in recognize_pdf2md: {str(e)}")
+            else:
+                logging.exception("Final attempt failed in recognize_pdf2md")
+            raise
 
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     async def recognize_pdf2md_async(self, image: bytes, options: dict = None) -> httpx.Response:
-        """异步方法，添加默认选项支持"""
+        """异步方法，添加重试机制"""
         options = options or self._get_default_options()
         url = self.host + '/ai/service/v1/pdf_to_markdown'
 
-        async with httpx.AsyncClient() as client:
-            for attempt in range(self.max_retries):
+        try:
+            async with httpx.AsyncClient() as client:
                 try:
-                    response = await client.post(url, content=image, headers=self._headers, params=options, timeout=30.0)
+                    response = await client.post(
+                        url, 
+                        content=image, 
+                        headers=self._headers, 
+                        params=options, 
+                        timeout=30.0
+                    )
                     response.raise_for_status()
                     return response
-                except (httpx.RequestError, httpx.HTTPStatusError) as e:
-                    if attempt == self.max_retries - 1:
-                        raise
-                    delay = (attempt + 1) * 1
-                    logging.warning(f"Request attempt {attempt + 1} failed. Retrying in {delay}s... Error: {str(e)}")
-                    await asyncio.sleep(delay)
+                except Exception as e:
+                    retry_state = getattr(self.recognize_pdf2md_async, 'retry_state', None)
+                    if retry_state and retry_state.attempt_number < 3:
+                        logging.warning(f"Attempt {retry_state.attempt_number}/3: PDF to Markdown conversion failed: {str(e)}")
+                    else:
+                        logging.exception("Final attempt for PDF to Markdown conversion failed")
+                    raise
+        except Exception as e:
+            retry_state = getattr(self.recognize_pdf2md_async, 'retry_state', None)
+            if retry_state and retry_state.attempt_number < 3:
+                logging.warning(f"Attempt {retry_state.attempt_number}/3: Error in recognize_pdf2md_async: {str(e)}")
+            else:
+                logging.exception("Final attempt failed in recognize_pdf2md_async")
+            raise
 
 
 def convert_image_to_md(pname_image: str) -> str:

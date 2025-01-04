@@ -57,8 +57,13 @@ class ImageReferenceUpdater:
                     download_remote_image_ti_async(img_url, local_path),
                     timeout=15
                 )
-            except Exception:
-                logging.exception(f"Failed to download image {img_url}")
+            except Exception as e:
+                # 获取当前重试次数
+                retry_state = getattr(self._process_image_async, 'retry_state', None)
+                if retry_state and retry_state.attempt_number < 3:
+                    logging.warning(f"Attempt {retry_state.attempt_number}/3: Failed to download image {img_url}: {str(e)}")
+                else:
+                    logging.exception(f"Final attempt failed to download image {img_url}")
                 raise
 
             # 验证图片是否成功下载
@@ -71,17 +76,26 @@ class ImageReferenceUpdater:
                     get_img_alt_text_and_description_async(self.md_info, img_url, content),
                     timeout=15
                 )
-            except Exception:
-                logging.exception(f"Failed to generate description for {img_url}")
+            except Exception as e:
+                retry_state = getattr(self._process_image_async, 'retry_state', None)
+                if retry_state and retry_state.attempt_number < 3:
+                    logging.warning(f"Attempt {retry_state.attempt_number}/3: Failed to generate description for {img_url}: {str(e)}")
+                else:
+                    logging.warning(f"Using default values after all retries for {img_url}")
                 # 如果描述生成失败，使用默认值
                 alt_text = "Image"
                 description = "Failed to generate description"
 
             return local_fname, alt_text, description
         except Exception as e:
-            logging.exception(f"Error in _process_image_async: {str(e)}")
+            retry_state = getattr(self._process_image_async, 'retry_state', None)
+            if retry_state and retry_state.attempt_number < 3:
+                logging.warning(f"Attempt {retry_state.attempt_number}/3: Error in _process_image_async: {str(e)}")
+            else:
+                logging.exception(f"Final attempt failed in _process_image_async")
             raise
 
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     def _process_image_sync(
         self, 
         img_url: str, 
@@ -94,11 +108,43 @@ class ImageReferenceUpdater:
         local_fname = f"{self.job_id}_p{self.page_index}_{img_ndx}{img_ext}"
         local_path = os.path.join(self.output_dir, local_fname)
 
-        # 顺序执行下载和描述生成
-        download_remote_image_ti(img_url, local_path)
-        alt_text, description = get_img_alt_text_and_description(self.md_info, img_url, content)
+        try:
+            # 下载图片
+            try:
+                download_remote_image_ti(img_url, local_path)
+            except Exception as e:
+                retry_state = getattr(self._process_image_sync, 'retry_state', None)
+                if retry_state and retry_state.attempt_number < 3:
+                    logging.warning(f"Attempt {retry_state.attempt_number}/3: Failed to download image {img_url}: {str(e)}")
+                else:
+                    logging.exception(f"Final attempt failed to download image {img_url}")
+                raise
 
-        return local_fname, alt_text, description
+            # 验证图片是否成功下载
+            if not os.path.exists(local_path) or os.path.getsize(local_path) == 0:
+                raise ValueError(f"Downloaded image is invalid: {local_path}")
+
+            # 生成描述
+            try:
+                alt_text, description = get_img_alt_text_and_description(self.md_info, img_url, content)
+            except Exception as e:
+                retry_state = getattr(self._process_image_sync, 'retry_state', None)
+                if retry_state and retry_state.attempt_number < 3:
+                    logging.warning(f"Attempt {retry_state.attempt_number}/3: Failed to generate description for {img_url}: {str(e)}")
+                else:
+                    logging.warning(f"Using default values after all retries for {img_url}")
+                # 描述生成失败时使用默认值
+                alt_text = "Image"
+                description = "Failed to generate description"
+
+            return local_fname, alt_text, description
+        except Exception as e:
+            retry_state = getattr(self._process_image_sync, 'retry_state', None)
+            if retry_state and retry_state.attempt_number < 3:
+                logging.warning(f"Attempt {retry_state.attempt_number}/3: Error in _process_image_sync: {str(e)}")
+            else:
+                logging.exception(f"Final attempt failed in _process_image_sync")
+            raise
 
     async def _update_refs_async(self, process_image_func) -> List[str]:
         """异步版本的更新逻辑"""

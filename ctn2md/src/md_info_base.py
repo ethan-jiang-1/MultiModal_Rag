@@ -20,7 +20,7 @@ from llama_parse.utils import Language
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.utils.util_file import get_crc32_id
 
-_MIB_INFO_VER = "0.10.0"
+_MIB_INFO_VER = "0.10.1"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
@@ -144,9 +144,11 @@ def _get_defualt_md_contrl():
         "version": _MIB_INFO_VER,
         "mctl_move_aux_files": True,
         "mctl_treat_doc_as_ctntype": "auto",
+        "mctl_ge_md_async": True,
 
         "mctl_fix_heading_model": DefaultModelSource.get_flow_fix_heading_model(), # gpt/qwen/ark
         "mctl_summarize_model": DefaultModelSource.get_flow_summarize_model(), # gpt/qwen/ark
+
 
         # controls required by llamaparse conversion
         "mctl_lp_min_img_relevance_score": 0.2,

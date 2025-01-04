@@ -4,6 +4,7 @@ import os
 import sys
 import logging
 import rich
+import asyncio
 
 load_dotenv()
 
@@ -16,8 +17,8 @@ from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src.ctn2md_gen_md_base import GenMd_Base
 
 
-def gen_md_textin(doc_pathname:str, out_dir:str) -> str:
-    from ctn2md.gen_ti.gen_markdown_textin import generate_markdown_ti
+def _gen_md_textin(doc_pathname:str, out_dir:str) -> str:
+    from ctn2md.gen_ti.gen_markdown_textin import generate_markdown_ti, generate_markdown_ti_async
     logging.info(f"##MDFLOW##: gen_md_textin started...")
 
     md_info = MdInfo(out_dir)
@@ -25,9 +26,15 @@ def gen_md_textin(doc_pathname:str, out_dir:str) -> str:
     md_info.set_doc_pathname(doc_pathname)
     md_info[MIFN.FHL_QUALITY] = FHL_QUALITY_TYPE.HIGH
 
-    md_info_path = generate_markdown_ti(md_info)
+    mctl_ge_md_async = md_info.get_md_control("mctl_ge_md_async", True)
+    if mctl_ge_md_async:
+        logging.info(f"##MDFLOW##: gen_md_textin started async  ...")
+        md_info_path = asyncio.run(generate_markdown_ti_async(md_info))
+    else:
+        logging.info(f"##MDFLOW##: gen_md_textin started sync...")
+        md_info_path = generate_markdown_ti(md_info)
 
-    logging.info(f"##MDFLOW##: gen_md_textin end")
+    logging.info(f"##MDFLOW##: gen_md_textin end mctl_ge_md_async={mctl_ge_md_async}")
     return md_info_path
 
 
@@ -77,7 +84,7 @@ class GenMd_TextIn(GenMd_Base):
             md_info.save()
 
         if gen_needed:
-            md_info_path = gen_md_textin(doc_pathname, out_dir)
+            md_info_path = _gen_md_textin(doc_pathname, out_dir)
             if md_info_path is None:
                 return None
 
@@ -92,7 +99,7 @@ if __name__ == "__main__":
 
     setup_logger_handlers()
     os.makedirs(out_dir, exist_ok=True)
-    md_info_path = gen_md_textin(doc_pathname, out_dir)
+    md_info_path = _gen_md_textin(doc_pathname, out_dir)
     print(md_info_path)
 
     md_info = MdInfo(md_info_path)
