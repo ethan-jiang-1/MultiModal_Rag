@@ -111,8 +111,8 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/papers/DIFFERENTIAL TRANSFORMER 2410.05258v1.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/A Coin Has Two Sides.pdf"
 
-    doc_pathname = "datasrc/exam/raw_docs/misc/0530-大模型微调培训-VisualGLM.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/misc/ai602-波士顿咨询：银行业生成式AI应用报告（2023）.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/misc/0530-大模型微调培训-VisualGLM.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/misc/ai602-波士顿咨询：银行业生成式AI应用报告（2023）.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/misc/AI未来十年_大模型产业落地的机遇与挑战_大数据研究院.pptx"
 
     #doc_pathname = "datasrc/exam/raw_docs/kmp/Regioselective hydroxylation of cholecalciferol.pdf"

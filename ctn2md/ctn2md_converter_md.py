@@ -85,7 +85,7 @@ if __name__ == "__main__":
     #doc_pathname = "_output/ctn2md_AIGC时代的人力资源管理进化(徐刚)_lp/AIGC时代的人力资源管理进化(徐刚)___pdf.md"
     doc_pathname = "_work/ctn2md_mrag__5__back_panel_与环境匹配工程校核_P2_lp/5. back panel 与环境匹配工程校核_P2___pptx.md"
 
-    os.environ[ENV_MODEL_FLOW] = "ark"
+    os.environ[ENV_MODEL_FLOW] = "qwen"
     out_dir = None
     mdcontrols = None
     enforced_gen = False   

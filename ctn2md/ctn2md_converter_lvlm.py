@@ -120,8 +120,8 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/kmp/tianyang_1_20.pdf"
 
     #os.environ[ENV_MODEL_SOURCE] = "qwen"
-    os.environ[ENV_MODEL_FLOW] = "ark"
-    os.environ[ENV_MODEL_GEN_LVLM] = "ark"
+    os.environ[ENV_MODEL_FLOW] = "qwen"
+    os.environ[ENV_MODEL_GEN_LVLM] = "qwen"
     os.environ[ENV_MODEL_GEN_LVLM_REGION] = "gs2"
     mdcontrols = None
 
