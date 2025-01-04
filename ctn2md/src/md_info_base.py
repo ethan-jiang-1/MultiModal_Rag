@@ -14,7 +14,7 @@ from llama_parse.utils import Language
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.utils.util_file import get_crc32_id
 
-_MIB_INFO_VER = "0.10.2"
+_MIB_INFO_VER = "0.10.3"
 _MIB_SEP_FNAME_EXT = "___"
 _MIB_FNAME_MD_INFO = "_info.json"
 _MIB_FNAME_MD_CONTROL_INFO = "_info_ctrl.json"
@@ -95,19 +95,27 @@ class MIFN(PUBLIC_MIFN):  # Markdown Field Name
 class DefaultModelSource:
     @classmethod
     def get_flow_fix_heading_model(cls) -> str:
-        return os.getenv(ENV_MODEL_FLOW, "ark")
+        return os.getenv(ENV_MODEL_FLOW, "qwen")
     
     @classmethod
     def get_flow_summarize_model(cls) -> str:
-        return os.getenv(ENV_MODEL_FLOW, "ark")
+        return os.getenv(ENV_MODEL_FLOW, "qwen")
+    
+    @classmethod
+    def get_gen_ti_img_relevance_model(cls) -> str:
+        return os.getenv(ENV_MODEL_GEN_TI, "qwen")
+    
+    @classmethod
+    def get_gen_ti_img_caption_model(cls) -> str:
+        return os.getenv(ENV_MODEL_GEN_TI, "qwen")
     
     @classmethod
     def get_gen_lvlm_img2md_model(cls) -> str:
-        return os.getenv(ENV_MODEL_GEN_LVLM, "gpt")
+        return os.getenv(ENV_MODEL_GEN_LVLM, "qwen")
     
     @classmethod
     def get_gen_lvlm_img_relevance_model(cls) -> str:
-        return os.getenv(ENV_MODEL_GEN_LVLM, "gpt")
+        return os.getenv(ENV_MODEL_GEN_LVLM, "qwen")
     
     @classmethod
     def get_gen_lvlm_region_detect(cls) -> str:
@@ -115,19 +123,11 @@ class DefaultModelSource:
     
     @classmethod
     def get_gen_lp_img_relevance_model(cls) -> str:
-        return os.getenv(ENV_MODEL_GEN_LP, "ark")
+        return os.getenv(ENV_MODEL_GEN_LP, "qwen")
     
     @classmethod
     def get_gen_lp_img_caption_model(cls) -> str:
-        return os.getenv(ENV_MODEL_GEN_LP, "ark")
-    
-    @classmethod
-    def get_gen_ti_img_relevance_model(cls) -> str:
-        return os.getenv(ENV_MODEL_GEN_TI, "ark")
-    
-    @classmethod
-    def get_gen_ti_img_caption_model(cls) -> str:
-        return os.getenv(ENV_MODEL_GEN_TI, "ark")
+        return os.getenv(ENV_MODEL_GEN_LP, "qwen")
 
     
 
