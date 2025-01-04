@@ -22,7 +22,7 @@ def _gen_md_textin(doc_pathname:str, out_dir:str) -> str:
     md_info.set_doc_pathname(doc_pathname)
     md_info[MIFN.FHL_QUALITY] = FHL_QUALITY_TYPE.HIGH
 
-    mctl_ge_md_async = md_info.get_md_control("mctl_ge_md_async", True)
+    mctl_ge_md_async = md_info.get_md_control("mctl_ge_md_async", False)
     if mctl_ge_md_async:
         logging.info(f"##MDFLOW##: gen_md_textin started async  ...")
         md_info_path = asyncio.run(generate_markdown_ti_async(md_info))
