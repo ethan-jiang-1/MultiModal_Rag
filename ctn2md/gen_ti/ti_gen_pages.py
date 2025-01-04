@@ -4,6 +4,7 @@ import os
 import sys
 import logging
 import rich
+import asyncio
 
 load_dotenv()
 
@@ -13,7 +14,7 @@ if "./" not in sys.path:
 from ctn2md.utils_gen.gen_base import get_job_id
 from ctn2md.utils_gen.gen_base import is_still_in_gen_mode
 from ctn2md.gen_ti.ti_pdf_pages_to_images import parse_pdf_to_images
-from ctn2md.gen_ti.ti_pdf_images_to_mds import convert_images_to_mds
+from ctn2md.gen_ti.ti_pdf_images_to_mds import convert_images_to_mds, convert_images_to_mds_async
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 
@@ -44,6 +45,31 @@ def gen_pages_ti(md_info:MdInfo, mdcontrols:dict = None, skip_gen_mds: bool = Fa
 
     return md_info.save()
 
+async def gen_pages_ti_async(md_info:MdInfo, mdcontrols:dict = None, skip_gen_mds: bool = False, sel_page_indexes: List[int] = None) -> str:
+    pathname_doc = md_info.get_doc_pathname()
+    job_id = get_job_id(pathname_doc)
+    md_info[MIFN.TI_CUR_JOB_ID] = job_id
+
+    if isinstance(mdcontrols, dict):
+        md_info.update_mdcontrols(mdcontrols)
+
+    logging.info(f"GPL: generate image pages job_id:{job_id}")
+    # Step1: convert all pdf pages to images (这个操作很快，不需要异步)
+    fnames_page_image = parse_pdf_to_images(md_info, sel_page_indexes=sel_page_indexes)
+    rich.print(fnames_page_image)
+    md_info[MIFN.FNAMES_SNPS] = fnames_page_image
+    md_info.save()
+
+    # Step2: Convert images to mds by LVLM (需要远程IO，使用异步版本)
+    if not skip_gen_mds or is_still_in_gen_mode(md_info):
+        logging.info(f"GPL: convert images to mds")
+        await convert_images_to_mds_async(md_info, fnames_page_image)
+        logging.info(f"GPL: page generated")
+    else:
+        logging.warning(f"GPL: skip convert images to mds")
+
+    return md_info.save()
+
 if __name__ == "__main__":
     setup_logger_handlers()
 
@@ -54,7 +80,7 @@ if __name__ == "__main__":
     sel_page_indexes = None
 
     #mdcontrols = None
-    mdcontrols = {"mctl_lvlm_region_detect": "gs0"}  
+    mdcontrols = None
     skip_gen_mds = True
 
     output_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix='lvlm')
@@ -65,6 +91,17 @@ if __name__ == "__main__":
     md_info.set_doc_pathname(doc_pathname)
     md_info[MIFN.TI_CUR_JOB_ID] = job_id
     
-    ret = gen_pages_ti(md_info, mdcontrols=mdcontrols, skip_gen_mds=skip_gen_mds)
-    rich.print(ret)
+    need_sync = False 
+    if need_sync:
+        # 同步测试
+        ret = gen_pages_ti(md_info, mdcontrols=mdcontrols, skip_gen_mds=skip_gen_mds)
+        rich.print("Sync result:", ret)
+    else:
+        # 异步测试
+        async def test_async():
+            ret = await gen_pages_ti_async(md_info, mdcontrols=mdcontrols, skip_gen_mds=skip_gen_mds)
+            return ret
+
+        ret = asyncio.run(test_async())
+        rich.print("Async result:", ret)
 

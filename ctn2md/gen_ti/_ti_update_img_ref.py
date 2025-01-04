@@ -50,14 +50,30 @@ class ImageReferenceUpdater:
         local_fname = f"{self.job_id}_p{self.page_index}_{img_ndx}{img_ext}"
         local_path = os.path.join(self.output_dir, local_fname)
 
-        # 并行执行下载和描述生成
-        download_task = download_remote_image_ti_async(img_url, local_path)
-        desc_task = get_img_alt_text_and_description_async(self.md_info, img_url, content)
-        
-        # 等待两个任务完成
-        _, (alt_text, description) = await asyncio.gather(download_task, desc_task)
+        try:
+            # 先下载图片
+            try:
+                await asyncio.wait_for(
+                    download_remote_image_ti_async(img_url, local_path),
+                    timeout=15  # 下载超时15秒
+                )
+            except Exception as e:
+                logging.error(f"Failed to download image {img_url}: {str(e)}")
+                raise  # 下载失败直接抛出异常，不执行后续操作
+            
+            # 只有下载成功才执行描述生成
+            alt_text, description = await asyncio.wait_for(
+                get_img_alt_text_and_description_async(self.md_info, img_url, content),
+                timeout=15  # 描述生成超时15秒
+            )
 
-        return local_fname, alt_text, description
+            return local_fname, alt_text, description
+        except asyncio.TimeoutError:
+            logging.error(f"Timeout while processing image {img_url}")
+            raise
+        except Exception as e:
+            logging.error(f"Error processing image {img_url}: {str(e)}")
+            raise
 
     def _process_image_sync(
         self, 
@@ -216,25 +232,28 @@ if __name__ == "__main__":
     with open(test_md_path, "w", encoding="utf-8") as f:
         f.write(test_md)
 
-    # 同步测试
-    print("\n=== Testing Synchronous Update ===")
-    try:
-        result = update_page_md_with_ref_imgs(TestMdInfo(), 1, test_md_path)
-        print(f"Processed files: {result}")
-    except Exception as e:
-        print(f"Sync update error: {e}")
-
-    # 异步测试
-    print("\n=== Testing Asynchronous Update ===")
-    test_md_path = "_work/test_output/test_async.md"
-    with open(test_md_path, "w", encoding="utf-8") as f:
-        f.write(test_md)
-
-    async def test_async():
+    need_sync = False
+    if need_sync:
+        # 同步测试
+        print("\n=== Testing Synchronous Update ===")
         try:
-            result = await update_page_md_with_ref_imgs_async(TestMdInfo(), 1, test_md_path)
+            result = update_page_md_with_ref_imgs(TestMdInfo(), 1, test_md_path)
             print(f"Processed files: {result}")
         except Exception as e:
-            print(f"Async update error: {e}")
+            print(f"Sync update error: {e}")
 
-    asyncio.run(test_async())
+    else:
+        # 异步测试
+        print("\n=== Testing Asynchronous Update ===")
+        test_md_path = "_work/test_output/test_async.md"
+        with open(test_md_path, "w", encoding="utf-8") as f:
+            f.write(test_md)
+
+        async def test_async():
+            try:
+                result = await update_page_md_with_ref_imgs_async(TestMdInfo(), 1, test_md_path)
+                print(f"Processed files: {result}")
+            except Exception as e:
+                print(f"Async update error: {e}")
+
+        asyncio.run(test_async())
