@@ -18,7 +18,6 @@ if "./" not in sys.path:
     sys.path.append("./")
 load_dotenv()
 
-from mrag_vdb.utils_llm.llm_base_oss import upload_image_to_oss
 
 """
 | Task            | `temperature`  | `top_p`       | Comment                                                              |
@@ -43,37 +42,6 @@ def get_gpt_messages(system_prompt:str, user_prompt:str) -> list:
         },
     ]
     return messages
-
-
-
-def get_gpt_messages_multimodal(system_prompt:str, user_prompt:str, image_path_or_url:str) -> list:
-    """生成支持多模态的消息结构"""
-    # 如果已经是远程URL，直接使用
-    if image_path_or_url.startswith(('http://', 'https://')):
-        img_url = image_path_or_url
-    else:
-        # 本地文件需要上传到OSS
-        img_url = upload_image_to_oss(image_path_or_url)
-    
-    # 构造多模态消息
-    messages = []
-    if system_prompt is not None:
-        messages.append(
-            {
-                "role": "system",
-                "content": [{"type": "text", "text": str(system_prompt)}] 
-            })
-    messages.append(
-        {
-            "role": "user",
-            "content": [{"type": "text", "text": str(user_prompt)},
-                        {"type": "image_url",  # 明确指定类型为 image
-                         "image_url": {"url": img_url}}]
-        }
-    )
-    
-    return messages
-
 
 def get_azure_gpt_client() -> AzureOpenAI:
     client = AzureOpenAI(api_key=os.getenv("OPENAI_API_KEY"),
