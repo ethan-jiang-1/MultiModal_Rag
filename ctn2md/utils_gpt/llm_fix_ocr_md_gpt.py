@@ -1,11 +1,7 @@
 from dotenv import load_dotenv
-import sys
 import os
 import logging
 
-
-if "./" not in sys.path:
-    sys.path.append("./")
 load_dotenv()
 
 from ctn2md.utils_gpt.llm_fix_ocr_md_gpt_prompt import SYSTEM_PROMPT_MD_SELF_CORRECT 

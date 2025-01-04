@@ -1,14 +1,10 @@
 from dotenv import load_dotenv
-import sys
 import os
 import logging
 import rich
 import json
 from typing import Optional
 
-
-if "./" not in sys.path:
-    sys.path.append("./")
 load_dotenv()
 
 from ctn2md.utils_llm.llm_fix_heading_lvl_qwen_prompt import SYSTEM_PROMPT_FIX_HEADING_LVL_LOW, USER_PROMPT_FIX_HEADING_LVL_LOW

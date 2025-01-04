@@ -1,12 +1,7 @@
 import os
-import sys
 from typing import Optional
 import rich
 from dotenv import load_dotenv
-
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 load_dotenv()
 

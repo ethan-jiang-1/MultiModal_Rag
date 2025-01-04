@@ -1,14 +1,10 @@
 from typing import List
 from dotenv import load_dotenv
 import os
-import sys
 import logging
 import rich
 
 load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 from ctn2md.utils_gen.gen_base import get_job_id
 from ctn2md.utils_gen.gen_base import is_still_in_gen_mode

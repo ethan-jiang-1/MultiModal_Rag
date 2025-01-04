@@ -2,7 +2,6 @@
 from typing import List, Tuple
 from dotenv import load_dotenv
 import os
-import sys
 import logging
 import rich
 import shutil
@@ -11,9 +10,6 @@ import json_repair
 import json
 
 load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 
 from ctn2md.utils_llm.llm_gen_vllm_instruction_gpt import gen_vllm_instruction_by_gpt

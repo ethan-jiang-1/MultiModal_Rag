@@ -1,12 +1,9 @@
 from dotenv import load_dotenv
-import sys
 import os
 import logging
 import rich 
 from typing import Optional
 
-if "./" not in sys.path:
-    sys.path.append("./")
 load_dotenv()
 
 from ctn2md.utils_llm.llm_summarize_content_gpt_prompt import SYSTEM_PROMPT_SUMMARIZE, USER_PROMPT_SUMMARIZE

@@ -1,13 +1,9 @@
 from typing import List, Optional
 from dotenv import load_dotenv
-import sys
 import os
 import logging
 import rich
 
-
-if "./" not in sys.path:
-    sys.path.append("./")
 load_dotenv()
 
 from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num

@@ -1,10 +1,5 @@
 from dotenv import load_dotenv, find_dotenv
 import os
-import sys
-
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 load_dotenv()
 

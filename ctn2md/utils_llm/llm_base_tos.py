@@ -1,5 +1,4 @@
 from dotenv import load_dotenv
-import sys
 import os
 import logging
 import httpx
@@ -7,8 +6,6 @@ from datetime import datetime
 import tos
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-if "./" not in sys.path:
-    sys.path.append("./")
 load_dotenv()
 
 ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif'}

@@ -3,15 +3,9 @@ import time
 import random
 import os
 import logging
-import sys
-#import json
-#import rich
 import csv
 from datetime import datetime
 from dotenv import load_dotenv, find_dotenv
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 load_dotenv()
 

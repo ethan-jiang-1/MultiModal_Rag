@@ -1,14 +1,7 @@
-#import time
-#import random
-import os
 import logging
-import sys
-#import json
+import os
 import rich
 from dotenv import load_dotenv
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 load_dotenv()
 

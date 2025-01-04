@@ -1,13 +1,8 @@
 import os
 import logging
-import sys
 import rich
 import json_repair
 from dotenv import load_dotenv
-
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 load_dotenv()
 

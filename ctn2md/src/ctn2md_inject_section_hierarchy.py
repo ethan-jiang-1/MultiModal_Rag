@@ -1,19 +1,11 @@
 from typing import List, Tuple
 from dotenv import load_dotenv
 import os
-import sys
 import logging
 import rich
-#import shutil
 import re
-#import random
-#import json
-#import json_repair
 
 load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.utils.util_markdown import remove_comment, read_markdown_file

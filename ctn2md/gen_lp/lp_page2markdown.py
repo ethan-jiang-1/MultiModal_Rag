@@ -1,19 +1,12 @@
 from typing import List, Tuple
 from dotenv import load_dotenv
 import os
-import sys
 import logging
 import rich
-#import random
-#import re
-#import shutil
 import json
 from PIL import Image
 
 load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 from ctn2md.src.md_process_plc import inject_plc_comment_to_page, has_injected_plc_comment, separate_heading_and_plc_comment, extract_plc_info_from_comment
 from ctn2md.src.md_info_base import MdInfo, MIFN

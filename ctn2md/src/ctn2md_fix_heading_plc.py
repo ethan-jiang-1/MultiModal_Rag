@@ -1,20 +1,12 @@
 from typing import Tuple
 from dotenv import load_dotenv
-#import os
-import sys
 import logging
 import rich
-#import re
-#import random
-#import json
-#import json_repair
 import copy
 from datetime import datetime 
 
 load_dotenv()
 
-if "./" not in sys.path:
-    sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.utils_llm.llm_fix_heading_lvl_gpt import fix_heading_lvl_markdown_by_gpt

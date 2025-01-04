@@ -1,20 +1,14 @@
 from typing import List, Tuple
 from dotenv import load_dotenv as _load_dotenv
 import os
-import sys
 import logging
 import rich
-#import random
 import json
 import re
 import json_repair
 import shutil
-#from enum import Enum
 
 _load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 from llama_parse.utils import Language
 from ctn2md.utils.util_ctn_type import CTN_TYPE

@@ -5,8 +5,6 @@ import rich
 from dotenv import load_dotenv
 from typing import Optional
 
-if "./" not in sys.path:
-    sys.path.append("./")
 load_dotenv()
 
 from ctn2md.utils_vllm.vllm_img_description_qwen import generate_image_description_by_qwen
