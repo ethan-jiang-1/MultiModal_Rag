@@ -1,15 +1,11 @@
 from typing import Optional
 from dotenv import load_dotenv
 import os
-import sys
 import logging
 import rich
 import shutil
 
 load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 from mrag_vdb.build._convert_doc_to_chunks import convert_sections_to_chunks, DocMetaInfo
 from mrag_vdb.utils.util_logging import setup_logger_handlers

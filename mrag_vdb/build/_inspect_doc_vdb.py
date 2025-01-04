@@ -1,17 +1,11 @@
 from typing import Dict
 from dotenv import load_dotenv
-import sys
 import logging
 import rich 
-
-
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Filter, FieldCondition
 
 load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 
 def cal_stats_for_doc_id(client: QdrantClient, 

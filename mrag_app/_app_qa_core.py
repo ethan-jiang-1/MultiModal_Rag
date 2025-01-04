@@ -1,14 +1,9 @@
 from dotenv import load_dotenv
 import os
-import sys
 import logging
-#from pprint import pformat
 import rich
 
 load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 from mrag_vdb.utils.util_logging import setup_logger_handlers, get_logger_progress
 from mrag_vdb.utils.util_file import get_root_dir

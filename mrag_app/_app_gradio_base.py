@@ -1,5 +1,4 @@
 import time
-import sys
 import gradio as gr
 import threading
 import os
@@ -10,9 +9,9 @@ import rich
 import urllib.parse
 from gradio.themes.utils import fonts
 from gradio.themes import Base
+from dotenv import load_dotenv
 
-if "./" not in sys.path:
-    sys.path.append("./")
+load_dotenv()
 
 from mrag_app._app_gradio_css import CUSTOM_CSS
 from mrag_app._app_questions import QUESTION_LIST_MRAG, QUESTION_LIST_PAPERS

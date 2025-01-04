@@ -1,9 +1,5 @@
 import jieba
-import sys
 from typing import List
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 chinese_stopwords = [
     "的", "了", "在", "是", "我", "我们", "你", "你们", "他", "她", "它", "这", "那", 

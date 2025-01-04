@@ -1,16 +1,10 @@
 from dotenv import load_dotenv
-#import os
 import re
-import sys
-#import logging
 import rich
 from dataclasses import dataclass
 from typing import List
 
 load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 from mrag_vdb.utils.util_tokenizer_split import get_text_tokens
 from mrag_vdb.common.chunked_meta_info import ChunkedSectionInfo

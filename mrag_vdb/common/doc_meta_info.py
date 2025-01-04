@@ -1,14 +1,10 @@
 from typing import List, Optional
 from dotenv import load_dotenv
-import sys
 import os
 import json
 from pydantic import BaseModel, Field
 
 load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 class DocSummary(BaseModel):
     """

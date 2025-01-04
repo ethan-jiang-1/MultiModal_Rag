@@ -1,7 +1,6 @@
 from openai import AzureOpenAI
 from openai import OpenAI
 from dotenv import load_dotenv, find_dotenv
-import sys
 import os
 import json_repair
 import openai 
@@ -14,8 +13,6 @@ from datetime import datetime
 from typing import Optional, List, Dict
 #import json
 
-if "./" not in sys.path:
-    sys.path.append("./")
 load_dotenv()
 
 

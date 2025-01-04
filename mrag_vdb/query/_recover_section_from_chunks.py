@@ -1,7 +1,5 @@
 from dotenv import load_dotenv
-import sys
 import logging
-#import rich
 import re
 
 from qdrant_client import QdrantClient
@@ -11,9 +9,6 @@ from collections import defaultdict
 
 # 加载环境变量
 load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 from mrag_vdb.common.chunked_meta_info import ChunkedSectionInfo
 from mrag_vdb.common.vdb_base import QdrantClientContextManager

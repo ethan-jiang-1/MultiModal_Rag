@@ -1,12 +1,9 @@
 from typing import Dict, Optional
 from dotenv import load_dotenv
-import sys
 import os
 import logging
 import rich 
 
-if "./" not in sys.path:
-    sys.path.append("./")
 load_dotenv()
 
 from mrag_vdb.utils_llm.llm_knowledge_gen_ark_prompt import SYSTEM_PROMPT_KNOWLEGE_GEN, USER_PROMPT_KNOWLEGE

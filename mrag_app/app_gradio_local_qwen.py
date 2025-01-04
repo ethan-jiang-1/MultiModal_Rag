@@ -1,11 +1,6 @@
-#import time
-import sys
-#import gradio as gr
-#import threading
+from dotenv import load_dotenv
 
-if "./" not in sys.path:
-    sys.path.append("./")
-
+load_dotenv()
 
 from mrag_vdb.utils.util_logging import setup_logger_handlers
 from mrag_app._app_gradio_base import create_interface

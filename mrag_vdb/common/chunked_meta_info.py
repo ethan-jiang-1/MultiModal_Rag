@@ -1,12 +1,8 @@
 from dotenv import load_dotenv
-import sys
 import json
 from pydantic import BaseModel, Field
 
 load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 class ChunkedSectionInfo(BaseModel):
     """

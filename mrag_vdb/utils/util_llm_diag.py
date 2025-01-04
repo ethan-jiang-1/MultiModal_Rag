@@ -1,4 +1,3 @@
-import sys
 import logging
 import json
 import os
@@ -7,9 +6,6 @@ from typing import List, Any, Dict, Optional, Tuple
 from dotenv import load_dotenv, find_dotenv
 from deepdiff import DeepDiff
 from openai import AzureOpenAI, OpenAI
-
-if './' not in sys.path:
-    sys.path.append('./')
 
 load_dotenv()
 

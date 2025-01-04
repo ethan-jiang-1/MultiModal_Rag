@@ -2,6 +2,13 @@
 
 一个完整的多模态 RAG (Retrieval-Augmented Generation) 系统，包含文档转换、向量数据库存储和 Gradio 交互界面。
 
+** 重要 ** 
+需要 .env 里面有这么一行：
+# Python Path Configuration
+PYTHONPATH=.
+
+所有的代码基本都附带有一个简单的测试，需要知道项目的根目录在哪里才能执行。
+
 ## 系统架构
 
 该项目由三个主要模块组成：

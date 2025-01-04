@@ -1,14 +1,10 @@
 from typing import Tuple
 from dotenv import load_dotenv
 import os
-import sys
 import rich
 import json
 
 load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 from ctn2md.src.md_info_base import PUBLIC_MIFN
 from ctn2md.utils.util_ctn_type import CTN_TYPE

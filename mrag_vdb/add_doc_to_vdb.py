@@ -1,15 +1,10 @@
 from typing import List
 from dotenv import load_dotenv
-import sys
 import logging
 import os
 
 load_dotenv()
 
-if "./" not in sys.path:
-    sys.path.append("./")
-
-_MIB_CTN2MD_LEAD = "ctn2md"
 
 from mrag_vdb.utils.util_logging import setup_logger_handlers
 from mrag_vdb.build.doc2vdb import upsert_doc_to_vdb

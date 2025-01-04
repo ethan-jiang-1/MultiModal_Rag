@@ -1,16 +1,10 @@
 from dotenv import load_dotenv
 import os
-import sys
-#import logging
 import rich
-#import json
 from tqdm import tqdm
 from typing import List, Tuple
 
 load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 from mrag_vdb.build._split_section_to_chunks import split_section_to_chunks
 from mrag_vdb.common.doc_meta_info import DocMetaInfo

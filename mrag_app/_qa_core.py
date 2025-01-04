@@ -1,6 +1,4 @@
 from dotenv import load_dotenv 
-#import os
-import sys
 import logging
 import json
 import random
@@ -9,10 +7,6 @@ import rich
 import html
 
 load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
-
 
 from mrag_vdb.utils.util_logging import setup_logger_handlers, get_logger_progress
 from mrag_vdb.query.query2section_raw import query2section_raw_on_multiple_collection

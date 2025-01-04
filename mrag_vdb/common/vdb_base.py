@@ -1,10 +1,5 @@
 import os 
-import sys
 from qdrant_client import QdrantClient
-
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 from mrag_vdb.common.doc_meta_info import DocMetaInfo
 

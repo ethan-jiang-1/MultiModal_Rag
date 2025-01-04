@@ -1,6 +1,5 @@
 from typing import List
 from dotenv import load_dotenv
-import sys
 import os
 import dashscope
 import logging
@@ -10,10 +9,6 @@ import time
 
 # 加载环境变量
 load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
-
 
 MAX_DOC_LEN = 3000  # max len restricted by RERANK
 

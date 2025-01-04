@@ -1,13 +1,9 @@
 from typing import List
 from dotenv import load_dotenv
-import sys
 import rich
 
 # 加载环境变量
 load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
 from mrag_vdb.utils.util_logging import setup_logger_handlers

@@ -1,12 +1,8 @@
 from typing import List
 from dotenv import load_dotenv
-import sys
 from pydantic import BaseModel, Field
 
 load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 class RagAnswer(BaseModel):
     """

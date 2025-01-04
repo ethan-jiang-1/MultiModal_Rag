@@ -1,13 +1,9 @@
-#from typing import List
 from typing import Dict, Optional
 from dotenv import load_dotenv
-import sys
 import os
 import logging
 import rich 
 
-if "./" not in sys.path:
-    sys.path.append("./")
 load_dotenv()
 
 from mrag_vdb.utils_llm.llm_image_relevance_ark_prompt import SYSTEM_PROMPT_IMAGE_RELEVANCE, USER_PROMPT_IMAGE_RELEVANCE

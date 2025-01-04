@@ -1,7 +1,6 @@
 
 from typing import List, Optional, Tuple
 from dotenv import load_dotenv
-import sys
 import os
 import logging
 import rich
@@ -11,8 +10,6 @@ from qdrant_client.http.models import Filter, FieldCondition
 # 加载环境变量
 load_dotenv()
 
-if "./" not in sys.path:
-    sys.path.append("./")
 
 from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
 from mrag_vdb.common.vdb_base import get_ref_path

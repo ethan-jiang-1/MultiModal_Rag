@@ -1,18 +1,12 @@
 from typing import Dict, Optional
 from dotenv import load_dotenv
-import sys
 import logging
 import rich
 import uuid
-#import json
-
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import PointStruct, UpdateResult, Filter, FieldCondition
 
 load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 from mrag_vdb.common.doc_meta_info import DocMetaInfo
 from mrag_vdb.build._split_section_to_chunks import ChunkedSectionInfo

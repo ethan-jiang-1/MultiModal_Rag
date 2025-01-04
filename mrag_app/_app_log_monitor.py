@@ -1,13 +1,9 @@
 import logging
 import re
-#import time
-import sys
-#import gradio as gr
 import rich 
 import json_repair
-
-if "./" not in sys.path:
-    sys.path.append("./")
+from dotenv import load_dotenv
+load_dotenv()
 
 from mrag_vdb.utils.util_logging import setup_logger_handlers, _LOGGER_NAME_PRG
 

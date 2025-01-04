@@ -1,18 +1,11 @@
-#from pydantic import BaseModel
-#from typing import Optional
 from dotenv import load_dotenv
-import sys
 import rich
 from qdrant_client import QdrantClient
 import logging
 from qdrant_client.http.models import VectorParams, Distance
 from qdrant_client.local.qdrant_local import QdrantLocal
-#from pydantic import Field
 
 load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 from mrag_vdb.common.doc_meta_info import DocMetaInfo
 from mrag_vdb.common.text_embedding import get_embeding_len

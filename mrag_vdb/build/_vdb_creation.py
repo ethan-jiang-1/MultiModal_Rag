@@ -1,7 +1,4 @@
-#from pydantic import BaseModel
-#from typing import Any, Dict, Union
 from dotenv import load_dotenv
-import sys
 import rich
 from qdrant_client import QdrantClient
 import logging
@@ -9,10 +6,6 @@ from qdrant_client.http.models import VectorParams, Distance
 
 load_dotenv()
 
-if "./" not in sys.path:
-    sys.path.append("./")
-
-#from mrag_vdb.common.chunked_meta_info import ChunkedSectionInfo
 from mrag_vdb.common.text_embedding import _EMBEDDING_VEC_LEN
 from mrag_vdb.utils.util_logging import setup_logger_handlers
 

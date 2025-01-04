@@ -1,12 +1,9 @@
 import logging
 import os
 from dotenv import load_dotenv
-import sys
 
 load_dotenv()
 
-if "./" not in sys.path:
-    sys.path.append("./")
 
 from mrag_vdb.build.doc2vdb import upsert_doc_to_vdb
 from mrag_vdb.utils.util_logging import setup_logger_handlers

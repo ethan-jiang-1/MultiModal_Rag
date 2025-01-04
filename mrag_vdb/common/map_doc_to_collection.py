@@ -1,6 +1,5 @@
 from typing import Optional, Tuple, Dict, List
 from dotenv import load_dotenv
-import sys
 import os
 import logging
 import json
@@ -10,9 +9,6 @@ from pydantic import BaseModel, Field
 from qdrant_client.http.models import CollectionInfo
 
 load_dotenv()
-
-if "./" not in sys.path:
-    sys.path.append("./")
 
 from mrag_vdb.common.doc_meta_info import DocMetaInfo
 from mrag_vdb.common.vdb_base import get_map_doc2col_pathname
