@@ -1,13 +1,11 @@
 import os
-import sys
 from typing import List, Tuple
 import logging
 import re
 import asyncio
 from tenacity import retry, stop_after_attempt, wait_exponential
-
-if './' not in sys.path:
-    sys.path.append("./")
+from dotenv import load_dotenv
+load_dotenv()
 
 from ctn2md.src.md_info_base import MIFN, MdInfo
 from ctn2md.utils_gen.gen_base import get_job_id

@@ -1,12 +1,10 @@
-import sys
 import logging
 import time
 import asyncio
 import httpx
 from pathlib import Path
-
-if './' not in sys.path:
-    sys.path.append("./")
+from dotenv import load_dotenv
+load_dotenv()
 
 
 class ImageDownloader:

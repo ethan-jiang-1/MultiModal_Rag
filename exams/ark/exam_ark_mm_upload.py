@@ -1,8 +1,4 @@
-import sys
 import rich 
-
-sys.path.append("./")
-
 import os
 from openai import OpenAI
 

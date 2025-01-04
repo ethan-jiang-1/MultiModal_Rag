@@ -2,9 +2,6 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 import rich
-import sys
-
-sys.path.append("./")
 
 load_dotenv()
 

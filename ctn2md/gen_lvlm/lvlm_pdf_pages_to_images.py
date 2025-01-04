@@ -1,5 +1,4 @@
 import os
-import sys
 from typing import List, Tuple, Optional
 import logging
 import rich
@@ -7,8 +6,8 @@ import rich
 import fitz  # PyMuPDF
 import pymupdf
 
-if './' not in sys.path:
-    sys.path.append("./")
+from dotenv import load_dotenv
+load_dotenv()
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN

@@ -1,5 +1,4 @@
 
-import sys
 from typing import List # , Tuple, Optional  # , Dict
 #import logging
 #import rich
@@ -8,9 +7,9 @@ import fitz  # PyMuPDF
 import shapely.geometry as sg
 #from shapely.geometry.base import BaseGeometry
 #from shapely.validation import explain_validity
+from dotenv import load_dotenv
 
-if './' not in sys.path:
-    sys.path.append("./")
+load_dotenv()
 
 from ctn2md.src.md_info_base import MdInfo
 

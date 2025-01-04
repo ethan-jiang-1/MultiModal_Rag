@@ -1,9 +1,8 @@
-import sys
 import fitz  # PyMuPDF
+from dotenv import load_dotenv
 
+load_dotenv()
 
-if './' not in sys.path:
-    sys.path.append("./")
 
 
 def draw_redrect_on_page(page:fitz.Page, 

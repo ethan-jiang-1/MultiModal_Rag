@@ -2,13 +2,12 @@ import logging
 from typing import List, Tuple
 import fitz
 import rich
-import sys
 import os
 import cv2
 
+from dotenv import load_dotenv
+load_dotenv()
 
-if './' not in sys.path:
-    sys.path.append("./")
 
 from ctn2md.src.md_info_base import MdInfo
 from ctn2md.utils.util_logging import setup_logger_handlers

@@ -1,10 +1,8 @@
-import sys
 from typing import Dict, Any, Tuple
 import json_repair
 import asyncio
-
-if './' not in sys.path:
-    sys.path.append("./")
+from dotenv import load_dotenv
+load_dotenv()
 
 from ctn2md.src.md_info_base import MdInfo
 from ctn2md.utils_llm.llm_gen_vllm_instruction_gpt import gen_vllm_instruction_by_gpt

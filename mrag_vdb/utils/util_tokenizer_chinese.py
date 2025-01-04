@@ -2,6 +2,8 @@
 from typing import Generator
 import rich
 import logging   
+from dotenv import load_dotenv
+load_dotenv()
 
 def get_chinese_analyzer():
     from whoosh.analysis import Tokenizer, Token
@@ -34,9 +36,6 @@ def get_chinese_analyzer():
 
 
 if __name__ == "__main__":
-    import sys
-    sys.path.append("./")
-
     from mrag_vdb.utils.util_logging import setup_logger_handlers
     setup_logger_handlers()
 

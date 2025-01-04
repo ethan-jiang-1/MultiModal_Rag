@@ -1,4 +1,3 @@
-import sys
 import os
 from dotenv import load_dotenv
 import httpx
@@ -11,8 +10,6 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 #from typing import Union
 
 load_dotenv()
-if './' not in sys.path:
-    sys.path.append("./")
 
 from ctn2md.utils.util_logging import setup_logger_handlers
 
