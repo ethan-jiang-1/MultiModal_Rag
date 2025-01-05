@@ -5,11 +5,11 @@ load_dotenv()
 from mrag_vdb.utils.util_logging import setup_logger_handlers
 from mrag_app._app_gradio_base import create_interface
 from mrag_app._app_log_monitor import ProgressLogger
-from mrag_vdb.dto.runtime_settings import ModelGptSel
+from mrag_vdb.dto.rag_runtime_settings import RagModelGptSel
 
 # 启动界面
 if __name__ == "__main__":
-    ModelGptSel.set_gpt_model("ep-20241220101727-tcdfv")
+    RagModelGptSel.set_gpt_model("ep-20241220101727-tcdfv")
     setup_logger_handlers()
     ProgressLogger._setup_handler()
 

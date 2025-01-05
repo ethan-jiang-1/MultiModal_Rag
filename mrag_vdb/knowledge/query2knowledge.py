@@ -15,7 +15,7 @@ from mrag_vdb.dto.rag_answer import RagAnswer
 from mrag_vdb.dto.rag_context import RagContext
 from mrag_vdb.dto.rag_input import RagInput
 from mrag_vdb.knowledge.search_file_refs import search_for_file_refs
-from mrag_vdb.dto.runtime_settings import ModelGptSel
+from mrag_vdb.dto.rag_runtime_settings import RagModelGptSel
 from mrag_vdb.knowledge.query_rewrite import query_rewerite
 KNOWLEGE_FORMAT = """
 <KnowledgeSnippet id="{id}"> n
@@ -46,7 +46,7 @@ def form_knowledge_snippets(rag_context: RagContext, scored_sections_reranked:Li
     return knowledge_all
 
 def gen_answer_from_knowledge_snippets(rag_context: RagContext, knowledge_snippets: str) -> dict:
-    model_gen = ModelGptSel.get_gpt_model()
+    model_gen = RagModelGptSel.get_gpt_model()
     query = rag_context.get_refined_query()
     resp = gen_knowledge_by_llm(query, knowledge_snippets, model=model_gen)
     return resp

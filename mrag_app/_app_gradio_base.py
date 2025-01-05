@@ -20,7 +20,7 @@ from mrag_app._app_qa_core import main_loop_gradio, get_rag_response_from_main_l
 from mrag_app._app_log_monitor import ProgressLogger
 from mrag_vdb.utils.util_logging import setup_logger_handlers
 from mrag_vdb.utils.util_git import get_git_version
-from mrag_vdb.dto.runtime_settings import ModelGptSel, KbNameSel, RetrievalNum
+from mrag_vdb.dto.rag_runtime_settings import RagModelGptSel, RagKbNameSel, RagRetrievalNum
 
 # 设置更多环境变量来控制字体加载
 os.environ["GRADIO_USE_LOCAL_FONTS"] = "True"
@@ -196,9 +196,9 @@ def toggle_help_content(is_help_visible: bool) -> Tuple[str, bool]:
     new_visibility = not is_help_visible  # 切换可见状态
     help_content = ""
     if new_visibility:
-        if KbNameSel.get_kbname() == "mrag":
+        if RagKbNameSel.get_kbname() == "mrag":
             help_content = QUESTION_LIST_MRAG
-        elif KbNameSel.get_kbname() == "papers":
+        elif RagKbNameSel.get_kbname() == "papers":
             help_content = QUESTION_LIST_PAPERS
         if g_count % 2 == 0:
             status = ProgressLogger.get_progress_status()
@@ -297,20 +297,20 @@ def on_submit(user_input: str) -> Generator[Tuple[Any, Any, Any, Any, Any], None
     )
 
 def _get_version_info() -> str:
-    return f"mrag: {get_git_version()} gradio:{gr.__version__} model:{ModelGptSel.get_gpt_model()} kbname: {KbNameSel.get_kbname()} rtv_num: {RetrievalNum.get_retrieval_num()}"
+    return f"mrag: {get_git_version()} gradio:{gr.__version__} model:{RagModelGptSel.get_gpt_model()} kbname: {RagKbNameSel.get_kbname()} rtv_num: {RagRetrievalNum.get_retrieval_num()}"
 
 # 更新版本信息和状态的函数
 def on_update_model(selected_model: str) -> str:
     # 更新显示的版本信息和状态
-    ModelGptSel.set_gpt_model(selected_model)
+    RagModelGptSel.set_gpt_model(selected_model)
     return _get_version_info()
 
 def on_update_kbname(selected_kbname: str) -> str:
-    KbNameSel.set_kbname(selected_kbname)
+    RagKbNameSel.set_kbname(selected_kbname)
     return _get_version_info()
 
 def on_update_rtvnum(selected_num: str) -> str:
-    RetrievalNum.set_retrieval_num(int(selected_num))
+    RagRetrievalNum.set_retrieval_num(int(selected_num))
     return _get_version_info()
 # 创建自定义主题
 class LocalFontTheme(Base):
@@ -365,24 +365,24 @@ def create_interface() -> gr.Blocks:
         with gr.Row():
             # 模型选择部分
             model_selector = gr.Radio(
-                choices=ModelGptSel.SUPPORTED_MODELS, 
-                value=ModelGptSel.get_gpt_model(), 
+                choices=RagModelGptSel.SUPPORTED_MODELS, 
+                value=RagModelGptSel.get_gpt_model(), 
                 label="选择模型", 
                 elem_id="model_selector"
             )
 
             # KBNAME
             kbname_selector = gr.Radio(
-                choices=KbNameSel.SUPPORTED_KBNAMES,
-                value=KbNameSel.get_kbname(), 
+                choices=RagKbNameSel.SUPPORTED_KBNAMES,
+                value=RagKbNameSel.get_kbname(), 
                 label="选择知识库", 
                 elem_id="kbname_selector"
             )
 
             # RetrivalNum
             rtvnum_selector = gr.Radio(
-                choices=RetrievalNum.SUPPORTED_NUMS,
-                value=RetrievalNum.get_retrieval_num(), 
+                choices=RagRetrievalNum.SUPPORTED_NUMS,
+                value=RagRetrievalNum.get_retrieval_num(), 
                 label="选择搜索条数", 
                 elem_id="rtvnum_selector"
             )

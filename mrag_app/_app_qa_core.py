@@ -9,7 +9,7 @@ load_dotenv()
 from mrag_vdb.utils.util_logging import setup_logger_handlers, get_logger_progress
 from mrag_vdb.utils.util_file import get_root_dir
 from mrag_app._qa_core import do_core_query as _do_core_query, RagResponse, RagAnswer
-from mrag_vdb.dto.runtime_settings import KbNameSel, ModelGptSel, RetrievalNum
+from mrag_vdb.dto.rag_runtime_settings import RagKbNameSel, RagModelGptSel, RagRetrievalNum
 
 setup_logger_handlers()
 logger_prg = get_logger_progress()
@@ -52,11 +52,11 @@ def main_loop_gradio(user_input: str, kb_name: Optional[str] = None) -> None:
         _QueryState.set_response(response)
         
         # 添加初始进度
-        response.add_progress("step0.5", 5, f"查询进入:选择LLM引擎:{ModelGptSel.get_gpt_model()}")
+        response.add_progress("step0.5", 5, f"查询进入:选择LLM引擎:{RagModelGptSel.get_gpt_model()}")
         
         if kb_name is None:
-            kb_name = KbNameSel.get_kbname()
-        limit = RetrievalNum.get_retrieval_num()
+            kb_name = RagKbNameSel.get_kbname()
+        limit = RagRetrievalNum.get_retrieval_num()
 
         # 执行核心查询
         response = _do_core_query(user_input, kb_name=kb_name, limit=limit)

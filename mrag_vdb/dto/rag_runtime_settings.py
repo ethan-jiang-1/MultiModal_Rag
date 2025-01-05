@@ -1,6 +1,6 @@
 from typing import List
 
-class ModelGptSel:
+class RagModelGptSel:
     """
     GPT model selection settings.
     Manages the selection and validation of GPT models.
@@ -35,7 +35,7 @@ class ModelGptSel:
         return model_name in cls.SUPPORTED_MODELS
 
 
-class KbNameSel:
+class RagKbNameSel:
     """
     Knowledge base selection settings.
     Manages the selection and validation of knowledge base names.
@@ -61,7 +61,7 @@ class KbNameSel:
         return kbname in cls.SUPPORTED_KBNAMES
 
 
-class RetrievalNum:
+class RagRetrievalNum:
     """
     Retrieval number settings.
     Manages the number of items to retrieve.
@@ -84,16 +84,16 @@ class RetrievalNum:
 
 if __name__ == "__main__":
     # Test GPT model selection
-    print(f"Current GPT model: {ModelGptSel.get_gpt_model()}")
-    ModelGptSel.set_gpt_model("gpt-4o")
-    print(f"After setting GPT model: {ModelGptSel.get_gpt_model()}")
+    print(f"Current GPT model: {RagModelGptSel.get_gpt_model()}")
+    RagModelGptSel.set_gpt_model("gpt-4o")
+    print(f"After setting GPT model: {RagModelGptSel.get_gpt_model()}")
     
     # Test KB name selection
-    print(f"\nCurrent KB name: {KbNameSel.get_kbname()}")
-    KbNameSel.set_kbname("papers")
-    print(f"After setting KB name: {KbNameSel.get_kbname()}")
+    print(f"\nCurrent KB name: {RagKbNameSel.get_kbname()}")
+    RagKbNameSel.set_kbname("papers")
+    print(f"After setting KB name: {RagKbNameSel.get_kbname()}")
     
     # Test retrieval number
-    print(f"\nCurrent retrieval num: {RetrievalNum.get_retrieval_num()}")
-    RetrievalNum.set_retrieval_num(40)
-    print(f"After setting retrieval num: {RetrievalNum.get_retrieval_num()}")
+    print(f"\nCurrent retrieval num: {RagRetrievalNum.get_retrieval_num()}")
+    RagRetrievalNum.set_retrieval_num(40)
+    print(f"After setting retrieval num: {RagRetrievalNum.get_retrieval_num()}")

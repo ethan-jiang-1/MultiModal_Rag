@@ -13,7 +13,7 @@ from mrag_vdb.rerank.query2section_reranked import query2sortedsections_reranked
 from mrag_vdb.knowledge.query2knowledge import gen_answer_from_knowledge_snippets, form_knowledge_snippets
 from mrag_vdb.knowledge.query2knowledge import compose_rag_answer   
 from mrag_vdb.knowledge.query_rewrite import query_rewerite
-from mrag_vdb.dto.runtime_settings import KbNameSel
+from mrag_vdb.dto.rag_runtime_settings import RagKbNameSel
 from mrag_vdb.dto.rag_input import RagInput
 from mrag_vdb.dto.rag_context import RagContext
 from mrag_vdb.dto.rag_answer import RagAnswer
@@ -102,7 +102,7 @@ def do_core_query(user_input: str, kb_name: Optional[str] = None, limit: int = 1
     
     try:
         if kb_name is None:
-            kb_name = KbNameSel.get_kbname()
+            kb_name = RagKbNameSel.get_kbname()
 
         rag_input = RagInput(query=user_input, 
                              preferred_kbnames=[kb_name])
