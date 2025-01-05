@@ -2,10 +2,15 @@ from typing import List, Tuple
 from dotenv import load_dotenv
 import rich
 import re
+import logging
+
+from ctn2md.utils.util_logging import setup_logger_handlers
 
 load_dotenv()
 
 from ctn2md.src.md_info_base import MdInfo
+
+MAX_HEADING_LENGTH = 128  # 标题最大长度限制
 
 """
     注释中参数解释 <!-- PLC: ... -->:
@@ -100,7 +105,24 @@ def has_injected_plc_comment(line:str) -> bool:
         return True 
     return False
 
-def inject_plc_comment_to_page(md_page:str, page_number:int, total_pages:int, md_info:MdInfo) -> str:
+def _check_heading_length(heading: str, max_heading_length: int = MAX_HEADING_LENGTH) -> bool:
+    """
+    检查标题长度是否超出限制。
+    
+    Args:
+        heading: 标题文本（不含#号）
+        max_length: 最大允许长度，默认128个字符
+        
+    Returns:
+        bool: 是否通过长度检查
+    """
+    heading = heading.strip()
+    if len(heading) > max_heading_length:
+        logging.error(f"标题长度超出限制（{max_heading_length}字符）: {heading[:max_heading_length]}...")
+        return False
+    return True
+
+def inject_plc_comment_to_page(md_page: str, page_number: int, total_pages: int, md_info: MdInfo, max_heading_length: int = MAX_HEADING_LENGTH) -> str:
     """
     注入统计信息到 Markdown 文档标题行。
     :param md_page: str, 当前页面的 Markdown 内容
@@ -154,6 +176,16 @@ def inject_plc_comment_to_page(md_page:str, page_number:int, total_pages:int, md
 
     for sec_ndx, section in enumerate(sections):
         title = section["title"]
+        if title:
+            # 提取标题级别和内容
+            match = re.match(r'^(#+\s+)(.+)$', title)
+            if match:
+                heading_content = match.group(2)
+                
+                # 检查标题长度
+                if not _check_heading_length(heading_content, max_heading_length=max_heading_length):
+                    logging.error(f"页面 {page_number}/{total_pages} 中发现过长标题")
+
         content_lines = section["lines"]
         content_char_count = sum(_count_chars(line) for line in content_lines)
 
@@ -204,7 +236,7 @@ def _find_first_plc_info_no_heading(heading_pattern:str, org_lines:List[str]) ->
             break
     return None 
 
-def get_all_normalized_headings_with_plc_info(md_text:str, fix_first_line_no_heading:bool = True)->Tuple[List[str], List[Tuple[str, str]], str]:
+def get_all_normalized_headings_with_plc_info(md_text:str, fix_first_line_no_heading:bool = True, max_heading_length:int = 128)->Tuple[List[str], List[Tuple[str, str]], str]:
     # 定义正则匹配 Markdown Heading 的模式
     heading_pattern = r"^(#{1,6})(\s*)(.+)$"
 
@@ -255,15 +287,18 @@ def get_all_normalized_headings_with_plc_info(md_text:str, fix_first_line_no_hea
 
 
 if __name__ == "__main__":
-    md_path_name = "_work/md_samples/深度学习在视电阻率快速反演中的研究___pdf_s0.md"
+    import os
+    setup_logger_handlers()
+    #md_path_name = "_work/md_samples/深度学习在视电阻率快速反演中的研究___pdf_s0.md"
+    md_path_name = "_work/ctn2md_mrag__1__座椅STO间隙_P1_lp/1. 座椅STO间隙 P1___pptx_s1.md"
 
     with open(md_path_name, 'r') as f:
         md_text = f.read()
 
-    #md_text_plc = inject_plc_comment_to_page()
-    #print(md_text)
+    md_text_plc = inject_plc_comment_to_page(md_text, 1, 1, MdInfo(os.path.dirname(md_path_name)), max_heading_length=8)
+    rich.print(md_text_plc)
 
-    normalized_lines, heading_n_plc_lines, first_line_no_heading = get_all_normalized_headings_with_plc_info(md_text)
+    normalized_lines, heading_n_plc_lines, first_line_no_heading = get_all_normalized_headings_with_plc_info(md_text_plc)
     rich.print(normalized_lines[:20])
     rich.print("heading_n_plc_lines", heading_n_plc_lines)
     rich.print("first_line_no_heading", first_line_no_heading)
