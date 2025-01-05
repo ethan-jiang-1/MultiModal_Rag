@@ -18,7 +18,7 @@ from mrag_vdb.dto.rag_context import RagContext
 from mrag_vdb.dto.rag_input import RagInput
 from mrag_vdb.knowledge.search_file_refs import search_for_file_refs
 from mrag_vdb.common.runtime_settings import ModelGptSel
-
+from mrag_vdb.knowledge.query_rewrite import query_rewerite
 KNOWLEGE_FORMAT = """
 <KnowledgeSnippet id="{id}"> n
 <Source>{source_file}</Source>\n
@@ -27,18 +27,12 @@ KNOWLEGE_FORMAT = """
 </KnowledgeSnippet>\n
 """
 
-# TODO: ethan_pending: how to smart select collections
-def find_collection_names(rag_context: RagContext) -> RagContext:
-    return rag_context
-
-# TODO: ethan_pending: how to smart rewrite...
-def query_rewerite(rag_context: RagContext) -> RagContext:
-    rag_context.refined_query = rag_context.input.query 
-    return rag_context
-
 def form_knowledge_snippets(rag_context: RagContext, scored_sections_reranked:List[ScoredRecoveredSection]) -> str:
     knowledge_all = ""
+    limit = rag_context.get_limit_rerank()
     for ndx, section in enumerate(scored_sections_reranked):
+        if ndx >= limit:
+            break
         source_file = section.fname_org_doc
         title = section.heading
         content = section.content
@@ -101,8 +95,8 @@ def compose_rag_answer(rag_context: RagContext, resp: dict, scored_sections_rera
     return rag_answer
 
 
-def query2knowledge(query: str, collection_names:List[str], limit: int = 10) -> RagAnswer:
-    rag_input = RagInput(query=query, preferred_kbnames=collection_names, limit_raw=limit)
+def exam_query2knowledge(query: str, collection_names:List[str], limit_raw: int = 20, limit_rerank: int = 5) -> RagAnswer:
+    rag_input = RagInput(query=query, preferred_kbnames=collection_names, limit_raw=limit_raw, limit_rerank=limit_rerank)
     rag_context = RagContext(input=rag_input)
 
     rag_context = query_rewerite(rag_context)
@@ -125,6 +119,6 @@ if __name__ == "__main__":
     #query_str = "神经网络 中央处理器"
     query_str = "椅背板与旁侧板的保留运动间隙是多少"
     collection_names = ["mrag"]
-    rag_answer = query2knowledge(query_str, collection_names)
+    rag_answer = exam_query2knowledge(query_str, collection_names)
     rich.print(rag_answer)
     

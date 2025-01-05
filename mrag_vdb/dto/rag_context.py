@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel
 from dotenv import load_dotenv
 load_dotenv()
@@ -15,20 +15,25 @@ class RagContext(BaseModel):
 
     # 查询处理相关
     refined_query: Optional[str] = None  # 查询改写后的结果
+    refined_kbnames: Optional[List[str]] = None
     limit_raw: int = 30
+    limit_rerank: int = 10
 
     def get_refined_query(self) -> str:
         if self.refined_query is None:
             return self.input.query
         return self.refined_query
     
-    def get_preferred_kbnames(self) -> list[str]:
-        if self.input.preferred_kbnames is None:
-            return []
-        return self.input.preferred_kbnames
-    
+    def get_refined_kbnames(self) -> list[str]:
+        if self.refined_kbnames is None:
+            return self.input.preferred_kbnames
+        return []
+
     def get_limit_raw(self) -> int:
         return self.limit_raw
+    
+    def get_limit_rerank(self) -> int:
+        return self.limit_rerank
 
 
 if __name__ == "__main__":

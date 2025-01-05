@@ -39,7 +39,7 @@ def query2section_raw_on_rag_context(rag_context:RagContext) -> List[ScoredRecov
     """
 
     query = rag_context.get_refined_query()
-    collection_names = rag_context.get_preferred_kbnames()
+    collection_names = rag_context.get_refined_kbnames()
     limit = rag_context.get_limit_raw()
 
     with QdrantClientContextManager(path=get_vdb_path()) as client:

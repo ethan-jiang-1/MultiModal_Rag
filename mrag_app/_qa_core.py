@@ -11,7 +11,8 @@ from mrag_vdb.utils.util_logging import setup_logger_handlers, get_logger_progre
 from mrag_vdb.query.query2section_raw import query2section_raw_on_rag_context
 from mrag_vdb.rerank.query2section_reranked import query2sortedsections_reranked
 from mrag_vdb.knowledge.query2knowledge import gen_answer_from_knowledge_snippets, form_knowledge_snippets
-from mrag_vdb.knowledge.query2knowledge import query_rewerite, compose_rag_answer
+from mrag_vdb.knowledge.query2knowledge import compose_rag_answer   
+from mrag_vdb.knowledge.query_rewrite import query_rewerite
 from mrag_vdb.common.runtime_settings import KbNameSel
 from mrag_vdb.dto.rag_input import RagInput
 from mrag_vdb.dto.rag_context import RagContext
@@ -140,6 +141,7 @@ def do_core_query(user_input: str, kb_name: Optional[str] = None, limit: int = 1
         if rag_answer is None:
             return RagResponse.from_error(req_id, user_input, "ERROR: rag answer generation failed")
         
+        rich.print(rag_context)
         rich.print(rag_answer)
 
         # 直接更新现有response的rag_answer
