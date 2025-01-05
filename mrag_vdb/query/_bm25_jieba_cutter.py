@@ -47,7 +47,7 @@ punctuation = set([
     '$', '@', '^', '=', '+', '-', '_', '/', '\\', '|', '*', '...'
 ])
 
-def jieba_cut(text_str: str) -> List[str]:
+def jieba_cut_without_stopwords(text_str: str) -> List[str]:
     """
     使用 jieba 对查询字符串进行分词，并过滤中文和英文的停用词。
     
@@ -70,4 +70,4 @@ def jieba_cut(text_str: str) -> List[str]:
 if __name__ == "__main__":
     query_str = "我想要找一份关于自然语言处理的工作, are you kidding? 中英文符号：，。！？ .,!? " 
     print("query_str", query_str)
-    print("jieba cut", jieba_cut(query_str))
+    print("jieba cut", jieba_cut_without_stopwords(query_str))

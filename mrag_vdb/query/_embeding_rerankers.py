@@ -10,22 +10,12 @@ import time
 # 加载环境变量
 load_dotenv()
 
+from mrag_vdb.query._rerank_base import RerankResult, normalize_scores
+
 MAX_DOC_LEN = 3000  # max len restricted by RERANK
 
-
-def normalize_scores(results: List[dict], min_score: float, max_score: float) -> List[dict]:
-    """
-    对分数进行归一化，将所有分数映射到 [0, 1]
-    """
-    for r in results:
-        if max_score > min_score:
-            r['relevance_score'] = round((r['relevance_score'] - min_score) / (max_score - min_score), 5)
-        else:
-            r['relevance_score'] = 1.0  # 所有分数相等时，设为1.0
-    return results
-
     
-def qwen_gte_rerank(query_str:str, documents: List[str], top_n: int = None) -> List[dict]:
+def qwen_gte_rerank(query_str:str, documents: List[str], top_n: int = None) -> List[RerankResult]:
     model = "gte-rerank"
     api_key = os.getenv("DASHSCOPE_API_KEY")
 
@@ -52,8 +42,8 @@ def qwen_gte_rerank(query_str:str, documents: List[str], top_n: int = None) -> L
     rerank_results = normalize_scores(rerank_results, 0, 1)
     return rerank_results
 
-def autodl_jina_rerank(query_str:str, documents: List[str], top_n: int = None) -> List[dict]:
-    url = os.environ["JINA_RERANKER_ENDPOINT"]
+def autodl_jina_rerank(query_str:str, documents: List[str], top_n: int = None) -> List[RerankResult]:
+    url = os.getenv("JINA_RERANKER_ENDPOINT")
 
     documents = [item[:MAX_DOC_LEN] for item in documents]
 
@@ -90,7 +80,7 @@ def autodl_jina_rerank(query_str:str, documents: List[str], top_n: int = None) -
                 logging.warning(f"Request attempt {attempt + 1} failed. Retrying in {delay}s... Error: {str(e)}")
                 time.sleep(delay)
 
-def jinaai_jina_rerank(query_str:str, documents: List[str], top_n: int = None) -> List[dict]:
+def jinaai_jina_rerank(query_str:str, documents: List[str], top_n: int = None) -> List[RerankResult]:
     documents = [item[:MAX_DOC_LEN] for item in documents]
 
     url = 'https://api.jina.ai/v1/rerank'

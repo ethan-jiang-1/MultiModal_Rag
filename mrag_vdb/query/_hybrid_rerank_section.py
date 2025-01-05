@@ -3,15 +3,15 @@ from dotenv import load_dotenv
 import logging
 import rich
 
+from mrag_vdb.query._rerank_base import RerankResult, RrfRerankResult
+
 # 加载环境变量
 load_dotenv()
 
 
 from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
-from mrag_vdb.query._embeding_rerankers import normalize_scores
+from mrag_vdb.query._rerank_base import normalize_scores
 from mrag_vdb.query._bm25_reorder import bm25_reorder
-
-MAX_DOC_LEN = 3000  # max len restricted by RERANK
 
 def convert_to_documents_and_distance_results(scored_sections: List[ScoredRecoveredSection]) -> Tuple[List[str], List[ScoredRecoveredSection], List[Any]]:
     """
@@ -45,7 +45,7 @@ def convert_to_documents_and_distance_results(scored_sections: List[ScoredRecove
     distance_results = normalize_scores(distance_results, 0, 1)
     return indexed_documents, sorted_sections, distance_results
     
-def embedding_rerank(query_str:str, documents: List[str], top_n: int = None) -> List[dict]:
+def embedding_rerank(query_str:str, documents: List[str], top_n: int = None) -> List[RerankResult]:
     from mrag_vdb.query._embeding_rerankers import qwen_gte_rerank, autodl_jina_rerank, jinaai_jina_rerank
     try:
         return autodl_jina_rerank(query_str, documents, top_n=top_n)
@@ -64,7 +64,7 @@ def embedding_rerank(query_str:str, documents: List[str], top_n: int = None) -> 
 
     raise ValueError("no alive reranker")
 
-def calculate_rrf_multiple(sources: List[Any], k: int = 60) -> List[dict]:
+def calculate_rrf_multiple(sources: List[Any], k: int = 60) -> List[RrfRerankResult]:
     """
     使用 RRF 融合多个排序来源 (e.g., BM25, distance, re-rank) 的结果，应用权重。
     
@@ -180,7 +180,7 @@ if __name__ == "__main__":
 
     setup_logger_handlers()
 
-    query_str = "神经网络 中央处理器"
+    query_str = "神经网络 中央处理器 network cpu AI 卷积"
     #query_str = "Intel(R) Xeon(R)"
     collection_name = "papers"
     limit = 10
