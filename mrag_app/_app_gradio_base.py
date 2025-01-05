@@ -265,7 +265,8 @@ def on_submit(user_input: str) -> Generator[Tuple[Any, Any, Any, Any, Any], None
     # 使用 parse_final_result 获取回答内容、文件和图片组合情况
     rag_response.user_input = user_input
     content, content_details, srcs_name_title_pname, imgs_name_title_pname = parse_content_from_rag_response(rag_response)
-    rich.print(content, content_details)
+    rich.print(content)
+    rich.print(content_details)
     rich.print(srcs_name_title_pname)
     rich.print(imgs_name_title_pname)
 
