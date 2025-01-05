@@ -8,7 +8,7 @@ load_dotenv()
 from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
 from mrag_vdb.utils.util_logging import setup_logger_handlers
 from mrag_vdb.query.query2section_raw import query2section_raw_on_multiple_collection
-from mrag_vdb.query.query2section_reranked import query2sortedsections_reranked
+from mrag_vdb.rerank.query2section_reranked import query2sortedsections_reranked
 from mrag_vdb.utils_llm.llm_knowledge_gen_gpt import knowlege_gen_by_gpt
 from mrag_vdb.utils_llm.llm_knowledge_gen_qwen import knowlege_gen_by_qwen
 from mrag_vdb.utils_llm.llm_knowledge_gen_ark import knowlege_gen_by_ark

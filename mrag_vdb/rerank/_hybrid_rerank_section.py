@@ -3,15 +3,15 @@ from dotenv import load_dotenv
 import logging
 import rich
 
-from mrag_vdb.query._rerank_base import RerankResult, RrfRerankResult
+from mrag_vdb.rerank._rerank_base import RerankResult, RrfRerankResult
 
 # 加载环境变量
 load_dotenv()
 
 
 from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
-from mrag_vdb.query._rerank_base import normalize_scores
-from mrag_vdb.query._bm25_reorder import bm25_reorder
+from mrag_vdb.rerank._rerank_base import normalize_scores
+from mrag_vdb.rerank._bm25_reorder import bm25_reorder
 
 def convert_to_documents_and_distance_results(scored_sections: List[ScoredRecoveredSection]) -> Tuple[List[str], List[ScoredRecoveredSection], List[Any]]:
     """
@@ -46,7 +46,7 @@ def convert_to_documents_and_distance_results(scored_sections: List[ScoredRecove
     return indexed_documents, sorted_sections, distance_results
     
 def embedding_rerank(query_str:str, documents: List[str], top_n: int = None) -> List[RerankResult]:
-    from mrag_vdb.query._embeding_rerankers import qwen_gte_rerank, autodl_jina_rerank, jinaai_jina_rerank
+    from mrag_vdb.rerank._embeding_rerankers import qwen_gte_rerank, autodl_jina_rerank, jinaai_jina_rerank
     try:
         return autodl_jina_rerank(query_str, documents, top_n=top_n)
     except Exception as ex:

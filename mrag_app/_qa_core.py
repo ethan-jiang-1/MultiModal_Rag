@@ -9,7 +9,7 @@ load_dotenv()
 
 from mrag_vdb.utils.util_logging import setup_logger_handlers, get_logger_progress
 from mrag_vdb.query.query2section_raw import query2section_raw_on_multiple_collection
-from mrag_vdb.query.query2section_reranked import query2sortedsections_reranked
+from mrag_vdb.rerank.query2section_reranked import query2sortedsections_reranked
 from mrag_vdb.knowledge.query2knowledge import gen_answer_from_knowledge_snippets, form_knowledge_snippets
 from mrag_vdb.knowledge.query2knowledge import query_rewerite, compose_rag_answer
 from mrag_vdb.common.runtime_settings import KbNameSel

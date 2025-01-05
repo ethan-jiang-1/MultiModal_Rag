@@ -9,10 +9,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from mrag_vdb.query._bm25_jieba_cutter import jieba_cut_without_stopwords
+from mrag_vdb.rerank._bm25_jieba_cutter import jieba_cut_without_stopwords
 from mrag_vdb.common.vdb_base import get_ref_path
-from mrag_vdb.query._bm25_cache import CachedBM25
-from mrag_vdb.query._rerank_base import RerankResult, normalize_scores
+from mrag_vdb.rerank._bm25_cache import CachedBM25
+from mrag_vdb.rerank._rerank_base import RerankResult, normalize_scores
 
 
 def _get_cached_bm25_folder(doc_unique_id: str) -> Optional[str]:

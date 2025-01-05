@@ -8,7 +8,7 @@ load_dotenv()
 from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
 from mrag_vdb.utils.util_logging import setup_logger_handlers
 from mrag_vdb.query.query2section_raw import query2section_raw_on_multiple_collection
-from mrag_vdb.query._hybrid_rerank_section import hybrid_rerank_rrf
+from mrag_vdb.rerank._hybrid_rerank_section import hybrid_rerank_rrf
 
 WEIGHT_DISTANCE = 0
 WEIGHT_RERANK = 8
