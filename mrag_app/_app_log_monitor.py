@@ -39,10 +39,12 @@ class ProgressLogger:
     def _parse_and_store_progress(cls, log_entry):
         """解析日志条目并存储到进度历史"""
         
-        # 使用正则表达式解析格式 "stepN; percentage: task_name: extra_info"
-        #pattern = r"step(\d+\.\d):\s*(\d+)%:\s*(.*?):\s*(.*)"
-        #pattern = r"step(\d+\.\d):\s*(\d+)%:\s*([^#]+)(?:#(.*))?"
-        pattern = r"step(\d+\.\d)[:：]\s*(\d+)%[:：]\s*([^#]+)(?:#(.*))?"
+        # 支持的格式示例:
+        # - step1: 10%: 选择知识库:mrag
+        # - step1.5：10%：查询进入
+        # - step2: 20%: 处理结果#附加信息
+        # - step10：100%：查询完成#成功
+        pattern = r"step(\d+(?:\.\d)?)\s*[:：]\s*(\d+)%\s*[:：]\s*([^#]+)(?:#(.*))?"
         match = re.match(pattern, log_entry)
         
         if match:
@@ -94,7 +96,7 @@ class ProgressLogger:
 
 
 if __name__ == "__main__":
-    from HiQA.qa_gradio import main_loop_gradio
+    from mrag_app._app_qa_core import main_loop_gradio
     setup_logger_handlers()
     ProgressLogger._setup_handler()
 
@@ -104,7 +106,7 @@ if __name__ == "__main__":
     #user_inputs.append("Ai在人力资源领域前景趋势")
     #user_inputs.append("有哪些比亚迪的项目")
     #user_inputs.append("N-R17圆角的设计目标值是多少？/圆角目标值")
-    user_inputs.append("靠背STO间隙要求是什么？")
+    user_inputs.append("靠背STO间隙要求是什么")
     #user_inputs.append("主管的培训课程涉及什么")
 
     user_query = user_inputs[0]

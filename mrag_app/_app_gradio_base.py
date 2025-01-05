@@ -1,4 +1,5 @@
 import time
+from typing import List, Tuple
 import gradio as gr
 import threading
 import os
@@ -15,7 +16,7 @@ load_dotenv()
 
 from mrag_app._app_gradio_css import CUSTOM_CSS
 from mrag_app._app_questions import QUESTION_LIST_MRAG, QUESTION_LIST_PAPERS
-from mrag_app._app_qa_core import main_loop_gradio, get_main_ret
+from mrag_app._app_qa_core import main_loop_gradio, get_rag_response_from_main_loop, reset_rag_response_for_main_loop, RagResponse
 from mrag_app._app_log_monitor import ProgressLogger
 from mrag_vdb.utils.util_logging import setup_logger_handlers
 from mrag_vdb.utils.util_git import get_git_version
@@ -134,27 +135,34 @@ def _dict_info_to_markdown(extra_data):
 
 
 # 根据用户输入生成最终回答、文件和图片的组合情况
-def parse_final_result(result_dic):
-    #user_input = result_dic.get("user_input", "")
+def parse_content_from_rag_response(rag_response: RagResponse) -> Tuple[str, str, List[Tuple[str, str, str]], List[Tuple[str, str, str]]]:
+    """
+    Parse content from RagResponse into display-ready format
     
-    # 初始化返回内容
-    content = result_dic.get("response_answer", "")
-    content_details = result_dic.get("response_answer_referenced", "")
+    Returns:
+        Tuple containing:
+        - content: Main answer text
+        - content_details: Detailed answer with references
+        - source_tuples: List of (name, title, path) for source documents
+        - image_tuples: List of (name, title, path) for images
+    """
+    # 从 rag_answer 中获取主要内容
+    content = rag_response.rag_answer.answer
+    content_details = rag_response.rag_answer.answer_referenced
 
-    src_names = result_dic.get("lst_source_names", [])
-    src_titles = result_dic.get("lst_source_titles", [])
-    src_pnames = result_dic.get("lst_source_pnames", [])
+    # 源文档信息
+    srcs_name_title_pname = list(zip(
+        rag_response.rag_answer.source_names,
+        rag_response.rag_answer.source_titles,
+        rag_response.rag_answer.source_pnames
+    ))
 
-    img_names = result_dic.get("lst_image_names", [])
-    img_titles= result_dic.get("lst_image_titles", [])
-    img_pnames = result_dic.get("lst_image_pnames", [])
-
-    srcs_name_title_pname = []
-    for name, title, pname in zip(src_names, src_titles, src_pnames):
-        srcs_name_title_pname.append((name, title, pname))
-    imgs_name_title_pname = []
-    for name, title, pname in zip(img_names, img_titles, img_pnames):
-        imgs_name_title_pname.append((name, title, pname))
+    # 图片信息
+    imgs_name_title_pname = list(zip(
+        rag_response.rag_answer.image_names,
+        rag_response.rag_answer.image_titles,
+        rag_response.rag_answer.image_pnames
+    ))
 
     return content, content_details, srcs_name_title_pname, imgs_name_title_pname
 
@@ -171,6 +179,7 @@ def update_progress(progress_percentage, current_task, progress_log):
 
 # on_clear：清空所有内容和控件状态
 def on_clear():
+    reset_rag_response_for_main_loop()
     return (
         "进度: 等待用户操作",  # 进度信息重置为初始状态
         "",  # 清空 result_md 显示内容
@@ -251,11 +260,11 @@ def on_submit(user_input):
     time.sleep(1)
     thread_main.join()
 
-    result_dic = get_main_ret()
+    rag_response = get_rag_response_from_main_loop()
 
     # 使用 parse_final_result 获取回答内容、文件和图片组合情况
-    result_dic["user_input"] = user_input
-    content, content_details, srcs_name_title_pname, imgs_name_title_pname = parse_final_result(result_dic)
+    rag_response.user_input = user_input
+    content, content_details, srcs_name_title_pname, imgs_name_title_pname = parse_content_from_rag_response(rag_response)
     rich.print(content, content_details)
     rich.print(srcs_name_title_pname)
     rich.print(imgs_name_title_pname)

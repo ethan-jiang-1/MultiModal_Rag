@@ -1,10 +1,9 @@
 from dotenv import load_dotenv 
 import logging
-import json
 import random
-from pprint import pformat
 import rich
-import html
+from typing import Optional, List
+from pydantic import BaseModel, Field
 
 load_dotenv()
 
@@ -14,89 +13,136 @@ from mrag_vdb.query.query2section_reranked import query2sortedsections_reranked
 from mrag_vdb.knowledge.query2knowledge import gen_answer_from_knowledge_snippets, form_knowledge_snippets
 from mrag_vdb.knowledge.query2knowledge import query_rewerite, compose_rag_answer
 from mrag_vdb.common.runtime_settings import KbNameSel
+from mrag_vdb.common.rag_answer import RagAnswer
 
 setup_logger_handlers()
 logger_prg = get_logger_progress()
 
-def do_core_query(user_input, kb_name=None, limit=10):
-    if kb_name is None:
-        kb_name = KbNameSel.get_kbname()
+class ProgressStep(BaseModel):
+    """Progress step information"""
+    # "stepN: percentage: task_name: extra_info"
+    step: str
+    progress: int  # percentage
+    task_name: str
+    extra_info: Optional[str] = None
 
-    logging.info(f"do_core_query: {user_input} on {kb_name}")
-    ret_dict = {}
+class RagResponse(BaseModel):
+    """
+    Complete response model that wraps RagAnswer and includes additional metadata
+    """
+    status: str = Field(
+        default="success",
+        description="Response status (success/failed)"
+    )
+    error_message: Optional[str] = Field(
+        default=None,
+        description="Error message if status is failed"
+    )
+    req_id: int = Field(
+        description="Unique request identifier"
+    )
+    user_input: str = Field(
+        description="Original user query"
+    )
+    rag_answer: RagAnswer = Field(
+        description="Core RAG answer and sources"
+    )
+    progress_steps: List[ProgressStep] = Field(
+        default_factory=list,
+        description="List of progress steps during processing"
+    )
 
-    logger_prg.info(f"step1.0: 10%: 选择知识库:{kb_name}")
+    def add_progress(self, step: str, progress: int, task_name: str, extra_info: Optional[str] = None):
+        """Add a progress step"""
+        self.progress_steps.append(ProgressStep(
+            step=step,
+            progress=progress,
+            task_name=task_name,
+            extra_info=extra_info
+        ))
+        # "stepN; percentage: task_name: extra_info"
+        if extra_info is None:
+            logger_prg.info(f"{step}: {progress}%: {task_name}")
+        else:
+            logger_prg.info(f"{step}: {progress}%: {task_name}:{extra_info}")
 
+    @classmethod
+    def from_success(cls, req_id: int, user_input: str, rag_answer: RagAnswer) -> "RagResponse":
+        """Factory method for successful responses"""
+        response = cls(
+            status="success",
+            req_id=req_id,
+            user_input=user_input,
+            rag_answer=rag_answer
+        )
+        return response
+
+    @classmethod
+    def from_error(cls, req_id: int, user_input: str, error_msg: str) -> "RagResponse":
+        """Factory method for failed responses"""
+        response = cls(
+            status="failed",
+            error_message=error_msg,
+            req_id=req_id,
+            user_input=user_input,
+            rag_answer=RagAnswer(answer="", answer_referenced="")
+        )
+        return response
+
+def do_core_query(user_input: str, kb_name: Optional[str] = None, limit: int = 10) -> RagResponse:
     req_id = random.randint(10000, 99999)
+    response = RagResponse(
+        req_id=req_id, 
+        user_input=user_input, 
+        rag_answer=RagAnswer(answer="", answer_referenced="")
+    )
+    
+    try:
+        if kb_name is None:
+            kb_name = KbNameSel.get_kbname()
+        
+        response.add_progress("step1", 10, f"选择知识库:{kb_name}")
+        logging.info(f"do_core_query: {user_input} on {kb_name}")
+        
+        # Query preparation
+        response.add_progress("step2", 20, "准备查询(改写)")
+        collection_names = [kb_name]
+        query = query_rewerite(user_input, collection_names)
+        
+        # Knowledge retrieval
+        response.add_progress("step3", 30, "召回相关知识(raw)")
+        scored_sections_raw = query2section_raw_on_multiple_collection(collection_names, query, limit=limit)
+        if scored_sections_raw is None:
+            return RagResponse.from_error(req_id, user_input, "ERROR: retrieval knowledge is None")
+        
+        # Reranking
+        response.add_progress("step4", 40, "召回相关知识(rerank)")
+        scored_sections_reranked = query2sortedsections_reranked(query, scored_sections_raw)
+        
+        # Knowledge organization
+        response.add_progress("step5", 50, "组织整理知识")
+        knowledge_snippets = form_knowledge_snippets(scored_sections_reranked)
+        
+        # Generate answer
+        response.add_progress("step6", 60, "组织回答#综合知识(文本)")
+        resp = gen_answer_from_knowledge_snippets(query, knowledge_snippets)
+        if resp is None:
+            return RagResponse.from_error(req_id, user_input, "ERROR: llm response is None")
+        
+        # Process images
+        response.add_progress("step7", 80, "组织回答#综合知识(图像)")
+        rag_answer = compose_rag_answer(query, resp, scored_sections_reranked)
+        if rag_answer is None:
+            return RagResponse.from_error(req_id, user_input, "ERROR: rag answer generation failed")
 
-    logging.info(f"\n\n\n***** REQ{req_id} started ****")
-    logging.info(f"##do_core_query: {user_input} on {kb_name}")
-    ret_dict["req_id"] = req_id
-    ret_dict["user_input"] = user_input
-    ret_dict["response_answer"] = ""
-    ret_dict["lst_source_names"] = []
-    ret_dict["lst_source_title"] = []
-    ret_dict["lst_image_names"] = []
-    ret_dict["lst_image_titles"] = []
-
-    logger_prg.info("step1.1: 20%: 准备查询(改写)")
-    collection_names = [kb_name]
-    query = user_input
-    query = query_rewerite(query, collection_names)
-
-    logger_prg.info("step2.0: 30%: 召回相关知识(raw)")
-    scored_sections_raw = query2section_raw_on_multiple_collection(collection_names, query, limit=limit)
-    logging.info(f"##knowledge:\n {scored_sections_raw}")
-    if scored_sections_raw is None: 
-         ret_dict["response_answer"] = "ERROR: retrival knowledge is None"
-         logging.error(f"##ret_dict(e0): {ret_dict}")
-         return ret_dict
-
-    logger_prg.info("step3.0: 40%: 召回相关知识(rerank)")
-    scored_sections_reranked = query2sortedsections_reranked(query, scored_sections_raw)
-
-    logger_prg.info("step4.0: 50%: 组织整理知识")
-    knowledge_snippets = form_knowledge_snippets(scored_sections_reranked)
-
-    logger_prg.info("step4.0: 60%: 组织回答#综合知识(文本)")
-    resp = gen_answer_from_knowledge_snippets(query, knowledge_snippets) 
-    if resp is None:
-        ret_dict["response_answer"] = "ERROR: llm response is None"
-        ret_dict["debug_resp"] = resp
-        logging.error(f"##ret_dict(e1): {ret_dict}")
-        return ret_dict 
-
-    logger_prg.info("step5.0: 80%: 组织回答#综合知识(图像)")
-    rag_answer = compose_rag_answer(query, resp, scored_sections_reranked) 
-    if rag_answer is None:
-        ret_dict["response_answer"] = "ERROR: llm response is None"
-        ret_dict["debug_resp"] = resp
-        logging.error(f"##ret_dict(e1): {ret_dict}")
-        return ret_dict 
-
-    sub_text = html.escape(rag_answer.answer_referenced.replace("\n", " "))
-    sub_text = f"\n\n\n<sub>{sub_text}</sub>\n"
-
-    ret_dict["user_input"] = user_input
-    ret_dict["rag_answer"] = rag_answer.model_dump()
-    ret_dict["response_answer"] = rag_answer.answer + sub_text
-    ret_dict["response_answer_referenced"] = rag_answer.answer_referenced
-    ret_dict["lst_source_names"] = rag_answer.source_names
-    ret_dict["lst_source_titles"] = rag_answer.source_titles
-    ret_dict["lst_source_pnames"] = rag_answer.source_pnames
-    ret_dict["lst_image_names"] = rag_answer.image_names
-    ret_dict["lst_image_titles"] = rag_answer.image_titles
-    ret_dict["lst_image_pnames"] = rag_answer.image_pnames
-
-    pretty_str = pformat(ret_dict)
-    logging.info(f"##ret_dict: \n {pretty_str}")
-    logging.info(f"\n**** REQ{req_id}:ended ****\n\n")
-    logging.info("")
-
-    ret_dict_json_str = json.dumps(ret_dict, ensure_ascii=True, indent=4)
-    logger_prg.info("step6.0: 90%: 回答生成")
-    logger_prg.info(f"ret_dict: ```json\n {ret_dict_json_str}\n")
-    return ret_dict
+        # 直接更新现有response的rag_answer
+        response.rag_answer = rag_answer
+        response.add_progress("step8", 95, "完成回答")
+        return response
+        
+    except Exception as ex:
+        logging.exception(ex)
+        return RagResponse.from_error(req_id, user_input, str(ex))
 
 
 
@@ -113,7 +159,7 @@ if __name__ == "__main__":
 
     for user_input in user_inputs:
         try:
-            ret_dict = do_core_query(user_input, kb_name="mrag")
-            rich.print(ret_dict)
+            rag_response = do_core_query(user_input, kb_name="mrag")
+            rich.print(rag_response)
         except Exception as ex:
             logging.exception(ex)
