@@ -6,39 +6,58 @@ import rich
 
 load_dotenv()
 
-from mrag_vdb.utils_llm.llm_image_relevance_gpt_prompt import SYSTEM_PROMPT_IMAGE_RELEVANCE, USER_PROMPT_IMAGE_RELEVANCE
 from mrag_vdb.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from mrag_vdb.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
+from mrag_vdb.utils_llm.llm_base import get_ark_client, get_azure_gpt_client, get_dashscope_client
 
-def check_img_relevance_by_gpt(user_query:str, 
+def check_img_relevance_by_llm(user_query:str, 
                                llm_answer: str, 
                                knowledge_context: str, 
                                numbered_image_descriptions: str, 
-                               model:str = "gpt-4o-mini", 
+                               model:str = "", 
                                question_num:Optional[int] = None) -> Dict:
     if question_num is None:
         question_num = get_next_question_num()
 
     try:
-        if not model.startswith("gpt"): 
-            raise ValueError(f"f{model} not supporst")
+        user_prompt = None 
+        system_prompt = None
+        client = None
+        if model.startswith("ep-"): 
+            from mrag_vdb.utils_llm.llm_image_relevance_ark_prompt import SYSTEM_PROMPT_IMAGE_RELEVANCE, USER_PROMPT_IMAGE_RELEVANCE
+            user_prompt = USER_PROMPT_IMAGE_RELEVANCE
+            system_prompt = SYSTEM_PROMPT_IMAGE_RELEVANCE
+            client = get_ark_client()
+        elif model.startswith("gpt"):
+            from mrag_vdb.utils_llm.llm_image_relevance_gpt_prompt import SYSTEM_PROMPT_IMAGE_RELEVANCE, USER_PROMPT_IMAGE_RELEVANCE
+            user_prompt = USER_PROMPT_IMAGE_RELEVANCE
+            system_prompt = SYSTEM_PROMPT_IMAGE_RELEVANCE
+            client = get_azure_gpt_client()
+        elif model.startswith("qwen"):
+            from mrag_vdb.utils_llm.llm_image_relevance_qwen_prompt import SYSTEM_PROMPT_IMAGE_RELEVANCE, USER_PROMPT_IMAGE_RELEVANCE
+            user_prompt = USER_PROMPT_IMAGE_RELEVANCE
+            system_prompt = SYSTEM_PROMPT_IMAGE_RELEVANCE
+            client = get_dashscope_client()
+        else:
+            raise ValueError(f"not support model: {model}")
 
         logging.info(f"start to summarize the content by {model} as question_num: {question_num}")
-        prompt = USER_PROMPT_IMAGE_RELEVANCE.replace("{user_query}", user_query).replace("{llm_answer}", llm_answer)
+        prompt = user_prompt.replace("{user_query}", user_query).replace("{llm_answer}", llm_answer)
         prompt = prompt.replace("{knowledge_context}", knowledge_context).replace("{numbered_image_descriptions}", numbered_image_descriptions)
 
         temperature = 0.1
         top_p = 0.9
-        messages = get_gpt_messages(SYSTEM_PROMPT_IMAGE_RELEVANCE, prompt)
+        messages = get_gpt_messages(system_prompt, prompt)
 
         resp = chat_gpt_json(messages, 
                              model=model,
+                             client=client,
                              temperature=temperature,
                              top_p=top_p,
                              track_id=f"sdk_sum{question_num}")
 
         set_question_num(question_num)
-        save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="cirbg") 
+        save_llm_diag_messages(messages, resp, model=model, temperature=temperature, top_p=top_p, prefix="cirbl") 
 
         return resp
     except Exception as ex: 
@@ -60,6 +79,7 @@ if __name__ == "__main__":
                                  1) 图像展示了一辆车辆的前后排座椅的垂直剖面图。前排座椅和后排座椅的位置通过点A、B、C和D标记。图中标注了两个S9.2e尺寸，表示前后排座椅之间的距离。此外，还标注了从车辆地板到座椅顶部的高度为620毫米。
                                  """
 
-    resp= check_img_relevance_by_gpt(user_query, llm_answer, context, numberd_image_description)
+    model = "gpt-4o-mini"
+    resp= check_img_relevance_by_llm(user_query, llm_answer, context, numberd_image_description, model=model)
     rich.print(resp)
 
