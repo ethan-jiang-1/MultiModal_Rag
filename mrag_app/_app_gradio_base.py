@@ -20,7 +20,7 @@ from mrag_app._app_qa_core import main_loop_gradio, get_rag_response_from_main_l
 from mrag_app._app_log_monitor import ProgressLogger
 from mrag_vdb.utils.util_logging import setup_logger_handlers
 from mrag_vdb.utils.util_git import get_git_version
-from mrag_vdb.common.runtime_settings import ModelGptSel, KbNameSel, RetrievalNum
+from mrag_vdb.dto.runtime_settings import ModelGptSel, KbNameSel, RetrievalNum
 
 # 设置更多环境变量来控制字体加载
 os.environ["GRADIO_USE_LOCAL_FONTS"] = "True"

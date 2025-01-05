@@ -15,7 +15,7 @@ from mrag_vdb.dto.rag_answer import RagAnswer
 from mrag_vdb.dto.rag_context import RagContext
 from mrag_vdb.dto.rag_input import RagInput
 from mrag_vdb.knowledge.search_file_refs import search_for_file_refs
-from mrag_vdb.common.runtime_settings import ModelGptSel
+from mrag_vdb.dto.runtime_settings import ModelGptSel
 from mrag_vdb.knowledge.query_rewrite import query_rewerite
 KNOWLEGE_FORMAT = """
 <KnowledgeSnippet id="{id}"> n

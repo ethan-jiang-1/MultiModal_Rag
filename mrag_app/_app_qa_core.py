@@ -9,7 +9,7 @@ load_dotenv()
 from mrag_vdb.utils.util_logging import setup_logger_handlers, get_logger_progress
 from mrag_vdb.utils.util_file import get_root_dir
 from mrag_app._qa_core import do_core_query as _do_core_query, RagResponse, RagAnswer
-from mrag_vdb.common.runtime_settings import KbNameSel, ModelGptSel, RetrievalNum
+from mrag_vdb.dto.runtime_settings import KbNameSel, ModelGptSel, RetrievalNum
 
 setup_logger_handlers()
 logger_prg = get_logger_progress()
