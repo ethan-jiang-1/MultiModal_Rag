@@ -4,11 +4,11 @@
 
 ## 核心功能
 
-### 1. 多引擎支持
-- LVLM (Large Vision Language Model) 模式
-- TextIn OCR 模式
-- LlamaParse 模式
-- 纯文本模式
+### 1. 多引擎支持 / 质量
+- LVLM (Large Vision Language Model) 模式 (支持 PDF) - 质量很好
+- TextIn OCR 模式 (支持 PDF) - 质量很好
+- LlamaParse 模式 (支持 PDF, PPTX, DOCX, TXT, MD, HTML, PNG, JPG, PDF, etc.) - 质量一般，格式最丰富
+- 纯文本模式 （支持 MD） 主要为了手动修复
 
 ### 2. 智能处理能力
 - 自动标题层级优化
