@@ -1,6 +1,5 @@
 from typing import Any, List, Tuple
 from dotenv import load_dotenv
-from rank_bm25 import BM25Okapi
 import logging
 import rich
 
@@ -10,7 +9,7 @@ load_dotenv()
 
 from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
 from mrag_vdb.query._embeding_rerankers import normalize_scores
-from mrag_vdb.query._jieba_cutter import jieba_cut
+from mrag_vdb.query._bm25_reorder import bm25_reorder
 
 MAX_DOC_LEN = 3000  # max len restricted by RERANK
 
@@ -45,47 +44,6 @@ def convert_to_documents_and_distance_results(scored_sections: List[ScoredRecove
 
     distance_results = normalize_scores(distance_results, 0, 1)
     return indexed_documents, sorted_sections, distance_results
-
-
-def bm25_reorder(query_str: str, documents: List[str], top_n: int = None) -> List[dict]:
-    """
-    使用 BM25 对文档进行排序，并返回相关性分数。
-    
-    :param query_str: 查询字符串
-    :param documents: 文档列表
-    :param top_n: 返回的文档数（可选，默认为所有文档）
-    :return: 按 BM25 分数排序后的文档列表，每个元素包含索引、文档和相关性分数
-    """
-    # 对查询进行分词
-    query_words = jieba_cut(query_str)
-
-    # 文档截断到 3000 个字符，并对每个文档分词
-    documents = [doc[:MAX_DOC_LEN] for doc in documents]
-    tokenized_documents = [jieba_cut(doc) for doc in documents]
-
-    # 创建 BM25 对象
-    bm25_documents = BM25Okapi(tokenized_documents)
-
-    # 计算 BM25 分数
-    bm25_scores = bm25_documents.get_scores(query_words)
-
-    # 构建结果列表
-    bm25_results = []
-    for i, score in enumerate(bm25_scores):
-        bm25_results.append({
-            "index": i,
-            "document": documents[i],
-            "relevance_score": round(float(score), 5)
-        })
-
-    # 归一化 BM25 分数到 [0, 1] 范围
-    bm25_results = normalize_scores(bm25_results, 0, 1)
-
-    # 按 BM25 分数排序
-    bm25_results = sorted(bm25_results, key=lambda x: x["relevance_score"], reverse=True)
-
-    return bm25_results
-
     
 def embedding_rerank(query_str:str, documents: List[str], top_n: int = None) -> List[dict]:
     from mrag_vdb.query._embeding_rerankers import qwen_gte_rerank, autodl_jina_rerank, jinaai_jina_rerank
@@ -186,8 +144,10 @@ def hybrid_rerank_rrf(query_str: str,
     # 转换 scored_sections 为文档列表和距离结果
     indexed_documents, sorted_sections, distance_results = convert_to_documents_and_distance_results(scored_sections)
 
+    indexed_doc_unique_ids = [item.doc_unique_id for item in sorted_sections]
+
     # 获取其他来源的排序结果
-    bm25_results = bm25_reorder(query_str, indexed_documents)
+    bm25_results = bm25_reorder(query_str, indexed_documents, indexed_doc_unique_ids=indexed_doc_unique_ids)
     rerank_results = embedding_rerank(query_str, indexed_documents)
 
     logging.info(f"query_str: {query_str} rerank scores:")

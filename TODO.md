@@ -10,4 +10,3 @@
 
 ### 2. CTN2MD 
 - [ ] Summarize 过大文件的处理 
-- [ ] TOC 恢复的哪里 Heading 过长导致无法恢复 TOC
