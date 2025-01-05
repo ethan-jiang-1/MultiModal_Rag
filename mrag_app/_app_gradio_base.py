@@ -1,5 +1,5 @@
 import time
-from typing import List, Tuple
+from typing import List, Tuple, Any, Generator
 import gradio as gr
 import threading
 import os
@@ -45,7 +45,7 @@ def _monkey_patch_gradio():
 
 _monkey_patch_gradio()
 
-def _process_markdown_images(markdown_str):
+def _process_markdown_images(markdown_str: str) -> str:
     """
     处理 Markdown 中的图片引用，解码 URL 编码的图片路径。
     
@@ -71,7 +71,7 @@ def _process_markdown_images(markdown_str):
     return processed_markdown
 
 
-def _dict_to_markdown_inner(data, indent=0):
+def _dict_to_markdown_inner(data: dict, indent: int = 0) -> str:
     """
     Convert a dictionary to a Markdown formatted string.
     
@@ -122,7 +122,7 @@ def _dict_to_markdown_inner(data, indent=0):
     markdown_str = markdown_text.strip()
     return _process_markdown_images(markdown_str)
 
-def _dict_info_to_markdown(extra_data):
+def _dict_info_to_markdown(extra_data: dict) -> str:
     int_md = "" 
     try:
         if isinstance(extra_data, dict):
@@ -167,7 +167,7 @@ def parse_content_from_rag_response(rag_response: RagResponse) -> Tuple[str, str
     return content, content_details, srcs_name_title_pname, imgs_name_title_pname
 
 # 动态更新的进度内容生成器
-def update_progress(progress_percentage, current_task, progress_log):
+def update_progress(progress_percentage: int, current_task: str, progress_log: str) -> str:
     html_content = f"""
     <div class="progress-container">
         <div class="progress-bar" style="width: {progress_percentage}%;"></div>
@@ -178,7 +178,7 @@ def update_progress(progress_percentage, current_task, progress_log):
     return html_content
 
 # on_clear：清空所有内容和控件状态
-def on_clear():
+def on_clear() -> Tuple[str, str, str, str, str]:
     reset_rag_response_for_main_loop()
     return (
         "进度: 等待用户操作",  # 进度信息重置为初始状态
@@ -191,7 +191,7 @@ def on_clear():
 
 # 帮助按钮的切换显示功能
 g_count = 0
-def toggle_help_content(is_help_visible):
+def toggle_help_content(is_help_visible: bool) -> Tuple[str, bool]:
     global g_count
     new_visibility = not is_help_visible  # 切换可见状态
     help_content = ""
@@ -211,7 +211,7 @@ def toggle_help_content(is_help_visible):
     return gr.update(value=help_content, visible=new_visibility), new_visibility
 
 # 模拟提交功能，使用 parse_final_result 函数
-def on_submit(user_input):
+def on_submit(user_input: str) -> Generator[Tuple[Any, Any, Any, Any, Any], None, None]:
     ProgressLogger.clear_progress_history()
     prgs = ProgressLogger.get_progress_history()
     last_prgs_count = len(prgs)
@@ -295,20 +295,20 @@ def on_submit(user_input):
         gr.update(value=[ntp[2] for ntp in imgs_name_title_pname] if imgs_name_title_pname else None, visible=bool(imgs_name_title_pname))  # 显示/隐藏图片列表
     )
 
-def _get_version_info():
+def _get_version_info() -> str:
     return f"版本: {get_git_version()} model:{ModelGptSel.get_gpt_model()} kbname: {KbNameSel.get_kbname()} rtv_num: {RetrievalNum.get_retrieval_num()}"
 
 # 更新版本信息和状态的函数
-def on_update_model(selected_model):
+def on_update_model(selected_model: str) -> str:
     # 更新显示的版本信息和状态
     ModelGptSel.set_gpt_model(selected_model)
     return _get_version_info()
 
-def on_update_kbname(selected_kbname):
+def on_update_kbname(selected_kbname: str) -> str:
     KbNameSel.set_kbname(selected_kbname)
     return _get_version_info()
 
-def on_update_rtvnum(selected_num):
+def on_update_rtvnum(selected_num: str) -> str:
     RetrievalNum.set_retrieval_num(int(selected_num))
     return _get_version_info()
 # 创建自定义主题
@@ -324,7 +324,7 @@ class LocalFontTheme(Base):
 
 
 # 构建界面的函数
-def create_interface():
+def create_interface() -> gr.Blocks:
     # 使用自定义主题和 CSS
     custom_theme = LocalFontTheme()
     

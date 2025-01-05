@@ -1,5 +1,6 @@
 import logging
 import re
+from typing import List
 import rich 
 import json_repair
 from dotenv import load_dotenv
@@ -36,7 +37,7 @@ class ProgressLogger:
             cls._logger.addHandler(handler)
     
     @classmethod
-    def _parse_and_store_progress(cls, log_entry):
+    def _parse_and_store_progress(cls, log_entry: str) -> None:
         """解析日志条目并存储到进度历史"""
         
         # 支持的格式示例:
@@ -62,7 +63,7 @@ class ProgressLogger:
             logging.warning(f"failed to parse step info: {log_entry}")
     
     @classmethod
-    def _parse_and_store_status(cls, log_entry):
+    def _parse_and_store_status(cls, log_entry: str) -> None:
         if log_entry.find("```json") == -1:
             return 
         names = log_entry.split("```json")
@@ -72,7 +73,7 @@ class ProgressLogger:
             cls._progress_status[dict_name] = dict_json
 
     @classmethod
-    def log_progress(cls, message):
+    def log_progress(cls, message: str) -> None:
         """使用自定义格式记录进度"""
         # 确保处理器已经设置
         cls._setup_handler()
@@ -80,16 +81,16 @@ class ProgressLogger:
         cls._logger.info(message)
 
     @classmethod
-    def get_progress_history(cls):
+    def get_progress_history(cls) -> List[dict]:
         """返回所有进度历史记录"""
         return cls._progress_history.copy()
 
     @classmethod
-    def get_progress_status(cls):
+    def get_progress_status(cls) -> dict:
         return cls._progress_status
     
     @classmethod
-    def clear_progress_history(cls):
+    def clear_progress_history(cls) -> None:
         """清除进度历史记录"""
         cls._progress_history.clear()
         cls._progress_status.clear()
