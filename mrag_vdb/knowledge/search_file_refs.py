@@ -7,6 +7,9 @@ import rich
 import re
 from qdrant_client.http.models import Filter, FieldCondition
 
+from mrag_vdb.dto.rag_context import RagContext
+from mrag_vdb.dto.rag_input import RagInput
+
 # 加载环境变量
 load_dotenv()
 
@@ -258,7 +261,8 @@ def _find_relavent_ref_imgs_map(query: str, answer: str, ref_section: ScoredReco
     return ref_img_map
 
 
-def search_for_file_refs(query: str, resp: dict, scored_sections_reranked:List[ScoredRecoveredSection], include_image: bool = True):
+def search_for_file_refs(rag_context: RagContext, resp: dict, scored_sections_reranked:List[ScoredRecoveredSection], include_image: bool = True):
+    query = rag_context.get_refined_query()
     refs_info = {}
     answer = resp.get("simple_answer", "")
     detailed_refernces = resp.get("detailed_references", None)
@@ -289,7 +293,7 @@ def search_for_file_refs(query: str, resp: dict, scored_sections_reranked:List[S
 
 if __name__ == "__main__":
     from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
-    from mrag_vdb.query.query2section_raw import query2section_raw_on_multiple_collection
+    from mrag_vdb.query.query2section_raw import query2section_raw_on_rag_context
     from mrag_vdb.rerank.query2section_reranked import query2sortedsections_reranked
     from mrag_vdb.knowledge.query2knowledge import form_knowledge_snippets, gen_answer_from_knowledge_snippets
 
@@ -298,22 +302,22 @@ if __name__ == "__main__":
     #query_str = "神经网络 中央处理器"
     #query_str = "椅背板与旁侧板的保留运动间隙是多少"
     #query_str = "靠背最后位置时与侧板翻边的运动间隙是多少"
-    query_str = "法规要求的前后排座椅距离是多少"
-    
+    query_str = "法规要求的前后排座椅距离是多少"    
     collection_names = ["mrag"]
     limit = 10
 
-    query = query_str
+    rag_input = RagInput(query=query_str, preferred_kbnames=collection_names, limit_raw=limit)
+    rag_context = RagContext(input=rag_input)
 
-    scored_sections_raw = query2section_raw_on_multiple_collection(collection_names, query, limit=limit)
+    scored_sections_raw = query2section_raw_on_rag_context(rag_context)
 
-    scored_sections_reranked = query2sortedsections_reranked(query, scored_sections_raw)
+    scored_sections_reranked = query2sortedsections_reranked(rag_context, scored_sections_raw)
 
-    knowledge_snippets = form_knowledge_snippets(scored_sections_reranked)
+    knowledge_snippets = form_knowledge_snippets(rag_context, scored_sections_reranked)
 
-    resp = gen_answer_from_knowledge_snippets(query, knowledge_snippets)
+    resp = gen_answer_from_knowledge_snippets(rag_context, knowledge_snippets)
     rich.print(resp)
 
-    refs_info = search_for_file_refs(query, resp, scored_sections_reranked)
+    refs_info = search_for_file_refs(rag_context, resp, scored_sections_reranked)
     print()
     rich.print(refs_info)

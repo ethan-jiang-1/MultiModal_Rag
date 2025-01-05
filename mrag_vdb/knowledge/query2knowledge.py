@@ -7,13 +7,15 @@ load_dotenv()
 
 from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
 from mrag_vdb.utils.util_logging import setup_logger_handlers
-from mrag_vdb.query.query2section_raw import query2section_raw_on_multiple_collection
+from mrag_vdb.query.query2section_raw import query2section_raw_on_rag_context
 from mrag_vdb.rerank.query2section_reranked import query2sortedsections_reranked
 from mrag_vdb.utils_llm.llm_knowledge_gen_gpt import knowlege_gen_by_gpt
 from mrag_vdb.utils_llm.llm_knowledge_gen_qwen import knowlege_gen_by_qwen
 from mrag_vdb.utils_llm.llm_knowledge_gen_ark import knowlege_gen_by_ark
 from mrag_vdb.knowledge._knowledge_base import markdown_to_html_with_ids
-from mrag_vdb.common.rag_answer import RagAnswer
+from mrag_vdb.dto.rag_answer import RagAnswer
+from mrag_vdb.dto.rag_context import RagContext
+from mrag_vdb.dto.rag_input import RagInput
 from mrag_vdb.knowledge.search_file_refs import search_for_file_refs
 from mrag_vdb.common.runtime_settings import ModelGptSel
 
@@ -26,14 +28,15 @@ KNOWLEGE_FORMAT = """
 """
 
 # TODO: ethan_pending: how to smart select collections
-def find_collection_names(query: str) -> List[str]:
-    return ["papers"]
+def find_collection_names(rag_context: RagContext) -> RagContext:
+    return rag_context
 
 # TODO: ethan_pending: how to smart rewrite...
-def query_rewerite(query: str, collection_names: List[str]) -> str:
-    return query 
+def query_rewerite(rag_context: RagContext) -> RagContext:
+    rag_context.refined_query = rag_context.input.query 
+    return rag_context
 
-def form_knowledge_snippets(scored_sections_reranked:List[ScoredRecoveredSection]) -> str:
+def form_knowledge_snippets(rag_context: RagContext, scored_sections_reranked:List[ScoredRecoveredSection]) -> str:
     knowledge_all = ""
     for ndx, section in enumerate(scored_sections_reranked):
         source_file = section.fname_org_doc
@@ -50,8 +53,9 @@ def form_knowledge_snippets(scored_sections_reranked:List[ScoredRecoveredSection
         knowledge_all += knowledge + "\n\n"
     return knowledge_all
 
-def gen_answer_from_knowledge_snippets(query: str, knowledge_snippets: str) -> dict:
+def gen_answer_from_knowledge_snippets(rag_context: RagContext, knowledge_snippets: str) -> dict:
     model_gen = ModelGptSel.get_gpt_model()
+    query = rag_context.get_refined_query()
     if model_gen.startswith("gpt"):
         resp = knowlege_gen_by_gpt(query, knowledge_snippets, model=model_gen)
     elif model_gen.startswith("qwen"):
@@ -63,8 +67,8 @@ def gen_answer_from_knowledge_snippets(query: str, knowledge_snippets: str) -> d
     return resp
 
 
-def compose_rag_answer(query: str, resp: dict, scored_sections_reranked:List[ScoredRecoveredSection], include_image:bool = True) -> RagAnswer:
-    refs_info = search_for_file_refs(query, resp, scored_sections_reranked, include_image=include_image)
+def compose_rag_answer(rag_context: RagContext, resp: dict, scored_sections_reranked:List[ScoredRecoveredSection], include_image:bool = True) -> RagAnswer:
+    refs_info = search_for_file_refs(rag_context, resp, scored_sections_reranked, include_image=include_image)
     source_names = []
     source_titles = []
     source_pnames = []
@@ -96,18 +100,22 @@ def compose_rag_answer(query: str, resp: dict, scored_sections_reranked:List[Sco
                            image_pnames=image_pnames)
     return rag_answer
 
+
 def query2knowledge(query: str, collection_names:List[str], limit: int = 10) -> RagAnswer:
-    query = query_rewerite(query, collection_names)
+    rag_input = RagInput(query=query, preferred_kbnames=collection_names, limit_raw=limit)
+    rag_context = RagContext(input=rag_input)
 
-    scored_sections_raw = query2section_raw_on_multiple_collection(collection_names, query, limit=limit)
+    rag_context = query_rewerite(rag_context)
 
-    scored_sections_reranked = query2sortedsections_reranked(query, scored_sections_raw)
+    scored_sections_raw = query2section_raw_on_rag_context(rag_context)
 
-    knowledge_snippets = form_knowledge_snippets(scored_sections_reranked)
+    scored_sections_reranked = query2sortedsections_reranked(rag_context, scored_sections_raw)
 
-    resp = gen_answer_from_knowledge_snippets(query, knowledge_snippets)
+    knowledge_snippets = form_knowledge_snippets(rag_context, scored_sections_reranked)
 
-    rag_answer = compose_rag_answer(query, resp, scored_sections_reranked)
+    resp = gen_answer_from_knowledge_snippets(rag_context, knowledge_snippets)
+
+    rag_answer = compose_rag_answer(rag_context, resp, scored_sections_reranked)
 
     return rag_answer
 

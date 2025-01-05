@@ -8,12 +8,14 @@ from pydantic import BaseModel, Field
 load_dotenv()
 
 from mrag_vdb.utils.util_logging import setup_logger_handlers, get_logger_progress
-from mrag_vdb.query.query2section_raw import query2section_raw_on_multiple_collection
+from mrag_vdb.query.query2section_raw import query2section_raw_on_rag_context
 from mrag_vdb.rerank.query2section_reranked import query2sortedsections_reranked
 from mrag_vdb.knowledge.query2knowledge import gen_answer_from_knowledge_snippets, form_knowledge_snippets
 from mrag_vdb.knowledge.query2knowledge import query_rewerite, compose_rag_answer
 from mrag_vdb.common.runtime_settings import KbNameSel
-from mrag_vdb.common.rag_answer import RagAnswer
+from mrag_vdb.dto.rag_input import RagInput
+from mrag_vdb.dto.rag_context import RagContext
+from mrag_vdb.dto.rag_answer import RagAnswer
 
 setup_logger_handlers()
 logger_prg = get_logger_progress()
@@ -100,38 +102,41 @@ def do_core_query(user_input: str, kb_name: Optional[str] = None, limit: int = 1
     try:
         if kb_name is None:
             kb_name = KbNameSel.get_kbname()
+
+        rag_input = RagInput(query=user_input, 
+                             preferred_kbnames=[kb_name])
+        rag_context = RagContext(input=rag_input)
         
         response.add_progress("step1", 10, f"选择知识库:{kb_name}")
         logging.info(f"do_core_query: {user_input} on {kb_name}")
-        
+
         # Query preparation
         response.add_progress("step2", 20, "准备查询(改写)")
-        collection_names = [kb_name]
-        query = query_rewerite(user_input, collection_names)
+        rag_context = query_rewerite(rag_context)
         
         # Knowledge retrieval
         response.add_progress("step3", 30, "召回相关知识(raw)")
-        scored_sections_raw = query2section_raw_on_multiple_collection(collection_names, query, limit=limit)
+        scored_sections_raw = query2section_raw_on_rag_context(rag_context)
         if scored_sections_raw is None:
             return RagResponse.from_error(req_id, user_input, "ERROR: retrieval knowledge is None")
         
         # Reranking
         response.add_progress("step4", 40, "召回相关知识(rerank)")
-        scored_sections_reranked = query2sortedsections_reranked(query, scored_sections_raw)
+        scored_sections_reranked = query2sortedsections_reranked(rag_context, scored_sections_raw)
         
         # Knowledge organization
         response.add_progress("step5", 50, "组织整理知识")
-        knowledge_snippets = form_knowledge_snippets(scored_sections_reranked)
+        knowledge_snippets = form_knowledge_snippets(rag_context, scored_sections_reranked)
         
         # Generate answer
         response.add_progress("step6", 60, "组织回答#综合知识(文本)")
-        resp = gen_answer_from_knowledge_snippets(query, knowledge_snippets)
+        resp = gen_answer_from_knowledge_snippets(rag_context, knowledge_snippets)
         if resp is None:
             return RagResponse.from_error(req_id, user_input, "ERROR: llm response is None")
         
         # Process images
         response.add_progress("step7", 80, "组织回答#综合知识(图像)")
-        rag_answer = compose_rag_answer(query, resp, scored_sections_reranked)
+        rag_answer = compose_rag_answer(rag_context, resp, scored_sections_reranked)
         if rag_answer is None:
             return RagResponse.from_error(req_id, user_input, "ERROR: rag answer generation failed")
         

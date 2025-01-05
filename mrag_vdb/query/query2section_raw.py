@@ -4,9 +4,12 @@ import rich
 #from qdrant_client import QdrantClient
 from typing import List
 
+from mrag_vdb.dto.rag_input import RagInput
+
 # 加载环境变量
 load_dotenv()
 
+from mrag_vdb.dto.rag_context import RagContext
 from mrag_vdb.utils.util_logging import setup_logger_handlers
 from mrag_vdb.common.vdb_base import get_vdb_path
 from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
@@ -30,12 +33,15 @@ def query2section_raw_on_single_collection(collection_name: str,
     return merged_scored_sections
 
 
-def query2section_raw_on_multiple_collection(collection_names: list[str], 
-                                             query: str, 
-                                             limit: int = LIMIT_QUERY) -> List[ScoredRecoveredSection]:
+def query2section_raw_on_rag_context(rag_context:RagContext) -> List[ScoredRecoveredSection]:
     """
     查询集合中的 chunk 并恢复完整的 section。
     """
+
+    query = rag_context.get_refined_query()
+    collection_names = rag_context.get_preferred_kbnames()
+    limit = rag_context.get_limit_raw()
+
     with QdrantClientContextManager(path=get_vdb_path()) as client:
         all_merged_scored_sections = []
         for collection_name in collection_names:
@@ -66,39 +72,25 @@ def test1():
 def test2():
     query = "fine-tuned chat models"
 
-    collection_names = []
-    collection_names.append("papers")
-    collection_names.append("mrag")
+    collection_names = ["papers", "mrag"]
 
-    results = query2section_raw_on_multiple_collection(collection_names, query) 
+    rag_input = RagInput(query=query,   
+                         preferred_kbnames=collection_names)
+    rag_context = RagContext(input=rag_input)
+
+    results = query2section_raw_on_rag_context(rag_context) 
     rich.print(results)
     print()
 
     for ndx, result in enumerate(results):
         print()
         rich.print(f"[red]{(ndx, round(result.score, 4), result.sec_id, result.desc)}[/red]", "\n", result.content)
-
-def test3():
-    query = "激励平台"
-
-    collection_names = []
-    collection_names.append("mrag")
-
-    results = query2section_raw_on_multiple_collection(collection_names, query) 
-    rich.print(results)
-    print()
-
-    for ndx, result in enumerate(results):
-        print()
-        rich.print(f"[red]{(ndx, round(result.score, 4), result.sec_id, result.desc)}[/red]", "\n", result.content)
-
 
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    test1()
-    #test2()
-    #test3()
+    #test1()
+    test2()
 
 
 
