@@ -3,14 +3,14 @@ from dotenv import load_dotenv
 import logging
 import rich
 
-from mrag_vdb.rerank._rerank_base import RerankResult, RrfRerankResult
+from mrag_vdb.rerank._base_rerank import RerankResult, RrfRerankResult
 
 # 加载环境变量
 load_dotenv()
 
 
 from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
-from mrag_vdb.rerank._rerank_base import normalize_scores
+from mrag_vdb.rerank._base_rerank import normalize_scores
 from mrag_vdb.rerank._bm25_reorder import bm25_reorder
 
 def convert_to_documents_and_distance_results(scored_sections: List[ScoredRecoveredSection]) -> Tuple[List[str], List[ScoredRecoveredSection], List[Any]]:

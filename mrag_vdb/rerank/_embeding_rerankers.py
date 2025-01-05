@@ -10,7 +10,7 @@ import time
 # 加载环境变量
 load_dotenv()
 
-from mrag_vdb.rerank._rerank_base import RerankResult, normalize_scores
+from mrag_vdb.rerank._base_rerank import RerankResult, normalize_scores
 
 MAX_DOC_LEN = 3000  # max len restricted by RERANK
 
