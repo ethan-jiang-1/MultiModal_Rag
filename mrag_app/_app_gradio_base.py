@@ -297,7 +297,7 @@ def on_submit(user_input: str) -> Generator[Tuple[Any, Any, Any, Any, Any], None
     )
 
 def _get_version_info() -> str:
-    return f"版本: {get_git_version()} model:{ModelGptSel.get_gpt_model()} kbname: {KbNameSel.get_kbname()} rtv_num: {RetrievalNum.get_retrieval_num()}"
+    return f"mrag: {get_git_version()} gradio:{gr.__version__} model:{ModelGptSel.get_gpt_model()} kbname: {KbNameSel.get_kbname()} rtv_num: {RetrievalNum.get_retrieval_num()}"
 
 # 更新版本信息和状态的函数
 def on_update_model(selected_model: str) -> str:
@@ -334,7 +334,7 @@ def create_interface() -> gr.Blocks:
         theme=custom_theme,
     ) as demo:
         # 应用标题
-        app_title = gr.Markdown(f"# 多模态RAG Demo", elem_id="app_title") # noqa
+        app_title = gr.Markdown(f"# 多模态RAG ", elem_id="app_title") # noqa
         
         # 用户输入框
         user_inputbox = gr.Textbox(label="请输入您的问题", placeholder="在此输入问题，例如：典型问题看帮助", lines=2)
