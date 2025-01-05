@@ -134,6 +134,8 @@ def do_core_query(user_input: str, kb_name: Optional[str] = None, limit: int = 1
         rag_answer = compose_rag_answer(query, resp, scored_sections_reranked)
         if rag_answer is None:
             return RagResponse.from_error(req_id, user_input, "ERROR: rag answer generation failed")
+        
+        rich.print(rag_answer)
 
         # 直接更新现有response的rag_answer
         response.rag_answer = rag_answer

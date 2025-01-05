@@ -88,8 +88,11 @@ You need to generate a JSON object with the following fields:
 
 - **Base your answer strictly on the content provided in the knowledge snippets.** Do not include any external information or assumptions.  
 - If the question is beyond the scope of the provided knowledge snippets, return appropriate empty or default values, such as:  
-  - `"simple_answer": "I don't know."`  
+  - `"simple_answer": "I don't know."`
+  - `"answer_with_reference": "I don't know."`
   - `"referenced_documents": []`  
+  - `"referenced_images": []`  
+  - `"detailed_references": []`
 - Ensure that the JSON format is accurate, with all required fields present and properly structured.
 
 ## Your Answer (respond in JSON): 
