@@ -1,2 +1,4 @@
-pytest>=7.0.0
-pytest-cov>=4.0.0  # 用于测试覆盖率报告 
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-xdist>=3.3.1  # 用于并行测试
+pytest-timeout>=2.1.0  # 用于测试超时控制 

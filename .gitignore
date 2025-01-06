@@ -139,3 +139,5 @@ datasrc/exam
 
 logs/ctn_monitor.csv
 logs/
+
+.pytest_cache/
