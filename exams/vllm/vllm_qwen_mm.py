@@ -67,11 +67,11 @@ class MonitorContextLVLM:
                 output_ratio_per_sec = round(float(output_tokens) / sec_span, 2)
                 token_per_ms = round((1.0/output_ratio_per_sec) * 1000.0, 2)
 
-                with open(filename, 'a', newline='') as file:
+                with open(filename, 'a', newline='', encoding='utf-8') as file:
                     writer = csv.writer(file)
                     writer.writerow([ts0, finish_reason, self.model, sec_span, input_tokens, image_tokens, output_tokens, token_per_ms, str(self.track_id), self.attempt])
             else:
-                with open(filename, 'a', newline='') as file:
+                with open(filename, 'a', newline='', encoding='utf-8') as file:
                     writer = csv.writer(file)
                     writer.writerow([ts0, str(exc_type), self.model, sec_span, 0, 0, 0, 0.0, str(self.track_id), self.attempt])
 

@@ -27,13 +27,13 @@ def _construct_s0_md_from_md_pages(md_info:MdInfo):
             pname_page = os.path.join(aux_dir, fname_page)
             if not os.path.isfile(pname_page):
                 raise ValueError(f"not able to find page md for {fname_page} to construct s0 document")            
-        with open(pname_page, "r") as f:
+        with open(pname_page, "r", encoding='utf-8') as f:
             md_text = f.read()
         if len(full_md_text) != 0:
             full_md_text += "\n"
         full_md_text += md_text
 
-    with open(pathname_step0, "w+") as f: 
+    with open(pathname_step0, "w+", encoding='utf-8') as f: 
         f.write(full_md_text)
     return pathname_step0
 

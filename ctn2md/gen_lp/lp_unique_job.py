@@ -46,9 +46,9 @@ def n2u_update_md_content(md_info:MdInfo,
                           pathname_md:str, 
                           unique_job_id:str,
                           new_job_id:str) -> str:
-    with open(pathname_md, "r") as f: 
+    with open(pathname_md, "r", encoding='utf-8') as f:
         md_text = f.read()
 
-    with open(pathname_md, "w+") as f: 
+    with open(pathname_md, "w+", encoding='utf-8') as f:
         md_text_new = md_text.replace(new_job_id, unique_job_id)
         f.write(md_text_new)

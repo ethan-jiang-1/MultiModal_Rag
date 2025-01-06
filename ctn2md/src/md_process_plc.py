@@ -292,7 +292,7 @@ if __name__ == "__main__":
     #md_path_name = "_work/md_samples/深度学习在视电阻率快速反演中的研究___pdf_s0.md"
     md_path_name = "_work/ctn2md_mrag__1__座椅STO间隙_P1_lp/1. 座椅STO间隙 P1___pptx_s1.md"
 
-    with open(md_path_name, 'r') as f:
+    with open(md_path_name, 'r', encoding='utf-8') as f:
         md_text = f.read()
 
     md_text_plc = inject_plc_comment_to_page(md_text, 1, 1, MdInfo(os.path.dirname(md_path_name)), max_heading_length=8)
