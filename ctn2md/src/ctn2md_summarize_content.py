@@ -7,9 +7,7 @@ import json
 load_dotenv()
 
 from ctn2md.utils.util_logging import setup_logger_handlers
-from ctn2md.utils_llm.llm_summarize_content_gpt import summarize_doc_keywords_by_gpt
-from ctn2md.utils_llm.llm_summarize_content_qwen import summarize_doc_keywords_by_qwen
-from ctn2md.utils_llm.llm_summarize_content_ark import summarize_doc_keywords_by_ark
+from ctn2md.utils_llm.llm_summarize_content import summarize_doc_keywords_by_llm
 from ctn2md.utils.util_markdown import remove_comment, read_markdown_file
 from ctn2md.src.md_info_base import MdInfo, MIFN
 
@@ -31,13 +29,15 @@ def summarize_content_by_llm(md_info_path:str, src_step_num:int = None, dst_step
 
     mctl_summarize_model = md_info.get_md_control("mctl_summarize_model", "gpt")
     if mctl_summarize_model == "gpt":
-        resp = summarize_doc_keywords_by_gpt(doc_title, full_content)
+        model = "gpt-4o"
     elif mctl_summarize_model == "qwen":
-        resp = summarize_doc_keywords_by_qwen(doc_title, full_content)
+        model = "qwen-plus"
     elif mctl_summarize_model == "ark":
-        resp = summarize_doc_keywords_by_ark(doc_title, full_content)
+        model = "ep-20241220101421-4tj5f"
     else:
         raise ValueError(f"not implemented yet for using {mctl_summarize_model} in sumamrize document")
+    
+    resp = summarize_doc_keywords_by_llm(doc_title, full_content, model=model)
     rich.print(resp)
 
     pathname_final_md_fname = md_info.name_step_pathname(-1)

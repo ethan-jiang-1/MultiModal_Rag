@@ -230,14 +230,18 @@ class MonitorContextLLM:
         except Exception as ex:  # noqa
             logging.exception(ex)
 
-def wait_random_exponential_with_rate_limit(multiplier=1, min=4, max=60):
+def wait_random_exponential_with_rate_limit(multiplier=1, min_seconds=4, max_seconds=60):
     """自定义等待策略，对 RateLimitError 使用更长的等待时间"""
     def wait_handler(retry_state):
         # 获取最后一次异常
         exc = retry_state.outcome.exception()
         
         # 基础等待时间
-        wait_time = wait_exponential(multiplier=multiplier, min=min, max=max).__call__(retry_state)
+        wait_time = wait_exponential(
+            multiplier=multiplier, 
+            min=min_seconds, 
+            max=max_seconds
+        ).__call__(retry_state)
         
         # 如果是 RateLimitError，显著增加等待时间
         if isinstance(exc, openai.RateLimitError):
@@ -249,7 +253,7 @@ def wait_random_exponential_with_rate_limit(multiplier=1, min=4, max=60):
 
 @retry(
     stop=stop_after_attempt(DEFAULT_RETRY_NUM),
-    wait=wait_random_exponential_with_rate_limit(multiplier=1, min=4, max=60),
+    wait=wait_random_exponential_with_rate_limit(multiplier=1, min_seconds=4, max_seconds=60),
     retry=retry_if_exception_type((httpx.RequestError, ValueError, openai.RateLimitError)),
     before_sleep=lambda retry_state: logging.info(f"Retrying after {retry_state.next_action.sleep} seconds...")
 )
@@ -301,7 +305,7 @@ def chat_gpt_json(
 
 @retry(
     stop=stop_after_attempt(DEFAULT_RETRY_NUM),
-    wait=wait_random_exponential_with_rate_limit(multiplier=1, min=4, max=60),
+    wait=wait_random_exponential_with_rate_limit(multiplier=1, min_seconds=4, max_seconds=60),
     retry=retry_if_exception_type((httpx.RequestError, ValueError, openai.RateLimitError)),
     before_sleep=lambda retry_state: logging.info(f"Retrying after {retry_state.next_action.sleep} seconds...")
 )
