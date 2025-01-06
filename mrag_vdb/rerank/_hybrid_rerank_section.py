@@ -11,7 +11,6 @@ load_dotenv()
 
 from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
 from mrag_vdb.rerank._base_rerank import normalize_scores
-from mrag_vdb.rerank._bm25_reorder import bm25_reorder
 
 def convert_to_documents_and_distance_results(scored_sections: List[ScoredRecoveredSection]) -> Tuple[List[str], List[ScoredRecoveredSection], List[Any]]:
     """
@@ -146,22 +145,24 @@ def hybrid_rerank_rrf(query_str: str,
 
     indexed_doc_unique_ids = [item.doc_unique_id for item in sorted_sections]
 
-    # 获取其他来源的排序结果
-    bm25_results = bm25_reorder(query_str, indexed_documents, indexed_doc_unique_ids=indexed_doc_unique_ids)
-    rerank_results = embedding_rerank(query_str, indexed_documents)
-
     logging.info(f"query_str: {query_str} rerank scores:")
-    logging.info(f"{("distance_results", [item["relevance_score"] for item in distance_results], distance_weight)}")
-    logging.info(f"{("bm25_results    ", [item["relevance_score"] for item in bm25_results], bm25_weight)}")
-    logging.info(f"{("rerank_results  ", [item["relevance_score"] for item in rerank_results], rerank_weight)}")
 
     # 各来源及其权重
     sources = []
     if distance_weight > 0:
+        # Emb距离排序
+        logging.info(f"{("distance_results", [item["relevance_score"] for item in distance_results], distance_weight)}")
         sources.append((distance_results, distance_weight))
     if rerank_weight > 0:
+        # Rerank嵌入排序
+        rerank_results = embedding_rerank(query_str, indexed_documents)
+        logging.info(f"{("rerank_results  ", [item["relevance_score"] for item in rerank_results], rerank_weight)}")
         sources.append((rerank_results, rerank_weight))
     if bm25_weight > 0:
+        # BM25排序
+        from mrag_vdb.rerank._bm25_reorder import bm25_reorder
+        bm25_results = bm25_reorder(query_str, indexed_documents, indexed_doc_unique_ids=indexed_doc_unique_ids)
+        logging.info(f"{("bm25_results    ", [item["relevance_score"] for item in bm25_results], bm25_weight)}")
         sources.append((bm25_results, bm25_weight))
 
     # 计算 RRF 排序结果
