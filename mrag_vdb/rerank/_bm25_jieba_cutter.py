@@ -51,10 +51,23 @@ def jieba_cut_without_stopwords(text_str: str) -> List[str]:
     """
     使用 jieba 对查询字符串进行分词，并过滤中文和英文的停用词。
     
-    :param text_str: 输入文本
-    :return: 过滤停用词后的分词列表
+    Args:
+        text_str: 输入文本，必须是字符串类型
+        
+    Returns:
+        List[str]: 过滤停用词后的分词列表
+        
+    Raises:
+        TypeError: 如果输入不是字符串类型
     """
-    # 对中文文本进行分词
+    # 类型检查
+    if not isinstance(text_str, str):
+        raise TypeError(f"输入必须是字符串类型，而不是 {type(text_str)}")
+    
+    # 确保文本是字符串
+    text_str = str(text_str).strip()
+    
+    # 对文本进行分词
     words = jieba.cut(text_str)
 
     # 过滤掉中文停用词、英文停用词、标点符号和空格
@@ -68,6 +81,14 @@ def jieba_cut_without_stopwords(text_str: str) -> List[str]:
     return filtered_words
 
 if __name__ == "__main__":
-    query_str = "我想要找一份关于自然语言处理的工作, are you kidding? 中英文符号：，。！？ .,!? " 
-    print("query_str", query_str)
-    print("jieba cut", jieba_cut_without_stopwords(query_str))
+    # 测试用例
+    test_cases = [
+        "我想要找一份关于自然语言处理的工作",
+        "Are you kidding?",
+        "中英文混合的句子 with some English words",
+        ""  # 空字符串测试
+    ]
+    
+    for test in test_cases:
+        print(f"\n输入: {test}")
+        print(f"分词结果: {jieba_cut_without_stopwords(test)}")
