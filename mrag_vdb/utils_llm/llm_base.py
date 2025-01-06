@@ -198,7 +198,7 @@ def wait_random_exponential_with_rate_limit(multiplier=1, min_seconds=4, max_sec
 
 @retry(
     stop=stop_after_attempt(DEFAULT_RETRY_NUM),
-    wait=wait_random_exponential_with_rate_limit(multiplier=1, min=4, max=60),
+    wait=wait_random_exponential_with_rate_limit(multiplier=1, min_seconds=4, max_seconds=60),
     retry=retry_if_exception_type((httpx.RequestError, ValueError, openai.RateLimitError)),
     before_sleep=lambda retry_state: logging.info(f"Retrying after {retry_state.next_action.sleep} seconds...")
 )
@@ -250,7 +250,7 @@ def chat_gpt_json(
 
 @retry(
     stop=stop_after_attempt(DEFAULT_RETRY_NUM),
-    wait=wait_random_exponential_with_rate_limit(multiplier=1, min=4, max=60),
+    wait=wait_random_exponential_with_rate_limit(multiplier=1, min_seconds=4, max_seconds=60),
     retry=retry_if_exception_type((httpx.RequestError, ValueError, openai.RateLimitError)),
     before_sleep=lambda retry_state: logging.info(f"Retrying after {retry_state.next_action.sleep} seconds...")
 )
