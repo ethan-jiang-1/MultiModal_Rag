@@ -1,12 +1,11 @@
 # MultiModal_Rag
 
-一个完整的多模态 RAG (Retrieval-Augmented Generation) 系统，包含文档转换、向量数据库存储和 Gradio 交互界面。
+一个完整的多模态 RAG (Retrieval-Augmented Generation) 系统，包含文档转换、向量数据库存储和 Gradio 交互界面。 -- 用CURSOR编写的，大致没错。
 
-** 重要 ** 
+** 重要 配置.env 环境变量 ** 
 需要 .env 里面有这么一行：
-# Python Path Configuration
-PYTHONPATH=.
-
+  # Python Path Configuration
+  PYTHONPATH=.
 所有的代码基本都附带有一个简单的测试，需要知道项目的根目录在哪里才能执行。
 
 ## 系统架构
@@ -58,19 +57,6 @@ PYTHONPATH=.
 
 ## 快速开始
 
-### 安装
-```bash
-# 克隆项目
-git clone [repository_url]
-cd MultiModal_Rag
-
-# 安装依赖
-pip install -r requirements.txt
-
-# 安装开发依赖（可选）
-pip install -r requirements-dev.txt
-```
-
 ### 基本使用流程
 
 1. 文档转换
@@ -93,9 +79,7 @@ python mrag_app/app_gradio.py
 ## 配置说明
 
 项目使用 `.env` 文件管理配置，主要包括：
-- 模型服务配置（GPT/Qwen/Ark）
-- 向量数据库设置
-- 文件路径配置
+- 模型服务访问配置（GPT/Qwen/Ark）
 - API 密钥配置
 
 ## 系统要求
@@ -106,7 +90,6 @@ python mrag_app/app_gradio.py
   - GPT/Qwen/Ark 等 LLM
   - TextIn API（可选）
   - LlamaParse（可选）
-- SSD 存储（推荐）
 
 ## 开发指南
 
@@ -114,4 +97,5 @@ python mrag_app/app_gradio.py
 - [CTN2MD 开发文档](ctn2md/README.md)
 - [MRAG_VDB 开发文档](mrag_vdb/README.md)
 - [MRAG_APP 开发文档](mrag_app/README.md)
+- [README_ENV.md](README_ENV.md)
 
