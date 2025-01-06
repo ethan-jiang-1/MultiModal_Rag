@@ -19,6 +19,7 @@ from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_heirarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_llm
 from ctn2md.src.make_final_result import make_final_json, reset_md_flow
 from ctn2md.src.ctn2md_gen_md_lvlm import GenMd_Lvlm
+from ctn2md.gen_lvlm.lvlm_pdf_pages_to_images import normalize_path, ensure_dir_exists
 
 def _do_content2md_convert_core_lvlm(doc_pathname:str, 
                                      out_dir:Optional[str] = None, 
@@ -26,8 +27,9 @@ def _do_content2md_convert_core_lvlm(doc_pathname:str,
                                      mdcontrols:Optional[dict] = None)->str:
     if out_dir is None:
         out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=GenMd_Lvlm.OD_SUFFIX)
+    out_dir = normalize_path(out_dir)
     logging.warning(f"work out_dir: {out_dir}")
-    os.makedirs(out_dir, exist_ok=True)
+    ensure_dir_exists(out_dir)
 
     md_generator = GenMd_Lvlm
     if md_generator is None:
@@ -67,6 +69,9 @@ def _do_content2md_convert_core_lvlm(doc_pathname:str,
 def do_content2md_convert(doc_pathname:str, out_dir:str = None, enforced_gen:bool = False, mdcontrols: dict = None):
     pathname_final_json = None
     try:
+        doc_pathname = normalize_path(doc_pathname)
+        if out_dir is not None:
+            out_dir = normalize_path(out_dir)
         pathname_final_json = _do_content2md_convert_core_lvlm(doc_pathname,
                                                     out_dir=out_dir,
                                                     enforced_gen=enforced_gen,

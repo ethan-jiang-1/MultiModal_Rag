@@ -4,6 +4,7 @@ import fitz
 import rich
 import os
 import cv2
+import numpy as np
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -32,7 +33,8 @@ def gs2_parse_picture_regions_in_page(
         pdf_width, pdf_height = page.rect.width, page.rect.height
         
         # 获取图像尺寸（pixels）
-        img = cv2.imread(pname_page_name)
+        img_array = np.fromfile(pname_page_name, np.uint8)
+        img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
         if img is None:
             raise ValueError(f"Cannot read image: {pname_page_name}")
         height, width = img.shape[:2]

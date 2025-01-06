@@ -170,7 +170,7 @@ def fix_headings_plc_by_llm(md_info_path:str, src_step_num:int = None, dst_step_
         rich.print(unprocessed_heading_lines_map)
 
         logging.warning(f"fix_headings_plc_by_llm: pathname_dst_step_md: {pathname_dst_step_md}")
-        with open(pathname_dst_step_md, "w+") as f:
+        with open(pathname_dst_step_md, "w+", encoding='utf-8') as f:
             f.write(md_full_text_new1)
         
         md_info[MIFN.FHL_MAP_O2N] = o2n_map
@@ -179,7 +179,7 @@ def fix_headings_plc_by_llm(md_info_path:str, src_step_num:int = None, dst_step_
     else:
         logging.error("failed to get optimized_heading_lines_map out of model!!")
         logging.warning(f"fix_headings_plc_by_llm: pathname_dst_step_md: {pathname_dst_step_md}")
-        with open(pathname_dst_step_md, "w+") as f:
+        with open(pathname_dst_step_md, "w+", encoding='utf-8') as f:
             f.write(md_full_text)
         
         md_info.add_step_into_md_info_mdflow(pathname_dst_step_md, actor="fix_headings_plc_by_llm:failed")

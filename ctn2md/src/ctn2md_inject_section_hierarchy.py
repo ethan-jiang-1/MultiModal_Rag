@@ -348,7 +348,7 @@ def inject_section_heirarchy(md_info_path:str, src_step_num:int = None, dst_step
     md_text_new = _filter_headings_for_hierarchy_comments(md_text, md_info)
 
     logging.warning(f"fix_section_heirarchy: pathname_dst_step_md: {pathname_dst_step_md}")
-    with open(pathname_dst_step_md, "w+") as f:
+    with open(pathname_dst_step_md, "w+", encoding='utf-8') as f:
         f.write(md_text_new)
 
 

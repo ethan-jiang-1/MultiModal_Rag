@@ -32,7 +32,7 @@ def _construct_s0_md_from_pages(md_info:MdInfo) -> str:
             full_md_text += "\n"
         full_md_text += md_text
 
-    with open(pathname_step0, "w+") as f: 
+    with open(pathname_step0, "w+", encoding='utf-8') as f: 
         f.write(full_md_text)
     return pathname_step0
 
