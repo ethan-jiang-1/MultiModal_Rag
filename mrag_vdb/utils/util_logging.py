@@ -11,28 +11,28 @@ load_dotenv()
 
 
 MODULE_NAME = '__global_logging_state__'
+APP_LOG_PREFIX = "mrag"
 
 # 如果该模块未被创建过则创建
 if MODULE_NAME not in sys.modules:
     # 创建一个全新的模块对象
-    global_state_module = types.ModuleType(MODULE_NAME)
+    state_module = types.ModuleType(MODULE_NAME)
     # 在模块对象上挂载需要的全局状态变量
-    global_state_module.initialized = False
-    global_state_module.handlers_added = False
-    global_state_module.log_level = "INFO"
+    state_module.initialized = False
+    state_module.handlers_added = False
+    state_module.log_level = "INFO"
     
     # 将此虚拟模块对象注册到 sys.modules 中
-    sys.modules[MODULE_NAME] = global_state_module
+    sys.modules[MODULE_NAME] = state_module
 
 def init_global_state() -> Module: 
-    global_state_module = sys.modules[MODULE_NAME]
-    global_state_module.g_logger_inited = False
-    global_state_module.g_hooked_logger_names = []
-    global_state_module.g_stdout_handler = None
-    global_state_module.g_main_handler = None
-    global_state_module.g_error_handler = None
-    global_state_module.g_progress_handler = None 
-    return global_state_module
+    state_module = sys.modules[MODULE_NAME]
+    state_module.g_logger_inited = False
+    state_module.g_hooked_logger_names = []
+    state_module.g_stdout_handler = None
+    state_module.g_main_handler = None
+    state_module.g_error_handler = None
+    return state_module
 
 global_state_module = init_global_state()
 
@@ -60,7 +60,7 @@ def _get_log_dir() -> str:
     return log_dir
 
 def _get_log_prefix() -> str:
-    return os.environ.get("APP_LOG_PREFIX", "mrag")
+    return os.environ.get("APP_LOG_PREFIX", APP_LOG_PREFIX)
 
 def _get_log_pathname_main() -> str:
     log_dir = _get_log_dir()
@@ -86,12 +86,11 @@ def _get_log_pathname_progress() -> str:
     log_srp_file = os.path.join(log_dir, srs_name)
     return log_srp_file
 
-def _get_handler_stdout() -> logging.StreamHandler:
-    global global_state_module
-    if global_state_module.g_stdout_handler is not None:
-        return global_state_module.g_stdout_handler
+def _get_handler_stdout(state_module: Module) -> logging.StreamHandler:
+    if state_module.g_stdout_handler is not None:
+        return state_module.g_stdout_handler
 
-    global_state_module.g_stdout_handler = logging.StreamHandler(sys.stdout)
+    state_module.g_stdout_handler = logging.StreamHandler(sys.stdout)
     formatter = colorlog.ColoredFormatter(
         '%(log_color)s %(asctime)s %(process)d %(levelname)-8s%(reset)s %(blue)s%(message)s',
         datefmt=None,
@@ -107,49 +106,34 @@ def _get_handler_stdout() -> logging.StreamHandler:
         style='%'
     )
     #formatter = logging.Formatter('%(asctime)s - PID:%(process)d - %(levelname)s - %(message)s')
-    global_state_module.g_stdout_handler.setFormatter(formatter)
-    global_state_module.g_stdout_handler.setLevel(logging.DEBUG)  # 为handler设置级别
-    return global_state_module.g_stdout_handler
+    state_module.g_stdout_handler.setFormatter(formatter)
+    state_module.g_stdout_handler.setLevel(logging.DEBUG)  # 为handler设置级别
+    return state_module.g_stdout_handler
 
-def _get_handler_main() -> TimedRotatingFileHandler:
-    global global_state_module
-    if global_state_module.g_main_handler is not None:
-        return global_state_module.g_main_handler
+def _get_handler_main(state_module: Module) -> TimedRotatingFileHandler:
+    if state_module.g_main_handler is not None:
+        return state_module.g_main_handler
 
     log_srs_file = _get_log_pathname_main()
-    global_state_module.g_main_handler = TimedRotatingFileHandler(log_srs_file, when="midnight", interval=1, backupCount=30, delay=True, encoding="utf-8")
-    global_state_module.g_main_handler.suffix = "%Y-%m-%d.log"
+    state_module.g_main_handler = TimedRotatingFileHandler(log_srs_file, when="midnight", interval=1, backupCount=30, delay=True, encoding="utf-8")
+    state_module.g_main_handler.suffix = "%Y-%m-%d.log"
     formatter = logging.Formatter('%(asctime)s - PID:%(process)d - %(levelname)s - %(message)s')
-    global_state_module.g_main_handler.setFormatter(formatter)
-    global_state_module.g_main_handler.setLevel(logging.INFO)  # 为handler设置级别
-    return global_state_module.g_main_handler
+    state_module.g_main_handler.setFormatter(formatter)
+    state_module.g_main_handler.setLevel(logging.INFO)  # 为handler设置级别
+    return state_module.g_main_handler
 
 
-def _get_handler_error() -> TimedRotatingFileHandler:
-    global global_state_module
-    if global_state_module.g_error_handler is not None:
-        return global_state_module.g_error_handler
+def _get_handler_error(state_module: Module) -> TimedRotatingFileHandler:
+    if state_module.g_error_handler is not None:
+        return state_module.g_error_handler
 
     log_sre_file = _get_log_pathname_error()
-    global_state_module.g_error_handler = TimedRotatingFileHandler(log_sre_file, when="midnight", interval=7, backupCount=30, delay=True, encoding="utf-8")
-    global_state_module.g_error_handler.suffix = "%Y-%m-%d.log"
+    state_module.g_error_handler = TimedRotatingFileHandler(log_sre_file, when="midnight", interval=7, backupCount=30, delay=True, encoding="utf-8")
+    state_module.g_error_handler.suffix = "%Y-%m-%d.log"
     formatter = logging.Formatter('%(asctime)s - PID:%(process)d - %(levelname)s - %(message)s')
-    global_state_module.g_error_handler.setFormatter(formatter)
-    global_state_module.g_error_handler.setLevel(logging.ERROR)  # 为handler设置级别
-    return global_state_module.g_error_handler
-
-def _get_handler_progress() -> TimedRotatingFileHandler:
-    global global_state_module
-    if global_state_module.g_progress_handler is not None:
-        return global_state_module.g_progress_handler
-
-    log_srp_file = _get_log_pathname_progress()
-    global_state_module.g_progress_handler = TimedRotatingFileHandler(log_srp_file, when="midnight", interval=1, backupCount=30, delay=True, encoding="utf-8")
-    global_state_module.g_progress_handler.suffix = "%Y-%m-%d.log"
-    formatter = logging.Formatter('%(asctime)s - PID:%(process)d - %(levelname)s - %(message)s')
-    global_state_module.g_progress_handler.setFormatter(formatter)
-    global_state_module.g_progress_handler.setLevel(logging.INFO)  # 为handler设置级别
-    return global_state_module.g_progress_handler
+    state_module.g_error_handler.setFormatter(formatter)
+    state_module.g_error_handler.setLevel(logging.ERROR)  # 为handler设置级别
+    return state_module.g_error_handler
 
 def hook_handlers(logger: logging.Logger) -> None:
     global global_state_module
@@ -168,15 +152,15 @@ def hook_handlers(logger: logging.Logger) -> None:
     global_state_module.g_hooked_logger_names.append(logger.name)
     #print(f"logger {logger.name} hooked")
 
-    handlder_stdout = _get_handler_stdout()
+    handlder_stdout = _get_handler_stdout(global_state_module)
     if handlder_stdout not in logger.handlers:
         logger.addHandler(handlder_stdout)
 
-    handler_main = _get_handler_main()
+    handler_main = _get_handler_main(global_state_module)
     if handler_main not in logger.handlers:
         logger.addHandler(handler_main)
 
-    handler_error = _get_handler_error()
+    handler_error = _get_handler_error(global_state_module)
     if handler_error not in logger.handlers:
         logger.addHandler(handler_error)
 
