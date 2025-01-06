@@ -97,5 +97,5 @@ python mrag_app/app_gradio.py
 - [CTN2MD 开发文档](ctn2md/README.md)
 - [MRAG_VDB 开发文档](mrag_vdb/README.md)
 - [MRAG_APP 开发文档](mrag_app/README.md)
-- [README_ENV.md](README_ENV.md)
+- [README_MRAG_ENV.md](README_MRAG_ENV.md)
 
