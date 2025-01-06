@@ -5,9 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from ctn2md.src.md_info_base import MdInfo
-from ctn2md.utils_llm.llm_gen_vllm_instruction_gpt import gen_vllm_instruction_by_gpt
-from ctn2md.utils_llm.llm_gen_vllm_instruction_qwen import gen_vllm_instruction_by_qwen
-from ctn2md.utils_llm.llm_gen_vllm_instruction_ark import gen_vllm_instruction_by_ark
+from ctn2md.utils_llm.llm_gen_vllm_instruction import gen_vllm_instruction_llm
 from ctn2md.utils_vllm.vllm_img_description_qwen import generate_image_description_by_qwen
 from ctn2md.utils_vllm.vllm_img_description_gpt import generate_image_description_by_gpt
 from ctn2md.utils_vllm.vllm_img_description_ark import generate_image_description_by_ark
@@ -17,20 +15,22 @@ g_question_num = 9000
 class ImageDescriptionGenerator:
     def __init__(self, md_info: MdInfo):
         self.md_info = md_info
-        self.relevance_model = md_info.get_md_control("mctl_ti_img_relevance_model", "ark")
-        self.caption_model = md_info.get_md_control("mctl_ti_img_caption_model", "ark")
+        self.relevance_model = md_info.get_md_control("mctl_ti_img_relevance_model", "qwen")
+        self.caption_model = md_info.get_md_control("mctl_ti_img_caption_model", "qwen")
 
     def _get_page_instruction(self, doc_title: str, content_around: str) -> str:
         """同步获取指令"""
         global g_question_num
         if self.relevance_model == "qwen":
-            instruction = gen_vllm_instruction_by_qwen(doc_title, content_around, question_num=g_question_num)
+            model = "qwen-turbo"
         elif self.relevance_model == "gpt":
-            instruction = gen_vllm_instruction_by_gpt(doc_title, content_around, question_num=g_question_num)
+            model = "gpt-4o-mini"
         elif self.relevance_model == "ark":
-            instruction = gen_vllm_instruction_by_ark(doc_title, content_around, question_num=g_question_num)
+            model = "ep-20241220101421-4tj5f"
         else:
             raise ValueError(f"unsupported model {self.relevance_model}")
+        
+        instruction = gen_vllm_instruction_llm(doc_title, content_around, model=model, question_num=g_question_num)
         g_question_num += 1
         return instruction
 

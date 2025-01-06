@@ -13,7 +13,7 @@ load_dotenv()
 
 
 from ctn2md.utils_llm.llm_gen_vllm_instruction_gpt import gen_vllm_instruction_by_gpt
-from ctn2md.utils_llm.llm_gen_vllm_instruction_qwen import gen_vllm_instruction_by_qwen
+from ctn2md.utils_llm.llm_gen_vllm_instruction import gen_vllm_instruction_llm
 from ctn2md.utils_llm.llm_gen_vllm_instruction_ark import gen_vllm_instruction_by_ark
 from ctn2md.utils_vllm.vllm_img_description_qwen import generate_image_description_by_qwen
 from ctn2md.utils_vllm.vllm_img_description_gpt import generate_image_description_by_gpt
@@ -121,7 +121,7 @@ def _get_page_instruction(md_info:MdInfo, doc_title:str, content_around:str) -> 
     global g_question_num
     mctl_lp_img_relevance_model = md_info.get_md_control("mctl_lp_img_relevance_model", "qwen")
     if mctl_lp_img_relevance_model == "qwen":
-        instruction = gen_vllm_instruction_by_qwen(doc_title, content_around, question_num=g_question_num)
+        instruction = gen_vllm_instruction_llm(doc_title, content_around, question_num=g_question_num)
     elif mctl_lp_img_relevance_model == "gpt":
         instruction = gen_vllm_instruction_by_gpt(doc_title, content_around, question_num=g_question_num)
     elif mctl_lp_img_relevance_model == "ark":
