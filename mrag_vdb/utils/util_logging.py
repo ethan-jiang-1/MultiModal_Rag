@@ -1,3 +1,4 @@
+from modulefinder import Module
 from dotenv import load_dotenv, find_dotenv
 import sys
 import os
@@ -7,6 +8,7 @@ import colorlog
 import types
 
 load_dotenv()
+
 
 MODULE_NAME = '__global_logging_state__'
 
@@ -22,12 +24,17 @@ if MODULE_NAME not in sys.modules:
     # 将此虚拟模块对象注册到 sys.modules 中
     sys.modules[MODULE_NAME] = global_state_module
 
-global_state_module.g_logger_inited = False
-global_state_module.g_hooked_logger_names = []
-global_state_module.g_stdout_handler = None
-global_state_module.g_main_handler = None
-global_state_module.g_error_handler = None
-global_state_module.g_progress_handler = None 
+def init_global_state() -> Module: 
+    global_state_module = sys.modules[MODULE_NAME]
+    global_state_module.g_logger_inited = False
+    global_state_module.g_hooked_logger_names = []
+    global_state_module.g_stdout_handler = None
+    global_state_module.g_main_handler = None
+    global_state_module.g_error_handler = None
+    global_state_module.g_progress_handler = None 
+    return global_state_module
+
+global_state_module = init_global_state()
 
 _LOGGER_NAME_LLM = "llm_call"
 _LOGGER_NAME_PRG = "app_gradio"
@@ -80,6 +87,7 @@ def _get_log_pathname_progress() -> str:
     return log_srp_file
 
 def _get_handler_stdout() -> logging.StreamHandler:
+    global global_state_module
     if global_state_module.g_stdout_handler is not None:
         return global_state_module.g_stdout_handler
 
@@ -104,6 +112,7 @@ def _get_handler_stdout() -> logging.StreamHandler:
     return global_state_module.g_stdout_handler
 
 def _get_handler_main() -> TimedRotatingFileHandler:
+    global global_state_module
     if global_state_module.g_main_handler is not None:
         return global_state_module.g_main_handler
 
@@ -117,6 +126,7 @@ def _get_handler_main() -> TimedRotatingFileHandler:
 
 
 def _get_handler_error() -> TimedRotatingFileHandler:
+    global global_state_module
     if global_state_module.g_error_handler is not None:
         return global_state_module.g_error_handler
 
@@ -129,6 +139,7 @@ def _get_handler_error() -> TimedRotatingFileHandler:
     return global_state_module.g_error_handler
 
 def _get_handler_progress() -> TimedRotatingFileHandler:
+    global global_state_module
     if global_state_module.g_progress_handler is not None:
         return global_state_module.g_progress_handler
 
@@ -141,6 +152,7 @@ def _get_handler_progress() -> TimedRotatingFileHandler:
     return global_state_module.g_progress_handler
 
 def hook_handlers(logger: logging.Logger) -> None:
+    global global_state_module
     if logger is None:
         return 
 
@@ -194,6 +206,7 @@ def _setup_logger_prg() -> None:
     logger_prg.addHandler(srl_handler)
 
 def setup_logger_handlers(level: int = logging.INFO) -> None:  
+    global global_state_module
     if global_state_module.g_logger_inited:
         return 
     global_state_module.g_logger_inited = True

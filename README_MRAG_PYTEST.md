@@ -3,6 +3,7 @@
 {
     "python.testing.pytestArgs": [
         "ctn2md_tests",
+        "mrag_app_tests",
         "mrag_vdb_tests"
     ],
     "python.testing.unittestEnabled": false,
