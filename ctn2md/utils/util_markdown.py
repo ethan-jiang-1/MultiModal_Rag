@@ -3,26 +3,21 @@ from typing import List
 
 def extract_pure_text_from_markdown(md_content: str) -> str:
     """
-    从 Markdown 内容中提取纯文本内容。
-    :param md_content: str, Markdown 格式内容
-    :return: str, 提取后的纯文本内容
+    Extract searchable text content from Markdown for FTS (Full Text Search).
+    :param md_content: Markdown formatted content
+    :return: Clean text for searching
     """
-    # 1. 移除 Markdown 图片引用 ![alt](image_url)
-    md_content = re.sub(r'!\[.*?\]\(.*?\)', '', md_content)
-
-    # 2. 移除 HTML 注释 <!-- ... -->
+    # 1. 保留图片和链接的文本内容
+    md_content = re.sub(r'!\[(.*?)\]\(.*?\)', r'\1', md_content)  # 图片 alt text
+    md_content = re.sub(r'\[(.*?)\]\(.*?\)', r'\1', md_content)   # 链接文本
+    
+    # 2. 移除 HTML 注释和 Markdown 标记符号
     md_content = re.sub(r'<!--.*?-->', '', md_content, flags=re.DOTALL)
-
-    # 3. 移除其他 Markdown 语法标记 (#, *, -, >, etc.)
-    md_content = re.sub(r'[>#*_\-`~\[\]]', '', md_content)
-
-    # 4. 替换 Markdown 链接引用 [text](url) 为 text
-    md_content = re.sub(r'\[([^\]]+)\]\(.*?\)', r'\1', md_content)
-
-    # 5. 移除所有换行符和空白字符（包括制表符、空格等）
-    md_content = re.sub(r'\s+', '', md_content)
-
-    # 返回提取后的纯文本内容
+    md_content = re.sub(r'[#*_`~\[\]]', '', md_content)  # 移除常见 Markdown 标记
+    
+    # 3. 规范化空白字符
+    md_content = re.sub(r'\s+', ' ', md_content).strip()
+    
     return md_content
 
 def remove_comment(line: str) -> str:

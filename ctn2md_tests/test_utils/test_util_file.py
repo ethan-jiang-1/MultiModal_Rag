@@ -17,7 +17,7 @@ def test_get_root_dir():
     assert os.path.exists(root_dir)
     
     # 验证是否包含关键项目文件/目录
-    essential_items = ['ctn2md', 'tests', '.env']
+    essential_items = ['ctn2md', 'ctn2md_tests', '.env']
     for item in essential_items:
         assert os.path.exists(os.path.join(root_dir, item)), f"项目根目录应该包含 {item}"
 
