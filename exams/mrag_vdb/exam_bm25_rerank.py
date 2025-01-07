@@ -9,16 +9,15 @@ load_dotenv()
 
 def bm25_rerank(query_str:str, documents: List[str], top_n: int = None):
 
-    query_words = list(jieba.cut(query_str))
+    tokenized_query_words = list(jieba.cut(query_str))
 
     documents_tokens = []
     for document in documents:
-        document_words = list(jieba.cut(document))
-        document_tokens = BM25Okapi(document_words)
+        document_tokens = list(jieba.cut(document))
         documents_tokens.append(document_tokens)
 
-    bm25_documents = BM25Okapi(documents)
-    bm25_scores = bm25_documents.get_scores(query_words)
+    bm25_documents = BM25Okapi(documents_tokens)
+    bm25_scores = bm25_documents.get_scores(tokenized_query_words)
 
     results = []
     for i, score in enumerate(bm25_scores):
