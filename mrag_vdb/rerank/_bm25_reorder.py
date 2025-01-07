@@ -18,14 +18,25 @@ def bm25_reorder(
     """
     使用带缓存的BM25对文档进行排序
     
+    分数说明：
+    1. 原始BM25分数：由rank_bm25库计算，理论上可正可负，实际返回 >= 0
+    2. 归一化分数：将分数归一化到[0, 2]区间
+       - 0分：文档与查询完全无关
+       - 0~0.5：弱相关
+       - 0.5~1.0：中等相关
+       - 1.0~2.0：强相关
+    
     Args:
         query_str: 查询字符串
-        documents: 待排序的文档列表
+        sections: 待排序的文档列表
         indexed_doc_unique_ids: 文档ID列表，用于缓存查找
         top_n: 返回前n个结果
         
     Returns:
-        List[BM25Result]: 排序后的结果列表
+        List[RerankResult]: 排序后的结果列表，每个结果包含：
+        - index: 原始索引
+        - document: 文档内容
+        - relevance_score: 归一化后的相关度分数 [0, 2]
         
     Raises:
         ValueError: 参数验证失败时
@@ -55,7 +66,7 @@ def bm25_reorder(
             "relevance_score": round(float(score), 5)
         })
 
-    bm25_results = normalize_scores(bm25_results, -20, 20)
+    bm25_results = normalize_scores(bm25_results, 0, 2)
     bm25_results.sort(key=lambda x: x["relevance_score"], reverse=True)
 
     return bm25_results[:top_n] if top_n else bm25_results
