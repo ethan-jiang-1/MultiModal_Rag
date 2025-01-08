@@ -7,6 +7,7 @@ import asyncio
 
 load_dotenv()
 
+from ctn2md.src.md_page_spe import SpecialPage
 from ctn2md.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
 from ctn2md.utils.util_ctn_type import CTN_TYPE
@@ -41,7 +42,7 @@ class GenMd_TextIn(GenMd_Base):
     @classmethod
     def does_gen_needed(cls, doc_pathname:str, out_dir:str, enforced_gen:bool) -> Tuple[MdInfo, bool]:
         md_info, gen_needed = GenMd_Base.does_gen_needed(doc_pathname, out_dir, enforced_gen)
-        if not cls.if_all_md_pages_exist(md_info):
+        if not cls.if_all_md_pages_processed(md_info):
             gen_needed = True
         if cls.if_any_md_page_has_error(md_info):
             gen_needed = True
@@ -63,6 +64,12 @@ class GenMd_TextIn(GenMd_Base):
                     logging.warning(f"page {pname} has error")
                     return True
         return False
+    
+    @classmethod
+    def is_md_page_completed(cls, pname_md_page:str) -> bool:
+        if not os.path.isfile(pname_md_page):
+            return False
+        return not SpecialPage.does_page_have_remote_image(pname_md_page) 
 
     @classmethod
     def generate_markdown(cls,

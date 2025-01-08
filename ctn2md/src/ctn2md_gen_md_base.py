@@ -41,7 +41,7 @@ class GenMd_Base:
         return md_info, gen_needed
     
     @classmethod
-    def if_all_md_pages_exist(cls, md_info:MdInfo) -> bool:
+    def if_all_md_pages_processed(cls, md_info:MdInfo) -> bool:
         fnames_pages = md_info.get_fnames_pages()
         if isinstance(fnames_pages, list):
             if len(fnames_pages) == 0:
@@ -50,12 +50,16 @@ class GenMd_Base:
             out_dir = md_info.get_out_dir()
             for fname in fnames_pages:
                 pname = os.path.join(out_dir, fname)
-                if not os.path.isfile(pname):
+                if cls.is_md_page_completed(pname):
                     logging.warning(f"page {pname} does not exist")
                     return False
         else:
             raise ValueError("fnames_pages ?!") 
         return True
+    
+    @classmethod
+    def is_md_page_completed(cls, pname_md_page:str) -> bool:
+        return os.path.isfile(pname_md_page)
     
     @classmethod
     def is_final_md_info_outdated(cls, md_info: MdInfo) -> bool:

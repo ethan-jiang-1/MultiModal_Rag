@@ -116,6 +116,9 @@ def _does_page_need_gen(pname_page_md:str, md_info:MdInfo) -> bool:
 
     if SpecialPage.does_page_have_failed_mark(pname_page_md):
         return True
+    
+    if SpecialPage.does_page_have_remote_image(pname_page_md):
+        return True
 
     return False
 
