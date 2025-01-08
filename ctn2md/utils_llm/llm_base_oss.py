@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings("ignore", category=SyntaxWarning)
+
 from dotenv import load_dotenv
 import os
 import logging
@@ -7,6 +10,8 @@ import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 load_dotenv()
+
+from ctn2md.utils.util_logging import setup_logger_handlers
 
 ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif'}
 
@@ -21,8 +26,7 @@ def _generate_unique_name(image_path: str) -> str:
     object_name = f"{date_prefix}/{base_name}"
     return object_name
 
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
-def upload_image_to_oss(image_path:str) -> str:
+def _upload_image_to_oss_core(object_name: str, image_path:str) -> str:
     import oss2
     
     access_key_id = os.environ["OSS_ACCESS_KEY_ID"]
@@ -30,20 +34,11 @@ def upload_image_to_oss(image_path:str) -> str:
     endpoint = os.environ["OSS_ENDPOINT"]
     bucket_name = os.environ["OSS_BUCKET_NAME"]
 
-    if not os.path.exists(image_path):
-        raise FileNotFoundError(f"Image file not found: {image_path}")
-    
-    if not os.path.splitext(image_path)[1].lower() in ALLOWED_EXTENSIONS:
-        raise ValueError(f"Unsupported file type: {image_path}")
-
-    # 初始化OSS存储
-    auth = oss2.Auth(access_key_id, access_key_secret)
-    bucket = oss2.Bucket(auth, endpoint, bucket_name)
-
-    # 生成带日期路径的对象名
-    object_name = _generate_unique_name(image_path)
-    
     try:
+        # 初始化OSS存储
+        auth = oss2.Auth(access_key_id, access_key_secret)
+        bucket = oss2.Bucket(auth, endpoint, bucket_name)
+
         # 检查对象是否已存在
         if not bucket.object_exists(object_name):
             logging.info(f"Uploading {image_path} to oss as {object_name}")
@@ -89,7 +84,27 @@ def upload_image_to_oss(image_path:str) -> str:
         logging.error(f"Unexpected error during OSS operation for {object_name}: {str(e)}")
         raise
 
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+def upload_image_to_oss(image_path:str) -> str:
+
+
+    if not os.path.exists(image_path):
+        raise FileNotFoundError(f"Image file not found: {image_path}")
+    
+    if not os.path.splitext(image_path)[1].lower() in ALLOWED_EXTENSIONS:
+        raise ValueError(f"Unsupported file type: {image_path}")
+
+
+    # 生成带日期路径的对象名
+    object_name = _generate_unique_name(image_path)
+    final_url = _upload_image_to_oss_core(object_name, image_path)
+    return final_url
+    
+
 if __name__ == "__main__":
+    setup_logger_handlers()
+    
     image_path = "_work/md_pdf_pages/b545fabd-page_2.jpg"
     url = upload_image_to_oss(image_path)
     rich.print(url)
