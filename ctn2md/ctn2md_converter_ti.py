@@ -112,8 +112,10 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/papers/A Coin Has Two Sides.pdf"
 
     #doc_pathname = "datasrc/exam/raw_docs/misc/0530-大模型微调培训-VisualGLM.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/misc/ai602-波士顿咨询：银行业生成式AI应用报告（2023）.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/misc/ai602-波士顿咨询：银行业生成式AI应用报告（2023）.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/misc/AI未来十年_大模型产业落地的机遇与挑战_大数据研究院.pptx"
+    doc_pathname = "datasrc/exam/raw_docs/misc/2024年 AI Agent行业报告-20240430-V8.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/misc/202501-2024年中国AI创业者人群画像报告.pdf"
 
     #doc_pathname = "datasrc/exam/raw_docs/kmp/Regioselective hydroxylation of cholecalciferol.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/kmp/3_20240131104523599_rearranged.pdf"
