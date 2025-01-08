@@ -7,7 +7,12 @@ import logging
 import rich
 from datetime import datetime
 import httpx
-from tenacity import retry, stop_after_attempt, wait_exponential
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    wait_none,
+)
 
 load_dotenv()
 
@@ -51,17 +56,17 @@ def _upload_image_to_oss_core(object_name: str, image_path:str) -> str:
             
             # 验证上传结果
             if result.status != 200:
-                raise oss2.exceptions.OssError(f"Upload failed with status {result.status}")
+                raise Exception(f"Upload failed with status {result.status}")
         else:
             # 获取已存在文件的信息
             result = bucket.head_object(object_name)
             if result.status != 200:
-                raise oss2.exceptions.OssError(f"Head object failed with status {result.status}")
+                raise Exception(f"Head object failed with status {result.status}")
 
         # 验证文件确实存在且可访问
         meta = bucket.get_object_meta(object_name)
         if meta.status != 200:
-            raise oss2.exceptions.OssError(f"Cannot access uploaded file, status: {meta.status}")
+            raise Exception(f"Cannot access uploaded file, status: {meta.status}")
 
         # 获取基础URL并验证可访问性
         base_url = bucket.sign_url('GET', object_name, 0).split('?')[0]
@@ -84,17 +89,23 @@ def _upload_image_to_oss_core(object_name: str, image_path:str) -> str:
         logging.error(f"Unexpected error during OSS operation for {object_name}: {str(e)}")
         raise
 
+def get_retry_wait(retry_state):
+    """根据环境返回重试等待策略"""
+    if os.environ.get('PYTEST_CURRENT_TEST'):
+        return wait_none()(retry_state)
+    return wait_exponential(multiplier=1, min=4, max=10)(retry_state)
 
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
-def upload_image_to_oss(image_path:str) -> str:
-
-
-    if not os.path.exists(image_path):
-        raise FileNotFoundError(f"Image file not found: {image_path}")
-    
+def validate_image_file_type(image_path: str) -> None:
+    """验证图片文件类型是否支持"""
     if not os.path.splitext(image_path)[1].lower() in ALLOWED_EXTENSIONS:
         raise ValueError(f"Unsupported file type: {image_path}")
 
+@retry(stop=stop_after_attempt(3), wait=get_retry_wait)
+def upload_image_to_oss(image_path:str) -> str:
+    if not os.path.exists(image_path):
+        raise FileNotFoundError(f"Image file not found: {image_path}")
+    
+    validate_image_file_type(image_path)
 
     # 生成带日期路径的对象名
     object_name = _generate_unique_name(image_path)
