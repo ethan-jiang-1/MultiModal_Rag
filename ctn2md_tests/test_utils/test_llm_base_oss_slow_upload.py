@@ -4,7 +4,6 @@ from tenacity import RetryError
 
 from ctn2md.utils_llm.llm_base_oss import (
     upload_image_to_oss,
-    _upload_image_to_oss_core,
 )
 
 @pytest.fixture(autouse=True)
@@ -34,11 +33,11 @@ def mock_oss():
         mock_bucket.return_value.put_object.return_value = mock_result
         yield mock_bucket
 
-def test_upload_core_failure(mock_oss):
-    """直接测试上传核心函数失败的情况"""
-    with pytest.raises(Exception) as exc_info:
-        _upload_image_to_oss_core("test/object.jpg", "test.jpg")
-    assert "Upload failed with status 403" in str(exc_info.value)
+def test_upload_failure(mock_oss):
+    """测试上传失败的情况"""
+    with pytest.raises(RetryError) as exc_info:
+        upload_image_to_oss("test.jpg")
+    assert "Upload failed with status 403" in str(exc_info.value.__cause__)
 
 @patch('ctn2md.utils_llm.llm_base_oss._upload_image_to_oss_core')
 def test_upload_failure_retry_count(mock_upload):

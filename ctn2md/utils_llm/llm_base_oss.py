@@ -89,23 +89,23 @@ def _upload_image_to_oss_core(object_name: str, image_path:str) -> str:
         logging.error(f"Unexpected error during OSS operation for {object_name}: {str(e)}")
         raise
 
-def get_retry_wait(retry_state):
+def _get_retry_wait(retry_state):
     """根据环境返回重试等待策略"""
     if os.environ.get('PYTEST_CURRENT_TEST'):
         return wait_none()(retry_state)
     return wait_exponential(multiplier=1, min=4, max=10)(retry_state)
 
-def validate_image_file_type(image_path: str) -> None:
+def _validate_image_file_type(image_path: str) -> None:
     """验证图片文件类型是否支持"""
     if not os.path.splitext(image_path)[1].lower() in ALLOWED_EXTENSIONS:
         raise ValueError(f"Unsupported file type: {image_path}")
 
-@retry(stop=stop_after_attempt(3), wait=get_retry_wait)
+@retry(stop=stop_after_attempt(3), wait=_get_retry_wait)
 def upload_image_to_oss(image_path:str) -> str:
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"Image file not found: {image_path}")
     
-    validate_image_file_type(image_path)
+    _validate_image_file_type(image_path)
 
     # 生成带日期路径的对象名
     object_name = _generate_unique_name(image_path)

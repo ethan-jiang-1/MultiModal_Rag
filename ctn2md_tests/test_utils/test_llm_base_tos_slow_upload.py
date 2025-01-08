@@ -4,7 +4,6 @@ from tenacity import RetryError
 
 from ctn2md.utils_llm.llm_base_tos import (
     upload_image_to_tos,
-    _upload_image_to_tos_core,
 )
 
 @pytest.fixture(autouse=True)
@@ -16,8 +15,9 @@ def mock_wait():
     with patch('ctn2md.utils_llm.llm_base_tos.wait_exponential', no_wait):
         yield
 
-def test_upload_core_failure():
-    """直接测试上传核心函数失败的情况"""
+@pytest.fixture(autouse=True)
+def mock_tos():
+    """Mock TOS操作"""
     mock_file = MagicMock()
     mock_file.__enter__.return_value = "fake_file_content"
     
@@ -41,9 +41,13 @@ def test_upload_core_failure():
         delattr(result, 'etag')  # 移除 etag 属性
         mock_client.put_object.return_value = result
         
-        with pytest.raises(Exception) as exc_info:
-            _upload_image_to_tos_core("test/object.jpg", "test.jpg")
-        assert "Upload failed: no ETag returned" in str(exc_info.value)
+        yield mock_tos
+
+def test_upload_failure(mock_tos):
+    """测试上传失败的情况"""
+    with pytest.raises(RetryError) as exc_info:
+        upload_image_to_tos("test.jpg")
+    assert "Upload failed: no ETag returned" in str(exc_info.value.__cause__)
 
 @patch('ctn2md.utils_llm.llm_base_tos._upload_image_to_tos_core')
 def test_upload_failure_retry_count(mock_upload):
