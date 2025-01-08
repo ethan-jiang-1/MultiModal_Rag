@@ -43,8 +43,8 @@ class MonitorContextLLM:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        logging.info(f"MonitorContextLLM enter model:{self.model}")
         self.d1 = time.time()
+        logging.info(f"MonitorContextLLM exit model:{self.model}")
         self._monitor_call(exc_type)
         if exc_type is not None:
             logging.exception(self.track_id)

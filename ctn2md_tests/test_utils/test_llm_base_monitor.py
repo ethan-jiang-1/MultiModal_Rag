@@ -76,6 +76,7 @@ def test_monitor_no_response(mock_messages):
     """测试没有响应的情况"""
     monitor = MonitorContextLLM(mock_messages, "gpt-4", "test-123", 0)
     monitor.__enter__()
+    time.sleep(0.1)  # 添加一个小延迟
     monitor.__exit__(None, None, None)
     
     # 验证基本属性

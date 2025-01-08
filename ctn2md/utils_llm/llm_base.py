@@ -36,8 +36,15 @@ def upload_image_to_cloud(image_path: str) -> str:
         str: 图片的公开访问URL
         
     Raises:
+        ValueError: 文件类型不支持或文件不存在时抛出
         Exception: 上传失败时抛出异常
     """
+    if not os.path.exists(image_path):
+        raise ValueError(f"Image file not found: {image_path}")
+    
+    if not os.path.splitext(image_path)[1].lower() in {'.jpg', '.jpeg', '.png', '.gif'}:
+        raise ValueError(f"Unsupported file type: {image_path}")
+    
     model_flow = os.environ.get("ENV_MODEL_FLOW", "").lower()
     
     try:
@@ -210,6 +217,9 @@ def chat_gpt_plain(
     track_id: Optional[str] = None,
     client: Optional[OpenAI] = None
 ) -> str:
+    if not messages:
+        raise ValueError("Messages cannot be empty")
+        
     if client is None:
         client = get_azure_gpt_client()
     

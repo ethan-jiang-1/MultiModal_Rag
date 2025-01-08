@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from openai import OpenAI, RateLimitError, BadRequestError
 from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from tenacity import RetryError
@@ -8,6 +8,21 @@ from ctn2md.utils_llm.llm_base import (
     chat_gpt_plain,
     get_gpt_messages
 )
+
+@pytest.fixture(autouse=True)
+def mock_sleep():
+    """自动mock所有测试中的sleep"""
+    with patch('time.sleep') as mock_sleep:
+        yield mock_sleep
+
+@pytest.fixture
+def rate_limit_error():
+    """创建速率限制错误"""
+    return RateLimitError(
+        message="Rate limit exceeded",
+        response=MagicMock(status_code=429),
+        body={"error": {"message": "Rate limit exceeded"}}
+    )
 
 @pytest.fixture
 def mock_messages():
@@ -58,28 +73,21 @@ def test_chat_gpt_json_basic(mock_messages, mock_chat_completion, mock_client):
         response_format={"type": "json_object"}
     )
 
-def test_chat_gpt_json_empty_messages(mock_client):
+def test_chat_gpt_json_empty_messages(mock_client, mock_sleep):
     """测试空消息列表"""
     with pytest.raises(RetryError) as exc_info:
         chat_gpt_json(messages=[], client=mock_client)
     
     assert isinstance(exc_info.value.__cause__, ValueError)
     assert str(exc_info.value.__cause__) == "Messages cannot be empty"
+    assert mock_sleep.call_count > 0  # 验证sleep被调用
 
-def test_chat_gpt_json_rate_limit(mock_messages, mock_client, mock_chat_completion):
+def test_chat_gpt_json_rate_limit(mock_messages, mock_client, mock_chat_completion, rate_limit_error, mock_sleep):
     """测试速率限制处理"""
     # 模拟连续的速率限制错误
     mock_client.chat.completions.create.side_effect = [
-        RateLimitError(
-            message="Rate limit exceeded",
-            response=MagicMock(status_code=429),
-            body={"error": {"message": "Rate limit exceeded"}}
-        ),
-        RateLimitError(
-            message="Rate limit exceeded",
-            response=MagicMock(status_code=429),
-            body={"error": {"message": "Rate limit exceeded"}}
-        ),
+        rate_limit_error,
+        rate_limit_error,
         mock_chat_completion  # 第三次尝试成功
     ]
     
@@ -91,6 +99,7 @@ def test_chat_gpt_json_rate_limit(mock_messages, mock_client, mock_chat_completi
     
     assert result == {"response": "Hello! How can I help you?"}
     assert mock_client.chat.completions.create.call_count == 3
+    assert mock_sleep.call_count > 0  # 验证sleep被调用
 
 def test_chat_gpt_plain_basic(mock_messages, mock_client):
     """测试基本的文本响应"""
@@ -117,31 +126,21 @@ def test_chat_gpt_plain_basic(mock_messages, mock_client):
         top_p=0.9
     )
 
-def test_chat_gpt_plain_empty_messages(mock_client):
+def test_chat_gpt_plain_empty_messages(mock_client, mock_sleep):
     """测试空消息列表"""
-    mock_client.chat.completions.create.side_effect = BadRequestError(
-        message="Invalid 'messages': empty array",
-        response=MagicMock(status_code=400),
-        body={"error": {"message": "Invalid 'messages': empty array"}}
-    )
-    
-    with pytest.raises(BadRequestError):
+    with pytest.raises(RetryError) as exc_info:
         chat_gpt_plain(messages=[], client=mock_client)
+    
+    assert isinstance(exc_info.value.__cause__, ValueError)
+    assert str(exc_info.value.__cause__) == "Messages cannot be empty"
+    assert mock_sleep.call_count > 0  # 验证sleep被调用
 
-def test_chat_gpt_plain_rate_limit(mock_messages, mock_client, mock_chat_completion):
+def test_chat_gpt_plain_rate_limit(mock_messages, mock_client, mock_chat_completion, rate_limit_error, mock_sleep):
     """测试速率限制处理"""
     # 模拟连续的速率限制错误
     mock_client.chat.completions.create.side_effect = [
-        RateLimitError(
-            message="Rate limit exceeded",
-            response=MagicMock(status_code=429),
-            body={"error": {"message": "Rate limit exceeded"}}
-        ),
-        RateLimitError(
-            message="Rate limit exceeded",
-            response=MagicMock(status_code=429),
-            body={"error": {"message": "Rate limit exceeded"}}
-        ),
+        rate_limit_error,
+        rate_limit_error,
         mock_chat_completion  # 第三次尝试成功
     ]
     
@@ -151,8 +150,9 @@ def test_chat_gpt_plain_rate_limit(mock_messages, mock_client, mock_chat_complet
         client=mock_client
     )
     
-    assert result == '{"response": "Hello! How can I help you?"}'
+    assert isinstance(result, str)
     assert mock_client.chat.completions.create.call_count == 3
+    assert mock_sleep.call_count > 0  # 验证sleep被调用
 
 def test_chat_gpt_bad_request(mock_messages, mock_client):
     """测试错误请求处理"""

@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 import os
 from openai import OpenAI, AzureOpenAI, OpenAIError
 from dotenv import load_dotenv
@@ -81,8 +81,20 @@ def test_missing_env_vars():
         with pytest.raises(OpenAIError):
             get_ark_client()
 
-def test_client_api_calls():
+@patch('openai.OpenAI')
+@patch('openai.AzureOpenAI')
+def test_client_api_calls(mock_azure, mock_openai):
     """测试客户端API调用"""
+    # 配置mock
+    mock_azure_instance = MagicMock()
+    mock_azure.return_value = mock_azure_instance
+    mock_openai_instance = MagicMock()
+    mock_openai.return_value = mock_openai_instance
+    
+    # 模拟API调用失败
+    mock_azure_instance.chat.completions.create.side_effect = OpenAIError("API Error")
+    mock_openai_instance.chat.completions.create.side_effect = OpenAIError("API Error")
+    
     # 测试Azure客户端
     with patch.dict(os.environ, {
         'OPENAI_API_KEY': 'fake-key',
@@ -114,6 +126,6 @@ def test_client_api_calls():
         client = get_ark_client()
         with pytest.raises(OpenAIError):
             client.chat.completions.create(
-                model="ark-2",
+                model="qwen-max",
                 messages=[{"role": "user", "content": "test"}]
             ) 

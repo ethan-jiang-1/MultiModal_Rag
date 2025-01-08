@@ -33,6 +33,24 @@ def mock_env():
     with patch.dict('os.environ', env_vars):
         yield env_vars
 
+@pytest.fixture
+def mock_retry():
+    """Mock重试装饰器，使其立即失败而不等待"""
+    def fake_retry(*args, **kwargs):
+        def decorator(f):
+            def wrapper(*args, **kwargs):
+                try:
+                    return f(*args, **kwargs)
+                except:  # noqa: E722
+                    raise RetryError(last_attempt=None)
+            return wrapper
+        return decorator
+    
+    patcher = patch('tenacity.retry', side_effect=fake_retry)
+    patcher.start()
+    yield
+    patcher.stop()
+
 @freeze_time("2024-01-08")
 def test_generate_unique_name():
     """测试文件名生成函数"""
@@ -40,16 +58,18 @@ def test_generate_unique_name():
     expected = "202401/image.jpg"
     assert result == expected
 
-def test_file_type_validation():
+@patch('ctn2md.utils_llm.llm_base_tos._upload_image_to_tos_core')
+def test_file_type_validation(mock_upload, mock_retry):
     """测试文件类型验证"""
+    mock_upload.return_value = "http://fake.url"
+    
     # 测试有效文件类型
     for ext in ALLOWED_EXTENSIONS:
         test_path = f"test{ext}"
         with patch("os.path.exists") as mock_exists:
             mock_exists.return_value = True
-            with patch("ctn2md.utils_llm.llm_base_tos._upload_image_to_tos_core") as mock_upload:
-                mock_upload.return_value = "http://fake.url"
-                upload_image_to_tos(test_path)  # 如果抛出异常，pytest会自动处理失败
+            result = upload_image_to_tos(test_path)
+            assert result == "http://fake.url"
 
     # 测试无效文件类型
     with patch("os.path.exists") as mock_exists:
@@ -57,8 +77,10 @@ def test_file_type_validation():
         with pytest.raises(RetryError):
             upload_image_to_tos("test.pdf")
 
-def test_file_existence_check():
+@patch('os.path.exists')
+def test_file_existence_check(mock_exists, mock_retry):
     """测试文件存在性检查"""
+    mock_exists.return_value = False
     with pytest.raises(RetryError):
         upload_image_to_tos("nonexistent.jpg")
 
@@ -89,8 +111,21 @@ def test_upload_success(mock_httpx, mock_auth, mock_tos, test_image, mock_env):
 
 @patch('tos.TosClient')
 @patch('tos.Auth')
-def test_upload_failure_retry(mock_auth, mock_tos, test_image, mock_env):
+@patch('tenacity.retry')
+def test_upload_failure_retry(mock_retry, mock_auth, mock_tos, test_image, mock_env):
     """测试上传失败重试机制"""
+    # 配置mock retry装饰器
+    def fake_retry(*args, **kwargs):
+        def decorator(f):
+            def wrapper(*args, **kwargs):
+                try:
+                    return f(*args, **kwargs)
+                except:  # noqa: E722
+                    raise RetryError(last_attempt=None)
+            return wrapper
+        return decorator
+    mock_retry.side_effect = fake_retry
+    
     mock_client = MagicMock()
     mock_tos.return_value = mock_client
     
@@ -101,5 +136,5 @@ def test_upload_failure_retry(mock_auth, mock_tos, test_image, mock_env):
     with pytest.raises(RetryError):
         upload_image_to_tos(test_image)
     
-    # 验证重试次数（默认3次）
+    # 验证重试了3次
     assert mock_client.put_object.call_count == 3 
