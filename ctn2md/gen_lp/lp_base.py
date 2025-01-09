@@ -12,9 +12,7 @@ import json
 load_dotenv()
 
 
-from ctn2md.utils_llm.llm_gen_vllm_instruction_gpt import gen_vllm_instruction_by_gpt
 from ctn2md.utils_llm.llm_gen_vllm_instruction import gen_vllm_instruction_llm
-from ctn2md.utils_llm.llm_gen_vllm_instruction_ark import gen_vllm_instruction_by_ark
 from ctn2md.utils_vllm.vllm_img_description_qwen import generate_image_description_by_qwen
 from ctn2md.utils_vllm.vllm_img_description_gpt import generate_image_description_by_gpt
 from ctn2md.utils_vllm.vllm_img_description_ark import generate_image_description_by_ark
@@ -121,13 +119,14 @@ def _get_page_instruction(md_info:MdInfo, doc_title:str, content_around:str) -> 
     global g_question_num
     mctl_lp_img_relevance_model = md_info.get_md_control("mctl_lp_img_relevance_model", "qwen")
     if mctl_lp_img_relevance_model == "qwen":
-        instruction = gen_vllm_instruction_llm(doc_title, content_around, question_num=g_question_num)
+        model = "qwen-max"
     elif mctl_lp_img_relevance_model == "gpt":
-        instruction = gen_vllm_instruction_by_gpt(doc_title, content_around, question_num=g_question_num)
+        model = "gpt-4o-mini"
     elif mctl_lp_img_relevance_model == "ark":
-        instruction = gen_vllm_instruction_by_ark(doc_title, content_around, question_num=g_question_num)
+        model = "ep-20241220101421-4tj5f"
     else:
         raise ValueError(f"unsupport model {mctl_lp_img_relevance_model}")
+    instruction = gen_vllm_instruction_llm(doc_title, content_around, question_num=g_question_num, model=model)
     g_question_num += 1
     return instruction
 

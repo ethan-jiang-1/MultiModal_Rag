@@ -102,11 +102,11 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/mrag/考勤修改统一规则.xlsx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/高效沟通之黄金三角模型课程大纲.docx"
 
-    doc_pathname = "datasrc/exam/raw_docs/papers/ “AI+应用”百花齐放，新质生产力前景广阔pdf.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/papers/ “AI+应用”百花齐放，新质生产力前景广阔pdf.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/attention_is_all_you_need.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/Survey of different Large Language Model Architectures.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/Winning Solution For Meta KDD Cup’ 24 2410.00005v1.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/papers/深度学习在视电阻率快速反演中的研究.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/papers/深度学习在视电阻率快速反演中的研究.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/DeepSeek_V3.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/Long-Context LLMs Meet RAG_compressed.pdf"
 

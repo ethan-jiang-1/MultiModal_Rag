@@ -8,7 +8,7 @@ from typing import Optional
 load_dotenv()
 
 from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
-from mmbase.utils_llm.llm_base import get_gpt_messages_multimodal, chat_gpt_plain, get_ark_client
+from mmbase.utils_llm.llm_base import get_gpt_messages_multimodal, chat_gpt_plain, get_ark_client, strip_llm_format_markers
 from ctn2md.utils_vllm.vllm_img2md_ark_prompt import PROMPT_INSTRUCT_IMG2MD_ARK, PROMPT_INSTRUCT_IMG2MD_ARK_IMG_RECTS
 
 #TODO: ethan_ark_bug:
@@ -59,13 +59,7 @@ def generate_full_mds_from_image_ark(pname_image:str,
             raise ValueError(f"resp is not str: {resp}")
 
         content = resp 
-        if '```markdown' in content:
-            content = content.replace('```markdown\n', '')
-            last_backticks_pos = content.rfind('```')
-            if last_backticks_pos != -1:
-                content = content[:last_backticks_pos] + content[last_backticks_pos + 3:]        
-        #rich.print(content)
-        content = content.replace("```", "   ")
+        content = strip_llm_format_markers(content)
 
         logging.info(f"GFMFIG: convert pdf page {pname_image} to md by gpt done")
         return content

@@ -236,6 +236,53 @@ def chat_gpt_plain(
         logging.exception(e)
         raise
 
+def filter_markdown_content(content:str) -> str:
+    if isinstance(content, str):
+        content = content.strip()
+        if content.startswith("```markdown\n"):
+            content = content[len("```markdown\n"):]
+        elif content.startswith("```\n"):
+            content = content[len("```\n"):]
+        if content.endswith("\n```"):
+            content = content[:-4]
+    return content
+
+def strip_llm_format_markers(content: Optional[str]) -> str:
+    """移除 LLM 输出中的外层 markdown 格式标记，保留核心内容。
+    
+    专门处理 LLM 输出的 markdown 标记模式：
+    1. ```markdown\n内容\n```
+    2. ```\n内容\n```
+    
+    Args:
+        content: LLM 原始输出内容
+        
+    Returns:
+        str: 去除外层格式标记后的实际内容
+    """
+    if not isinstance(content, str):
+        return content
+    
+    content = content.strip()
+    if not content:
+        return ""
+    
+    # 处理开头的 markdown 标记
+    if content.startswith("```markdown\n"):
+        content = content[len("```markdown\n"):]
+    elif content.startswith("```\n"):
+        content = content[len("```\n"):]
+    
+    # 处理结尾
+    if content.endswith("\n```"):
+        content = content[:-4]
+    if content.endswith("```"):
+        content = content[:-3]
+
+    content = content.replace("[ocr_end]", " ")
+    
+    return content
+
 
 if __name__ == "__main__":
     messages = get_gpt_messages("", "hi, response in json")

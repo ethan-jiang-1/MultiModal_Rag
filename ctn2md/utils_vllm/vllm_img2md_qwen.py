@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from ctn2md.utils_vllm.vllm_img2md_qwen_prompt import PROMPT_INSTRUCT_IMG2MD_QWEN_START, PROMPT_INSTRUCT_IMG2MD_QWEN_START_IMG_RECTS, PROMPT_INSTRUCT_IMG2MD_QWEN_CONTINUE
-from mmbase.utils_llm.llm_base import get_dashscope_client, get_gpt_messages_multimodal, chat_gpt_plain
+from mmbase.utils_llm.llm_base import get_dashscope_client, get_gpt_messages_multimodal, chat_gpt_plain, strip_llm_format_markers
 
 def generate_full_mds_from_image_qwen(pname_image:str, 
                                       rects_img:List[str] = None, 
@@ -34,15 +34,7 @@ def generate_full_mds_from_image_qwen(pname_image:str,
     logging.info(f"GFMFI: generate_full_mds_from_image started... {pname_image}")
     resp_str = chat_gpt_plain(messages, model=model, client=client, temperature=0.01, top_p=0.95)    
     
-    # 过滤掉开头和结尾的 markdown 标记
-    resp_str = resp_str.strip()  # 先去除首尾空白
-    if resp_str.startswith("```markdown\n"):
-        resp_str = resp_str[len("```markdown\n"):]
-    elif resp_str.startswith("```\n"):
-        resp_str = resp_str[len("```\n"):]
-        
-    if resp_str.endswith("\n```"):
-        resp_str = resp_str[:-4]
+    resp_str = strip_llm_format_markers(resp_str)
     
     #rich.print(resp_str)
     return resp_str
