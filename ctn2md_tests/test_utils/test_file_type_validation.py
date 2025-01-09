@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 from tenacity import RetryError
 
-from ctn2md.utils_llm.llm_base_oss import upload_image_to_oss
+from mmbase.utils_llm.llm_base_oss import upload_image_to_oss
 from mmbase.utils.util_logging import setup_logger_handlers
 
 @pytest.fixture(autouse=True)
@@ -25,7 +25,7 @@ def setup():
     setup_logger_handlers()
     yield
 
-@patch('ctn2md.utils_llm.llm_base_oss._upload_image_to_oss_core')
+@patch('mmbase.utils_llm.llm_base_oss._upload_image_to_oss_core')
 def test_file_type_validation(mock_upload):
     """测试文件类型验证"""
     mock_upload.return_value = "http://fake.url"

@@ -76,7 +76,7 @@ def _upload_image_to_tos_core(object_name: str, image_path: str) -> str:
 
 def _get_retry_wait(retry_state):
     """返回重试等待策略"""
-    return wait_exponential(multiplier=1, min=4, max=10)(retry_state)
+    return wait_exponential(multiplier=1, min=4, max=10)
 
 
 def _validate_image_file_type(image_path: str) -> None:

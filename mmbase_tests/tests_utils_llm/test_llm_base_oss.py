@@ -3,10 +3,11 @@ from unittest.mock import patch, MagicMock
 import os
 from freezegun import freeze_time
 
-from ctn2md.utils_llm.llm_base_tos import (
+from mmbase.utils_llm.llm_base_oss import (
     _generate_unique_name,
-    upload_image_to_tos,
+    upload_image_to_oss,
 )
+from mmbase.utils.util_logging import setup_logger_handlers
 
 @pytest.fixture
 def test_image():
@@ -19,18 +20,6 @@ def test_image():
     if os.path.exists(test_image_path):
         os.remove(test_image_path)
 
-@pytest.fixture
-def mock_env():
-    """Mock TOS环境变量"""
-    env_vars = {
-        'VOLC_ACCESSKEY': 'fake-key',
-        'VOLC_SECRETKEY': 'fake-secret',
-        'VOLC_ENDPOINT': 'tos-cn-beijing.volces.com',
-        'VOLC_BUCKET_NAME': 'fake-bucket'
-    }
-    with patch.dict('os.environ', env_vars):
-        yield env_vars
-
 @pytest.fixture(autouse=True)
 def mock_http_client():
     """Mock HTTP客户端，避免实际的网络请求"""
@@ -40,6 +29,11 @@ def mock_http_client():
         mock_client.return_value.__enter__.return_value.head.return_value = mock_response
         yield mock_client
 
+@pytest.fixture(autouse=True)
+def setup():
+    setup_logger_handlers()
+    yield
+
 @freeze_time("2024-01-08")
 def test_generate_unique_name():
     """测试文件名生成函数"""
@@ -47,17 +41,20 @@ def test_generate_unique_name():
     expected = "202401/image.jpg"
     assert result == expected
 
-@patch('tos.TosClient')
-@patch('tos.Auth')
+@patch('oss2.Bucket')
+@patch('oss2.Auth')
 @freeze_time("2024-01-08")
-def test_upload_success(mock_auth, mock_tos, test_image, mock_env):
+def test_upload_success(mock_auth, mock_bucket, test_image):
     """测试成功上传场景"""
-    mock_client = MagicMock()
-    mock_tos.return_value = mock_client
+    mock_bucket_instance = MagicMock()
+    mock_bucket.return_value = mock_bucket_instance
     
-    mock_client.put_object.return_value = MagicMock(etag="fake-etag")
+    mock_bucket_instance.object_exists.return_value = False
+    mock_bucket_instance.put_object.return_value = MagicMock(status=200, etag="fake-etag")
+    mock_bucket_instance.get_object_meta.return_value = MagicMock(status=200)
+    mock_bucket_instance.sign_url.return_value = "http://fake.url?signature"
 
-    result = upload_image_to_tos(test_image)
+    result = upload_image_to_oss(test_image)
     
-    expected_url = f"https://fake-bucket.tos-cn-beijing.volces.com/202401/test_image.jpg"
-    assert result == expected_url 
+    assert result.startswith("http://fake.url")
+    assert "ETag=fake-etag" in result 

@@ -5,7 +5,7 @@ from openai import OpenAI, AzureOpenAI, OpenAIError
 from dotenv import load_dotenv
 load_dotenv()
 
-from ctn2md.utils_llm.llm_base import (
+from mmbase.utils_llm.llm_base import (
     get_azure_gpt_client,
     get_dashscope_client,
     get_ark_client

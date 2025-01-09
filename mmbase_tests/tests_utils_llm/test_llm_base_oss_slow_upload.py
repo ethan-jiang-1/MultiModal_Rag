@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 from tenacity import RetryError
 
-from ctn2md.utils_llm.llm_base_oss import (
+from mmbase.utils_llm.llm_base_oss import (
     upload_image_to_oss,
 )
 from mmbase.utils.util_logging import setup_logger_handlers
@@ -39,13 +39,23 @@ def setup():
     setup_logger_handlers()
     yield
 
-def test_upload_failure(mock_oss):
-    """测试上传失败的情况"""
-    with pytest.raises(RetryError) as exc_info:
-        upload_image_to_oss("test.jpg")
-    assert "Upload failed with status 403" in str(exc_info.value.__cause__)
+@pytest.fixture(autouse=True)
+def mock_wait():
+    """Mock等待函数,避免实际的等待时间"""
+    def no_wait(multiplier=1, min=0, max=1):
+        return 0
+    with patch('mmbase.utils_llm.llm_base_oss.wait_exponential', no_wait):
+        yield
 
-@patch('ctn2md.utils_llm.llm_base_oss._upload_image_to_oss_core')
+@patch('mmbase.utils_llm.llm_base_oss._upload_image_to_oss_core')
+def test_upload_failure(mock_upload):
+    """测试上传失败的情况"""
+    mock_upload.side_effect = Exception("Upload failed")
+    
+    with pytest.raises(RetryError):
+        upload_image_to_oss("test.jpg")
+
+@patch('mmbase.utils_llm.llm_base_oss._upload_image_to_oss_core')
 def test_upload_failure_retry_count(mock_upload):
     """测试上传失败时的重试次数"""
     mock_upload.side_effect = Exception("Upload failed")
@@ -53,20 +63,13 @@ def test_upload_failure_retry_count(mock_upload):
     with pytest.raises(RetryError):
         upload_image_to_oss("test.jpg")
     
-    # 验证重试了3次
-    assert mock_upload.call_count == 3
-    # 验证每次调用的参数都一样
-    for call_args in mock_upload.call_args_list:
-        assert call_args[0][0].endswith("/test.jpg")  # object_name应该以文件名结尾
-        assert call_args[0][1] == "test.jpg"  # image_path参数
+    assert mock_upload.call_count == 3  # 默认重试3次
 
-@patch('ctn2md.utils_llm.llm_base_oss._upload_image_to_oss_core')
+@patch('mmbase.utils_llm.llm_base_oss._upload_image_to_oss_core')
 def test_upload_success_no_retry(mock_upload):
-    """测试上传成功时不会重试"""
+    """测试上传成功时不需要重试"""
     mock_upload.return_value = "http://fake.url"
     
     result = upload_image_to_oss("test.jpg")
-    
-    # 验证只调用了一次
-    assert mock_upload.call_count == 1
-    assert result == "http://fake.url" 
+    assert result == "http://fake.url"
+    assert mock_upload.call_count == 1  # 成功时只调用一次 

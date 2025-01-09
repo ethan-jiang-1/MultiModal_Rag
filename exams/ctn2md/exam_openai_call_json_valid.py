@@ -4,8 +4,8 @@ import rich
 load_dotenv()
 
 from mmbase.utils.util_logging import setup_logger_handlers
-from ctn2md.utils_llm.llm_base import chat_gpt_plain, chat_gpt_json, get_gpt_messages
-from ctn2md.utils_llm.llm_base import get_dashscope_client
+from mmbase.utils_llm.llm_base import chat_gpt_plain, chat_gpt_json, get_gpt_messages
+from mmbase.utils_llm.llm_base import get_dashscope_client
 
 if __name__ == "__main__":
     setup_logger_handlers()

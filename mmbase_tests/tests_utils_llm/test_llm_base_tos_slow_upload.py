@@ -2,17 +2,16 @@ import pytest
 from unittest.mock import patch, MagicMock
 from tenacity import RetryError
 
-from ctn2md.utils_llm.llm_base_tos import (
+from mmbase.utils_llm.llm_base_tos import (
     upload_image_to_tos,
 )
 
 @pytest.fixture(autouse=True)
 def mock_wait():
-    """Mock掉等待时间，使其立即返回"""
-    def no_wait(*args, **kwargs):
-        return lambda retry_state: 0
-    
-    with patch('ctn2md.utils_llm.llm_base_tos.wait_exponential', no_wait):
+    """Mock等待函数,避免实际的等待时间"""
+    def no_wait(multiplier=1, min=0, max=1):
+        return 0
+    with patch('mmbase.utils_llm.llm_base_tos.wait_exponential', no_wait):
         yield
 
 @pytest.fixture(autouse=True)
@@ -49,7 +48,7 @@ def test_upload_failure(mock_tos):
         upload_image_to_tos("test.jpg")
     assert "Upload failed: no ETag returned" in str(exc_info.value.__cause__)
 
-@patch('ctn2md.utils_llm.llm_base_tos._upload_image_to_tos_core')
+@patch('mmbase.utils_llm.llm_base_tos._upload_image_to_tos_core')
 def test_upload_failure_retry_count(mock_upload):
     """测试上传失败时的重试次数"""
     mock_upload.side_effect = Exception("Upload failed")
@@ -60,7 +59,7 @@ def test_upload_failure_retry_count(mock_upload):
         assert isinstance(exc_info.value.__cause__, Exception)
         assert "Upload failed" in str(exc_info.value.__cause__)
 
-@patch('ctn2md.utils_llm.llm_base_tos._upload_image_to_tos_core')
+@patch('mmbase.utils_llm.llm_base_tos._upload_image_to_tos_core')
 def test_upload_success_no_retry(mock_upload):
     """测试上传成功时不会重试"""
     mock_upload.return_value = "http://fake.url"

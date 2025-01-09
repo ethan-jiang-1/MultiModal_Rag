@@ -12,7 +12,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 
 load_dotenv()
 
-from ctn2md.utils_llm.llm_base_monitor import MonitorContextLLM
+from mmbase.utils_llm.llm_base_monitor import MonitorContextLLM
 
 """
 | Task            | `temperature`  | `top_p`       | Comment                                                              |
@@ -49,11 +49,11 @@ def upload_image_to_cloud(image_path: str) -> str:
     
     try:
         if model_flow == "ark":
-            from ctn2md.utils_llm.llm_base_tos import upload_image_to_tos
+            from mmbase.utils_llm.llm_base_tos import upload_image_to_tos
             logging.info(f"Using TOS for upload: {image_path}")
             return upload_image_to_tos(image_path)
         else:
-            from ctn2md.utils_llm.llm_base_oss import upload_image_to_oss
+            from mmbase.utils_llm.llm_base_oss import upload_image_to_oss
             logging.info(f"Using OSS for upload: {image_path}")
             return upload_image_to_oss(image_path)
     except Exception as e:

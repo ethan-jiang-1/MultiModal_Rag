@@ -7,8 +7,8 @@ from typing import Optional
 load_dotenv()
 
 from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
-from ctn2md.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
-from ctn2md.utils_llm.llm_base import get_ark_client, get_azure_gpt_client, get_dashscope_client
+from mmbase.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
+from mmbase.utils_llm.llm_base import get_ark_client, get_azure_gpt_client, get_dashscope_client
 from ctn2md.utils_vllm.vllm_img_description_qwen_prompt import TEXT_PROMPT_INST_VLLM_IMG_RELEVANCE
 
 def gen_vllm_instruction_llm(doc_title:str, 

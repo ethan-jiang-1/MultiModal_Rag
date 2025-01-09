@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 from openai import OpenAI, RateLimitError, BadRequestError
 from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from tenacity import RetryError
-from ctn2md.utils_llm.llm_base import (
+from mmbase.utils_llm.llm_base import (
     chat_gpt_json,
     chat_gpt_plain,
     get_gpt_messages

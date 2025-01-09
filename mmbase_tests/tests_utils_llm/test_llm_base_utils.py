@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock
 from openai import RateLimitError
-from ctn2md.utils_llm.llm_base import (
+from mmbase.utils_llm.llm_base import (
     jsons_load_repair,
     wait_random_exponential_with_rate_limit
 )

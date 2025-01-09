@@ -10,7 +10,7 @@ from openai import AzureOpenAI, OpenAI
 
 load_dotenv()
 
-from ctn2md.utils_llm.llm_base import chat_gpt_json, chat_gpt_plain
+from mmbase.utils_llm.llm_base import chat_gpt_json, chat_gpt_plain
 
 # Constants
 ENV_QUESTION_NUM = "ENV_QUESTION_NUM"

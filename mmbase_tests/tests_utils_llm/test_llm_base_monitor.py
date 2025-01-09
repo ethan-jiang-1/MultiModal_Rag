@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 import time
 import os
 from openai.types.chat import ChatCompletion, ChatCompletionMessage
-from ctn2md.utils_llm.llm_base_monitor import MonitorContextLLM
+from mmbase.utils_llm.llm_base_monitor import MonitorContextLLM
 
 @pytest.fixture
 def mock_messages():

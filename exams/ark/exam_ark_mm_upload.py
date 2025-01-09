@@ -9,7 +9,7 @@ client = OpenAI(
 )
 
 # 需要传给大模型的图片
-#from ctn2md.utils_llm.llm_base import upload_image_to_oss
+#from mmbase.utils_llm.llm_base import upload_image_to_oss
 #image_path = "_work/md_pdf_pages/5ec48698-page_1_rects.jpg"
 #image_url = upload_image_to_oss(image_path)
 #print(image_url)

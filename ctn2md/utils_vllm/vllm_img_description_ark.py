@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from ctn2md.utils_llm.llm_base import get_gpt_messages_multimodal, chat_gpt_plain, get_ark_client
+from mmbase.utils_llm.llm_base import get_gpt_messages_multimodal, chat_gpt_plain, get_ark_client
 from ctn2md.utils.util_file import get_root_dir
 from ctn2md.utils_vllm.vllm_img_description_ark_prompt import TEXT_IMG_DESCRIPTION
 

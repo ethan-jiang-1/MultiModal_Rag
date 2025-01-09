@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from ctn2md.utils_vllm_exp.vllm_img2region_qwen_prompt import PROMPT_INSTRUCT_IMG2REGION_QWEN
-from ctn2md.utils_llm.llm_base import get_dashscope_client, get_gpt_messages_multimodal, chat_gpt_plain
+from mmbase.utils_llm.llm_base import get_dashscope_client, get_gpt_messages_multimodal, chat_gpt_plain
 
 
 def generate_regions_from_image_qwen(pname_image:str, 

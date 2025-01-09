@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 from tenacity import RetryError
 
-from ctn2md.utils_llm.llm_base_oss import upload_image_to_oss
+from mmbase.utils_llm.llm_base_oss import upload_image_to_oss
 from mmbase.utils.util_logging import setup_logger_handlers
 
 @pytest.fixture(autouse=True)

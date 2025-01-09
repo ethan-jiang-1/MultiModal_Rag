@@ -12,7 +12,7 @@ from ctn2md.utils.util_file import get_root_dir
 from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.utils_gpt.llm_question_on_pic_gpt_prompt import SYSTEM_PROMPT_GPT4_QAGEN, USER_PROMPT_GPT4_QAGEN
 from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
-from ctn2md.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
+from mmbase.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
 
 # Constants
 DEFAULT_MODEL = "gpt-4o"

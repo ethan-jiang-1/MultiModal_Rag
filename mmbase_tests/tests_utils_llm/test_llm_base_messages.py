@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch
 import os
 
-from ctn2md.utils_llm.llm_base import (
+from mmbase.utils_llm.llm_base import (
     get_gpt_messages_multimodal,
     upload_image_to_cloud
 )
@@ -18,7 +18,7 @@ def test_image():
     if os.path.exists(test_image_path):
         os.remove(test_image_path)
 
-@patch('ctn2md.utils_llm.llm_base.upload_image_to_cloud')
+@patch('mmbase.utils_llm.llm_base.upload_image_to_cloud')
 def test_multimodal_message_with_local_image(mock_upload, test_image):
     """测试本地图片的多模态消息构建"""
     mock_upload.return_value = "https://fake-url/image.jpg"
@@ -35,7 +35,7 @@ def test_multimodal_message_with_local_image(mock_upload, test_image):
     assert messages[0]["content"][1]["type"] == "image_url"
     assert messages[0]["content"][1]["image_url"]["url"] == "https://fake-url/image.jpg"
 
-@patch('ctn2md.utils_llm.llm_base.upload_image_to_cloud')
+@patch('mmbase.utils_llm.llm_base.upload_image_to_cloud')
 def test_multimodal_message_with_remote_url(mock_upload):
     """测试远程URL的多模态消息构建"""
     remote_url = "https://example.com/image.jpg"
@@ -55,7 +55,7 @@ def test_multimodal_message_with_remote_url(mock_upload):
     mock_upload.assert_not_called()
 
 @patch.dict(os.environ, {'ENV_MODEL_FLOW': 'ark'})
-@patch('ctn2md.utils_llm.llm_base_tos.upload_image_to_tos')
+@patch('mmbase.utils_llm.llm_base_tos.upload_image_to_tos')
 def test_image_upload_selection_tos(mock_tos_upload, test_image):
     """测试TOS上传选择"""
     mock_tos_upload.return_value = "https://fake-tos-url/image.jpg"
@@ -65,7 +65,7 @@ def test_image_upload_selection_tos(mock_tos_upload, test_image):
     mock_tos_upload.assert_called_once_with(test_image)
 
 @patch.dict(os.environ, {'ENV_MODEL_FLOW': 'default'})
-@patch('ctn2md.utils_llm.llm_base_oss.upload_image_to_oss')
+@patch('mmbase.utils_llm.llm_base_oss.upload_image_to_oss')
 def test_image_upload_selection_oss(mock_oss_upload, test_image):
     """测试OSS上传选择"""
     mock_oss_upload.return_value = "https://fake-oss-url/image.jpg"
@@ -74,8 +74,8 @@ def test_image_upload_selection_oss(mock_oss_upload, test_image):
     assert result == "https://fake-oss-url/image.jpg"
     mock_oss_upload.assert_called_once_with(test_image)
 
-@patch('ctn2md.utils_llm.llm_base_oss.upload_image_to_oss')
-@patch('ctn2md.utils_llm.llm_base_tos.upload_image_to_tos')
+@patch('mmbase.utils_llm.llm_base_oss.upload_image_to_oss')
+@patch('mmbase.utils_llm.llm_base_tos.upload_image_to_tos')
 @patch('os.path.exists')
 def test_error_handling(mock_exists, mock_tos_upload, mock_oss_upload):
     """测试错误处理"""

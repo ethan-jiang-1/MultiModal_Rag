@@ -7,8 +7,8 @@ import rich
 load_dotenv()
 
 from mrag_vdb.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
-from mrag_vdb.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
-from mrag_vdb.utils_llm.llm_base import get_dashscope_client, get_azure_gpt_client, get_ark_client
+from mmbase.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
+from mmbase.utils_llm.llm_base import get_dashscope_client, get_azure_gpt_client, get_ark_client
 
 
 def gen_knowledge_by_llm(user_input:str, 
