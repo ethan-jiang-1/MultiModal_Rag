@@ -73,7 +73,7 @@ def fix_ocr_self_correct_markdown_by_gpt(
         raise ex
 
 if __name__ == "__main__":
-    from ctn2md.utils.util_logging import setup_logger_handlers
+    from mmbase.utils.util_logging import setup_logger_handlers
     from ctn2md.utils.util_file import get_root_dir
     
     # 设置日志

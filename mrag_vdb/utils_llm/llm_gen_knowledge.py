@@ -64,7 +64,7 @@ def gen_knowledge_by_llm(user_input:str,
 
 if __name__ == "__main__":
     from ctn2md.utils.util_file import get_root_dir
-    from ctn2md.utils.util_logging import setup_logger_handlers
+    from mmbase.utils.util_logging import setup_logger_handlers
     setup_logger_handlers()
     dir_root = get_root_dir()
     os.chdir(dir_root)

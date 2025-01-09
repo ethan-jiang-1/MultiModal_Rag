@@ -104,7 +104,7 @@ async def get_img_alt_text_and_description_async(md_info: MdInfo, img_url: str, 
 
 
 if __name__ == "__main__":
-    from ctn2md.utils.util_logging import setup_logger_handlers
+    from mmbase.utils.util_logging import setup_logger_handlers
     setup_logger_handlers()
 
     # 测试数据

@@ -7,7 +7,7 @@ import logging
 import time
 load_dotenv()
 
-from ctn2md.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 
 """
 https://github.com/ppaanngggg/yolo-doclaynet

@@ -3,7 +3,7 @@ import rich
 
 load_dotenv()
 
-from ctn2md.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.utils_llm.llm_base import chat_gpt_plain, chat_gpt_json, get_gpt_messages
 from ctn2md.utils_llm.llm_base import get_dashscope_client
 

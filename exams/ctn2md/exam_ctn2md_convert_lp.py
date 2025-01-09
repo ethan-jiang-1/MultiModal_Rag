@@ -5,7 +5,7 @@ import random
 
 load_dotenv()
 
-from ctn2md.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.ctn2md_converter_lp import do_content2md_convert
 
 if __name__ == "__main__":

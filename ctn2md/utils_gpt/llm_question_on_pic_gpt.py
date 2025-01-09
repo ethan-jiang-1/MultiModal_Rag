@@ -9,7 +9,7 @@ load_dotenv()
 
 from ctn2md.utils_vllm.vllm_img_description_qwen import generate_image_description_by_qwen
 from ctn2md.utils.util_file import get_root_dir
-from ctn2md.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.utils_gpt.llm_question_on_pic_gpt_prompt import SYSTEM_PROMPT_GPT4_QAGEN, USER_PROMPT_GPT4_QAGEN
 from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from ctn2md.utils_llm.llm_base import get_gpt_messages, chat_gpt_json

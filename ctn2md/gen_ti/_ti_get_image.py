@@ -64,7 +64,7 @@ async def download_remote_image_ti_async(img_url: str, local_path: str) -> bool:
 
 
 if __name__ == "__main__":
-    from ctn2md.utils.util_logging import setup_logger_handlers
+    from mmbase.utils.util_logging import setup_logger_handlers
     setup_logger_handlers()
 
     # 测试URL和本地路径

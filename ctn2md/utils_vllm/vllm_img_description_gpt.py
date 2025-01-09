@@ -42,7 +42,7 @@ def test_gen_qas_on_pic():
     print()
 
 if __name__ == '__main__':
-    from ctn2md.utils.util_logging import setup_logger_handlers
+    from mmbase.utils.util_logging import setup_logger_handlers
     from ctn2md.utils_vllm.vllm_img_description_gpt_prompt import TEXT_PROMPT_INST_VLLM_GEN_QAS
 
     dir_root = get_root_dir()

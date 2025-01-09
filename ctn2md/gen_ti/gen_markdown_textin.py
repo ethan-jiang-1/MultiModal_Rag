@@ -6,7 +6,7 @@ import asyncio
 
 load_dotenv()
 
-from ctn2md.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.utils.util_markdown import read_markdown_file
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_ti.ti_gen_pages import gen_pages_ti, gen_pages_ti_async

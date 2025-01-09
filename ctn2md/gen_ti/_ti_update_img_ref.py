@@ -254,7 +254,7 @@ async def update_page_md_with_ref_imgs_async(md_info: MdInfo, page_index: int, p
 
 
 if __name__ == "__main__":
-    from ctn2md.utils.util_logging import setup_logger_handlers
+    from mmbase.utils.util_logging import setup_logger_handlers
     setup_logger_handlers()
 
     # 测试数据

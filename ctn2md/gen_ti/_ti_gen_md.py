@@ -11,7 +11,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 load_dotenv()
 
-from ctn2md.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 
 
 class TextinOcr(object):

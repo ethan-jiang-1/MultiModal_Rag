@@ -116,7 +116,7 @@ def upload_image_to_tos(image_path: str) -> str:
     return _upload_image_to_tos_core(object_name, image_path)
 
 if __name__ == "__main__":
-    from ctn2md.utils.util_logging import setup_logger_handlers
+    from mmbase.utils.util_logging import setup_logger_handlers
     setup_logger_handlers()
     
     # 测试上传

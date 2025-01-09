@@ -12,7 +12,7 @@ if __name__ == "__main__":
     _root_dir = os.path.abspath(os.path.dirname(find_dotenv()))
     os.chdir(_root_dir)
 
-from ctn2md.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo,ENV_MODEL_FLOW
 from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_llm
 from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_heirarchy

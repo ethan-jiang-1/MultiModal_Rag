@@ -86,7 +86,7 @@ def generate_full_mds_from_image_qwen(pname_image:str,
 
 if __name__ == '__main__':
     from ctn2md.utils.util_file import get_root_dir
-    from ctn2md.utils.util_logging import setup_logger_handlers
+    from mmbase.utils.util_logging import setup_logger_handlers
     dir_root = get_root_dir()
     setup_logger_handlers()
 

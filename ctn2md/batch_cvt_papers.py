@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
 from ctn2md.ctn2md_converter_lvlm import do_content2md_convert as dcc_lvlm
 from ctn2md.ctn2md_converter_lp import do_content2md_convert as dcc_lp
-from ctn2md.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 
 def batch_convert(doc_pathnames: List[str]):
     for ndx, doc_pathname in enumerate(doc_pathnames):

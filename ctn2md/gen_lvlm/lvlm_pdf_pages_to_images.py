@@ -9,7 +9,7 @@ import pymupdf
 from dotenv import load_dotenv
 load_dotenv()
 
-from ctn2md.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lvlm.lvlm_base import get_image_cnt_type, LVLM_IMG_CNT_TYPE
 from ctn2md.gen_lvlm.gs0_pdf_page_to_region import gs0_parse_non_text_rects_in_page

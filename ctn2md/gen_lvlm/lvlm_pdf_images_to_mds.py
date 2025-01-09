@@ -6,7 +6,7 @@ import rich
 from dotenv import load_dotenv
 load_dotenv()
 
-from ctn2md.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MIFN, MdInfo
 from ctn2md.utils_vllm.vllm_img2md_gpt import generate_full_mds_from_image_gpt
 from ctn2md.utils_vllm.vllm_img2md_qwen import generate_full_mds_from_image_qwen

@@ -5,7 +5,7 @@ load_dotenv()
 
 from ctn2md.utils.util_file import get_root_dir
 from ctn2md.utils.util_llm_diag import do_diag_reproduce
-from ctn2md.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 
 
 if __name__ == "__main__":
