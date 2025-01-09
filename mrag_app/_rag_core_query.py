@@ -2,8 +2,7 @@ from dotenv import load_dotenv
 import logging
 import random
 import rich
-from typing import Optional, List
-from pydantic import BaseModel, Field
+from typing import Optional
 
 load_dotenv()
 
@@ -17,80 +16,10 @@ from mrag_vdb.dto.rag_runtime_settings import RagKbNameSel
 from mrag_vdb.dto.rag_input import RagInput
 from mrag_vdb.dto.rag_context import RagContext
 from mrag_vdb.dto.rag_answer import RagAnswer
+from mrag_app._rag_response import RagResponse
 
 setup_logger_handlers()
 logger_prg = get_logger_progress()
-
-class ProgressStep(BaseModel):
-    """Progress step information"""
-    # "stepN: percentage: task_name: extra_info"
-    step: str
-    progress: int = Field(ge=0, le=100)  # 添加范围验证
-    task_name: str
-    extra_info: Optional[str] = None
-
-class RagResponse(BaseModel):
-    """
-    Complete response model that wraps RagAnswer and includes additional metadata
-    """
-    status: str = Field(
-        default="success",
-        description="Response status (success/failed)"
-    )
-    error_message: Optional[str] = Field(
-        default=None,
-        description="Error message if status is failed"
-    )
-    req_id: int = Field(
-        description="Unique request identifier"
-    )
-    user_input: str = Field(
-        description="Original user query"
-    )
-    rag_answer: RagAnswer = Field(
-        description="Core RAG answer and sources"
-    )
-    progress_steps: List[ProgressStep] = Field(
-        default_factory=list,
-        description="List of progress steps during processing"
-    )
-
-    def add_progress(self, step: str, progress: int, task_name: str, extra_info: Optional[str] = None):
-        """Add a progress step"""
-        self.progress_steps.append(ProgressStep(
-            step=step,
-            progress=progress,
-            task_name=task_name,
-            extra_info=extra_info
-        ))
-        # "stepN; percentage: task_name: extra_info"
-        if extra_info is None:
-            logger_prg.info(f"{step}: {progress}%: {task_name}")
-        else:
-            logger_prg.info(f"{step}: {progress}%: {task_name}:{extra_info}")
-
-    @classmethod
-    def from_success(cls, req_id: int, user_input: str, rag_answer: RagAnswer) -> "RagResponse":
-        """Factory method for successful responses"""
-        response = cls(
-            status="success",
-            req_id=req_id,
-            user_input=user_input,
-            rag_answer=rag_answer
-        )
-        return response
-
-    @classmethod
-    def from_error(cls, req_id: int, user_input: str, error_msg: str) -> "RagResponse":
-        """Factory method for failed responses"""
-        response = cls(
-            status="failed",
-            error_message=error_msg,
-            req_id=req_id,
-            user_input=user_input,
-            rag_answer=RagAnswer(answer="", answer_referenced="")
-        )
-        return response
 
 def do_core_query(user_input: str, kb_name: Optional[str] = None, limit: int = 10) -> RagResponse:
     req_id = random.randint(10000, 99999)
@@ -152,8 +81,6 @@ def do_core_query(user_input: str, kb_name: Optional[str] = None, limit: int = 1
     except Exception as ex:
         logging.exception(ex)
         return RagResponse.from_error(req_id, user_input, str(ex))
-
-
 
 if __name__ == "__main__":
     #from pprint import pprint

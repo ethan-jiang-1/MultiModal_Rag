@@ -1,67 +1,55 @@
-from dotenv import load_dotenv
-import os
+from typing import Optional
+from pydantic import BaseModel, Field
 import logging
 import rich
-from typing import Optional
 import random
-load_dotenv()
 
-from mmbase.utils.util_logging import setup_logger_handlers, get_logger_progress
-from mrag_vdb.utils.util_file import get_root_dir
-from mrag_app._qa_core import do_core_query as _do_core_query, RagResponse, RagAnswer
-from mrag_vdb.dto.rag_runtime_settings import RagKbNameSel, RagModelGptSel, RagRetrievalNum
+from mrag_app._rag_core_query import do_core_query as _do_core_query
+from mrag_app._rag_response import RagResponse
+from mrag_vdb.dto.rag_answer import RagAnswer
 
-setup_logger_handlers()
-logger_prg = get_logger_progress()
+class _QueryState(BaseModel):
+    """
+    Query state for main loop
+    """
+    response: Optional[RagResponse] = Field(
+        default=None,
+        description="Current response"
+    )
 
-def _ensure_working_dir():
-    dir_root = get_root_dir()
-    os.chdir(dir_root)
-    return dir_root
-   
-_ensure_working_dir()
-
-class _QueryState:
-    """Manages the state of the current query"""
-    _current_response: Optional[RagResponse] = None
-    
-    @classmethod
-    def set_response(cls, response: RagResponse):
-        cls._current_response = response
-    
     @classmethod
     def get_response(cls) -> Optional[RagResponse]:
-        return cls._current_response
-        
+        """Get current response"""
+        return cls.response
+
+    @classmethod
+    def set_response(cls, response: RagResponse):
+        """Set current response"""
+        cls.response = response
+
     @classmethod
     def reset(cls):
-        """Reset the query state to initial state"""
-        cls._current_response = None
+        """Reset state"""
+        cls.response = None
 
-def main_loop_gradio(user_input: str, kb_name: Optional[str] = None) -> None:
-    """Main query processing loop for Gradio interface"""
+def main_loop_gradio(user_input: str, kb_name: Optional[str] = None, limit: int = 10) -> None:
+    """
+    Main loop for gradio interface
+    """
     try:
-        # 初始化空的响应对象
+        # 初始化进度
         response = RagResponse(
             req_id=random.randint(10000, 99999),
             user_input=user_input,
             rag_answer=RagAnswer(answer="", answer_referenced="")
         )
-        
-        # 立即设置初始响应，这样UI可以立即看到状态
+        response.add_progress("step0.5", 5, "选择LLM引擎")
         _QueryState.set_response(response)
-        
-        # 添加初始进度
-        response.add_progress("step0.5", 5, f"查询进入:选择LLM引擎:{RagModelGptSel.get_gpt_model()}")
-        
-        if kb_name is None:
-            kb_name = RagKbNameSel.get_kbname()
-        limit = RagRetrievalNum.get_retrieval_num()
 
-        # 执行核心查询
+        # 执行查询
         response = _do_core_query(user_input, kb_name=kb_name, limit=limit)
         response.add_progress("step10", 100, "查询退出")
-        
+        _QueryState.set_response(response)
     except Exception as ex:
         logging.exception(ex)
         response = RagResponse.from_error(
@@ -70,17 +58,14 @@ def main_loop_gradio(user_input: str, kb_name: Optional[str] = None) -> None:
             error_msg=str(ex)
         )
         response.add_progress("error", 0, f"查询异常#{str(ex)}")
-    
-    finally:
-        # 确保最终状态被更新
         _QueryState.set_response(response)
 
 def get_rag_response_from_main_loop() -> Optional[RagResponse]:
-    """Get the current query response"""
+    """Get response from main loop"""
     return _QueryState.get_response()
 
-def reset_rag_response_for_main_loop() -> None:
-    """Reset the query state"""
+def reset_rag_response_for_main_loop():
+    """Reset response for main loop"""
     _QueryState.reset()
 
 

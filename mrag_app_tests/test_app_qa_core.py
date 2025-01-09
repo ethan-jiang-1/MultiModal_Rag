@@ -1,5 +1,8 @@
 import pytest
-from mrag_app._app_qa_core import _QueryState, RagResponse, RagAnswer, main_loop_gradio
+
+from mrag_app._app_qa_core import _QueryState, main_loop_gradio
+from mrag_app._rag_response import RagResponse
+from mrag_vdb.dto.rag_answer import RagAnswer
 
 @pytest.fixture(autouse=True)
 def setup_and_cleanup():
@@ -10,7 +13,7 @@ def setup_and_cleanup():
 
 @pytest.fixture
 def sample_response():
-    """创建一个示例响应"""
+    """创建一个示例RAG响应"""
     return RagResponse(
         req_id=12345,
         user_input="测试问题",
@@ -19,7 +22,7 @@ def sample_response():
 
 @pytest.mark.unit
 def test_query_state_lifecycle(sample_response):
-    """测试查询状态的生命周期管理"""
+    """测试应用层查询状态的生命周期管理"""
     # 初始状态应该是 None
     assert _QueryState.get_response() is None
     
@@ -39,7 +42,7 @@ def test_query_state_lifecycle(sample_response):
 
 @pytest.mark.unit
 def test_query_state_multiple_updates():
-    """测试查询状态的多次更新"""
+    """测试应用层查询状态的多次更新"""
     # 第一次更新
     response1 = RagResponse(
         req_id=1,
@@ -65,7 +68,7 @@ def test_query_state_multiple_updates():
 
 @pytest.mark.unit
 def test_query_state_reset_behavior():
-    """测试查询状态重置的行为"""
+    """测试应用层查询状态重置的行为"""
     # 设置初始状态
     initial_response = RagResponse(
         req_id=123,
@@ -101,7 +104,7 @@ def mock_core_query(monkeypatch, sample_response):
 
 @pytest.mark.integration
 def test_main_loop_gradio_basic(mock_core_query, sample_response):
-    """测试main_loop_gradio的基本功能"""
+    """测试Gradio主循环的基本功能"""
     # 执行测试
     main_loop_gradio("测试问题", kb_name="test_kb")
     
@@ -121,7 +124,7 @@ def mock_core_query_error(monkeypatch):
 
 @pytest.mark.integration
 def test_main_loop_gradio_error_handling(mock_core_query_error):
-    """测试main_loop_gradio的错误处理"""
+    """测试Gradio主循环的错误处理"""
     # 执行测试
     main_loop_gradio("测试问题")
     
@@ -141,7 +144,7 @@ def test_main_loop_gradio_error_handling(mock_core_query_error):
 
 @pytest.mark.integration
 def test_main_loop_gradio_progress_tracking(mock_core_query):
-    """测试main_loop_gradio的进度跟踪"""
+    """测试Gradio主循环的进度跟踪"""
     # 执行测试
     main_loop_gradio("测试问题")
     
