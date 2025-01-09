@@ -9,7 +9,7 @@ load_dotenv()
 
 from ctn2md.utils_llm.llm_fix_heading_lvl_qwen_prompt import SYSTEM_PROMPT_FIX_HEADING_LVL_LOW, USER_PROMPT_FIX_HEADING_LVL_LOW
 from ctn2md.utils_llm.llm_fix_heading_lvl_qwen_prompt import SYSTEM_PROMPT_FIX_HEADING_LVL_NORMAL, USER_PROMPT_FIX_HEADING_LVL_NORMAL 
-from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
+from mmbase.utils_llm.llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from mmbase.utils_llm.llm_base import get_gpt_messages, chat_gpt_json, get_ark_client
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src.md_info_base import FHL_QUALITY_TYPE

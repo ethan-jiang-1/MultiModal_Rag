@@ -9,7 +9,7 @@ from ctn2md.utils_gpt.llm_fix_ocr_md_gpt_prompt import USER_PROMPT_MD_SELF_CORRE
 from ctn2md.utils_gpt.llm_fix_ocr_md_gpt_prompt import USER_PROMPT_MD_SELF_CORRECT_PPT 
 from ctn2md.utils_gpt.llm_fix_ocr_md_gpt_prompt import USER_PROMPT_MD_SELF_CORRECT_DOC 
 from ctn2md.utils.util_ctn_type import CTN_TYPE
-from ctn2md.utils.util_llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
+from mmbase.utils_llm.llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from mmbase.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
 
 
