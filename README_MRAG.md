@@ -10,9 +10,23 @@
 
 ## 系统架构
 
-该项目由三个主要模块组成：
+该项目由四个主要模块组成：
 
-### 1. [CTN2MD](ctn2md/README.md) (Content to Markdown)
+### 1. [MMBASE](mmbase/README_MMBASE.md) (MultiModal Base)
+- 基础工具和共享功能
+  - 统一日志系统
+  - LLM 交互基础设施
+  - 监控和性能追踪
+  - 通用工具函数
+- LLM 服务适配
+  - OSS/TOS 实现支持
+  - 消息处理工具
+  - 服务监控和日志
+- 必须记得用安装本地
+  - 在根目录直接 `pip install -e ./mmbase` 安装
+
+
+### 2. [CTN2MD](ctn2md/README_CTN2MD.md) (Content to Markdown)
 - 多引擎文档转换系统
   - LVLM (Large Vision Language Model) 模式
   - TextIn OCR 模式
@@ -26,7 +40,7 @@
   - 转换进度监控
   - 可配置参数
 
-### 2. [MRAG_VDB](mrag_vdb/README.md) (MultiModal RAG Vector Database)
+### 3. [MRAG_VDB](mrag_vdb/README_MRAG_VDB.md) (MultiModal RAG Vector Database)
 - 文档向量化与存储
   - 智能文档分块
   - 向量数据持久化
@@ -40,7 +54,7 @@
   - 异步操作
   - 缓存机制
 
-### 3. [MRAG_APP](mrag_app/README.md) (MultiModal RAG Application)
+### 4. [MRAG_APP](mrag_app/README_MRAG_APP.md) (MultiModal RAG Application)
 - Web 交互界面
   - 基于 Gradio 构建
   - 实时进度显示
@@ -56,6 +70,18 @@
   - 历史记录追踪
 
 ## 快速开始
+
+### 环境准备
+
+1. 安装基础依赖
+```bash
+pip install -r requirements.txt
+```
+
+2. 安装开发依赖（可选）
+```bash
+pip install -r requirements-dev.txt
+```
 
 ### 基本使用流程
 
@@ -81,6 +107,7 @@ python mrag_app/app_gradio.py
 项目使用 `.env` 文件管理配置，主要包括：
 - 模型服务访问配置（GPT/Qwen/Ark）
 - API 密钥配置
+- Python 路径配置
 
 ## 系统要求
 
@@ -94,8 +121,10 @@ python mrag_app/app_gradio.py
 ## 开发指南
 
 详细的开发文档请参考各模块的 README：
-- [CTN2MD 开发文档](ctn2md/README.md)
-- [MRAG_VDB 开发文档](mrag_vdb/README.md)
-- [MRAG_APP 开发文档](mrag_app/README.md)
-- [README_MRAG_ENV.md](README_MRAG_ENV.md)
+- [MMBASE 开发文档](mmbase/README_MMBASE.md)
+- [CTN2MD 开发文档](ctn2md/README_CTN2MD.md)
+- [MRAG_VDB 开发文档](mrag_vdb/README_MRAG_VDB.md)
+- [MRAG_APP 开发文档](mrag_app/README_MRAG_APP.md)
+- [环境配置说明](README_MRAG_ENV.md)
+- [测试说明](README_MRAG_PYTEST.md)
 
