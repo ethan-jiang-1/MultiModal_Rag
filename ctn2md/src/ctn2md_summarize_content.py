@@ -6,10 +6,10 @@ import json
 
 load_dotenv()
 
-from ctn2md.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
+from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.utils_llm.llm_summarize_content import summarize_doc_keywords_by_llm
 from ctn2md.utils.util_markdown import remove_comment, read_markdown_file
-from ctn2md.src.md_info_base import MdInfo, MIFN
 
 def summarize_content_by_llm(md_info_path:str, src_step_num:int = None, dst_step_num:int = None) -> str:
     logging.info(f"##MDFLOW##: summarize_content_by_llm started src_step_num:{src_step_num} dst_step_num:{dst_step_num}...")

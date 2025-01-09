@@ -7,7 +7,7 @@ import shutil
 
 load_dotenv()
 
-from ctn2md.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN, PUBLIC_MIFN
 from ctn2md.utils.util_markdown import find_all_image_refs
 
