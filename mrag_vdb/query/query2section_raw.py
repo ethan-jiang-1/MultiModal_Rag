@@ -1,13 +1,16 @@
-from typing import List
 from dotenv import load_dotenv
 import rich
 
+#from qdrant_client import QdrantClient
+from typing import List
+
+from mrag_vdb.dto.rag_input import RagInput
+
+# 加载环境变量
 load_dotenv()
 
-from mmbase.utils.util_logging import setup_logger_handlers
-
 from mrag_vdb.dto.rag_context import RagContext
-from mrag_vdb.dto.rag_input import RagInput
+from mmbase.utils.util_logging import setup_logger_handlers
 from mrag_vdb.common.vdb_base import get_vdb_path
 from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
 from mrag_vdb.query._recover_section_from_chunks import query_initial_points, recover_scored_sections_from_chunk_from_vdb, LIMIT_QUERY, sort_scored_sections_by_score

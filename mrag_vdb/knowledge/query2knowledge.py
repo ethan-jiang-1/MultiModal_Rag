@@ -5,8 +5,8 @@ import rich
 # 加载环境变量
 load_dotenv()
 
-from mmbase.utils.util_logging import setup_logger_handlers
 from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
+from mmbase.utils.util_logging import setup_logger_handlers
 from mrag_vdb.query.query2section_raw import query2section_raw_on_rag_context
 from mrag_vdb.rerank.query2section_reranked import query2sortedsections_reranked
 from mrag_vdb.utils_llm.llm_gen_knowledge import gen_knowledge_by_llm
