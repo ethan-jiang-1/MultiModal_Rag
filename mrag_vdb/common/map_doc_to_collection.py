@@ -12,7 +12,7 @@ load_dotenv()
 
 from mrag_vdb.common.doc_meta_info import DocMetaInfo
 from mrag_vdb.common.vdb_base import get_map_doc2col_pathname
-from mrag_vdb.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 from mrag_vdb.common.text_embedding import get_embedding_encoder_name, get_embeding_len
 
 def decompose_doc_unique_id(doc_unique_id: str) -> Tuple[Optional[str], Optional[str]]:

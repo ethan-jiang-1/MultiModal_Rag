@@ -174,7 +174,7 @@ def hybrid_rerank_rrf(query_str: str,
 
 if __name__ == "__main__":
     from mrag_vdb.common.text_embedding import get_embedding_vec
-    from mrag_vdb.utils.util_logging import setup_logger_handlers
+    from mmbase.utils.util_logging import setup_logger_handlers
     from mrag_vdb.common.vdb_base import get_vdb_path
     from mrag_vdb.common.vdb_base import QdrantClientContextManager
     from mrag_vdb.query.query2section_raw import query_initial_points, recover_scored_sections_from_chunk_from_vdb

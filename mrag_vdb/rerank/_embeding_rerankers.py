@@ -123,7 +123,7 @@ def jinaai_jina_rerank(query_str:str, documents: List[str], top_n: int = None) -
                 time.sleep(delay)
 
 if __name__ == "__main__":
-    from mrag_vdb.utils.util_logging import setup_logger_handlers
+    from mmbase.utils.util_logging import setup_logger_handlers
 
     setup_logger_handlers()
 

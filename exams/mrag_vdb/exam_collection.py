@@ -5,7 +5,7 @@ import rich
 # 加载环境变量
 load_dotenv()
 
-from mrag_vdb.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 from mrag_vdb.common.vdb_base import get_vdb_path
 from mrag_vdb.common.vdb_base import QdrantClientContextManager
 

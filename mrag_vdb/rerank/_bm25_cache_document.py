@@ -14,7 +14,7 @@ load_dotenv()
 from mrag_vdb.rerank._bm25_jieba_cutter import jieba_cut_without_stopwords
 from mrag_vdb.common.vdb_base import get_ref_path
 from mrag_vdb.rerank._bm25_cache import TokenizedDoc, get_cached_bm25_folder, compute_bm25_scores
-from mrag_vdb.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 
 
 def get_bm25_cache_path_for_document(doc_unique_id: str) -> Optional[str]:

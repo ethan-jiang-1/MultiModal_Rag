@@ -9,7 +9,7 @@ load_dotenv()
 
 from mrag_vdb.common.doc_meta_info import DocMetaInfo
 from mrag_vdb.common.text_embedding import get_embeding_len
-from mrag_vdb.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 
 def ensure_collection_refreshed(client: QdrantClient, collection_name: str, doc_meta_info: DocMetaInfo) -> bool:
     # 检查集合是否存在

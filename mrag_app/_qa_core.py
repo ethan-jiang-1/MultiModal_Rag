@@ -131,7 +131,7 @@ def do_core_query(user_input: str, kb_name: Optional[str] = None, limit: int = 1
         
         # Generate answer
         response.add_progress("step6", 60, "组织回答#综合知识(文本)")
-        resp = gen_answer_from_knowledge_snippets(rag_context.get_refined_query(), knowledge_snippets)
+        resp = gen_answer_from_knowledge_snippets(rag_context, knowledge_snippets)
         if resp is None:
             return RagResponse.from_error(req_id, user_input, "ERROR: llm response is None")
         

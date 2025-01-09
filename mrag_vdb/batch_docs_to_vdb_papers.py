@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from mrag_vdb.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 from mrag_vdb.batch_docs_to_vdb_mrag import upsert_batch_kbname_to_vdb 
 
 KB_NAME = "papers"

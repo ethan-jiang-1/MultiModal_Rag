@@ -198,7 +198,7 @@ def sort_scored_sections_by_score(sections: List[ScoredRecoveredSection]) -> Lis
 if __name__ == "__main__":
     import rich
     from mrag_vdb.common.text_embedding import get_embedding_vec
-    from mrag_vdb.utils.util_logging import setup_logger_handlers
+    from mmbase.utils.util_logging import setup_logger_handlers
     from mrag_vdb.common.vdb_base import get_vdb_path
 
     setup_logger_handlers()

@@ -2,112 +2,107 @@ from typing import List
 from dotenv import load_dotenv
 import rich
 
+# 加载环境变量
 load_dotenv()
 
 from mmbase.utils.util_logging import setup_logger_handlers
 from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
+from mrag_vdb.query.query2section_raw import query2section_raw_on_rag_context
+from mrag_vdb.rerank.query2section_reranked import query2sortedsections_reranked
+from mrag_vdb.utils_llm.llm_gen_knowledge import gen_knowledge_by_llm
+from mrag_vdb.knowledge._knowledge_base import markdown_to_html_with_ids
 from mrag_vdb.dto.rag_answer import RagAnswer
 from mrag_vdb.dto.rag_context import RagContext
 from mrag_vdb.dto.rag_input import RagInput
 from mrag_vdb.knowledge.search_file_refs import search_for_file_refs
+from mrag_vdb.dto.rag_runtime_settings import RagModelGptSel
 from mrag_vdb.knowledge.query_rewrite import query_rewerite
-from mrag_vdb.query.query2section_raw import query2section_raw_on_rag_context
-from mrag_vdb.rerank.query2section_reranked import query2sortedsections_reranked
+KNOWLEGE_FORMAT = """
+<KnowledgeSnippet id="{id}"> n
+<Source>{source_file}</Source>\n
+<Title>{title}</Title>\n
+<Content> {html_content} </Content>\n
+</KnowledgeSnippet>\n
+"""
 
-def form_knowledge_snippets(sections: List[ScoredRecoveredSection]) -> str:
-    """将检索到的文档片段组合成知识片段"""
-    # 初始化日志系统
-    setup_logger_handlers()
-    
-    # 如果没有检索到文档片段，返回空字符串
-    if not sections:
-        rich.print("[yellow]No sections to form knowledge snippets[/yellow]")
-        return ""
-    
-    # 组合知识片段
-    knowledge_snippets = "\n\n".join([section.content for section in sections])
-    
-    # 打印结果
-    rich.print(f"[green]Formed knowledge snippets from {len(sections)} sections[/green]")
-    
-    return knowledge_snippets
+def form_knowledge_snippets(rag_context: RagContext, scored_sections_reranked:List[ScoredRecoveredSection]) -> str:
+    knowledge_all = ""
+    limit = rag_context.get_limit_rerank()
+    for ndx, section in enumerate(scored_sections_reranked):
+        if ndx >= limit:
+            break
+        source_file = section.fname_org_doc
+        title = section.heading
+        content = section.content
 
-def gen_answer_from_knowledge_snippets(query: str, knowledge_snippets: str) -> str:
-    """根据知识片段生成答案"""
-    # 初始化日志系统
-    setup_logger_handlers()
-    
-    # 如果没有知识片段，返回空字符串
-    if not knowledge_snippets:
-        rich.print("[yellow]No knowledge snippets to generate answer[/yellow]")
-        return ""
-    
-    # TODO: 实现根据知识片段生成答案的逻辑
-    answer = f"Query: {query}\n\nKnowledge snippets:\n{knowledge_snippets}"
-    
-    # 打印结果
-    rich.print("[green]Generated answer from knowledge snippets[/green]")
-    
-    return answer
+        html_content = markdown_to_html_with_ids(content)
 
-def compose_rag_answer(rag_context: RagContext, resp: str, scored_sections_reranked: List[ScoredRecoveredSection]) -> RagAnswer:
-    """组合RAG答案"""
-    # 初始化日志系统
-    setup_logger_handlers()
-    
-    # 搜索文件引用
-    file_refs = search_for_file_refs(resp)
-    
-    # 创建RAG答案对象
-    rag_answer = RagAnswer(
-        query=rag_context.get_refined_query(),
-        answer=resp,
-        file_refs=file_refs,
-        scored_sections=scored_sections_reranked
-    )
-    
+        knowledge = KNOWLEGE_FORMAT.format(id=ndx+1,
+                                           source_file=source_file,
+                                           title=title,
+                                           html_content=html_content)
+        section.knowledge_snippet = knowledge
+        knowledge_all += knowledge + "\n\n"
+    return knowledge_all
+
+def gen_answer_from_knowledge_snippets(rag_context: RagContext, knowledge_snippets: str) -> dict:
+    model_gen = RagModelGptSel.get_gpt_model()
+    query = rag_context.get_refined_query()
+    resp = gen_knowledge_by_llm(query, knowledge_snippets, model=model_gen)
+    return resp
+
+
+def compose_rag_answer(rag_context: RagContext, resp: dict, scored_sections_reranked:List[ScoredRecoveredSection], include_image:bool = True) -> RagAnswer:
+    refs_info = search_for_file_refs(rag_context, resp, scored_sections_reranked, include_image=include_image)
+    source_names = []
+    source_titles = []
+    source_pnames = []
+    image_names = []
+    image_titles = []
+    image_pnames = []
+
+    for source_name, src_val in refs_info.items():
+        source_pname, source_title = src_val["ref_doc_tuple"]
+        source_names.append(source_name)
+        source_titles.append(source_title)
+        source_pnames.append(source_pname)
+
+        ref_imgs_map = src_val.get("ref_imgs_map", None)
+        if isinstance(ref_imgs_map, dict):
+            for image_name, img_val in ref_imgs_map.items():
+                image_pname, image_title = img_val
+                image_names.append(image_name)
+                image_titles.append(image_title)
+                image_pnames.append(image_pname)
+
+    rag_answer = RagAnswer(answer=resp.get("simple_answer", ""),
+                           answer_referenced=resp.get("answer_with_reference", ""),
+                           source_names=source_names,
+                           source_titles=source_titles,
+                           source_pnames=source_pnames,
+                           image_names=image_names,
+                           image_titles=image_titles,
+                           image_pnames=image_pnames)
     return rag_answer
 
-def query2knowledge(rag_input: RagInput) -> RagAnswer:
-    """将查询转换为知识"""
-    # 初始化日志系统
-    setup_logger_handlers()
-    
-    # 创建RAG上下文
-    rag_context = RagContext(rag_input)
-    
-    # 重写查询
-    query = query_rewerite(rag_context)
-    
-    # 获取原始文档片段
+
+def exam_query2knowledge(query: str, collection_names:List[str], limit_raw: int = 20, limit_rerank: int = 5) -> RagAnswer:
+    rag_input = RagInput(query=query, preferred_kbnames=collection_names, limit_raw=limit_raw, limit_rerank=limit_rerank)
+    rag_context = RagContext(input=rag_input)
+
+    rag_context = query_rewerite(rag_context)
+
     scored_sections_raw = query2section_raw_on_rag_context(rag_context)
-    
-    # 重新排序文档片段
-    scored_sections_reranked = query2sortedsections_reranked(rag_context, scored_sections_raw)
-    
-    # 组合知识片段
-    knowledge_snippets = form_knowledge_snippets(scored_sections_reranked)
-    
-    # 生成答案
-    resp = gen_answer_from_knowledge_snippets(query, knowledge_snippets)
-    
-    # 组合RAG答案
-    rag_answer = compose_rag_answer(rag_context, resp, scored_sections_reranked)
-    
-    return rag_answer
 
-def exam_query2knowledge(query: str, collection_names: List[str], limit_raw: int = 20, limit_rerank: int = 5) -> RagAnswer:
-    """用于测试的查询转知识函数"""
-    # 创建RAG输入对象
-    rag_input = RagInput(
-        query=query,
-        preferred_kbnames=collection_names,
-        limit_raw=limit_raw,
-        limit_rerank=limit_rerank
-    )
-    
-    # 调用主函数处理查询
-    return query2knowledge(rag_input)
+    scored_sections_reranked = query2sortedsections_reranked(rag_context, scored_sections_raw)
+
+    knowledge_snippets = form_knowledge_snippets(rag_context, scored_sections_reranked)
+
+    resp = gen_answer_from_knowledge_snippets(rag_context, knowledge_snippets)
+
+    rag_answer = compose_rag_answer(rag_context, resp, scored_sections_reranked)
+
+    return rag_answer
 
 if __name__ == "__main__":
     setup_logger_handlers()

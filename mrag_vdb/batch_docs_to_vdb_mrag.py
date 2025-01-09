@@ -6,7 +6,7 @@ load_dotenv()
 
 
 from mrag_vdb.build.doc2vdb import upsert_doc_to_vdb
-from mrag_vdb.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 from mrag_vdb.add_doc_to_vdb import _MIB_CTN2MD_LEAD 
 
 KB_NAME = "mrag"

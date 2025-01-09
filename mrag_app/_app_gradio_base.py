@@ -18,7 +18,7 @@ from mrag_app._app_gradio_css import CUSTOM_CSS
 from mrag_app._app_questions import QUESTION_LIST_MRAG, QUESTION_LIST_PAPERS
 from mrag_app._app_qa_core import main_loop_gradio, get_rag_response_from_main_loop, reset_rag_response_for_main_loop, RagResponse
 from mrag_app._app_log_monitor import ProgressLogger
-from mrag_vdb.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 from mrag_vdb.utils.util_git import get_git_version
 from mrag_vdb.dto.rag_runtime_settings import RagModelGptSel, RagKbNameSel, RagRetrievalNum
 

@@ -7,7 +7,7 @@ from qdrant_client.http.models import VectorParams, Distance
 load_dotenv()
 
 from mrag_vdb.common.text_embedding import _EMBEDDING_VEC_LEN
-from mrag_vdb.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 
 
 def ensure_collection_with_schema_chunked_section(client: QdrantClient, collection_name: str) -> bool:

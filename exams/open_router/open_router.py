@@ -5,7 +5,7 @@ import rich
 
 load_dotenv()
 
-from mrag_vdb.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 
 setup_logger_handlers()
 

@@ -8,7 +8,7 @@ import shutil
 load_dotenv()
 
 from mrag_vdb.build._convert_doc_to_chunks import convert_sections_to_chunks, DocMetaInfo
-from mrag_vdb.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 from mrag_vdb.common.vdb_base import get_vdb_path, get_doc_meta_pathname, get_ref_root
 from mrag_vdb.build._inject_chunks_to_vdb import inject_doc_chunks_into_vdb
 from mrag_vdb.common.map_doc_to_collection import MapDocToCol

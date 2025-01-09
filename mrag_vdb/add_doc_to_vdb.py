@@ -6,7 +6,7 @@ import os
 load_dotenv()
 
 
-from mrag_vdb.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 from mrag_vdb.build.doc2vdb import upsert_doc_to_vdb
 
 def upsert_docs_to_vdb(pnames_final_info: List[str]) -> None:
