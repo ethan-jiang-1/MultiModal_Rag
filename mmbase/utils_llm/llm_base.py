@@ -272,11 +272,13 @@ def strip_llm_format_markers(content: Optional[str]) -> str:
         content = content[len("```markdown\n"):]
     elif content.startswith("```\n"):
         content = content[len("```\n"):]
+    elif content.startswith("```"):
+        content = content[len("```"):]
     
     # 处理结尾
     if content.endswith("\n```"):
         content = content[:-4]
-    if content.endswith("```"):
+    elif content.endswith("```"):
         content = content[:-3]
 
     content = content.replace("[ocr_end]", " ")
