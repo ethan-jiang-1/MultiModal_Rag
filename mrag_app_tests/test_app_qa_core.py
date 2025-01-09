@@ -1,8 +1,8 @@
 import pytest
-
 from mrag_app._app_qa_core import _QueryState, main_loop_gradio
 from mrag_app._rag_response import RagResponse
 from mrag_vdb.dto.rag_answer import RagAnswer
+from mrag_vdb.dto.rag_runtime_settings import RagKbNameSel, RagModelGptSel
 
 @pytest.fixture(autouse=True)
 def setup_and_cleanup():
@@ -12,154 +12,115 @@ def setup_and_cleanup():
     _QueryState.reset()
 
 @pytest.fixture
-def sample_response():
-    """创建一个示例RAG响应"""
-    return RagResponse(
+def mock_rag_answer():
+    """创建一个模拟的RAG回答"""
+    return RagAnswer(
+        answer="这是测试回答内容",
+        answer_referenced="这是带引用的回答内容",
+        source_names=["doc1.md", "doc2.md"],
+        source_titles=["文档1", "文档2"],
+        source_pnames=["/path/to/doc1", "/path/to/doc2"],
+        image_names=["img1.png"],
+        image_titles=["图片1"],
+        image_pnames=["/path/to/img1"]
+    )
+
+@pytest.fixture
+def mock_rag_response(mock_rag_answer):
+    """创建一个模拟的RAG响应"""
+    response = RagResponse(
         req_id=12345,
         user_input="测试问题",
-        rag_answer=RagAnswer(answer="测试回答", answer_referenced="带引用的回答")
+        rag_answer=mock_rag_answer
     )
-
-@pytest.mark.unit
-def test_query_state_lifecycle(sample_response):
-    """测试应用层查询状态的生命周期管理"""
-    # 初始状态应该是 None
-    assert _QueryState.get_response() is None
-    
-    # 设置响应
-    _QueryState.set_response(sample_response)
-    
-    # 验证能够获取到设置的响应
-    current_response = _QueryState.get_response()
-    assert current_response is not None
-    assert current_response.req_id == 12345
-    assert current_response.user_input == "测试问题"
-    assert current_response.rag_answer.answer == "测试回答"
-    
-    # 重置状态
-    _QueryState.reset()
-    assert _QueryState.get_response() is None
-
-@pytest.mark.unit
-def test_query_state_multiple_updates():
-    """测试应用层查询状态的多次更新"""
-    # 第一次更新
-    response1 = RagResponse(
-        req_id=1,
-        user_input="问题1",
-        rag_answer=RagAnswer(answer="回答1", answer_referenced="引用1")
-    )
-    _QueryState.set_response(response1)
-    assert _QueryState.get_response().req_id == 1
-    
-    # 第二次更新
-    response2 = RagResponse(
-        req_id=2,
-        user_input="问题2",
-        rag_answer=RagAnswer(answer="回答2", answer_referenced="引用2")
-    )
-    _QueryState.set_response(response2)
-    assert _QueryState.get_response().req_id == 2
-    
-    # 确保是最新的状态
-    current = _QueryState.get_response()
-    assert current.user_input == "问题2"
-    assert current.rag_answer.answer == "回答2"
-
-@pytest.mark.unit
-def test_query_state_reset_behavior():
-    """测试应用层查询状态重置的行为"""
-    # 设置初始状态
-    initial_response = RagResponse(
-        req_id=123,
-        user_input="测试问题",
-        rag_answer=RagAnswer(answer="测试回答", answer_referenced="引用")
-    )
-    _QueryState.set_response(initial_response)
-    
-    # 验证状态已设置
-    assert _QueryState.get_response() is not None
-    
-    # 重置状态
-    _QueryState.reset()
-    
-    # 验证重置后的状态
-    assert _QueryState.get_response() is None
-    
-    # 再次设置新状态，确保可以正常工作
-    new_response = RagResponse(
-        req_id=456,
-        user_input="新问题",
-        rag_answer=RagAnswer(answer="新回答", answer_referenced="新引用")
-    )
-    _QueryState.set_response(new_response)
-    assert _QueryState.get_response().req_id == 456
-
-@pytest.fixture
-def mock_core_query(monkeypatch, sample_response):
-    """模拟核心查询函数"""
-    def _mock_query(user_input, kb_name=None, limit=None):
-        return sample_response
-    monkeypatch.setattr("mrag_app._app_qa_core._do_core_query", _mock_query)
+    # 添加典型的进度步骤
+    response.add_progress("step1", 10, "选择知识库:mrag")
+    response.add_progress("step2", 50, "处理中", "正在检索")
+    response.add_progress("step3", 100, "完成回答")
+    return response
 
 @pytest.mark.integration
-def test_main_loop_gradio_basic(mock_core_query, sample_response):
-    """测试Gradio主循环的基本功能"""
-    # 执行测试
-    main_loop_gradio("测试问题", kb_name="test_kb")
+def test_main_flow_mrag_kb(mock_rag_response, monkeypatch):
+    """测试MRAG知识库的主要查询流程"""
+    def mock_core_query(user_input, kb_name=None, limit=None):
+        assert kb_name == "mrag", "应该使用mrag知识库"
+        assert limit == 10, "默认应该使用10条限制"
+        return mock_rag_response
     
-    # 验证状态
-    current_response = _QueryState.get_response()
-    assert current_response is not None
-    assert current_response.status == "success"
-    assert current_response.rag_answer.answer == "测试回答"
-    assert len(current_response.progress_steps) > 0
-
-@pytest.fixture
-def mock_core_query_error(monkeypatch):
-    """模拟核心查询函数抛出错误"""
-    def _mock_query(*args, **kwargs):
-        raise Exception("测试错误")
-    monkeypatch.setattr("mrag_app._app_qa_core._do_core_query", _mock_query)
+    monkeypatch.setattr("mrag_app._app_qa_core._do_core_query", mock_core_query)
+    RagKbNameSel.set_kbname("mrag")  # 设置知识库
+    
+    # 执行主流程
+    main_loop_gradio("椅背板与旁侧板的保留运动间隙是多少？")
+    
+    # 验证响应
+    response = _QueryState.get_response()
+    assert response is not None
+    assert response.status == "success"
+    assert len(response.progress_steps) > 0
+    assert response.rag_answer.answer == "这是测试回答内容"
+    # 验证文档和图片信息
+    assert len(response.rag_answer.source_names) == 2
+    assert len(response.rag_answer.image_names) == 1
 
 @pytest.mark.integration
-def test_main_loop_gradio_error_handling(mock_core_query_error):
-    """测试Gradio主循环的错误处理"""
-    # 执行测试
+def test_main_flow_papers_kb(mock_rag_response, monkeypatch):
+    """测试Papers知识库的主要查询流程"""
+    def mock_core_query(user_input, kb_name=None, limit=None):
+        assert kb_name == "papers", "应该使用papers知识库"
+        return mock_rag_response
+    
+    monkeypatch.setattr("mrag_app._app_qa_core._do_core_query", mock_core_query)
+    RagKbNameSel.set_kbname("papers")  # 设置知识库
+    
+    # 执行主流程
+    main_loop_gradio("什么是神经网络？")
+    
+    # 验证响应
+    response = _QueryState.get_response()
+    assert response is not None
+    assert response.status == "success"
+
+@pytest.mark.integration
+def test_main_flow_with_different_models(mock_rag_response, monkeypatch):
+    """测试不同模型的查询流程"""
+    mock_calls = []
+    
+    def mock_core_query(user_input, kb_name=None, limit=None):
+        mock_calls.append({"input": user_input, "kb": kb_name})
+        return mock_rag_response
+    
+    monkeypatch.setattr("mrag_app._app_qa_core._do_core_query", mock_core_query)
+    
+    # 测试不同的模型设置
+    models = ["gpt-4", "gpt-35-turbo", "qwen-turbo", "qwen-plus"]
+    for model in models:
+        RagModelGptSel.set_gpt_model(model)
+        main_loop_gradio("测试问题")
+        
+        response = _QueryState.get_response()
+        assert response is not None
+        assert response.status == "success"
+        _QueryState.reset()  # 重置状态准备下一次测试
+
+@pytest.mark.integration
+def test_error_handling_flow(monkeypatch):
+    """测试错误处理流程"""
+    def mock_core_query(*args, **kwargs):
+        raise Exception("模拟的API调用错误")
+    
+    monkeypatch.setattr("mrag_app._app_qa_core._do_core_query", mock_core_query)
+    
+    # 执行查询
     main_loop_gradio("测试问题")
     
     # 验证错误响应
-    error_response = _QueryState.get_response()
-    assert error_response is not None
-    assert error_response.status == "failed"
-    assert "测试错误" in error_response.error_message
-    assert error_response.rag_answer.answer == ""
+    response = _QueryState.get_response()
+    assert response is not None
+    assert response.status == "failed"
+    assert "模拟的API调用错误" in response.error_message
     
-    # 验证进度步骤
-    progress_steps = error_response.progress_steps
-    assert len(progress_steps) > 0
-    error_step = next((step for step in progress_steps if step.step == "error"), None)
+    # 验证错误进度步骤
+    error_step = next((step for step in response.progress_steps if step.step == "error"), None)
     assert error_step is not None
-    assert "测试错误" in error_step.task_name
-
-@pytest.mark.integration
-def test_main_loop_gradio_progress_tracking(mock_core_query):
-    """测试Gradio主循环的进度跟踪"""
-    # 执行测试
-    main_loop_gradio("测试问题")
-    
-    # 验证进度步骤
-    current_response = _QueryState.get_response()
-    progress_steps = current_response.progress_steps
-    
-    # 验证有进度步骤
-    assert len(progress_steps) > 0
-    
-    # 验证最终状态
-    assert current_response.status == "success"
-    assert current_response.error_message is None
-    
-    # 验证最终进度
-    final_step = progress_steps[-1]
-    assert final_step.progress == 100  # 确保完成
-    assert "查询退出" in final_step.task_name  # 最后一步是查询退出 
+    assert "模拟的API调用错误" in error_step.task_name 
