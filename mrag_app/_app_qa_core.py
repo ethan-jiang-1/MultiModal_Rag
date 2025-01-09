@@ -59,14 +59,8 @@ def main_loop_gradio(user_input: str, kb_name: Optional[str] = None) -> None:
         limit = RagRetrievalNum.get_retrieval_num()
 
         # 执行核心查询
-        new_response = _do_core_query(user_input, kb_name=kb_name, limit=limit)
-        
-        # 保留原始响应的进度步骤
-        for step in response.progress_steps:
-            new_response.progress_steps.insert(0, step)
-            
-        new_response.add_progress("step10", 100, "查询退出")
-        response = new_response
+        response = _do_core_query(user_input, kb_name=kb_name, limit=limit)
+        response.add_progress("step10", 100, "查询退出")
         
     except Exception as ex:
         logging.exception(ex)
