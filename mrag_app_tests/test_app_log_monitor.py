@@ -1,7 +1,6 @@
 import pytest
-#from unittest.mock import patch
 from mrag_app._app_log_monitor import ProgressLogger
-from mrag_vdb.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 
 @pytest.fixture(autouse=True)
 def clear_progress_history():

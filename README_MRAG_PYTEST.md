@@ -3,6 +3,7 @@
 {
     "python.testing.pytestArgs": [
         "ctn2md_tests",
+        "mmbase_tests",
         "mrag_app_tests",
         "mrag_vdb_tests"
     ],

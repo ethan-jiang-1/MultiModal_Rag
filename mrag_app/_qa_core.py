@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 load_dotenv()
 
-from mrag_vdb.utils.util_logging import setup_logger_handlers, get_logger_progress
+from mmbase.utils.util_logging import setup_logger_handlers, get_logger_progress
 from mrag_vdb.query.query2section_raw import query2section_raw_on_rag_context
 from mrag_vdb.rerank.query2section_reranked import query2sortedsections_reranked
 from mrag_vdb.knowledge.query2knowledge import gen_answer_from_knowledge_snippets, form_knowledge_snippets
@@ -127,11 +127,11 @@ def do_core_query(user_input: str, kb_name: Optional[str] = None, limit: int = 1
         
         # Knowledge organization
         response.add_progress("step5", 50, "组织整理知识")
-        knowledge_snippets = form_knowledge_snippets(rag_context, scored_sections_reranked)
+        knowledge_snippets = form_knowledge_snippets(scored_sections_reranked)
         
         # Generate answer
         response.add_progress("step6", 60, "组织回答#综合知识(文本)")
-        resp = gen_answer_from_knowledge_snippets(rag_context, knowledge_snippets)
+        resp = gen_answer_from_knowledge_snippets(rag_context.get_refined_query(), knowledge_snippets)
         if resp is None:
             return RagResponse.from_error(req_id, user_input, "ERROR: llm response is None")
         

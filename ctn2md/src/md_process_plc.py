@@ -1,10 +1,11 @@
+import os
+import re
+import logging
 from typing import List, Tuple
 from dotenv import load_dotenv
 import rich
-import re
-import logging
 
-from ctn2md.utils.util_logging import setup_logger_handlers
+from mmbase.utils.util_logging import setup_logger_handlers
 
 load_dotenv()
 
@@ -287,7 +288,6 @@ def get_all_normalized_headings_with_plc_info(md_text:str, fix_first_line_no_hea
 
 
 if __name__ == "__main__":
-    import os
     setup_logger_handlers()
     #md_path_name = "_work/md_samples/深度学习在视电阻率快速反演中的研究___pdf_s0.md"
     md_path_name = "_work/ctn2md_mrag__1__座椅STO间隙_P1_lp/1. 座椅STO间隙 P1___pptx_s1.md"

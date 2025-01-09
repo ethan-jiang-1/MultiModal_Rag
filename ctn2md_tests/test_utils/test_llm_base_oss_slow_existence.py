@@ -3,6 +3,7 @@ from unittest.mock import patch, MagicMock
 from tenacity import RetryError
 
 from ctn2md.utils_llm.llm_base_oss import upload_image_to_oss
+from mmbase.utils.util_logging import setup_logger_handlers
 
 @pytest.fixture(autouse=True)
 def mock_exists():
@@ -18,6 +19,11 @@ def mock_http_client():
         mock_response.status_code = 200
         mock_client.return_value.__enter__.return_value.head.return_value = mock_response
         yield mock_client
+
+@pytest.fixture(autouse=True)
+def setup():
+    setup_logger_handlers()
+    yield
 
 def test_file_existence_check(mock_exists):
     """测试文件存在性检查"""

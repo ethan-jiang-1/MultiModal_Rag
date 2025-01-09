@@ -5,6 +5,7 @@ from tenacity import RetryError
 from ctn2md.utils_llm.llm_base_oss import (
     upload_image_to_oss,
 )
+from mmbase.utils.util_logging import setup_logger_handlers
 
 @pytest.fixture(autouse=True)
 def mock_exists():
@@ -32,6 +33,11 @@ def mock_oss():
         mock_result.status = 403
         mock_bucket.return_value.put_object.return_value = mock_result
         yield mock_bucket
+
+@pytest.fixture(autouse=True)
+def setup():
+    setup_logger_handlers()
+    yield
 
 def test_upload_failure(mock_oss):
     """测试上传失败的情况"""

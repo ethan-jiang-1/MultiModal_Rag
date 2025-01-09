@@ -7,6 +7,7 @@ from ctn2md.utils_llm.llm_base_oss import (
     _generate_unique_name,
     upload_image_to_oss,
 )
+from mmbase.utils.util_logging import setup_logger_handlers
 
 @pytest.fixture
 def test_image():
@@ -27,6 +28,11 @@ def mock_http_client():
         mock_response.status_code = 200
         mock_client.return_value.__enter__.return_value.head.return_value = mock_response
         yield mock_client
+
+@pytest.fixture(autouse=True)
+def setup():
+    setup_logger_handlers()
+    yield
 
 @freeze_time("2024-01-08")
 def test_generate_unique_name():
