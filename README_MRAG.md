@@ -4,9 +4,75 @@
 
 ** 重要 配置.env 环境变量 ** 
 需要 .env 里面有这么一行：
-  # Python Path Configuration
+```
   PYTHONPATH=.
+```
 所有的代码基本都附带有一个简单的测试，需要知道项目的根目录在哪里才能执行。
+
+## 系统架构图
+
+![系统架构概览](docs/images/architecture/arch_mrag_overview.png)
+
+*图1: 系统整体架构图，展示了主要组件和它们之间的关系*
+
+![数据流向图](docs/images/architecture/arch_mrag_dataflow.png)
+
+*图2: 数据流向图，展示了从文档输入到答案生成的完整流程*
+
+![模块依赖关系](docs/images/architecture/arch_mrag_modules.png)
+
+*图3: 模块依赖关系图，展示了内部模块之间的依赖关系以及与外部服务的集成*
+
+## 典型使用场景
+
+### 1. 技术文档智能问答
+适用于将大量技术文档（如API文档、产品手册）转换为智能问答系统。
+
+```python
+# 1. 转换文档
+from ctn2md.ctn2md_converter_ti import do_content2md_convert
+do_content2md_convert("technical_docs/")
+
+# 2. 构建知识库
+from mrag_vdb.batch_docs_to_vdb_mrag import upsert_batch_kbname_to_vdb
+upsert_batch_kbname_to_vdb("technical_docs/", "tech_kb")
+
+# 3. 启动问答界面
+python mrag_app/app_gradio.py
+```
+
+### 2. 多模态产品资料检索
+适用于包含图文混合的产品资料，支持图片关联的智能问答。
+
+```python
+# 1. 转换产品资料（支持图文）
+from ctn2md.ctn2md_converter_lvlm import do_content2md_convert
+do_content2md_convert("product_docs/")
+
+# 2. 构建多模态知识库
+from mrag_vdb.batch_docs_to_vdb_mrag import upsert_batch_kbname_to_vdb
+upsert_batch_kbname_to_vdb("product_docs/", "product_kb", 
+                          image_enabled=True)
+
+# 3. 启动带图片支持的问答界面
+python mrag_app/app_gradio.py
+```
+
+### 3. 实时文档更新和问答
+适用于需要频繁更新的知识库场景。
+
+```python
+# 1. 监控文档变化
+from ctn2md.ctn2md_watcher import start_doc_watcher
+start_doc_watcher("live_docs/")
+
+# 2. 增量更新知识库
+from mrag_vdb.incremental_update import update_changed_docs
+update_changed_docs("live_docs/", "live_kb")
+
+# 3. 启动实时问答界面
+python mrag_app/app_gradio.py
+```
 
 ## 系统架构
 

@@ -1,0 +1,24 @@
+graph LR
+    %% 文档处理流程
+    DOC[("原始文档\nPDF/Word/图片")] --> CTN["文档转换\nCTN2MD"]
+    CTN -->|"转换为Markdown"| MD[("结构化文档\nMarkdown")]
+    MD --> SPLIT["智能分块\nMRAG_VDB"]
+    SPLIT -->|"文本块"| EMB["向量化\nMRAG_VDB"]
+    EMB -->|"向量数据"| VDB[("向量数据库")]
+
+    %% 问答流程
+    Q["用户提问"] --> RAG["检索增强\nMRAG_APP"]
+    VDB -->|"相关内容"| RAG
+    RAG -->|"上下文"| LLM["大语言模型"]
+    LLM -->|"生成答案"| A["回答"]
+
+    %% 样式定义
+    classDef storage fill:#bfb,stroke:#333,stroke-width:2px;
+    classDef process fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef input fill:#bbf,stroke:#333,stroke-width:2px;
+    classDef output fill:#fbb,stroke:#333,stroke-width:2px;
+
+    class DOC,MD,VDB storage;
+    class CTN,SPLIT,EMB,RAG,LLM process;
+    class Q input;
+    class A output; 

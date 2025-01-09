@@ -1,0 +1,39 @@
+graph TB
+    %% 核心模块
+    MMBASE[("MMBASE\n基础模块")] --> CTN2MD["CTN2MD\n文档转换"]
+    MMBASE --> MRAG_VDB["MRAG_VDB\n向量数据库"]
+    MMBASE --> MRAG_APP["MRAG_APP\n应用界面"]
+    
+    %% 内部依赖
+    CTN2MD --> MRAG_VDB
+    MRAG_VDB --> MRAG_APP
+    
+    %% 外部服务依赖
+    subgraph "Azure服务"
+        AOAI["Azure OpenAI\nGPT-4/3.5"]
+        FORM["Azure Form\nOCR服务"]
+    end
+    
+    subgraph "其他服务"
+        QWEN["通义千问\nQwen"]
+        ARK["Ark\n大模型"]
+        JINA["Jina AI\n向量服务"]
+        LP["LlamaParse\n文档解析"]
+    end
+    
+    %% 连接外部服务
+    MMBASE -.->|"LLM调用"| AOAI
+    MMBASE -.->|"LLM调用"| QWEN
+    MMBASE -.->|"LLM调用"| ARK
+    CTN2MD -.->|"OCR服务"| FORM
+    CTN2MD -.->|"文档解析"| LP
+    MRAG_VDB -.->|"向量服务"| JINA
+    
+    %% 样式定义
+    classDef core fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef azure fill:#bbf,stroke:#333,stroke-width:2px;
+    classDef other fill:#bfb,stroke:#333,stroke-width:2px;
+    
+    class MMBASE,CTN2MD,MRAG_VDB,MRAG_APP core;
+    class AOAI,FORM azure;
+    class QWEN,ARK,JINA,LP other; 

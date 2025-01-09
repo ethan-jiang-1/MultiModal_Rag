@@ -1,0 +1,23 @@
+{
+  "name": "multimodal_rag",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/supernewbilityxht1/MultiModal_Rag.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/supernewbilityxht1/MultiModal_Rag/issues"
+  },
+  "homepage": "https://github.com/supernewbilityxht1/MultiModal_Rag#readme"
+}

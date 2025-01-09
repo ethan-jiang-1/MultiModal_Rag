@@ -1,0 +1,46 @@
+graph TB
+    subgraph "文档处理层"
+        CTN2MD["CTN2MD\n文档转换模块"]
+        MMBASE["MMBASE\n基础设施模块"]
+    end
+
+    subgraph "存储层"
+        MRAG_VDB["MRAG_VDB\n向量数据库模块"]
+        DB[(向量数据库)]
+    end
+
+    subgraph "应用层"
+        MRAG_APP["MRAG_APP\n应用界面模块"]
+        UI[/"Gradio UI"/]
+    end
+
+    subgraph "外部服务"
+        LLM["LLM服务\nGPT/Qwen/Ark"]
+        OCR["文档处理服务\nTextIn/LlamaParse"]
+    end
+
+    %% 连接关系
+    CTN2MD --> MRAG_VDB
+    MRAG_VDB --> DB
+    MRAG_APP --> MRAG_VDB
+    MRAG_APP --> UI
+    
+    %% 基础设施连接
+    MMBASE --> CTN2MD
+    MMBASE --> MRAG_VDB
+    MMBASE --> MRAG_APP
+    
+    %% 外部服务连接
+    CTN2MD -.-> OCR
+    MRAG_APP -.-> LLM
+    
+    %% 样式
+    classDef module fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef external fill:#bbf,stroke:#333,stroke-width:2px;
+    classDef storage fill:#bfb,stroke:#333,stroke-width:2px;
+    classDef ui fill:#fbb,stroke:#333,stroke-width:2px;
+    
+    class CTN2MD,MRAG_VDB,MRAG_APP,MMBASE module;
+    class LLM,OCR external;
+    class DB storage;
+    class UI ui; 
