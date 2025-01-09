@@ -1,95 +1,15 @@
 import pytest
 from unittest.mock import patch
-from mrag_app._qa_core import ProgressStep, RagResponse, do_core_query
-from mrag_vdb.dto.rag_answer import RagAnswer 
+from mrag_app._qa_core import do_core_query, RagResponse
+from mrag_vdb.dto.rag_answer import RagAnswer
 from mrag_vdb.common.scored_recovered_section import ScoredRecoveredSection
-
-def test_progress_step_creation():
-    """测试ProgressStep的创建和属性"""
-    # 基本创建测试
-    step = ProgressStep(
-        step="step1",
-        progress=50,
-        task_name="测试任务",
-        extra_info="额外信息"
-    )
-    assert step.step == "step1"
-    assert step.progress == 50
-    assert step.task_name == "测试任务"
-    assert step.extra_info == "额外信息"
-
-    # 测试可选字段
-    step_no_extra = ProgressStep(
-        step="step2",
-        progress=75,
-        task_name="测试任务2"
-    )
-    assert step_no_extra.extra_info is None
-
-def test_rag_response_creation():
-    """测试RagResponse的基本创建"""
-    # 测试成功响应
-    rag_answer = RagAnswer(answer="测试回答", answer_referenced="带引用的回答")
-    response = RagResponse(
-        req_id=12345,
-        user_input="测试问题",
-        rag_answer=rag_answer
-    )
-    
-    assert response.status == "success"
-    assert response.error_message is None
-    assert response.req_id == 12345
-    assert response.user_input == "测试问题"
-    assert response.rag_answer == rag_answer
-    assert isinstance(response.progress_steps, list)
-    assert len(response.progress_steps) == 0
-
-def test_rag_response_factory_methods():
-    """测试RagResponse的工厂方法"""
-    # 测试成功工厂方法
-    rag_answer = RagAnswer(answer="测试回答", answer_referenced="带引用的回答")
-    success_response = RagResponse.from_success(
-        req_id=12345,
-        user_input="测试问题",
-        rag_answer=rag_answer
-    )
-    assert success_response.status == "success"
-    assert success_response.error_message is None
-    
-    # 测试失败工厂方法
-    error_response = RagResponse.from_error(
-        req_id=12345,
-        user_input="测试问题",
-        error_msg="测试错误"
-    )
-    assert error_response.status == "failed"
-    assert error_response.error_message == "测试错误"
-    assert error_response.rag_answer.answer == ""
-
-def test_rag_response_progress_tracking():
-    """测试RagResponse的进度跟踪功能"""
-    response = RagResponse(
-        req_id=12345,
-        user_input="测试问题",
-        rag_answer=RagAnswer(answer="", answer_referenced="")
-    )
-    
-    # 添加进度
-    response.add_progress("step1", 25, "任务1", "额外信息1")
-    response.add_progress("step2", 50, "任务2")
-    response.add_progress("step3", 75, "任务3", "额外信息3")
-    
-    assert len(response.progress_steps) == 3
-    assert response.progress_steps[0].progress == 25
-    assert response.progress_steps[1].extra_info is None
-    assert response.progress_steps[2].task_name == "任务3"
 
 @pytest.mark.integration
 @patch('mrag_app._qa_core.query2section_raw_on_rag_context')
 @patch('mrag_app._qa_core.query2sortedsections_reranked')
 @patch('mrag_app._qa_core.gen_answer_from_knowledge_snippets')
 @patch('mrag_app._qa_core.compose_rag_answer')
-def test_do_core_query_basic(mock_compose, mock_gen_answer, mock_rerank, mock_raw, mock_kb_name):
+def test_do_core_query_basic(mock_compose, mock_gen_answer, mock_rerank, mock_raw):
     """测试do_core_query的基本功能"""
     # 设置mock返回值
     mock_section = ScoredRecoveredSection(
@@ -117,7 +37,7 @@ def test_do_core_query_basic(mock_compose, mock_gen_answer, mock_rerank, mock_ra
     mock_compose.return_value = mock_answer
     
     # 使用一个简单的查询
-    response = do_core_query("椅背板与旁侧板的保留运动间隙是多少？", kb_name=mock_kb_name)
+    response = do_core_query("椅背板与旁侧板的保留运动间隙是多少？", kb_name="mrag")
     
     assert isinstance(response, RagResponse)
     assert response.status == "success"

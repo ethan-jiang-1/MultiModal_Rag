@@ -25,7 +25,7 @@ class ProgressStep(BaseModel):
     """Progress step information"""
     # "stepN: percentage: task_name: extra_info"
     step: str
-    progress: int  # percentage
+    progress: int = Field(ge=0, le=100, description="Progress percentage (0-100)")  # percentage
     task_name: str
     extra_info: Optional[str] = None
 
@@ -127,7 +127,7 @@ def do_core_query(user_input: str, kb_name: Optional[str] = None, limit: int = 1
         
         # Knowledge organization
         response.add_progress("step5", 50, "组织整理知识")
-        knowledge_snippets = form_knowledge_snippets(scored_sections_reranked)
+        knowledge_snippets = form_knowledge_snippets(rag_context, scored_sections_reranked)
         
         # Generate answer
         response.add_progress("step6", 60, "组织回答#综合知识(文本)")
