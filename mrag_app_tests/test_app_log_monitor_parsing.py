@@ -1,16 +1,27 @@
 import pytest
 from mrag_app._app_log_monitor import ProgressLogger
+import logging
 
 @pytest.fixture(autouse=True)
 def setup_and_cleanup():
     """每个测试前清理历史记录，测试后恢复初始状态"""
+    # 保存原始状态
     ProgressLogger.clear_progress_history()
-    initial_handlers = ProgressLogger._logger.handlers.copy()
-    yield
-    ProgressLogger.clear_progress_history()
-    # 恢复原始处理器状态
-    ProgressLogger._logger.handlers = initial_handlers
+    original_logger = ProgressLogger._logger
+    original_handlers = original_logger.handlers.copy()
+    original_hooked = ProgressLogger._logger_hooked
+    
+    # 重置logger状态
+    ProgressLogger._logger = logging.getLogger("test_logger")
     ProgressLogger._logger_hooked = False
+    
+    yield
+    
+    # 恢复原始状态
+    ProgressLogger.clear_progress_history()
+    ProgressLogger._logger = original_logger
+    ProgressLogger._logger.handlers = original_handlers
+    ProgressLogger._logger_hooked = original_hooked
 
 @pytest.mark.unit
 class TestProgressLoggerParsing:
@@ -96,6 +107,9 @@ class TestProgressLoggerParsing:
         # 测试重复设置
         ProgressLogger._setup_handler()
         assert len(ProgressLogger._logger.handlers) == initial_handlers + 1  # 不应该重复添加
+
+        # 清理历史记录，确保测试环境干净
+        ProgressLogger.clear_progress_history()
 
         # 测试通过log_progress记录日志
         ProgressLogger.log_progress("step1: 10%: 测试任务")

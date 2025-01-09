@@ -43,7 +43,8 @@ def mock_rag_response(mock_rag_answer):
 def test_main_flow_mrag_kb(mock_rag_response, monkeypatch):
     """测试MRAG知识库的主要查询流程"""
     def mock_core_query(user_input, kb_name=None, limit=None):
-        assert kb_name == "mrag", "应该使用mrag知识库"
+        current_kb = RagKbNameSel.get_kbname()
+        assert current_kb == "mrag", "应该使用mrag知识库"
         assert limit == 10, "默认应该使用10条限制"
         return mock_rag_response
     
@@ -67,7 +68,8 @@ def test_main_flow_mrag_kb(mock_rag_response, monkeypatch):
 def test_main_flow_papers_kb(mock_rag_response, monkeypatch):
     """测试Papers知识库的主要查询流程"""
     def mock_core_query(user_input, kb_name=None, limit=None):
-        assert kb_name == "papers", "应该使用papers知识库"
+        current_kb = RagKbNameSel.get_kbname()
+        assert current_kb == "papers", "应该使用papers知识库"
         return mock_rag_response
     
     monkeypatch.setattr("mrag_app._app_qa_core._do_core_query", mock_core_query)
