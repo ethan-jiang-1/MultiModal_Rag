@@ -105,8 +105,9 @@ class TestRagResponse:
         sample_rag_response.add_progress("step1", 0, "最小进度")
         sample_rag_response.add_progress("step2", 100, "最大进度")
         
-        with pytest.raises(ValueError):
-            sample_rag_response.add_progress("step3", -1, "负进度")
+        # 使用 Field 验证规则
+        with pytest.raises(ValueError, match="Input should be greater than or equal to 0"):
+            ProgressStep(step="step3", progress=-1, task_name="负进度")
         
-        with pytest.raises(ValueError):
-            sample_rag_response.add_progress("step4", 101, "超过100的进度") 
+        with pytest.raises(ValueError, match="Input should be less than or equal to 100"):
+            ProgressStep(step="step4", progress=101, task_name="超过100的进度") 

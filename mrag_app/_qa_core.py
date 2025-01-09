@@ -25,7 +25,7 @@ class ProgressStep(BaseModel):
     """Progress step information"""
     # "stepN: percentage: task_name: extra_info"
     step: str
-    progress: int  # percentage
+    progress: int = Field(ge=0, le=100)  # 添加范围验证
     task_name: str
     extra_info: Optional[str] = None
 

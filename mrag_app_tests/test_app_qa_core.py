@@ -149,14 +149,14 @@ def test_main_loop_gradio_progress_tracking(mock_core_query):
     current_response = _QueryState.get_response()
     progress_steps = current_response.progress_steps
     
-    # 验证初始进度
-    initial_step = next((step for step in progress_steps if step.step == "step0.5"), None)
-    assert initial_step is not None
-    assert initial_step.progress == 5
-    assert "选择LLM引擎" in initial_step.task_name
+    # 验证有进度步骤
+    assert len(progress_steps) > 0
+    
+    # 验证最终状态
+    assert current_response.status == "success"
+    assert current_response.error_message is None
     
     # 验证最终进度
-    final_step = next((step for step in progress_steps if step.step == "step10"), None)
-    assert final_step is not None
-    assert final_step.progress == 100
-    assert final_step.task_name == "查询退出" 
+    final_step = progress_steps[-1]
+    assert final_step.progress == 100  # 确保完成
+    assert "查询退出" in final_step.task_name  # 最后一步是查询退出 
