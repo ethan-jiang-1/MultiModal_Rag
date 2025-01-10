@@ -10,7 +10,7 @@ load_dotenv()
 from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE, PUBLIC_MIFN
 from ctn2md.utils.util_ctn_type import CTN_TYPE
-from ctn2md.src.ctn2md_gen_md_base import GenMd_Base
+from ctn2md.src_gen.ctn2md_gen_md_base import GenMd_Base
 from ctn2md.utils.util_markdown import find_all_image_refs
 
 def _copy_img_files_in_markdown(doc_pathname:str, out_dir:str) -> list:

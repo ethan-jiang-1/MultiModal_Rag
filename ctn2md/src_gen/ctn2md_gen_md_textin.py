@@ -3,35 +3,41 @@ from dotenv import load_dotenv
 import os
 import logging
 import rich
+import asyncio
 
 load_dotenv()
 
+from ctn2md.src.md_page_spe import SpecialPage
 from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
 from ctn2md.utils.util_ctn_type import CTN_TYPE
-from ctn2md.src.ctn2md_gen_md_base import GenMd_Base
+from ctn2md.src_gen.ctn2md_gen_md_base import GenMd_Base
 
-def _gen_md_lvlm(doc_pathname:str, out_dir:str, lvlm_model:str = "gpt-4o") -> str:
-    from ctn2md.gen_lvlm.gen_markdown_lvml import generate_markdown_lvlm
-    logging.info(f"##MDFLOW##: gen_md_lvlm started...")
+
+def _gen_md_textin(doc_pathname:str, out_dir:str) -> str:
+    from ctn2md.gen_ti.gen_markdown_textin import generate_markdown_ti, generate_markdown_ti_async
+    logging.info(f"##MDFLOW##: gen_md_textin started...")
 
     md_info = MdInfo(out_dir)
-    md_info.set_gen_engine(f"lvlm@{lvlm_model}")
+    md_info.set_gen_engine(f"textin:ocr")
     md_info.set_doc_pathname(doc_pathname)
     md_info[MIFN.FHL_QUALITY] = FHL_QUALITY_TYPE.HIGH
-    
-    md_info.save()
 
-    md_info_path = generate_markdown_lvlm(md_info, lvlm_model=lvlm_model)
+    mctl_ge_md_async = md_info.get_md_control("mctl_ge_md_async", False)
+    if mctl_ge_md_async:
+        logging.info(f"##MDFLOW##: gen_md_textin started async  ...")
+        md_info_path = asyncio.run(generate_markdown_ti_async(md_info))
+    else:
+        logging.info(f"##MDFLOW##: gen_md_textin started sync...")
+        md_info_path = generate_markdown_ti(md_info)
 
-    logging.info(f"##MDFLOW##: gen_md_lvlm end")
+    logging.info(f"##MDFLOW##: gen_md_textin end mctl_ge_md_async={mctl_ge_md_async}")
     return md_info_path
 
 
-class GenMd_Lvlm(GenMd_Base):
+class GenMd_TextIn(GenMd_Base):
     SUPPORT_CNT_TYPES = [CTN_TYPE.PDF, CTN_TYPE.DOC]
-    OD_SUFFIX = "lvlm"
-
+    OD_SUFFIX = "ti"
 
     @classmethod
     def does_gen_needed(cls, doc_pathname:str, out_dir:str, enforced_gen:bool) -> Tuple[MdInfo, bool]:
@@ -58,15 +64,21 @@ class GenMd_Lvlm(GenMd_Base):
                     logging.warning(f"page {pname} has error")
                     return True
         return False
+    
+    @classmethod
+    def is_md_page_completed(cls, pname_md_page:str) -> bool:
+        if not os.path.isfile(pname_md_page):
+            return False
+        return not SpecialPage.does_page_have_remote_image(pname_md_page) 
 
     @classmethod
     def generate_markdown(cls,
                           doc_pathname:str, 
                           out_dir:str = None, 
-                          enforced_gen:bool = False, 
+                          enforced_gen: bool = False, 
                           mdcontrols:Optional[dict] = None) -> str:
         if not cls.does_support_doc_type(doc_pathname):
-            raise ValueError(f"GenMd_Lvlm does not support '{doc_pathname}'")
+            raise ValueError(f"GenMd_TextIn does not support '{doc_pathname}'")
 
         md_info, gen_needed = cls.does_gen_needed(doc_pathname, out_dir, enforced_gen)
 
@@ -75,20 +87,22 @@ class GenMd_Lvlm(GenMd_Base):
             md_info.save()
 
         if gen_needed:
-            md_info_path = _gen_md_lvlm(doc_pathname, out_dir)
+            md_info_path = _gen_md_textin(doc_pathname, out_dir)
             if md_info_path is None:
                 return None
+
         return md_info.get_md_info_path()
 
 
 if __name__ == "__main__":
-    doc_pathname = "datasrc/exam/raw_docs/papers/ “AI+应用”百花齐放，新质生产力前景广阔pdf.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/papers/ “AI+应用”百花齐放，新质生产力前景广阔pdf.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/papers/深度学习在视电阻率快速反演中的研究.pdf"
 
-    out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=GenMd_Lvlm.OD_SUFFIX)
+    out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=GenMd_TextIn.OD_SUFFIX)
 
     setup_logger_handlers()
     os.makedirs(out_dir, exist_ok=True)
-    md_info_path = GenMd_Lvlm.generate_markdown(doc_pathname, out_dir=out_dir)
+    md_info_path = _gen_md_textin(doc_pathname, out_dir)
     print(md_info_path)
 
     md_info = MdInfo(md_info_path)

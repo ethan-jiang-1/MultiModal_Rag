@@ -3,7 +3,7 @@ import os
 from unittest.mock import patch
 from ctn2md.ctn2md_converter_ti import do_content2md_convert
 from ctn2md.src.md_info_base import MdInfo
-from ctn2md.src.ctn2md_gen_md_textin import GenMd_TextIn
+from ctn2md.src_gen.ctn2md_gen_md_textin import GenMd_TextIn
 
 
 def test_do_content2md_convert_error_handling(tmp_path):

@@ -18,7 +18,7 @@ from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_llm
 from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_heirarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_llm
 from ctn2md.src.make_final_result import make_final_json, reset_md_flow
-from ctn2md.src.ctn2md_gen_md_lvlm import GenMd_Lvlm
+from ctn2md.src_gen.ctn2md_gen_md_lvlm import GenMd_Lvlm
 from ctn2md.gen_lvlm.lvlm_pdf_pages_to_images import normalize_path, ensure_dir_exists
 
 def _do_content2md_convert_core_lvlm(doc_pathname:str, 
