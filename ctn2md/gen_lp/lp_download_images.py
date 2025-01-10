@@ -1,71 +1,94 @@
-from typing import List, Dict, Tuple
+from typing import List, TypedDict, Optional, Tuple
 import os
-import json
 import logging
+import shutil
 from dotenv import load_dotenv
 from llama_parse import LlamaParse
 
 load_dotenv()
 
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.src.md_info_base import MdInfo, MIFN
+from ctn2md.gen_lp.lp_download_image_status import ImageStatusTracker
 
-FNAME_FAILED_IMAGE = "failed_image_downloads.json"
-MAX_RETRY_ATTEMPTS = 3
+class OCRResult(TypedDict):
+    """OCR识别结果"""
+    x: int           # OCR区域左上角x坐标
+    y: int           # OCR区域左上角y坐标
+    w: int           # OCR区域宽度
+    h: int           # OCR区域高度
+    confidence: str  # 置信度
+    text: str        # 识别的文本
 
-def _verify_image(path: str) -> bool:
-    """验证图片文件的完整性"""
-    try:
-        return os.path.exists(path) and os.path.getsize(path) > 0
-    except Exception as e:
-        logging.error(f"Failed to verify image {path}: {e}")
-        return False
+class LlamaParseImage(TypedDict):
+    """LlamaParse返回的图片信息"""
+    name: str                    # 图片文件名
+    height: int                  # 图片高度
+    width: int                   # 图片宽度
+    x: float                     # 图片在页面中的x坐标
+    y: float                     # 图片在页面中的y坐标
+    original_width: int          # 原始宽度
+    original_height: int         # 原始高度
+    ocr: Optional[List[OCRResult]]  # OCR结果（可选）
+    path: str                    # 图片保存路径
 
-def _load_failed_records(aux_dir: str) -> Dict[str, int]:
-    """加载失败记录"""
-    path = os.path.join(aux_dir, FNAME_FAILED_IMAGE)
-    if not os.path.exists(path):
-        return {}
-    try:
-        with open(path, 'r') as f:
-            return json.load(f)
-    except Exception as e:
-        logging.error(f"Failed to load download records: {e}")
-        return {}
-
-def _save_failed_records(aux_dir: str, records: Dict[str, int]) -> None:
-    """保存失败记录"""
-    path = os.path.join(aux_dir, FNAME_FAILED_IMAGE)
-    try:
-        if not records:
-            if os.path.exists(path):
-                os.remove(path)
-            return
-        with open(path, 'w') as f:
-            json.dump(records, f, indent=2)
-    except Exception as e:
-        logging.error(f"Failed to save download records: {e}")
-
-def _process_download_results(images: List[dict], aux_dir: str) -> Tuple[List[dict], Dict[str, int]]:
-    """处理下载结果，更新失败记录"""
-    failed_records = _load_failed_records(aux_dir)
+def _analyse_download_status(json_result: List[dict], md_info: MdInfo) -> Tuple[list, list]:
+    """分析需要下载的图片状态
     
-    for image in images:
-        path = image["path"]
-        if not _verify_image(path):
-            attempts = failed_records.get(path, 0) + 1
-            if attempts <= MAX_RETRY_ATTEMPTS:
-                failed_records[path] = attempts
-                logging.error(f"Failed to download {path} (attempt {attempts}/{MAX_RETRY_ATTEMPTS})")
-        elif path in failed_records:
-            del failed_records[path]
-            logging.info(f"Successfully downloaded {path}")
-        image["download_success"] = _verify_image(path)
+    Args:
+        json_result: LlamaParse 返回的解析结果
+        md_info: 文档信息对象
+        
+    Returns:
+        tuple[list, list]: (需要下载的图片列表, 已存在的图片列表)
+    """
+    unique_job_id = md_info.get_unique_job_id()
+    out_dir = md_info.get_out_dir()
     
-    _save_failed_records(aux_dir, failed_records)
-    return images, failed_records
+    # 收集所有需要的图片信息
+    required_images = []
+    for result in json_result:
+        cur_job_id = result["job_id"]
+        for page in result["pages"]:
+            if "images" not in page:
+                continue
+            for image in page["images"]:
+                # 构建目标 unique_job_id 的路径
+                target_name = f"{unique_job_id}-{image['name']}"
+                target_path = os.path.join(out_dir, target_name)
+                
+                image_info = {
+                    "cur_job_id": cur_job_id,
+                    "image_name": image["name"],
+                    "target_path": target_path,
+                    "page_number": page["page"],
+                    "original_data": image
+                }
+                required_images.append(image_info)
+    
+    # 分析哪些图片需要下载，哪些已存在
+    to_download = []
+    existing = []
+    status_tracker = ImageStatusTracker(md_info.get_aux_dir())
+    
+    for img_info in required_images:
+        if status_tracker._verify_image(img_info["target_path"]):
+            existing.append(img_info)
+        else:
+            to_download.append(img_info)
+            
+    return to_download, existing
 
-def safe_download_images(parser: LlamaParse, json_result: List[dict], md_info: MdInfo) -> List[dict]:
-    """下载图片的主入口函数"""
+def safe_download_images(parser: LlamaParse, json_result: List[dict], md_info: MdInfo) -> List[LlamaParseImage]:
+    """下载图片的主入口函数，支持断点续传
+    
+    Args:
+        parser: LlamaParse实例
+        json_result: LlamaParse解析结果
+        md_info: 文档信息对象
+        
+    Returns:
+        List[LlamaParseImage]: 成功下载的图片信息列表
+    """
     if not json_result:
         logging.warning("Empty JSON result")
         return []
@@ -77,27 +100,89 @@ def safe_download_images(parser: LlamaParse, json_result: List[dict], md_info: M
     os.makedirs(aux_dir, exist_ok=True)
 
     try:
-        # 下载图片
-        images = parser.get_images(json_result, out_dir)
-        # 处理下载结果
-        images, _ = _process_download_results(images, aux_dir)
+        # 分析下载状态
+        to_download, existing = _analyse_download_status(json_result, md_info)
+        
+        status_tracker = ImageStatusTracker(aux_dir)
+        
+        # 处理已存在的图片
+        images = []
+        for img_info in existing:
+            logging.info(f"Image already exists: {img_info['target_path']}")
+            img_data = img_info["original_data"].copy()
+            img_data["path"] = img_info["target_path"]
+            images.append(img_data)
+            status_tracker.record_success(img_info["target_path"])
+            
+        # 下载缺失的图片
+        for img_info in to_download:
+            try:
+                # 先下载到临时路径（使用当前 job_id）
+                temp_path = os.path.join(out_dir, f"{img_info['cur_job_id']}-{img_info['image_name']}")
+                
+                # 使用 parser 下载图片
+                image_data = img_info["original_data"].copy()
+                image_data["path"] = temp_path
+                
+                # 下载图片
+                parser.get_images([{
+                    "job_id": img_info["cur_job_id"],
+                    "pages": [{
+                        "page": img_info["page_number"],
+                        "images": [img_info["original_data"]]
+                    }]
+                }], out_dir)
+                
+                # 如果下载成功，移动到最终路径
+                if status_tracker._verify_image(temp_path):
+                    shutil.move(temp_path, img_info["target_path"])
+                    image_data["path"] = img_info["target_path"]
+                    images.append(image_data)
+                    status_tracker.record_success(img_info["target_path"])
+                    logging.info(f"Successfully downloaded and moved image to: {img_info['target_path']}")
+                else:
+                    if not status_tracker.record_failure(img_info["target_path"]):
+                        logging.error(f"Max retry attempts reached for {img_info['target_path']}")
+                        
+            except Exception as e:
+                logging.error(f"Failed to download image {img_info['image_name']}: {e}")
+                if not status_tracker.record_failure(img_info["target_path"]):
+                    logging.error(f"Max retry attempts reached for {img_info['target_path']}")
+
+        # 打印状态
+        status_tracker.print_status()
+        
+        # 验证是否所有必需的图片都已获取
+        if len(images) == len(to_download) + len(existing):
+            logging.info("All required images have been successfully processed")
+        else:
+            logging.warning(f"Some images are missing: {len(images)} of {len(to_download) + len(existing)} obtained")
+            
         return images
+        
     except Exception as e:
         logging.error(f"Download process failed: {e}")
         return []
 
-def _print_download_stats(images: List[dict], aux_dir: str) -> None:
-    """打印下载统计信息"""
-    total = len(images)
-    success = sum(1 for img in images if img.get("download_success", False))
-    print(f"\n下载统计: 总数={total}, 成功={success}, 失败={total-success}")
-
-    # 检查失败记录
-    failed_records = _load_failed_records(aux_dir)
-    if failed_records:
-        print("\n失败记录:")
-        for path, attempts in failed_records.items():
-            print(f"- {path}: {attempts}/{MAX_RETRY_ATTEMPTS} 次尝试")
+def check_images_completeness(json_result: List[dict], md_info: MdInfo) -> Tuple[bool, List[str]]:
+    """检查图片是否完整下载
+    
+    Args:
+        json_result: LlamaParse 返回的解析结果
+        md_info: 文档信息对象
+        
+    Returns:
+        Tuple[bool, List[str]]: (是否完整, 缺失的图片列表)
+    """
+    to_download, existing = _analyse_download_status(json_result, md_info)
+    
+    if not to_download:
+        logging.info("所有图片都已完整下载")
+        return True, []
+    
+    missing_images = [f"{img_info['image_name']} (Page {img_info['page_number']})" for img_info in to_download]
+    logging.warning(f"发现 {len(missing_images)} 个缺失图片: {', '.join(missing_images)}")
+    return False, missing_images
 
 if __name__ == "__main__":
     from mmbase.utils.util_logging import setup_logger_handlers
@@ -126,9 +211,33 @@ if __name__ == "__main__":
         if not os.path.exists(doc_pathname):
             raise FileNotFoundError(f"Document not found: {doc_pathname}")
 
+        # 第一次调用
+        print("\n=== 第一次调用 ===")
+        json_result = parser.get_json_result(doc_pathname)
+        
+        # 检查图片完整性
+        print("\n检查图片完整性:")
+        is_complete, missing = check_images_completeness(json_result, md_info)
+        if not is_complete:
+            print(f"缺失的图片: {missing}")
+        
+        images = safe_download_images(parser, json_result, md_info)
+        
+        # 再次检查完整性
+        print("\n下载后再次检查完整性:")
+        is_complete, missing = check_images_completeness(json_result, md_info)
+        if not is_complete:
+            print(f"缺失的图片: {missing}")
+        
+        # 第二次调用，验证图片重用功能
+        print("\n=== 第二次调用 ===")
         json_result = parser.get_json_result(doc_pathname)
         images = safe_download_images(parser, json_result, md_info)
-        _print_download_stats(images, md_info.get_aux_dir())
+        
+        # 打印job_id历史
+        print("\nJob ID 历史记录:")
+        print(md_info.get(MIFN.LP_JOB_ID_HISTORY, []))
+        
     except Exception as e:
         logging.error(f"Process failed: {e}")
         exit(1)
