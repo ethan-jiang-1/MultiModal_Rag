@@ -19,7 +19,6 @@ from ctn2md.gen_lp.lp_download_images import safe_download_images
 def _get_llamaparse_normal(md_info) -> LlamaParse:
 
     language = md_info.get_md_control("mctl_lp_langauge", Language.SIMPLIFIED_CHINESE)
-    #TODO: ethan_take_screenshot can be realiy replace by pyMuPDF which has much faster dumping performance
     take_screenshot = md_info.get_md_control("mctl_lp_take_screenshot", False)
     disable_ocr = md_info.get_md_control("mctl_lp_disable_ocr", False)
 
@@ -31,8 +30,8 @@ def _get_llamaparse_normal(md_info) -> LlamaParse:
         language=language,  # "ch_sim",
         #page_suffix="mark_page_separator_{page_number}"
         invalidate_cache=True,
-        check_interval=3,
-        max_timeout=30*60,
+        check_interval=1,  # 每秒检查一次
+        max_timeout=10*60,  # 最长等待10分钟
         take_screenshot=take_screenshot,
         disable_ocr=disable_ocr,
     )

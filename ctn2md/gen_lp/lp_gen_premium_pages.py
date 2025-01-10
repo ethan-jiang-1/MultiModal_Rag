@@ -31,7 +31,7 @@ def _get_llamaparse_premium(md_info:MdInfo) -> LlamaParse:
         raise ValueError("no parser in premium_mode if mctl_lp_premium_pages is None")
     pages_m1 = [str(int(pp)-1) for pp in mctl_lp_premium_pages]
     target_pages = ",".join(pages_m1)
-    print(f"target_pages required by llamaparser: {target_pages}")
+    logging.info(f"target_pages required by llamaparser: {target_pages}")
 
     LLAMAPARSE_API_KEY = os.environ.get("LLAMAPARSE_API_KEY")
     parser = LlamaParse(
@@ -41,8 +41,8 @@ def _get_llamaparse_premium(md_info:MdInfo) -> LlamaParse:
         language=language,  # "ch_sim",
         #page_suffix="mark_page_separator_{page_number}"
         invalidate_cache=True,
-        check_interval=3,
-        max_timeout=30*60,
+        check_interval=1,  # 每秒检查一次
+        max_timeout=15*60,  # 最长等待15分钟
         take_screenshot=take_screenshot,
         disable_ocr=disable_ocr,
         premium_mode=True,
