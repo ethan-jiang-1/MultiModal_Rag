@@ -14,6 +14,7 @@ from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lp.lp_unique_job import n2u_replace_fnames, n2u_update_md_content
 from ctn2md.gen_lp.lp_page2markdown import Page2Markdown
 from ctn2md.gen_lp.lp_base import prepare_pages_images, remove_misc_files_previous_round
+from ctn2md.gen_lp.lp_download_images import safe_download_images
 
 def _get_llamaparse_normal(md_info) -> LlamaParse:
 
@@ -83,8 +84,7 @@ def _dump_normal_md_pages(json_result: List[dict], md_info:MdInfo):
     md_info.save()
 
 def _dump_images(parser:LlamaParse, json_result:List[dict], md_info:MdInfo):
-    out_dir = md_info.get_out_dir()
-    images = parser.get_images(json_result, out_dir)
+    images = safe_download_images(parser, json_result, md_info)
     fnames_imgs = [os.path.basename(item["path"]) for item in images if item["name"].startswith("img_")]
     fnames_snps = [os.path.basename(item["path"]) for item in images if item["name"].startswith("page_")]
     md_info[MIFN.FNAMES_IMGS] = fnames_imgs

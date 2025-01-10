@@ -10,6 +10,7 @@ from llama_parse.utils import Language
 load_dotenv()
 
 
+from ctn2md.gen_lp.lp_download_images import safe_download_images
 from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lp.lp_unique_job import n2u_replace_fnames, n2u_update_md_content
@@ -83,8 +84,7 @@ def _dump_preminum_md_pages(json_result:List[dict], md_info:MdInfo) -> str:
     return cur_job_id
 
 def _dump_images_premium(parser:LlamaParse, json_result:List[dict], md_info:MdInfo):
-    out_dir = md_info.get_out_dir()
-    images = parser.get_images(json_result, out_dir)
+    images = safe_download_images(parser, json_result, md_info)
     fnames_imgs = [os.path.basename(item["path"]) for item in images if item["name"].startswith("img_")]
     fnames_snps = [os.path.basename(item["path"]) for item in images if item["name"].startswith("page_")]
     md_info[MIFN.LP_FFNAMES_P_IMGS] = fnames_imgs
