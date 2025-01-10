@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 from dotenv import load_dotenv as _load_dotenv
 import os
 import logging
@@ -298,10 +298,12 @@ class MdInfo:
     def get_md_info_path(self) -> str:
         return self._md_info_path
 
-    def get_unique_job_id(self) -> str:
+    def get_unique_job_id(self, cur_job_id:Optional[str] = None) -> str:
         job_ids = self._info.get(MIFN.LP_JOB_ID_HISTORY, [])
         if len(job_ids) > 0:
             return job_ids[0]
+        if cur_job_id is not None:
+            return cur_job_id
         return self.get_doc_title()
 
     def set_doc_pathname(self, doc_pathname: str) -> str:
