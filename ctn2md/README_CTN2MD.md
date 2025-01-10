@@ -165,30 +165,8 @@ _output/
   - LlamaParse
   - LVLM服务
 
-## 第三方服务配置
-
-### LlamaParse 配置
-- 访问 [LlamaIndex Cloud](https://cloud.llamaindex.ai/) 获取 API Key
-- 在 `.env` 文件中配置：
-```bash
-LLAMAINDEX_API_KEY=your_api_key_here
-```
-详细说明请参考 [LlamaParse转换器文档](gen_lp/README.md)
-
-### TextIn 配置
-- 访问 [TextIn](https://www.textin.com/) 获取服务账号
-- 在 `.env` 文件中配置相关密钥
-
-### LVLM 配置
-- 支持多种视觉语言模型服务
-- 在 `.env` 文件中配置相应的模型接口
-
 ## 版本历史
 
 当前版本：0.10.0
-
-## 许可证
-
-MIT License
 
 
