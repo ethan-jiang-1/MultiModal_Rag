@@ -58,19 +58,40 @@ from ctn2md.ctn2md_converter_lvlm import do_content2md_convert
 result = do_content2md_convert("document.pdf")
 
 # 使用高级配置
-controls = {
-    "mctl_vision_quality": "high",    # 视觉质量设置
-    "mctl_semantic_depth": "deep",    # 语义分析深度
-    "mctl_layout_enhance": True       # 版面增强
-}
+controls = None # 用默认设置
 result = do_content2md_convert("document.pdf", mdcontrols=controls)
 ```
 
 ### 配置选项
-- `mctl_vision_quality`: 视觉处理质量
-- `mctl_semantic_depth`: 语义分析深度
-- `mctl_layout_enhance`: 版面增强
-- `mctl_image_process`: 图片处理级别
+- 通用配置：
+  - `mctl_ge_md_async`: 异步处理开关
+  - `mctl_move_aux_files`: 是否移动辅助文件
+  - `mctl_treat_doc_as_ctntype`: 文档类型处理方式
+  - `mctl_fix_heading_model`: 标题修复模型 (gpt/qwen/ark)
+  - `mctl_summarize_model`: 摘要生成模型 (gpt/qwen/ark)
+
+- LVLM专用配置：
+  - `mctl_lvlm_images_ignore`: 忽略的图片列表（逗号分隔）
+  - `mctl_lvlm_img2md_model`: 图片转MD模型 (gpt/qwen/ark)
+  - `mctl_lvlm_region_detect`: 区域检测模型 (gs0/gs1/gs2)
+  
+  - 布局参数：
+    - `mctl_lvlm_paint_page_content_area_ratios`: 页面内容区域比例 (0.15, 0.15, 0.1, 0.1)
+    - `mctl_lvlm_paint_max_area_ratio`: 最大区域比例 (0.7)
+    - `mctl_lvlm_paint_max_outside_ratio`: 最大外部比例 (0.1)
+    - `mctl_lvlm_paint_min_coverage_ratio`: 最小覆盖比例 (0.7)
+    - `mctl_lvlm_paint_content_area_buffer_ratio`: 内容区域缓冲比例 (0.05)
+  
+  - 距离参数：
+    - `mctl_lvlm_paint_text_distance_ratio`: 文本距离比例 (0.015, 0.015, 0.015, 0.028)
+    - `mctl_lvlm_table_line_distance_ratio`: 表格线距离比例 (0.03)
+    - `mctl_lvlm_table_short_line_ratio`: 表格短线比例 (0.03)
+    - `mctl_lvlm_table_text_distance_ratio`: 表格文本距离比例 (0.02, 0.02, 0.02, 0.02)
+
+### 环境变量
+- `ENV_MODEL_FLOW`: 流程控制模型 (gpt/qwen/ark)
+- `ENV_MODEL_GEN_LVLM`: LVLM生成模型图文关联模型 (gpt/qwen/ark)
+- `ENV_MODEL_GEN_LVLM_REGION`: LVLM区域检测模型 (gs0/gs1/gs2)
 
 ## 最佳实践
 
@@ -90,10 +111,6 @@ result = do_content2md_convert("document.pdf", mdcontrols=controls)
 - 特殊字体支持
 
 ## 系统要求
-
-- Python 3.12+
-- GPU支持（推荐）
-- 内存：8GB+
 - 支持的文件格式：
   - PDF（主要支持）
   - 图文混排文档

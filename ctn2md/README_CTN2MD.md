@@ -80,10 +80,6 @@ ctn2md/
 pip install -r requirements.txt
 
 # 配置环境变量
-export ENV_MODEL_FLOW=qwen     # 流程控制模型
-export ENV_MODEL_GEN_TI=qwen   # TextIn生成模型
-export ENV_MODEL_GEN_LP=qwen   # LlamaParse生成模型
-export ENV_MODEL_GEN_LVLM=qwen # LVLM生成模型
 ```
 
 ### 2. 基本使用
@@ -110,19 +106,44 @@ batch_convert(["doc1.pdf", "doc2.pdf"])
 
 ## 配置说明
 
-### 环境变量
+### 环境变量 （除非要控制，否则就用默认，不要设置）
 - `ENV_MODEL_FLOW`: 流程控制模型 (gpt/qwen/ark)
-- `ENV_MODEL_GEN_LP`: LlamaParse生成模型
-- `ENV_MODEL_GEN_LVLM`: LVLM生成模型
-- `ENV_MODEL_GEN_TI`: TextIn生成模型
+- `ENV_MODEL_GEN_LP`: LlamaParse生成模型 (gpt/qwen/ark)
+- `ENV_MODEL_GEN_LVLM`: LVLM生成模型 (gpt/qwen/ark)
+- `ENV_MODEL_GEN_LVLM_REGION`: LVLM区域检测模型 (gs0/gs1/gs2)
+- `ENV_MODEL_GEN_TI`: TextIn生成模型 (gpt/qwen/ark)
 
 ### 转换控制参数
 ```python
 mdcontrols = {
-    "mctl_ge_md_async": True,     # 是否使用异步处理
-    "mctl_heading_fix": True,     # 是否修复标题
-    "mctl_quality_check": True,   # 是否进行质量检查
-    # ... 更多参数
+    # 通用配置
+    "mctl_move_aux_files": True,                    # 是否移动辅助文件
+    "mctl_treat_doc_as_ctntype": "auto",           # 文档类型处理方式
+    "mctl_ge_md_async": False,                     # 异步生成开关
+    "mctl_fix_heading_model": "qwen",              # 标题修复模型
+    "mctl_summarize_model": "qwen",                # 摘要生成模型
+
+    # LlamaParse专用配置
+    "mctl_lp_min_img_relevance_score": 0.2,        # 图片相关性最小分数
+    "mctl_lp_img_relevance_model": "qwen",         # 图片相关性判断模型
+    "mctl_lp_img_caption_model": "qwen",           # 图片说明生成模型
+    "mctl_lp_need_image_ref": True,                # 是否需要图片引用
+    "mctl_lp_langauge": "zh_cn",                   # 文档语言
+    "mctl_lp_take_screenshot": False,              # 是否截图
+    "mctl_lp_disable_ocr": False,                  # 是否禁用OCR
+    "mctl_lp_premium_pages": [],                   # 高级模式页面列表
+
+    # LVLM专用配置
+    "mctl_lvlm_images_ignore": "",                 # 忽略的图片列表
+    "mctl_lvlm_img2md_model": "qwen",              # 图片转MD模型
+    "mctl_lvlm_region_detect": "gs2",              # 区域检测模型
+    "mctl_lvlm_paint_max_area_ratio": 0.7,         # 最大区域比例
+    "mctl_lvlm_paint_max_outside_ratio": 0.1,      # 最大外部比例
+    "mctl_lvlm_paint_min_coverage_ratio": 0.7,     # 最小覆盖比例
+
+    # TextIn专用配置
+    "mctl_ti_img_relevance_model": "qwen",         # 图片相关性判断模型
+    "mctl_ti_img_caption_model": "qwen",           # 图片说明生成模型
 }
 ```
 
@@ -156,9 +177,6 @@ _output/
 4. 质量检查器
 
 ## 系统要求
-
-- Python 3.12+
-- 内存要求：8GB+
 - 支持的模型服务：
   - GPT/Qwen/Ark等LLM
   - TextIn API

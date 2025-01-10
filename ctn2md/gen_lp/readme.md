@@ -85,19 +85,35 @@ from ctn2md.ctn2md_converter_lp import do_content2md_convert
 result = do_content2md_convert("document.docx")
 
 # 使用高级配置
-controls = {
-    "mctl_format_quality": "high",   # 格式质量设置
-    "mctl_style_preserve": True,     # 保留原始样式
-    "mctl_clean_output": True        # 输出清理
-}
+controls = None # 用默认设置
 result = do_content2md_convert("document.pptx", mdcontrols=controls)
 ```
 
 ### 配置选项
-- `mctl_format_quality`: 格式处理质量
-- `mctl_style_preserve`: 样式保留选项
-- `mctl_clean_output`: 输出清理开关
-- `mctl_meta_extract`: 元数据提取级别
+- 通用配置：
+  - `mctl_ge_md_async`: 异步处理开关
+  - `mctl_move_aux_files`: 是否移动辅助文件
+  - `mctl_treat_doc_as_ctntype`: 文档类型处理方式
+  - `mctl_fix_heading_model`: 标题修复模型 (gpt/qwen/ark)
+  - `mctl_summarize_model`: 摘要生成模型 (gpt/qwen/ark)
+
+- LlamaParse专用配置：
+  - 图像处理：
+    - `mctl_lp_min_img_relevance_score`: 图片相关性最小分数 (0.2)
+    - `mctl_lp_img_relevance_model`: 图片相关性判断模型 (gpt/qwen/ark)
+    - `mctl_lp_img_caption_model`: 图片说明生成模型 (gpt/qwen/ark)
+    - `mctl_lp_need_image_ref`: 是否需要图片引用 (true/false)
+    - `mctl_lp_img_to_heading`: 图片到标题的映射
+  
+  - 文档处理：
+    - `mctl_lp_langauge`: 文档语言 (zh_cn/en)
+    - `mctl_lp_take_screenshot`: 是否截图 (true/false)
+    - `mctl_lp_disable_ocr`: 是否禁用OCR (true/false)
+    - `mctl_lp_premium_pages`: 高级模式页面列表 (页码从1开始)
+
+### 环境变量
+- `ENV_MODEL_FLOW`: 流程控制模型 (gpt/qwen/ark)
+- `ENV_MODEL_GEN_LP`: LlamaParse生成模型 (gpt/qwen/ark)
 
 ## 最佳实践
 
@@ -117,9 +133,6 @@ result = do_content2md_convert("document.pptx", mdcontrols=controls)
 - 特殊字符处理
 
 ## 系统要求
-
-- Python 3.12+
-- 内存：4GB+
 - 支持的文件格式：
   - PDF
   - DOCX, PPTX

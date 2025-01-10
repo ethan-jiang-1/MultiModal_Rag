@@ -56,19 +56,25 @@ from ctn2md.ctn2md_converter_ti import do_content2md_convert
 result = do_content2md_convert("document.pdf")
 
 # 使用自定义配置
-controls = {
-    "mctl_ge_md_async": True,     # 启用异步处理
-    "mctl_ocr_quality": "high",   # OCR质量设置
-    "mctl_layout_optimize": True  # 启用版面优化
-}
+controls = None # 用默认设置
 result = do_content2md_convert("document.pdf", mdcontrols=controls)
 ```
 
 ### 配置选项
-- `mctl_ge_md_async`: 异步处理开关
-- `mctl_ocr_quality`: OCR质量级别
-- `mctl_layout_optimize`: 版面优化开关
-- `mctl_cache_enabled`: 缓存功能开关
+- 通用配置：
+  - `mctl_ge_md_async`: 异步处理开关
+  - `mctl_move_aux_files`: 是否移动辅助文件
+  - `mctl_treat_doc_as_ctntype`: 文档类型处理方式
+  - `mctl_fix_heading_model`: 标题修复模型 (gpt/qwen/ark)
+  - `mctl_summarize_model`: 摘要生成模型 (gpt/qwen/ark)
+
+- TextIn专用配置：
+  - `mctl_ti_img_relevance_model`: 图片相关性判断模型 (gpt/qwen/ark)
+  - `mctl_ti_img_caption_model`: 图片说明生成模型 (gpt/qwen/ark)
+
+### 环境变量
+- `ENV_MODEL_FLOW`: 流程控制模型 (gpt/qwen/ark)
+- `ENV_MODEL_GEN_TI`: TextIn生成模型后图文关联模型 (gpt/qwen/ark)
 
 ## 最佳实践
 
@@ -88,9 +94,6 @@ result = do_content2md_convert("document.pdf", mdcontrols=controls)
 - 表格复杂度处理
 
 ## 系统要求
-
-- Python 3.12+
-- 内存：4GB+
 - 支持的文件格式：
   - PDF（推荐）
   - DOC/DOCX
