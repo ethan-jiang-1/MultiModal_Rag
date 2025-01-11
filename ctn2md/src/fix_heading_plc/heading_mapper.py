@@ -144,7 +144,10 @@ def cal_new_fhl_map(md_info: MdInfo, fhl_org: dict) -> dict:
         model = "gpt-4o"  # so far, only gpt-4o can handle this well, gpt-4o-mini does not.
         fhl_map = fix_heading_lvl_markdown_by_gpt(fhl_org, fhl_quality=fhl_quality, ctn_type=ctn_type, model=model, question_num=question_num)
     elif mctl_fix_heading_model == "qwen":
-        model = "qwen-max"  # TODO: ethan_qwen_prompt qwen-max is not there yet, need to revisit the prompt
+        if fhl_quality in [FHL_QUALITY_TYPE.HIGH, FHL_QUALITY_TYPE.MEDIUM]:
+            model = "qwen-plus" 
+        else:
+            model = "qwen-max"  # TODO: ethan_qwen_prompt qwen-max is not there yet, need to revisit the prompt
         fhl_map = fix_heading_lvl_markdown_by_qwen(fhl_org, fhl_quality=fhl_quality, ctn_type=ctn_type, model=model, question_num=question_num)
     elif mctl_fix_heading_model == "ark":
         model = "ep-20241220101727-tcdfv"
