@@ -84,4 +84,43 @@ class HeadingStack:
             "stack": self._stack,
             "chapter_numbers": self._chapter_numbers,
             "log": self._log
-        } 
+        }
+
+if __name__ == "__main__":
+    # 测试用例：模拟一个典型的文档结构
+    stack = HeadingStack()
+    
+    # 测试一级标题
+    print("\n=== 测试一级标题 ===")
+    num = stack.push_level(1, "引言")
+    print(f"章节号: {num}")
+    print(f"层级描述: {stack.get_hierarchy_desc()}")
+    
+    # 测试二级标题
+    print("\n=== 测试二级标题 ===")
+    num = stack.push_level(2, "研究背景")
+    print(f"章节号: {num}")
+    print(f"层级描述: {stack.get_hierarchy_desc()}")
+    
+    # 测试跳级（直接三级标题）
+    print("\n=== 测试跳级（三级标题）===")
+    num = stack.push_level(3, "具体问题")
+    print(f"章节号: {num}")
+    print(f"层级描述: {stack.get_hierarchy_desc()}")
+    
+    # 测试返回上级（二级标题）
+    print("\n=== 测试返回上级（二级标题）===")
+    num = stack.push_level(2, "研究方法")
+    print(f"章节号: {num}")
+    print(f"层级描述: {stack.get_hierarchy_desc()}")
+    
+    # 测试新的一级标题（重置堆栈）
+    print("\n=== 测试新的一级标题 ===")
+    num = stack.push_level(1, "实验结果")
+    print(f"章节号: {num}")
+    print(f"层级描述: {stack.get_hierarchy_desc()}")
+    
+    # 打印完整的状态日志
+    print("\n=== 完整状态日志 ===")
+    import json
+    print(json.dumps(stack._get_state(), ensure_ascii=False, indent=2)) 
