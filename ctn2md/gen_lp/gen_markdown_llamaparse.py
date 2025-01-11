@@ -55,8 +55,8 @@ def _assign_final_doc_cnt_type(md_info:MdInfo, json_result:list[dict]):
         md_info.save()
 
 def generate_markdown_llamaparse(md_info:MdInfo, 
-                                 need_normal_step:int = True, 
-                                 need_preminum_step:int = True) -> str:
+                                 need_normal_step:bool = True, 
+                                 need_preminum_step:bool = True) -> str:
     doc_pathname = md_info.get_doc_pathname()
     if (doc_pathname is None) or (not os.path.isfile(doc_pathname)):
         raise ValueError(f"doc_pathname is not valid {doc_pathname}")
@@ -67,10 +67,10 @@ def generate_markdown_llamaparse(md_info:MdInfo,
     json_result = None
     if need_normal_step:
         json_result = gen_normal_pages(md_info)
-
-    if need_preminum_step:
-        mctl_lp_premium_pages = md_info.get_md_control("mctl_lp_premium_pages", None)
-        if (mctl_lp_premium_pages is not None) and (len(mctl_lp_premium_pages) != 0):
+    
+    mctl_lp_premium_pages = md_info.get_md_control("mctl_lp_premium_pages", None)
+    if (mctl_lp_premium_pages is not None) and (len(mctl_lp_premium_pages) != 0):
+        if need_preminum_step:
             gen_premium_pages(md_info)
 
     pathname_step0 = _construct_s0_md_from_md_pages(md_info)

@@ -36,14 +36,15 @@ class GenMd_Lvlm(GenMd_Base):
     @classmethod
     def does_gen_needed(cls, doc_pathname:str, out_dir:str, enforced_gen:bool) -> Tuple[MdInfo, bool]:
         md_info, gen_needed = GenMd_Base.does_gen_needed(doc_pathname, out_dir, enforced_gen)
-        if not cls.if_all_md_pages_processed(md_info):
-            gen_needed = True
-        if cls.if_any_md_page_has_error(md_info):
-            gen_needed = True
-        if cls.is_final_md_info_outdated(md_info):
-            gen_needed = True
-        if cls.if_any_md_page_touched(md_info):
-            gen_needed = True    
+        if not gen_needed:
+            if not cls.if_all_md_pages_processed(md_info):
+                gen_needed = True
+            if cls.if_any_md_page_has_error(md_info):
+                gen_needed = True
+            if cls.is_final_md_info_outdated(md_info):
+                gen_needed = True
+            if cls.if_any_md_page_touched(md_info):
+                gen_needed = True    
         return md_info, gen_needed
     
     @classmethod

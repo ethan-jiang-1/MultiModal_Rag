@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Optional
 from dotenv import load_dotenv
 import os
 import logging
@@ -17,7 +17,7 @@ class GenMd_Base:
     OD_SUFFIX = ""
 
     @classmethod
-    def does_gen_needed(cls, doc_pathname:str, out_dir:str, enforced_gen:bool) -> Tuple[MdInfo, bool]:
+    def does_gen_needed(cls, doc_pathname:str, out_dir:Optional[str], enforced_gen:bool) -> Tuple[MdInfo, bool]:
         if out_dir is None:
             out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=cls.OD_SUFFIX)
 
@@ -25,12 +25,15 @@ class GenMd_Base:
         md_info = None
 
         if enforced_gen:
+            # 如果强制生成，则需要生成 
             gen_needed = True 
         else:
             pname_md_info = os.path.join(out_dir, MdInfo.get_fname_md_info())
             if not os.path.isfile(pname_md_info):
+                # 如果 md_info 文件不存在，则需要生成 
                 gen_needed = True
             else:
+                # 如果 pathname_s0_md 文件不存在，则要生成 
                 md_info = MdInfo(out_dir)
                 pathname_s0_md = md_info.name_step_pathname(0)
                 if (pathname_s0_md is None) or (not os.path.exists(pathname_s0_md)):
