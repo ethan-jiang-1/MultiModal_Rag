@@ -68,7 +68,7 @@ def _analyse_download_status(json_result: List[dict], md_info: MdInfo) -> Tuple[
     # 分析哪些图片需要下载，哪些已存在
     to_download = []
     existing = []
-    status_tracker = ImageStatusTracker(md_info.get_aux_dir())
+    status_tracker = ImageStatusTracker(md_info.get_cache_dir())
     
     for img_info in required_images:
         if status_tracker._verify_image(img_info["target_path"]):
@@ -95,15 +95,12 @@ def safe_download_images(parser: LlamaParse, json_result: List[dict], md_info: M
 
     # 确保目录存在
     out_dir = md_info.get_out_dir()
-    aux_dir = md_info.get_aux_dir()
-    os.makedirs(out_dir, exist_ok=True)
-    os.makedirs(aux_dir, exist_ok=True)
 
     try:
         # 分析下载状态
         to_download, existing = _analyse_download_status(json_result, md_info)
         
-        status_tracker = ImageStatusTracker(aux_dir)
+        status_tracker = ImageStatusTracker(md_info.get_cache_dir())
         
         # 处理已存在的图片
         images = []

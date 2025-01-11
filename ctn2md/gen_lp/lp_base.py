@@ -184,7 +184,7 @@ def _analyse_image_content_core(md_info:MdInfo,
 def analyse_image_content(md_info:MdInfo, 
                           image_path:str, 
                           content_around:str = "") -> Tuple[float, str, str]:   
-    pathname_img2desp = os.path.join(md_info.get_aux_dir(), "json_image_desp.json")
+    pathname_img2desp = os.path.join(md_info.get_cache_dir(), "json_image_desp.json")
     json_cache = {}
     if os.path.isfile(pathname_img2desp):
         with open(pathname_img2desp, 'r', encoding='utf-8') as f:

@@ -14,7 +14,7 @@ from ctn2md.src.summarize_content.doc_keywords import DocumentKeywords
 
 def _get_cache_path(md_info: MdInfo) -> str:
     """Get path for cache file"""
-    return os.path.join(md_info.get_aux_dir(), "doc_keywords_cache.json")
+    return os.path.join(md_info.get_cache_dir(), "doc_keywords_cache.json")
 
 def _calculate_md5(content: str) -> str:
     """Calculate MD5 hash of content"""

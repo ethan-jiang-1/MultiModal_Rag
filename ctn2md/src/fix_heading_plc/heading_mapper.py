@@ -16,8 +16,8 @@ from ctn2md.utils_llm.llm_fix_heading_lvl_ark import fix_heading_lvl_markdown_by
 
 def _get_cache_path(md_info: MdInfo) -> str:
     """获取缓存文件路径"""
-    aux_dir = md_info.get_aux_dir()
-    return os.path.join(aux_dir, "fhl_cache.json")
+    cache_dir = md_info.get_cache_dir()
+    return os.path.join(cache_dir, "fhl_cache.json")
 
 def _load_cache(cache_path: str) -> dict:
     """加载缓存数据"""

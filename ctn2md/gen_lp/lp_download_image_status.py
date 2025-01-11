@@ -8,9 +8,9 @@ from datetime import datetime
 class ImageStatusTracker:
     """图片状态跟踪器，用于管理图片的下载和重用状态"""
     
-    def __init__(self, aux_dir: str):
-        self.aux_dir = aux_dir
-        self.status_file = os.path.join(aux_dir, "image_status.json")
+    def __init__(self, cache_dir: str):
+        self.cache_dir = cache_dir
+        self.status_file = os.path.join(cache_dir, "image_status.json")
         self._status = self._load_status()
         # 当前批次的统计
         self._current_batch = {
@@ -24,7 +24,7 @@ class ImageStatusTracker:
         if not os.path.exists(self.status_file):
             return {"image_map": {}, "failed_attempts": {}}
         try:
-            with open(self.status_file, 'r') as f:
+            with open(self.status_file, 'r', encoding='utf-8') as f:
                 return json.load(f)
         except Exception as e:
             logging.error(f"Failed to load status file: {e}")
@@ -33,8 +33,8 @@ class ImageStatusTracker:
     def _save_status(self) -> None:
         """保存状态到文件"""
         try:
-            with open(self.status_file, 'w') as f:
-                json.dump(self._status, f, indent=2)
+            with open(self.status_file, 'w', encoding='utf-8') as f:
+                json.dump(self._status, f, indent=2, ensure_ascii=False)
         except Exception as e:
             logging.error(f"Failed to save status file: {e}")
             
