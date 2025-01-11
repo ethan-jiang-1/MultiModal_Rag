@@ -12,13 +12,13 @@ if __name__ == "__main__":
     os.chdir(_root_dir)
 
 from mmbase.utils.util_logging import setup_logger_handlers
-from ctn2md.src_gen.ctn2md_gen_md_llamaparse import GenMd_LlamaParse
 from ctn2md.src.md_info_base import MdInfo
-from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_llm
-from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_heirarchy
-from ctn2md.src.ctn2md_summarize_content import summarize_content_by_llm
-from ctn2md.src.make_final_result import make_final_json, reset_md_flow
 from ctn2md.src.md_info_ctrl import ENV_MODEL_FLOW, ENV_MODEL_GEN_LP
+from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_llm
+from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_hierarchy
+from ctn2md.src.ctn2md_summarize_content import summarize_content_by_llm
+from ctn2md.src.make_final_result import make_final_json
+from ctn2md.src_gen.ctn2md_gen_md_llamaparse import GenMd_LlamaParse
 
 def _do_content2md_convert_core_lp(doc_pathname:str, 
                                    out_dir:Optional[str] = None, 
@@ -39,7 +39,8 @@ def _do_content2md_convert_core_lp(doc_pathname:str,
         logging.error(f"DCCCLP: failed {md_info_path} @initial_gen_md_by_llamaparse")
         return None
 
-    reset_md_flow(md_info_path)
+    md_info = MdInfo(md_info_path)
+    md_info.reset_md_flow()
 
     src_step_num = 0
     if md_generator.need_followup_step("fix_headings_plc_by_llm"):
@@ -49,9 +50,9 @@ def _do_content2md_convert_core_lp(doc_pathname:str,
             return None 
         src_step_num += 1
     
-    md_info_path = inject_section_heirarchy(md_info_path, src_step_num=src_step_num)
+    md_info_path = inject_section_hierarchy(md_info_path, src_step_num=src_step_num)
     if md_info_path is None:
-        logging.error(f"DCCCLP: failed {md_info_path} @inject_section_heirarchy")
+        logging.error(f"DCCCLP: failed {md_info_path} @inject_section_hierarchy")
         return None
 
     src_step_num += 1

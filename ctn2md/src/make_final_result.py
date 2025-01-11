@@ -1,3 +1,7 @@
+"""
+生成最终结果模块
+负责生成最终的 Markdown 文件和相关信息
+"""
 from dotenv import load_dotenv
 import os
 import logging
@@ -160,15 +164,6 @@ def make_final_json(md_info_path:str)->str:
     logging.info(f"##MDFLOW##: make_final_md ended: move_aux_files: {move_aux_files}.")
     logging.info(f"##MDFLOW##: Final md can be found at: \'{pathname_final_md}\'")
     return pathname_final_json
-
-def reset_md_flow(md_info_path:str):
-    md_info = MdInfo(md_info_path)
-    dict_md_flow = md_info.get(MIFN.MDFLOW, None)
-    if dict_md_flow is not None:
-        for key in list(dict_md_flow.keys()): 
-            if key != "0":
-                del dict_md_flow[key]
-    md_info.save()
 
 if __name__ == "__main__":
     setup_logger_handlers()

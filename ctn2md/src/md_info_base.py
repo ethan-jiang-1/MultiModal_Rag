@@ -90,7 +90,7 @@ class MIFN(PUBLIC_MIFN):  # Markdown Field Name
 
     
 
-class MdInfo:
+class MdInfo(dict):
     def __init__(self, md_info_path_or_out_dir:str):
         if not isinstance(md_info_path_or_out_dir, str):
             raise ValueError(f"MdInfo.init: expect string as path here: {md_info_path_or_out_dir}")
@@ -461,6 +461,18 @@ class MdInfo:
     def __contains__(self, key:str):
         # 这个方法会在使用in操作符时被调用
         return key in self._info
+
+    def reset_md_flow(self):
+        """
+        重置处理流程，仅保留初始状态（步骤"0"），删除所有后续步骤的记录。
+        这样可以重新执行整个处理流程。
+        """
+        dict_md_flow = self.get(MIFN.MDFLOW, None)
+        if dict_md_flow is not None:
+            for key in list(dict_md_flow.keys()): 
+                if key != "0":
+                    del dict_md_flow[key]
+        self.save()
 
 
 
