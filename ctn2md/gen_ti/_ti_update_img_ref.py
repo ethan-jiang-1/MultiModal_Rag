@@ -7,8 +7,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from dotenv import load_dotenv
 load_dotenv()
 
-from ctn2md.src.md_info_base import MIFN, MdInfo
-from ctn2md.utils_gen.gen_base import get_job_id
+from ctn2md.src.md_info_base import MdInfo
 from ctn2md.gen_ti._ti_img_description import (
     get_img_alt_text_and_description,
     get_img_alt_text_and_description_async
@@ -24,7 +23,7 @@ class ImageReferenceUpdater:
         self.md_info = md_info
         self.page_index = page_index
         self.pname_page_md = pname_page_md
-        self.job_id = md_info[MIFN.TI_CUR_JOB_ID] or get_job_id(md_info.get_unique_job_id())
+        self.job_id = md_info.get_unique_job_id()
         self.output_dir = md_info.get_out_dir()
         
     def _read_content(self) -> str:

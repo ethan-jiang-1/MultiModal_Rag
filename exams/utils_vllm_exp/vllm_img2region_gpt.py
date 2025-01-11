@@ -19,7 +19,7 @@ def generate_regions_from_image_gpt(pname_image:str,
 
     try:
         if model not in ["gpt-4o"]: 
-            raise ValueError(f"f{model} not supporst")
+            raise ValueError(f"f{model} not supported")
  
         system_prompt = SYSTEM_PROMPT_IMG2REGION
         user_prompt = USER_PROMPT_IMG2REGION

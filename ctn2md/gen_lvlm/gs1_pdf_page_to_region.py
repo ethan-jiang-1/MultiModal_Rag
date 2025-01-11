@@ -12,11 +12,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from mmbase.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, MIFN
+from ctn2md.src.md_info_base import MdInfo
 #from ctn2md.gen_lvlm.lvlm_image_cnt_type import get_image_cnt_type, LVLM_IMG_CNT_TYPE
 from ctn2md.gen_lvlm._gs1_pdf_page_paint import detect_paint_regions
 from ctn2md.gen_lvlm._gs1_pdf_page_table import detect_table_regions
-from ctn2md.utils_gen.gen_base import get_job_id
 
 
 def _is_near(rect1: BaseGeometry, rect2: BaseGeometry, distance: float = 20) -> bool:
@@ -287,13 +286,10 @@ if __name__ == "__main__":
 
     output_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix='lvlm')
 
-    job_id = get_job_id(doc_pathname)
-
     os.makedirs(output_dir, exist_ok=True)
 
     md_info = MdInfo(output_dir)
     md_info.set_doc_pathname(doc_pathname)
-    md_info[MIFN.LVLM_CUR_JOB_ID] = job_id
     
     pdf_document = fitz.open(doc_pathname)
     page = pdf_document[page_no - 1] # 0-based index

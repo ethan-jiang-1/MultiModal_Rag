@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 from dotenv import load_dotenv as _load_dotenv
 import os
 import logging
@@ -81,11 +81,9 @@ class MIFN(PUBLIC_MIFN):  # Markdown Field Name
     LP_P2M_INFO = "lp_p2m_info"
 
     # fields required by lvlm converter
-    LVLM_CUR_JOB_ID = "lvlm_cur_job_id"
     LVLM_IMAGE_INFOS = "lvlm_image_infos"
 
     # fields required by textin converter
-    TI_CUR_JOB_ID = "ti_cur_job_id"
     TI_MAP_PAGE2REF_IMGS = "ti_map_page2ref_imgs"    
 
     
@@ -298,19 +296,18 @@ class MdInfo(dict):
     def get_md_info_path(self) -> str:
         return self._md_info_path
 
-    def get_unique_job_id(self, cur_job_id:Optional[str] = None) -> str:
-        job_ids = self._info.get(MIFN.LP_JOB_ID_HISTORY, [])
-        if len(job_ids) > 0:
-            return job_ids[0]
-        if cur_job_id is not None:
-            return cur_job_id
-        return self.get_doc_title()
+    def get_unique_job_id(self) -> str:
+        pathname_org_doc = self._info.get(MIFN.PATHNAME_ORG_DOC, "None/None")
+        dir_name = os.path.dirname(pathname_org_doc)
+        dname = os.path.basename(dir_name)
+        fname = os.path.basename(pathname_org_doc)
+        return get_crc32_id(f"{dname}/{fname}")
 
     def set_doc_pathname(self, doc_pathname: str) -> str:
         if MIFN.PATHNAME_ORG_DOC not in self._info:
             self._info[MIFN.PATHNAME_ORG_DOC] = doc_pathname
             self._info[MIFN.FNAME_ORG_DOC] = os.path.basename(doc_pathname)
-            self._info[MIFN.DOC_UNIQUE_ID] = self.get_doc_title() + "_" + get_crc32_id(doc_pathname)
+            self._info[MIFN.DOC_UNIQUE_ID] = self.get_doc_title() + "_" + self.get_unique_job_id()
             self._copy_org_doc()
         return self.save()
 

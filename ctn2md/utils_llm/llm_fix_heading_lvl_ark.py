@@ -25,7 +25,7 @@ def fix_heading_lvl_markdown_by_ark(fhl_org: dict,
 
     try:
         if not model.startswith("ep-"): 
-            raise ValueError(f"{model} not supporst")
+            raise ValueError(f"{model} not supported")
 
         if not isinstance(fhl_org, dict):
             raise ValueError("fhl_heading need to be dict")

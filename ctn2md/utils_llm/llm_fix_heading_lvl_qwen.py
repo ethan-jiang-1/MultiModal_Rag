@@ -23,8 +23,8 @@ def fix_heading_lvl_markdown_by_qwen(fhl_org: dict,
         question_num = get_next_question_num()
 
     try:
-        if model not in ["qwen-max"]: 
-            raise ValueError(f"{model} not supporst")
+        if model not in ["qwen-max", "qwen-plus"]: 
+            raise ValueError(f"{model} not supported")
 
         if not isinstance(fhl_org, dict):
             raise ValueError("fhl_heading need to be dict")

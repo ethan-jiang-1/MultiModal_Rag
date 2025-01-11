@@ -248,8 +248,8 @@ class Page2Markdown():
         for image in images:
             name = image.get("name", None)
             full_name = name
-            if not name.startswith(self.job_id):
-                full_name = f"{self.job_id}-{name}"
+            if not name.startswith(self.md_info.get_unique_job_id()):
+                full_name = f"{self.md_info.get_unique_job_id()}-{name}"
             val, reason = _select_meanful_image_by_size(full_name, self.md_info)
             if val:
                 image["name"] = full_name 
@@ -341,8 +341,9 @@ class Page2Markdown():
         return fname_page
 
     def get_page_md_fname(self):
-        return f"{self.job_id}-page_{self.page_no}.md"
-    
+        #return f"{self.job_id}-page_{self.page_no}.md"
+        return f"{self.md_info.get_unique_job_id()}-page_{self.page_no}.md"
+
     def get_page_md_path(self) -> str:
         aux_dir = self.md_info.get_aux_dir()
         out_dir = self.md_info.get_out_dir()

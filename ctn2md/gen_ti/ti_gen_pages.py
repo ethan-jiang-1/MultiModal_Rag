@@ -8,8 +8,6 @@ import time
 
 load_dotenv()
 
-
-from ctn2md.utils_gen.gen_base import get_job_id
 from ctn2md.utils_gen.gen_base import is_still_in_gen_mode
 from ctn2md.gen_ti.ti_pdf_pages_to_images import parse_pdf_to_images
 from ctn2md.gen_ti.ti_pdf_images_to_mds import convert_images_to_mds, convert_images_to_mds_async
@@ -20,8 +18,7 @@ def gen_pages_ti(md_info:MdInfo, mdcontrols:dict = None, skip_gen_mds: bool = Fa
     start_time = time.time()
     try:
         pathname_doc = md_info.get_doc_pathname()
-        job_id = get_job_id(pathname_doc)
-        md_info[MIFN.TI_CUR_JOB_ID] = job_id
+        job_id = md_info.get_unique_job_id()
 
         if isinstance(mdcontrols, dict):
             md_info.update_mdcontrols(mdcontrols)
@@ -54,8 +51,7 @@ async def gen_pages_ti_async(md_info:MdInfo, mdcontrols:dict = None, skip_gen_md
     start_time = time.time()
     pathname_doc = md_info.get_doc_pathname()
     try:
-        job_id = get_job_id(pathname_doc)
-        md_info[MIFN.TI_CUR_JOB_ID] = job_id
+        job_id = md_info.get_unique_job_id()
 
         if isinstance(mdcontrols, dict):
             md_info.update_mdcontrols(mdcontrols)
@@ -100,11 +96,9 @@ if __name__ == "__main__":
 
     output_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix='ti')
     os.makedirs(output_dir, exist_ok=True)
-    job_id = get_job_id(doc_pathname)
 
     md_info = MdInfo(output_dir)
     md_info.set_doc_pathname(doc_pathname)
-    md_info[MIFN.TI_CUR_JOB_ID] = job_id
     
     need_sync = False 
     if need_sync:

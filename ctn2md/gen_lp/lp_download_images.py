@@ -41,8 +41,7 @@ def _analyse_download_status(json_result: List[dict], md_info: MdInfo) -> Tuple[
     Returns:
         tuple[list, list]: (需要下载的图片列表, 已存在的图片列表)
     """
-    cur_job_id = json_result[0].get("job_id")
-    unique_job_id = md_info.get_unique_job_id(cur_job_id=cur_job_id)
+    unique_job_id = md_info.get_unique_job_id()
     out_dir = md_info.get_out_dir()
     
     # 收集所有需要的图片信息

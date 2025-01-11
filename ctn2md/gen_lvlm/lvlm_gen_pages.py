@@ -6,7 +6,6 @@ import rich
 
 load_dotenv()
 
-from ctn2md.utils_gen.gen_base import get_job_id
 from ctn2md.utils_gen.gen_base import is_still_in_gen_mode
 from ctn2md.gen_lvlm.lvlm_pdf_pages_to_images import parse_pdf_to_images
 from ctn2md.gen_lvlm.lvlm_pdf_images_to_mds import convert_images_to_mds
@@ -15,9 +14,7 @@ from ctn2md.src.md_info_base import MdInfo, MIFN
 
 
 def gen_pages_lvlm(md_info:MdInfo, mdcontrols:dict = None, skip_gen_mds: bool = False, sel_page_indexes: List[int] = None) -> str:
-    pathname_doc = md_info.get_doc_pathname()
-    job_id = get_job_id(pathname_doc)
-    md_info[MIFN.LVLM_CUR_JOB_ID] = job_id
+    job_id = md_info.get_unique_job_id()
 
     if isinstance(mdcontrols, dict):
         md_info.update_mdcontrols(mdcontrols)
@@ -57,11 +54,9 @@ if __name__ == "__main__":
 
     output_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix='lvlm')
     os.makedirs(output_dir, exist_ok=True)
-    job_id = get_job_id(doc_pathname)
 
     md_info = MdInfo(output_dir)
     md_info.set_doc_pathname(doc_pathname)
-    md_info[MIFN.LVLM_CUR_JOB_ID] = job_id
     
     ret = gen_pages_lvlm(md_info, mdcontrols=mdcontrols, skip_gen_mds=skip_gen_mds)
     rich.print(ret)

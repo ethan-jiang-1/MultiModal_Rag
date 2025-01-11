@@ -24,7 +24,7 @@ def generate_full_mds_from_image_ark(pname_image:str,
 
     try:
         if not model.startswith("ep-"): 
-            raise ValueError(f"{model} not supporst")
+            raise ValueError(f"{model} not supported")
 
         inst_img_rects = ""
 

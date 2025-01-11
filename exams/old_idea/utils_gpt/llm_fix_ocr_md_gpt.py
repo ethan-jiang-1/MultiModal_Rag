@@ -35,7 +35,7 @@ def fix_ocr_self_correct_markdown_by_gpt(
 
     try:
         if model not in ["gpt-4o-mini", "gpt-4o"]: 
-            raise ValueError(f"f{model} not supporst")
+            raise ValueError(f"f{model} not supported")
 
         if ctn_type not in [CTN_TYPE.PDF, CTN_TYPE.PPT, CTN_TYPE.DOC]:
             raise ValueError(f"unknown ctn_type {ctn_type}")   

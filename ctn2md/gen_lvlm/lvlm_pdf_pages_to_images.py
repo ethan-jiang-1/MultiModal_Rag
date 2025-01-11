@@ -15,7 +15,6 @@ from ctn2md.gen_lvlm.lvlm_base import get_image_cnt_type, LVLM_IMG_CNT_TYPE
 from ctn2md.gen_lvlm.gs0_pdf_page_to_region import gs0_parse_non_text_rects_in_page
 from ctn2md.gen_lvlm.gs1_pdf_page_to_region import gs1_parse_non_text_rects_in_page
 from ctn2md.gen_lvlm.gs2_pdf_page_to_region import gs2_parse_non_text_rects_in_page
-from ctn2md.utils_gen.gen_base import get_job_id
 from ctn2md.utils_gen.gen_base import is_still_in_gen_mode
 from ctn2md.gen_lvlm._draw_redrect_on_page import draw_redrect_on_page
 
@@ -71,7 +70,7 @@ def parse_pdf_to_images(md_info: MdInfo,
 
     output_dir = normalize_path(md_info.get_out_dir())
     pdf_path = normalize_path(md_info.get_doc_pathname())
-    job_id = md_info[MIFN.LVLM_CUR_JOB_ID]
+    job_id = md_info.get_unique_job_id()
 
     ensure_dir_exists(output_dir)
     if len(job_id) == 0:
@@ -191,13 +190,10 @@ if __name__ == "__main__":
     output_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix='lvlm')
     output_dir = normalize_path(output_dir)
 
-    job_id = get_job_id(doc_pathname)
-
     ensure_dir_exists(output_dir)
 
     md_info = MdInfo(output_dir)
     md_info.set_doc_pathname(doc_pathname)
-    md_info[MIFN.LVLM_CUR_JOB_ID] = job_id
 
     image_infos = parse_pdf_to_images(md_info, sel_page_indexes=sel_page_indexes, mctl_lvlm_region_detect=mctl_lvlm_region_detect)
     rich.print(image_infos)

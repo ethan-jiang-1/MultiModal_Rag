@@ -16,9 +16,6 @@ from ctn2md.gen_lvlm._gs2_pdf_page_to_region import (
     extract_picture_regions,
     call_doclayout_yolo_endpoint
 )
-from ctn2md.src.md_info_base import MIFN
-from ctn2md.utils_gen.gen_base import get_job_id
-
 
 def gs2_parse_picture_regions_in_page(
     page_index: int, 
@@ -81,13 +78,10 @@ if __name__ == "__main__":
 
     output_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix='lvlm')
 
-    job_id = get_job_id(doc_pathname)
-
     os.makedirs(output_dir, exist_ok=True)
 
     md_info = MdInfo(output_dir)
     md_info.set_doc_pathname(doc_pathname)
-    md_info[MIFN.LVLM_CUR_JOB_ID] = job_id
     
     pdf_document = fitz.open(doc_pathname)
     page = pdf_document[page_no - 1] # 0-based index
