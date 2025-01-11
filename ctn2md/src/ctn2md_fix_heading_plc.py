@@ -4,6 +4,8 @@ import logging
 from typing import Tuple
 from dotenv import load_dotenv
 import rich
+import os
+import json
 
 load_dotenv()
 
@@ -121,13 +123,61 @@ def _collect_fhl_info(md_info:MdInfo, md_full_text:str) -> Tuple[dict, str]:
 
     return fhl_org, md_full_text_new
 
+def _get_cache_path(md_info: MdInfo) -> str:
+    """获取缓存文件路径"""
+    aux_dir = md_info.get_aux_dir()
+    return os.path.join(aux_dir, "fhl_cache.json")
+
+def _load_cache(cache_path: str) -> dict:
+    """加载缓存数据"""
+    if os.path.exists(cache_path):
+        try:
+            with open(cache_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            logging.warning(f"Failed to load cache: {e}")
+    return None
+
+def _save_cache(cache_path: str, data: dict):
+    """保存缓存数据"""
+    try:
+        with open(cache_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        logging.warning(f"Failed to save cache: {e}")
+
+def _check_cache_valid(cache: dict, fhl_org: dict, model: str) -> bool:
+    """检查缓存是否有效"""
+    if not cache:
+        return False
+    
+    return (cache.get('fhl_org') == fhl_org and 
+            cache.get('model') == model)
+
 def _cal_new_fhl_map(md_info:MdInfo, fhl_org:dict) -> dict:
+    """计算新的标题层级映射，支持缓存机制"""
     now = datetime.now()
     question_num = now.hour * 100 + now.minute
     logging.info(f"question_num: {question_num}")
+    
+    # 获取缓存路径
+    cache_path = _get_cache_path(md_info)
+    
+    # 获取当前使用的模型
+    mctl_fix_heading_model = md_info.get_md_control("mctl_fix_heading_model", "gpt")
+    
+    # 加载缓存
+    cache = _load_cache(cache_path)
+    
+    # 检查缓存是否有效
+    if _check_cache_valid(cache, fhl_org, mctl_fix_heading_model):
+        logging.info("Using cached fhl_map result")
+        return cache['fhl_map']
+    
+    # 如果缓存无效，重新计算
     fhl_quality = md_info.get(MIFN.FHL_QUALITY, FHL_QUALITY_TYPE.MEDIUM)
     ctn_type = md_info.get_ctn_type()
-    mctl_fix_heading_model = md_info.get_md_control("mctl_fix_heading_model", "gpt")
+    
     if mctl_fix_heading_model == "gpt":
         model = "gpt-4o" # so far, only gpt-4o can handle this well,  gpt-4o-mini does not.
         fhl_map = fix_heading_lvl_markdown_by_gpt(fhl_org, fhl_quality=fhl_quality, ctn_type=ctn_type, model=model, question_num=question_num)
@@ -137,12 +187,18 @@ def _cal_new_fhl_map(md_info:MdInfo, fhl_org:dict) -> dict:
     elif mctl_fix_heading_model == "ark":
         model = "ep-20241220101727-tcdfv"
         fhl_map = fix_heading_lvl_markdown_by_ark(fhl_org, fhl_quality=fhl_quality, ctn_type=ctn_type, model=model, question_num=question_num)
-
     else:
         raise ValueError(f"not implemented yet for using {mctl_fix_heading_model} in fix_headings_plc_by_llm")
-
-    #rich.print(fhl_map)
-    rich.print(fhl_map)
+    
+    # 保存新的缓存
+    cache_data = {
+        'fhl_org': fhl_org,
+        'model': mctl_fix_heading_model,
+        'fhl_map': fhl_map,
+        'timestamp': datetime.now().isoformat()
+    }
+    _save_cache(cache_path, cache_data)
+    
     return fhl_map
 
 def fix_headings_plc_by_llm(md_info_path:str, src_step_num:int = None, dst_step_num:int = None) -> str:
@@ -192,11 +248,24 @@ if __name__ == "__main__":
 
     src_step_num = 0
     dst_step_num = 11
-    md_info_path = "_output/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
-    #md_info_path = "_output/ctn2md_座椅STO间隙 P1/_info.json"
+    md_info_path = "_output/ctn2md_mrag__4__前后排座椅间距定义_P1_lp/_info.json"
 
+    # 第一次运行，应该会计算并缓存结果
+    logging.info("First run - should compute and cache results")
     md_info_path = fix_headings_plc_by_llm(md_info_path, src_step_num=src_step_num, dst_step_num=dst_step_num)
 
+    # 第二次运行，应该会使用缓存的结果
+    logging.info("\nSecond run - should use cached results")
+    md_info_path = fix_headings_plc_by_llm(md_info_path, src_step_num=src_step_num, dst_step_num=dst_step_num)
+
+    # 查看缓存文件内容
     md_info = MdInfo(md_info_path)
+    cache_path = _get_cache_path(md_info)
+    if os.path.exists(cache_path):
+        logging.info(f"\nCache file exists at: {cache_path}")
+        with open(cache_path, 'r', encoding='utf-8') as f:
+            cache_content = json.load(f)
+            logging.info(f"Cache timestamp: {cache_content.get('timestamp')}")
+    
     rich.print(md_info)
     print(md_info_path)
