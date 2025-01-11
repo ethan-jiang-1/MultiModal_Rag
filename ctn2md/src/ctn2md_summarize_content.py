@@ -8,8 +8,9 @@ load_dotenv()
 
 from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
-from ctn2md.utils_llm.llm_summarize_content import summarize_doc_keywords_by_llm
+from ctn2md.src.summarize_content.make_doc_keywords import make_doc_keywords
 from ctn2md.utils.util_markdown import remove_comment, read_markdown_file
+
 
 def summarize_content_by_llm(md_info_path:str, src_step_num:int = None, dst_step_num:int = None) -> str:
     logging.info(f"##MDFLOW##: summarize_content_by_llm started src_step_num:{src_step_num} dst_step_num:{dst_step_num}...")
@@ -24,25 +25,13 @@ def summarize_content_by_llm(md_info_path:str, src_step_num:int = None, dst_step
 
     doc_title = md_info.get_doc_title()
 
-    #TODO: ethan_bm25,  would be nice if we prepare document level bm25 info (how to cut the word, dictionary etc) as pickle or something structure that able to help calculate the bm25 score without knowing too much 
-    # especially difference document might have different terms (for word cut in chinese)
-
-    mctl_summarize_model = md_info.get_md_control("mctl_summarize_model", "gpt")
-    if mctl_summarize_model == "gpt":
-        model = "gpt-4o"
-    elif mctl_summarize_model == "qwen":
-        model = "qwen-plus"
-    elif mctl_summarize_model == "ark":
-        model = "ep-20241220101421-4tj5f"
-    else:
-        raise ValueError(f"not implemented yet for using {mctl_summarize_model} in sumamrize document")
-    
-    resp = summarize_doc_keywords_by_llm(doc_title, full_content, model=model)
-    rich.print(resp)
+    doc_keywords = make_doc_keywords(md_info_path, doc_title, full_content)
 
     pathname_final_md_fname = md_info.name_step_pathname(-1)
     pathname_final_json_fname = pathname_final_md_fname.replace(".md", ".sum.json")
-    json_str = json.dumps(resp, ensure_ascii=False, indent=4)
+    # Convert Pydantic model to dict before JSON serialization
+    resp_dict = doc_keywords.model_dump()
+    json_str = json.dumps(resp_dict, ensure_ascii=False, indent=4)
     with open(pathname_final_json_fname, 'w+', encoding='utf8') as f:
         f.write(json_str)
 
@@ -58,7 +47,8 @@ if __name__ == "__main__":
 
     #md_info_path = "_output/ctn2md_前后排座椅间距定义 P1/_info.json"
     #md_info_path = "_output/ctn2md_高效沟通之黄金三角模型课程大纲/_info.json"
-    md_info_path = "_output/ctn2md_attention_is_all_you_need/_info.json"
+    #md_info_path = "_output/ctn2md_attention_is_all_you_need/_info.json"
+    md_info_path = "_output/ctn2md_mrag__4__前后排座椅间距定义_P1_lp/_info.json"
 
     md_info_path = summarize_content_by_llm(md_info_path, src_step_num=src_step_num)
     print(md_info_path)
