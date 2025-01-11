@@ -15,8 +15,8 @@ from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lp.lp_unique_job import n2u_replace_fnames, n2u_update_md_content
 from ctn2md.gen_lp.lp_page2markdown import Page2Markdown
-from ctn2md.gen_lp.lp_base import prepare_pages_images
-
+from ctn2md.gen_lp.lp_base import prepare_pages_images  
+from ctn2md.gen_lp.lp_download_table import safe_download_tables
 LP_PARSE_INSTRUCT = """The output needs to be formatted as Markdown, with required heading lines. 
 The output should be in the original language of the article (Chinese or English). 
 If tables are detected, they should be distinctly identified within the Markdown flow."""
@@ -91,9 +91,7 @@ def _dump_images_premium(parser:LlamaParse, json_result:List[dict], md_info:MdIn
     md_info[MIFN.LP_FNAMES_P_SNPS] = fnames_snps
 
 def _dump_tables_premium(parser:LlamaParse, json_result:List[dict], md_info:MdInfo):
-    out_dir = md_info.get_out_dir()
-    tables = parser.get_xlsx(json_result, out_dir)
-    fnames_tbls = [os.path.basename(item["path"]) for item in tables]
+    fnames_tbls = safe_download_tables(parser, json_result, md_info)
     md_info[MIFN.LP_FNAMES_P_TBLS] = fnames_tbls 
 
 def _dump_json_result_premium(json_result:List[dict], md_info:MdInfo):

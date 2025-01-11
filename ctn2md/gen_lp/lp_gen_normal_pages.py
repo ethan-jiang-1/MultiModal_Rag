@@ -15,7 +15,7 @@ from ctn2md.gen_lp.lp_unique_job import n2u_replace_fnames, n2u_update_md_conten
 from ctn2md.gen_lp.lp_page2markdown import Page2Markdown
 from ctn2md.gen_lp.lp_base import prepare_pages_images, remove_misc_files_previous_round
 from ctn2md.gen_lp.lp_download_images import safe_download_images
-
+from ctn2md.gen_lp.lp_download_table import safe_download_tables
 def _get_llamaparse_normal(md_info) -> LlamaParse:
 
     language = md_info.get_md_control("mctl_lp_langauge", Language.SIMPLIFIED_CHINESE)
@@ -90,9 +90,7 @@ def _dump_images(parser:LlamaParse, json_result:List[dict], md_info:MdInfo):
     md_info[MIFN.FNAMES_SNPS] = fnames_snps
 
 def _dump_tables(parser:LlamaParse, json_result:List[dict], md_info:MdInfo):
-    out_dir = md_info.get_out_dir()
-    tables = parser.get_xlsx(json_result, out_dir)
-    fnames_tbls = [os.path.basename(item["path"]) for item in tables]
+    fnames_tbls = safe_download_tables(parser, json_result, md_info)
     md_info[MIFN.FNAMES_MD_TBLS] = fnames_tbls   
 
 

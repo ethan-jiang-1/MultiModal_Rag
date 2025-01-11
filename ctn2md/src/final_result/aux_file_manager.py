@@ -17,7 +17,7 @@ def move_aux_files(md_info: MdInfo) -> None:
 
     os.makedirs(aux_dir, exist_ok=True)
     _move_pages(md_info, out_dir, aux_dir)
-    _move_images(md_info, out_dir, aux_dir)
+    _filter_images(md_info, out_dir, aux_dir)
     _move_tables(md_info, out_dir, aux_dir)
 
 def _move_pages(md_info: MdInfo, out_dir: str, aux_dir: str) -> None:
@@ -51,7 +51,7 @@ def _move_pages(md_info: MdInfo, out_dir: str, aux_dir: str) -> None:
             if fname_page in fname_page_aux:
                 md_info_fanems_pages[ndx] = fname_page_aux
 
-def _move_images(md_info: MdInfo, out_dir: str, aux_dir: str) -> None:
+def _filter_images(md_info: MdInfo, out_dir: str, aux_dir: str) -> None:
     """移动图片文件到辅助目录"""
     last_step_num = md_info.get_last_step_num()
     pathname_step_md = md_info.name_step_pathname(last_step_num)
@@ -61,7 +61,9 @@ def _move_images(md_info: MdInfo, out_dir: str, aux_dir: str) -> None:
     if len(fnames_images) == 0:
         return
     
-    moved_count = 0
+    fnames_images_kept = []
+    fnames_images_filtered = []
+    filtered_count = 0
     for ndx, fname_img in enumerate(fnames_images):
         if aux_dir in fname_img:
             continue 
@@ -69,18 +71,18 @@ def _move_images(md_info: MdInfo, out_dir: str, aux_dir: str) -> None:
             continue
 
         if fname_img in image_refs:
+            fnames_images_kept.append(fname_img)
             continue
+        
+        fnames_images_filtered.append(fname_img)
+        filtered_count += 1
 
-        src_pathname = os.path.join(out_dir, fname_img)
-        dst_pathname = os.path.join(aux_dir, fname_img)
-        if os.path.isfile(src_pathname):
-            shutil.move(src_pathname, dst_pathname)
-            dst_fname = dst_pathname.replace(out_dir + "/", "")
-            fnames_images[ndx] = dst_fname
-            moved_count += 1
-    
-    if moved_count > 0:
-        logging.info(f"Moved {moved_count} unused image files")
+    md_info[MIFN.FNAMES_IMGS] = fnames_images_kept
+    md_info[MIFN.FNAMES_IMGS_FILTERED] = fnames_images_filtered
+
+    if filtered_count > 0:
+        logging.info(f"Filtered {filtered_count} unused image files")
+
 
 def _move_tables(md_info: MdInfo, out_dir: str, aux_dir: str) -> None:
     """移动表格文件到辅助目录"""

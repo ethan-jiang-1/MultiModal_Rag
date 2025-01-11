@@ -49,6 +49,8 @@ class PUBLIC_MIFN:
     FNAMES_IMGS = "fnames_imgs"
     FNAMES_SNPS = "fnames_snps"
 
+    FNAMES_IMGS_FILTERED = "fnames_imgs_filtered"
+
     FNAME_FINAL_MD = "fname_final_md"
     FNAME_FINAL_SUM = "fname_final_sum"
 
@@ -256,7 +258,7 @@ class MdInfo(dict):
         if MIFN.MDPARAMS not in self._info:
             self._info[MIFN.MDPARAMS] = {}
 
-        for fnames in [MIFN.FNAMES_MD_PAGES, MIFN.FNAMES_IMGS, MIFN.FNAMES_MD_TBLS,MIFN.FNAMES_SNPS]:
+        for fnames in [MIFN.FNAMES_MD_PAGES, MIFN.FNAMES_IMGS, MIFN.FNAMES_IMGS_FILTERED, MIFN.FNAMES_MD_TBLS,MIFN.FNAMES_SNPS]:
             if fnames not in self._info:
                 self._info[fnames] = []
 
