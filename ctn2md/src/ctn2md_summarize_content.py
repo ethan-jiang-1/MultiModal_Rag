@@ -25,7 +25,7 @@ def summarize_content_by_llm(md_info_path:str, src_step_num:int = None, dst_step
 
     doc_title = md_info.get_doc_title()
 
-    doc_keywords = make_doc_keywords(md_info_path, doc_title, full_content)
+    doc_keywords = make_doc_keywords(md_info, doc_title, full_content)
 
     pathname_final_md_fname = md_info.name_step_pathname(-1)
     pathname_final_json_fname = pathname_final_md_fname.replace(".md", ".sum.json")
