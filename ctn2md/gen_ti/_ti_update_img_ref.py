@@ -147,13 +147,20 @@ class ImageReferenceUpdater:
     async def _update_refs_async(self, process_image_func) -> List[str]:
         """异步版本的更新逻辑"""
         content = self._read_content()
+        # 匹配 Markdown 格式的图片引用
         img_pattern = r'!\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)'
+        # 匹配 HTML img 标签格式的图片引用，包括表格中的引用
+        html_img_pattern = r'<img\s+src="([^"]+)"[^>]*>'
+        
         matches = list(re.finditer(img_pattern, content))
+        html_matches = list(re.finditer(html_img_pattern, content))
         
         local_ref_image_paths = []
         new_content = content
         
         img_ndx = 0
+        
+        # 处理 Markdown 格式的图片引用
         for match in matches:
             img_url = match.group(2)
             
@@ -181,6 +188,41 @@ class ImageReferenceUpdater:
                 logging.error(f"Failed to process image {img_url}: {str(e)}")
                 logging.exception(e)
                 continue
+
+        # 处理 HTML img 标签格式的图片引用
+        for match in html_matches:
+            img_url = match.group(1)
+            
+            # 跳过本地图片
+            if not img_url.startswith(('http://', 'https://')):
+                if os.path.exists(os.path.join(self.output_dir, img_url)):
+                    local_ref_image_paths.append(img_url)
+                continue
+                
+            img_ndx += 1
+            try:
+                local_fname, alt_text, description = await process_image_func(
+                    img_url, img_ndx, content
+                )
+                
+                # 更新为 Markdown 格式的图片引用，在表格中也使用 Markdown 格式
+                old_img_html = match.group(0)
+                new_img_md = f'![{alt_text}]({local_fname}{" \""+description+"\"" if description else ""})'
+                
+                # 如果在表格中，确保图片引用不会破坏表格格式
+                if '|' in content[max(0, match.start() - 10):min(len(content), match.end() + 10)]:
+                    new_img_md = new_img_md.replace('\n', ' ').strip()
+                    logging.info(f"Found image in table, converting: {img_url} -> {local_fname}")
+                
+                new_content = new_content.replace(old_img_html, new_img_md)
+                
+                local_ref_image_paths.append(local_fname)
+                logging.info(f"Processed image: {img_url} -> {local_fname}")
+                
+            except Exception as e:
+                logging.error(f"Failed to process image {img_url}: {str(e)}")
+                logging.exception(e)
+                continue
         
         if new_content != content:
             self._save_content(new_content)
@@ -191,13 +233,20 @@ class ImageReferenceUpdater:
     def _update_refs_sync(self, process_image_func) -> List[str]:
         """同步版本的更新逻辑"""
         content = self._read_content()
+        # 匹配 Markdown 格式的图片引用
         img_pattern = r'!\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)'
+        # 匹配 HTML img 标签格式的图片引用，包括表格中的引用
+        html_img_pattern = r'<img\s+src="([^"]+)"[^>]*>'
+        
         matches = list(re.finditer(img_pattern, content))
+        html_matches = list(re.finditer(html_img_pattern, content))
         
         local_ref_image_paths = []
         new_content = content
         
         img_ndx = 0
+        
+        # 处理 Markdown 格式的图片引用
         for match in matches:
             img_url = match.group(2)
             
@@ -225,11 +274,44 @@ class ImageReferenceUpdater:
                 logging.error(f"Failed to process image {img_url}: {str(e)}")
                 logging.exception(e)
                 continue
+
+        # 处理 HTML img 标签格式的图片引用
+        for match in html_matches:
+            img_url = match.group(1)
+            
+            # 跳过本地图片
+            if not img_url.startswith(('http://', 'https://')):
+                if os.path.exists(os.path.join(self.output_dir, img_url)):
+                    local_ref_image_paths.append(img_url)
+                continue
+                
+            img_ndx += 1
+            try:
+                local_fname, alt_text, description = process_image_func(
+                    img_url, img_ndx, content
+                )
+                
+                # 更新为 Markdown 格式的图片引用，在表格中也使用 Markdown 格式
+                old_img_html = match.group(0)
+                new_img_md = f'![{alt_text}]({local_fname}{" \""+description+"\"" if description else ""})'
+                
+                # 如果在表格中，确保图片引用不会破坏表格格式
+                if '|' in content[max(0, match.start() - 10):min(len(content), match.end() + 10)]:
+                    new_img_md = new_img_md.replace('\n', ' ').strip()
+                    logging.info(f"Found image in table, converting: {img_url} -> {local_fname}")
+                
+                new_content = new_content.replace(old_img_html, new_img_md)
+                
+                local_ref_image_paths.append(local_fname)
+                logging.info(f"Processed image: {img_url} -> {local_fname}")
+                
+            except Exception as e:
+                logging.error(f"Failed to process image {img_url}: {str(e)}")
+                logging.exception(e)
+                continue
         
-        if new_content != content:
-            self._save_content(new_content)
-            logging.info(f"Updated markdown file: {self.pname_page_md}")
-        
+        # 保存更新后的内容
+        self._save_content(new_content)
         return local_ref_image_paths
 
     def update_refs_sync(self) -> List[str]:
