@@ -18,9 +18,10 @@ from ctn2md.gen_lvlm.non_text_detector_gs2._gs2_extract_picture_regions import (
 )
 
 def gs2_parse_non_text_rects_in_pdf_page(
+    md_info: MdInfo,
+    page: fitz.Page,    
     page_index: int, 
     pname_page_name: str,
-    page: fitz.Page,
     conf_threshold: float = 0.5
 ) -> List[Tuple[float, float, float, float]]:
     """使用YOLO检测页面中的图片区域，并转换为PDF points单位

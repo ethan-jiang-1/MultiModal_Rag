@@ -12,7 +12,7 @@ from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src_gen._ctn2md_gen_md_base import GenMd_Base
 
 class GenMd_Lvlm(GenMd_Base):
-    SUPPORT_CNT_TYPES = [CTN_TYPE.PDF, CTN_TYPE.DOC]
+    SUPPORT_CNT_TYPES = [CTN_TYPE.PDF]
     OD_SUFFIX = "lvlm"
 
     @classmethod
@@ -83,6 +83,7 @@ class GenMd_Lvlm(GenMd_Base):
 
 if __name__ == "__main__":
     doc_pathname = "datasrc/exam/raw_docs/papers/ “AI+应用”百花齐放，新质生产力前景广阔pdf.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/misc/成都交通局-华为说明.docx"
 
     out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=GenMd_Lvlm.OD_SUFFIX)
 
