@@ -6,21 +6,34 @@ from pydantic import BaseModel, Field
 
 load_dotenv()
 
-class DocSummary(BaseModel):
-    """
-    Document summary model containing key information about the document.
-    """
+class DocumentKeywords(BaseModel):
+    """Document keywords structure for LLM-generated content analysis"""
     title: str = Field(
-        description="Document title"
+        description="Document title extracted from content"
     )
+    
     summary: str = Field(
-        description="Document summary text"
+        description="Comprehensive summary of the document content"
     )
-    keywords_top: str = Field(
-        description="Top/primary keywords for the document"
+    
+    keywords_primary: List[str] = Field(
+        description="Primary keywords representing core topics and main concepts",
+        example=["seat spacing", "design requirements", "measurement parameters"]
     )
-    keywords_remain: str = Field(
-        description="Additional/secondary keywords"
+    
+    keywords_technical: List[str] = Field(
+        description="Technical keywords including specifications, parameters, and technical terms",
+        example=["seat centerline", "vertical section", "floor distance 620mm"]
+    )
+    
+    keywords_context: List[str] = Field(
+        description="Contextual keywords about industry, standards, and application scenarios",
+        example=["automotive industry", "regulatory requirements", "design standards"]
+    )
+    
+    keywords_general: List[str] = Field(
+        description="General keywords covering broader categories and concepts",
+        example=["vehicle seating", "comfort design", "safety standards"]
     )
 
 
@@ -49,7 +62,7 @@ class DocMetaInfo(BaseModel):
     doc_logic_title: str = Field(
         description="Logical title for the document"
     )
-    doc_summary: DocSummary = Field(
+    doc_summary: DocumentKeywords = Field(
         description="Document summary information"
     )
     fnames_sec: List[str] = Field(
@@ -96,11 +109,13 @@ class DocMetaInfo(BaseModel):
 
 if __name__ == "__main__":
     # Create a sample document summary
-    doc_summary = DocSummary(
+    doc_summary = DocumentKeywords(
         title="Sample Document",
         summary="This is a sample document summary.",
-        keywords_top="key1, key2, key3",
-        keywords_remain="key4, key5, key6"
+        keywords_primary=["key1", "key2", "key3"],
+        keywords_technical=["key4", "key5", "key6"],
+        keywords_general=["general1", "general2"],
+        keywords_context=["context1", "context2"]
     )
 
     # Create a sample document metadata
@@ -128,6 +143,9 @@ if __name__ == "__main__":
         print("\nLoaded metadata:")
         print(f"Title: {loaded_meta.doc_name_title}")
         print(f"Summary: {loaded_meta.doc_summary.summary}")
-        print(f"Keywords: {loaded_meta.doc_summary.keywords_top}")
+        print(f"Primary Keywords: {loaded_meta.doc_summary.keywords_primary}")
+        print(f"Technical Keywords: {loaded_meta.doc_summary.keywords_technical}")
+        print(f"General Keywords: {loaded_meta.doc_summary.keywords_general}")
+        print(f"Context Keywords: {loaded_meta.doc_summary.keywords_context}")
 
 

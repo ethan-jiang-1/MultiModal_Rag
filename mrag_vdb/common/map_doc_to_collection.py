@@ -96,17 +96,17 @@ class MapDocToCol(BaseModel):
         for key in md2c.map_doc2col.keys():
             if key.startswith(doc_title):
                 if key != doc_unique_id:
-                    return False, f"{doc_title} has defined in m2c already with {unique_id}"
+                    return False, f"doc_unique_id_used: {doc_title} has defined in m2c already with {unique_id}"
         return True, None
 
     @classmethod
-    def register_collection_name_for_doc(cls, doc_meta_info: DocMetaInfo) -> str:
+    def register_collection_name_for_doc(cls, doc_meta_info: DocMetaInfo, enforce_register:bool = False) -> str:
         """
         Register collection name for a document.
 
         Args:
             doc_meta_info: Document metadata information
-
+            enforce_register: If True, enforce registration even if the document is already registered
         Returns:
             str: Collection name
 
@@ -119,7 +119,10 @@ class MapDocToCol(BaseModel):
 
         valid, err = cls.validate_doc_title(md2c, doc_unique_id)
         if not valid:
-            raise ValueError(err)
+            if enforce_register and err.startswith("doc_unique_id_used"):
+                logging.warning(err + ", but enforce_register is True")
+            else:
+                raise ValueError(err)
 
         if doc_unique_id in md2c.map_doc2col:
             collection_name = md2c.map_doc2col[doc_unique_id]
