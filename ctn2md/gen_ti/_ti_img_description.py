@@ -75,17 +75,24 @@ class ImageDescriptionGenerator:
         # 目前暂时使用同步版本
         return self._get_page_instruction(doc_title, content_around, local_path)
 
-    def _calculate_description_cache_name(self, local_path: str, instruction: str, image_path_or_url: str, model: str) -> str:
+    def _calculate_description_cache_name(self, local_path: str, instruction: str, model: str) -> str:
         """计算description缓存文件名"""
         basename = os.path.splitext(os.path.basename(local_path))[0]
         inst_crc = format(zlib.crc32(instruction.encode()), '08x')
-        img_basename = os.path.splitext(os.path.basename(image_path_or_url))[0]
-        return f"{basename}_desc_{model}_{inst_crc}_{img_basename}.json"
+        
+        # 使用local_path文件内容的CRC32 
+        if os.path.exists(local_path):
+            with open(local_path, 'rb') as f:
+                content_crc = format(zlib.crc32(f.read()), '08x')
+        else:
+            content_crc = "00000000"
+            
+        return f"{basename}_desc_{model}_{inst_crc}_{content_crc}.json"
 
     def _generate_description(self, image_path_or_url: str, instruction: str, local_path: str) -> ImageDescription:
         """共享的描述生成逻辑,使用缓存"""
         # 检查缓存
-        cache_file = self._calculate_description_cache_name(local_path, instruction, image_path_or_url, self.caption_model)
+        cache_file = self._calculate_description_cache_name(local_path, instruction, self.caption_model)
         cache_path = os.path.join(self.cache_dir, cache_file)
         
         if os.path.exists(cache_path):

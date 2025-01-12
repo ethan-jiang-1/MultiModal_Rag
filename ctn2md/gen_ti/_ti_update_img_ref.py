@@ -51,7 +51,7 @@ class ImageReferenceUpdater:
             # 先下载图片
             try:
                 await asyncio.wait_for(
-                    download_remote_image_ti_async(img_url, local_path),
+                    download_remote_image_ti_async(self.md_info, img_url, local_path),
                     timeout=15
                 )
             except Exception as e:
@@ -108,7 +108,7 @@ class ImageReferenceUpdater:
         try:
             # 下载图片
             try:
-                download_remote_image_ti(img_url, local_path)
+                download_remote_image_ti(self.md_info, img_url, local_path)
             except Exception as e:
                 retry_state = getattr(self._process_image_sync, 'retry_state', None)
                 if retry_state and retry_state.attempt_number < 3:
@@ -355,6 +355,10 @@ if __name__ == "__main__":
         def get_doc_title(self):
             return "Test Document"
 
+        def get_cache_dir(self):
+            cache_dir = "_work/test_cache"
+            os.makedirs(cache_dir, exist_ok=True)
+            return cache_dir
     # 创建测试markdown文件
     test_md = """# Test Document
 ![test](https://img.ixintu.com/download/jpg/20210201/7cacc87485bdd0b5c721c7c100f67550_512_512.jpg!ys "这是一个测试图片") 这里是其他文字
