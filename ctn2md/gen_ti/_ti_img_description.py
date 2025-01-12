@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 load_dotenv()
 import os
 import zlib
+import cv2
+import numpy as np
 
 from ctn2md.src.md_info_base import MdInfo
 from ctn2md.utils_llm.llm_gen_vllm_instruction import gen_vllm_instruction_llm
@@ -75,19 +77,47 @@ class ImageDescriptionGenerator:
         # 目前暂时使用同步版本
         return self._get_page_instruction(doc_title, content_around, local_path)
 
+    def get_image_features(self, image_path: str) -> str:
+        """获取图像特征,用于缓存判断"""
+        img = cv2.imread(image_path)
+        if img is None:
+            return "invalid"
+            
+        # 1. 尺寸特征 (更大容差)
+        height, width = img.shape[:2]
+        height_round = round(height/20.0) * 20
+        width_round = round(width/20.0) * 20
+        
+        # 2. 感知哈希 (pHash) - 对细微位移更不敏感
+        resized = cv2.resize(img, (32, 32))
+        gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
+        # DCT变换
+        dct = cv2.dct(np.float32(gray))
+        # 取左上角8x8的低频部分
+        dct_low = dct[:8, :8]
+        avg = dct_low.mean()
+        # 先生成二进制hash
+        binary_hash = ['1' if freq > avg else '0' for freq in dct_low.flatten()]
+        # 每4位二进制转为1位十六进制
+        hex_hash = ''
+        for i in range(0, len(binary_hash), 4):
+            value = int(''.join(binary_hash[i:i+4]), 2)
+            hex_hash += format(value, 'x')
+        
+        return f"{width_round}x{height_round}_{hex_hash}"
+
     def _calculate_description_cache_name(self, local_path: str, instruction: str, model: str) -> str:
         """计算description缓存文件名"""
         basename = os.path.splitext(os.path.basename(local_path))[0]
         inst_crc = format(zlib.crc32(instruction.encode()), '08x')
         
-        # 使用local_path文件内容的CRC32 
+        # 使用图像特征替代简单的内容CRC32
         if os.path.exists(local_path):
-            with open(local_path, 'rb') as f:
-                content_crc = format(zlib.crc32(f.read()), '08x')
+            img_features = self.get_image_features(local_path)
         else:
-            content_crc = "00000000"
+            img_features = "invalid"
             
-        return f"{basename}_desc_{model}_{inst_crc}_{content_crc}.json"
+        return f"{basename}_desc_{model}_{inst_crc}_{img_features}.json"
 
     def _generate_description(self, image_path_or_url: str, instruction: str, local_path: str) -> ImageDescription:
         """共享的描述生成逻辑,使用缓存"""
@@ -155,7 +185,6 @@ async def get_img_alt_text_and_description_async(md_info: MdInfo, img_url: str, 
     """异步版本"""
     generator = ImageDescriptionGenerator(md_info)
     return await generator.get_alt_text_and_description_async(img_url, local_path, content)
-
 
 if __name__ == "__main__":
     from mmbase.utils.util_logging import setup_logger_handlers
