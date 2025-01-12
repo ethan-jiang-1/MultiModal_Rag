@@ -8,11 +8,8 @@ load_dotenv()
 
 from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MIFN, MdInfo
-from ctn2md.utils_vllm.vllm_img2md_gpt import generate_full_mds_from_image_gpt
-from ctn2md.utils_vllm.vllm_img2md_qwen import generate_full_mds_from_image_qwen
-from ctn2md.utils_vllm.vllm_img2md_ark import generate_full_mds_from_image_ark
 from ctn2md.src.md_page_spe import SpecialPage
-
+from ctn2md.gen_lvlm.lvlm_pdf_image_to_md import gen_page_md_by_lvlm
 def _does_page_need_gen(pname_page_md:str, md_info:MdInfo) -> bool:
     if not os.path.isfile(pname_page_md):
         return True
@@ -21,25 +18,6 @@ def _does_page_need_gen(pname_page_md:str, md_info:MdInfo) -> bool:
         return True
 
     return False
-
-def _gen_page_md_by_lvlm(mctl_lvlm_img2md_model:str, pname_image:str, rects_img:List[str], pname_page_md:str):
-    logging.info(f"GPMBL: generate page {os.path.basename(pname_page_md)}...")
-
-    try:
-        if mctl_lvlm_img2md_model == "qwen":
-            md_page = generate_full_mds_from_image_qwen(pname_image, rects_img)
-        elif mctl_lvlm_img2md_model == "gpt":
-            md_page = generate_full_mds_from_image_gpt(pname_image, rects_img)
-        elif mctl_lvlm_img2md_model == "ark":
-            md_page = generate_full_mds_from_image_ark(pname_image, rects_img)
-        else:
-            raise ValueError(f"unsupported model {mctl_lvlm_img2md_model}")
-    except Exception as ex:
-        md_page = f"\n{SpecialPage.PAGE_FAILED_GEN_CONTENT_MARK}\n\n {os.path.basename(pname_page_md)}\n\n reason: {str(ex)}\n\n"
-
-    with open(pname_page_md, "w", encoding="utf-8") as f:
-        f.write(md_page)   
-
 
 def convert_images_to_mds(md_info:MdInfo, image_infos: List[Tuple[str, List[str]]], sel_page_ndxs:Optional[List[int]] = None) -> int:
     output_dir = md_info.get_out_dir()
@@ -75,7 +53,7 @@ def convert_images_to_mds(md_info:MdInfo, image_infos: List[Tuple[str, List[str]
         pname_page_md = os.path.join(aux_dir, fname_page_md)
         if _does_page_need_gen(pname_page_md, md_info): 
             if not SpecialPage.does_page_have_touched_mark(pname_page_md):
-                _gen_page_md_by_lvlm(mctl_lvlm_img2md_model, pname_image, rects_img, pname_page_md)
+                gen_page_md_by_lvlm(md_info, mctl_lvlm_img2md_model, pname_image, rects_img, pname_page_md)
                 cnt_page_gen += 1
             fnames_page_md_gen.append(fname_page_md)
         else:
