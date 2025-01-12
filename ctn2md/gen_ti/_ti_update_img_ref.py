@@ -70,7 +70,7 @@ class ImageReferenceUpdater:
             # 只有下载成功才执行描述生成
             try:
                 alt_text, description = await asyncio.wait_for(
-                    get_img_alt_text_and_description_async(self.md_info, img_url, content),
+                    get_img_alt_text_and_description_async(self.md_info, img_url, local_path, content),
                     timeout=15
                 )
             except Exception as e:
@@ -123,7 +123,7 @@ class ImageReferenceUpdater:
 
             # 生成描述
             try:
-                alt_text, description = get_img_alt_text_and_description(self.md_info, img_url, content)
+                alt_text, description = get_img_alt_text_and_description(self.md_info, img_url, local_path, content)
             except Exception as e:
                 retry_state = getattr(self._process_image_sync, 'retry_state', None)
                 if retry_state and retry_state.attempt_number < 3:
