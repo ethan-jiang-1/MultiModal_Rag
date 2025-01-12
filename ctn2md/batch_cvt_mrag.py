@@ -12,8 +12,8 @@ if __name__ == "__main__":
     _root_dir = os.path.abspath(os.path.dirname(find_dotenv()))
     os.chdir(_root_dir)
 
-from ctn2md.ctn2md_converter_lvlm import do_content2md_convert as dcc_lvlm
-from ctn2md.ctn2md_converter_lp import do_content2md_convert as dcc_lp
+from ctn2md.ctn2md_converter_pdf_lvlm import do_content2md_convert as dcc_lvlm
+from ctn2md.ctn2md_converter_all_lp import do_content2md_convert as dcc_lp
 from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.gen_lvlm.lvlm_pdf_pages_to_images import normalize_path
 
