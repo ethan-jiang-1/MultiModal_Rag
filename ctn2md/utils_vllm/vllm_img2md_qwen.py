@@ -54,7 +54,10 @@ if __name__ == '__main__':
     #              '5ec48698-img_1_2.jpg',
     #              '5ec48698-img_1_1.jpg']
     
-    pname_image = "_work/md_pdf_pages/d73162ba-page_2_rects.jpg"
+    #pname_image = "_work/md_pdf_pages/d73162ba-page_2_rects.jpg"
+    #rects_img = []
+
+    pname_image = "_work/md_pdf_pages/d73162ba-page_3_rects.jpg"
     rects_img = []
 
     full_path = os.path.join(dir_root, pname_image)
