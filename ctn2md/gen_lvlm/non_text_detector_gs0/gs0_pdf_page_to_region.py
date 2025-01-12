@@ -104,7 +104,7 @@ def _merge_all_rects(page: fitz.Page, rect_list: List[BaseGeometry]) -> List[Bas
     merged_rects = [rect for rect in merged_rects if rect.bounds[2] - rect.bounds[0] > 20 and rect.bounds[3] - rect.bounds[1] > 20]
     return merged_rects
 
-def gs0_parse_non_text_rects_in_page(md_info: MdInfo, 
+def gs0_parse_non_text_rects_in_pdf_page(md_info: MdInfo, 
                                      page: fitz.Page, 
                                      page_index: int, 
                                      pname_page_name: str) -> List[Tuple[float, float, float, float]]:
@@ -152,5 +152,5 @@ if __name__ == "__main__":
     pdf_document = fitz.open(doc_pathname)
     page = pdf_document[page_no - 1] # 0-based index
 
-    merged_rects_bounds = gs0_parse_non_text_rects_in_page(md_info, page, page_no, None)
+    merged_rects_bounds = gs0_parse_non_text_rects_in_pdf_page(md_info, page, page_no, None)
     rich.print(merged_rects_bounds)

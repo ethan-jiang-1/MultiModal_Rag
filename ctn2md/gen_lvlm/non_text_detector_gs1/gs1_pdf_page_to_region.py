@@ -266,7 +266,7 @@ def _gs1_parse_non_text_rects_in_page_core(
     return merged_rects_bounds, rects_list
 
 
-def gs1_parse_non_text_rects_in_page(
+def gs1_parse_non_text_rects_in_pdf_page(
     md_info: MdInfo,
     page: fitz.Page,
     page_index: int,
@@ -294,5 +294,5 @@ if __name__ == "__main__":
     pdf_document = fitz.open(doc_pathname)
     page = pdf_document[page_no - 1] # 0-based index
 
-    merged_rects_bounds= gs1_parse_non_text_rects_in_page(md_info, page, page_no, None)
+    merged_rects_bounds= gs1_parse_non_text_rects_in_pdf_page(md_info, page, page_no, None)
     rich.print(merged_rects_bounds)

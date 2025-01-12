@@ -8,7 +8,7 @@ load_dotenv()
 
 from ctn2md.utils_gen.gen_base import is_still_in_gen_mode
 from ctn2md.gen_lvlm.lvlm_pdf_pages_to_images import parse_pdf_to_images
-from ctn2md.gen_lvlm.lvlm_pdf_images_to_mds import convert_images_to_mds
+from ctn2md.gen_lvlm.image2mds.lvlm_images_to_mds import convert_images_to_mds
 from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 

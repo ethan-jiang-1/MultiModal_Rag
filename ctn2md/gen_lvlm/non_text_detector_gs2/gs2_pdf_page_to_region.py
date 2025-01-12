@@ -12,12 +12,12 @@ load_dotenv()
 
 from ctn2md.src.md_info_base import MdInfo
 from mmbase.utils.util_logging import setup_logger_handlers
-from ctn2md.gen_lvlm.non_text_detector_gs2._gs2_pdf_page_to_region import (
+from ctn2md.gen_lvlm.non_text_detector_gs2._gs2_extract_picture_regions import (
     extract_picture_regions,
     call_doclayout_yolo_endpoint
 )
 
-def gs2_parse_picture_regions_in_page(
+def gs2_parse_non_text_rects_in_pdf_page(
     page_index: int, 
     pname_page_name: str,
     page: fitz.Page,
@@ -60,14 +60,6 @@ def gs2_parse_picture_regions_in_page(
         logging.error(f"Page {page_index}: Error processing {pname_page_name}: {str(e)}")
         return []
 
-def gs2_parse_non_text_rects_in_page(
-    md_info: MdInfo, 
-    page: fitz.Page, 
-    page_index: int, 
-    pname_page_name: str
-) -> List[Tuple[float, float, float, float]]:
-    """兼容旧接口的包装函数"""
-    return gs2_parse_picture_regions_in_page(page_index, pname_page_name, page)
 
 if __name__ == "__main__":
     setup_logger_handlers()
@@ -89,5 +81,5 @@ if __name__ == "__main__":
     pname_page_name = f"_work/{os.path.basename(doc_pathname)}_{page_no}.jpg"
     page.get_pixmap(matrix=fitz.Matrix(1, 1)).save(pname_page_name)
 
-    merged_rects_bounds= gs2_parse_non_text_rects_in_page(md_info, page, page_no, pname_page_name)
+    merged_rects_bounds= gs2_parse_non_text_rects_in_pdf_page(md_info, page, page_no, pname_page_name)
     rich.print(merged_rects_bounds)

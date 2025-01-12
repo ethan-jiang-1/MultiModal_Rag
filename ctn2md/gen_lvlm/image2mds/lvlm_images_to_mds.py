@@ -9,7 +9,7 @@ load_dotenv()
 from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MIFN, MdInfo
 from ctn2md.src.md_page_spe import SpecialPage
-from ctn2md.gen_lvlm.lvlm_pdf_image_to_md import gen_page_md_by_lvlm
+from ctn2md.gen_lvlm.image2mds.lvlm_image_to_md import gen_page_md_by_lvlm
 def _does_page_need_gen(pname_page_md:str, md_info:MdInfo) -> bool:
     if not os.path.isfile(pname_page_md):
         return True
