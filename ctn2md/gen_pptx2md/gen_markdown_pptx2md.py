@@ -1,5 +1,6 @@
 import logging  
 import os
+import shutil
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -11,7 +12,12 @@ def gen_pages_pptx2md(md_info:MdInfo):
     from pptx2md import convert, ConversionConfig
     from pathlib import Path
 
-    pptx_path = Path(md_info.get_doc_pathname())
+    unique_id = md_info.get_unique_job_id()
+    dst_pathname = os.path.join(md_info.get_out_dir(), f"{unique_id}.pptx")
+    src_pathname = md_info.get_doc_pathname()
+    shutil.copy(src_pathname, dst_pathname)
+
+    pptx_path = Path(dst_pathname)
     #out_dir = Path(md_info.get_out_dir())
     img_dir = Path(md_info.get_out_dir())
 

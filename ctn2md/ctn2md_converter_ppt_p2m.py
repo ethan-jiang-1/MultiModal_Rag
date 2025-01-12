@@ -26,7 +26,7 @@ def _do_content2md_convert_core_p2m(doc_pathname:str,
                                    mdcontrols:Optional[dict] = None)->str:
     if out_dir is None:
         out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=GenMd_Pptx2md.OD_SUFFIX)
-    logging.warning(f"DCCCTI: work out_dir: {out_dir} for {doc_pathname}")
+    logging.warning(f"DCCPPT: work out_dir: {out_dir} for {doc_pathname}")
     os.makedirs(out_dir, exist_ok=True)
 
     md_generator = GenMd_Pptx2md
@@ -36,7 +36,7 @@ def _do_content2md_convert_core_p2m(doc_pathname:str,
 
     md_info_path = md_generator.generate_markdown(doc_pathname, out_dir=out_dir, enforced_gen=enforced_gen, mdcontrols=mdcontrols)
     if md_info_path is None:
-        logging.error(f"DCCCTI: failed {md_info_path} @initial_gen_md_by_textin")
+        logging.error(f"DCCPPT: failed {md_info_path} @initial_gen_md_by_pptx2md")
         return None
 
     md_info = MdInfo(md_info_path)
@@ -52,17 +52,17 @@ def _do_content2md_convert_core_p2m(doc_pathname:str,
 
     md_info_path = inject_section_hierarchy(md_info_path, src_step_num=src_step_num)
     if md_info_path is None:
-        logging.error(f"DCCCTI: failed {md_info_path} @inject_section_hierarchy")
+        logging.error(f"DCCPPT: failed {md_info_path} @inject_section_hierarchy")
         return None
 
     src_step_num += 1
     md_info_path = summarize_content_by_llm(md_info_path, src_step_num=src_step_num)
     if md_info_path is None:
-        logging.error(f"DCCCTI: failed {md_info_path} @summarize_content_by_llm")
+        logging.error(f"DCCPPT: failed {md_info_path} @summarize_content_by_llm")
         return None       
 
     pathname_final_json = make_final_json(md_info_path)
-    logging.info(f"DCCCTI: final json: {pathname_final_json}")
+    logging.info(f"DCCPPT: final json: {pathname_final_json}")
     return pathname_final_json
 
 def do_content2md_convert(doc_pathname:str, out_dir:str = None, enforced_gen:bool = False, mdcontrols: dict = None):
