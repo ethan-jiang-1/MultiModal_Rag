@@ -7,8 +7,8 @@ load_dotenv()
 
 from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
-from ctn2md.gen_lp.lp_gen_normal_pages import gen_normal_pages
-from ctn2md.gen_lp.lp_gen_premium_pages import gen_premium_pages
+from ctn2md.gen_llamaparse.lp_gen_normal_pages import gen_normal_pages
+from ctn2md.gen_llamaparse.lp_gen_premium_pages import gen_premium_pages
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 
 def _construct_s0_md_from_md_pages(md_info:MdInfo):

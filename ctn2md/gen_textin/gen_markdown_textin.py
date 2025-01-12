@@ -9,7 +9,7 @@ load_dotenv()
 from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.utils.util_markdown import read_markdown_file
 from ctn2md.src.md_info_base import MdInfo, MIFN
-from ctn2md.gen_ti.ti_gen_pages import gen_pages_ti, gen_pages_ti_async
+from ctn2md.gen_textin.ti_gen_pages import gen_pages_ti, gen_pages_ti_async
 
 def _construct_s0_md_from_pages(md_info:MdInfo) -> str:
     """异步版本的构建函数"""

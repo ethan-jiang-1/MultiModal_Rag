@@ -11,27 +11,9 @@ from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src_gen.ctn2md_gen_md_base import GenMd_Base
 
-def _gen_md_lvlm(doc_pathname:str, out_dir:str, lvlm_model:str = "gpt-4o") -> str:
-    from ctn2md.gen_lvlm.gen_markdown_lvml import generate_markdown_lvlm
-    logging.info(f"##MDFLOW##: gen_md_lvlm started...")
-
-    md_info = MdInfo(out_dir)
-    md_info.set_gen_engine(f"lvlm@{lvlm_model}")
-    md_info.set_doc_pathname(doc_pathname)
-    md_info[MIFN.FHL_QUALITY] = FHL_QUALITY_TYPE.HIGH
-    
-    md_info.save()
-
-    md_info_path = generate_markdown_lvlm(md_info, lvlm_model=lvlm_model)
-
-    logging.info(f"##MDFLOW##: gen_md_lvlm end")
-    return md_info_path
-
-
 class GenMd_Lvlm(GenMd_Base):
     SUPPORT_CNT_TYPES = [CTN_TYPE.PDF, CTN_TYPE.DOC]
     OD_SUFFIX = "lvlm"
-
 
     @classmethod
     def does_gen_needed(cls, doc_pathname:str, out_dir:str, enforced_gen:bool) -> Tuple[MdInfo, bool]:
@@ -76,10 +58,27 @@ class GenMd_Lvlm(GenMd_Base):
             md_info.save()
 
         if gen_needed:
-            md_info_path = _gen_md_lvlm(doc_pathname, out_dir)
+            md_info_path = cls._gen_md_core(doc_pathname, out_dir)
             if md_info_path is None:
                 return None
         return md_info.get_md_info_path()
+    
+    @classmethod
+    def _gen_md_core(cls, doc_pathname:str, out_dir:str) -> str:
+        from ctn2md.gen_lvlm.gen_markdown_lvml import generate_markdown_lvlm
+        logging.info(f"##MDFLOW##: gen_md_lvlm started...")
+
+        md_info = MdInfo(out_dir)
+        md_info.set_gen_engine(f"lvlm")
+        md_info.set_doc_pathname(doc_pathname)
+        md_info[MIFN.FHL_QUALITY] = FHL_QUALITY_TYPE.HIGH
+        
+        md_info.save()
+
+        md_info_path = generate_markdown_lvlm(md_info)
+
+        logging.info(f"##MDFLOW##: gen_md_lvlm end")
+        return md_info_path
 
 
 if __name__ == "__main__":

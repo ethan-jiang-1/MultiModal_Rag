@@ -11,7 +11,7 @@ load_dotenv()
 from ctn2md.src.md_process_plc import inject_plc_comment_to_page, has_injected_plc_comment, separate_heading_and_plc_comment, extract_plc_info_from_comment
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from mmbase.utils.util_logging import setup_logger_handlers
-from ctn2md.gen_lp.lp_base import get_page_images, PAGE_IMG_STATUS, analyse_image_content
+from ctn2md.gen_llamaparse.lp_base import get_page_images, PAGE_IMG_STATUS, analyse_image_content
 from ctn2md.src.md_page_spe import SpecialPage
 
 # 常量定义

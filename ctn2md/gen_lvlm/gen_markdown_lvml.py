@@ -36,7 +36,7 @@ def _construct_s0_md_from_pages(md_info:MdInfo) -> str:
         f.write(full_md_text)
     return pathname_step0
 
-def generate_markdown_lvlm(md_info:MdInfo, lvlm_model:str = "gpt-4o") -> str:
+def generate_markdown_lvlm(md_info:MdInfo) -> str:
     doc_pathname = md_info.get_doc_pathname()
     if (doc_pathname is None) or (not os.path.isfile(doc_pathname)):
         raise ValueError(f"doc_pathname is not valid {doc_pathname}")
@@ -47,7 +47,7 @@ def generate_markdown_lvlm(md_info:MdInfo, lvlm_model:str = "gpt-4o") -> str:
     gen_pages_lvlm(md_info)
 
     pathname_step0 = _construct_s0_md_from_pages(md_info)
-    md_info.add_step_into_md_info_mdflow(pathname_step0, actor=f"generate_markdown_lvlm@{lvlm_model}")
+    md_info.add_step_into_md_info_mdflow(pathname_step0, actor=f"generate_markdown_lvlm")
     md_info.save()
 
     logging.info(f"original doc: {doc_pathname}")

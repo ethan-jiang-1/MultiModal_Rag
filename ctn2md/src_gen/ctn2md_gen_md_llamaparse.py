@@ -11,23 +11,6 @@ from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src_gen.ctn2md_gen_md_base import GenMd_Base
 
-def _gen_md_llamaparse(doc_pathname:str, out_dir:str) -> str:
-    from ctn2md.gen_lp.gen_markdown_llamaparse import generate_markdown_llamaparse
-
-    logging.info(f"##MDFLOW##: gen_md_llamaparse started...")
-
-    md_info = MdInfo(out_dir)
-    md_info.set_gen_engine("llamaparse:lp")
-    md_info.set_doc_pathname(doc_pathname)
-    md_info[MIFN.FHL_QUALITY] = FHL_QUALITY_TYPE.LOW
-    md_info.save()
-
-    md_info_path = generate_markdown_llamaparse(md_info)
-
-    logging.info(f"##MDFLOW##: gen_md_llamaparse end")
-    return md_info_path
-
-
 class GenMd_LlamaParse(GenMd_Base):
     SUPPORT_CNT_TYPES = [CTN_TYPE.PDF, CTN_TYPE.PPT, CTN_TYPE.DOC, CTN_TYPE.XLS]
     OD_SUFFIX = "lp"
@@ -60,7 +43,7 @@ class GenMd_LlamaParse(GenMd_Base):
             md_info.save()
 
         if gen_needed:
-            md_info_path = _gen_md_llamaparse(doc_pathname, out_dir)
+            md_info_path = cls._gen_md_core(doc_pathname, out_dir)
             if md_info_path is None:
                 return None
 
@@ -76,6 +59,23 @@ class GenMd_LlamaParse(GenMd_Base):
                 md_info._info[fnames] = [] 
         md_info.save()
         return
+    
+    @classmethod
+    def _gen_md_core(cls, doc_pathname:str, out_dir:str) -> str:
+        from ctn2md.gen_llamaparse.gen_markdown_llamaparse import generate_markdown_llamaparse
+
+        logging.info(f"##MDFLOW##: gen_md_llamaparse started...")
+
+        md_info = MdInfo(out_dir)
+        md_info.set_gen_engine("llamaparse:lp")
+        md_info.set_doc_pathname(doc_pathname)
+        md_info[MIFN.FHL_QUALITY] = FHL_QUALITY_TYPE.LOW
+        md_info.save()
+
+        md_info_path = generate_markdown_llamaparse(md_info)
+
+        logging.info(f"##MDFLOW##: gen_md_llamaparse end")
+        return md_info_path
 
 
 if __name__ == "__main__":

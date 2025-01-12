@@ -10,13 +10,13 @@ from llama_parse.utils import Language
 load_dotenv()
 
 
-from ctn2md.gen_lp._download_images import safe_download_images
+from ctn2md.gen_llamaparse  ._download_images import safe_download_images
 from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
-from ctn2md.gen_lp.n2u_unique_job import n2u_replace_fnames, n2u_update_md_content
-from ctn2md.gen_lp.lp_page2markdown import Page2Markdown
-from ctn2md.gen_lp.lp_base import prepare_pages_images  
-from ctn2md.gen_lp._download_table import safe_download_tables
+from ctn2md.gen_llamaparse.n2u_unique_job import n2u_replace_fnames, n2u_update_md_content
+from ctn2md.gen_llamaparse.lp_page2markdown import Page2Markdown
+from ctn2md.gen_llamaparse.lp_base import prepare_pages_images  
+from ctn2md.gen_llamaparse._download_table import safe_download_tables
 LP_PARSE_INSTRUCT = """The output needs to be formatted as Markdown, with required heading lines. 
 The output should be in the original language of the article (Chinese or English). 
 If tables are detected, they should be distinctly identified within the Markdown flow."""

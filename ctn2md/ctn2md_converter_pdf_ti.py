@@ -81,9 +81,9 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     #doc_pathname = "datasrc/exam/raw_docs/mrag/AIGC时代的人力资源管理进化(徐刚).pdf"
-    doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、上汽内外饰部CAD外包框架服务合同.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪ST2H项目低压线束设计技术服务合同（电子电器）.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪车架总成技术服务合同.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪铝大梁式车架及副车架设计外包中标通知书.pdf"

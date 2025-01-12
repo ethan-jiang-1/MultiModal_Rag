@@ -8,11 +8,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from ctn2md.src.md_info_base import MdInfo
-from ctn2md.gen_ti._ti_img_description import (
+from ctn2md.gen_textin._ti_img_description import (
     get_img_alt_text_and_description,
     get_img_alt_text_and_description_async
 )
-from ctn2md.gen_ti._ti_get_image import (
+from ctn2md.gen_textin._ti_get_image import (
     download_remote_image_ti,
     download_remote_image_ti_async
 )
