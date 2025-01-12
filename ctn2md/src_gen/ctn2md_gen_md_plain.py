@@ -1,13 +1,13 @@
 from dotenv import load_dotenv
 import os
-#import logging
+import logging
 import rich
 
 load_dotenv()
 
 from mmbase.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo
-from ctn2md.utils.util_ctn_type import CTN_TYPE
+from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
+from ctn2md.utils.util_ctn_type import CTN_TYPE 
 from ctn2md.src_gen._ctn2md_gen_md_base import GenMd_Base
 
 
@@ -31,7 +31,7 @@ class GenMd_Plain(GenMd_Base):
             md_info.save()
 
         if gen_needed:
-            md_info_path = cls._gen_md_core(doc_pathname, md_info)
+            md_info_path = cls._gen_md_core(doc_pathname, out_dir)
             if md_info_path is None:
                 return None
 
@@ -44,9 +44,20 @@ class GenMd_Plain(GenMd_Base):
         return True
     
     @classmethod
-    def _gen_md_core(cls, doc_pathname, md_info):
-        from ctn2md.gen_plain.gen_markdown_plain import gen_md_plain
-        return gen_md_plain(doc_pathname, md_info)
+    def _gen_md_core(cls, doc_pathname:str, out_dir:str) -> str:
+        from ctn2md.gen_plain.gen_markdown_plain import gen_markdown_plain
+        logging.info(f"##MDFLOW##: gen_md_plain started...")
+
+        md_info = MdInfo(out_dir)
+        md_info.set_gen_engine("md2md:plain")
+        md_info.set_doc_pathname(doc_pathname)
+        md_info[MIFN.FHL_QUALITY] = FHL_QUALITY_TYPE.MEDIUM
+        md_info.save()
+
+        md_info_path = gen_markdown_plain(md_info)
+
+        logging.info(f"##MDFLOW##: gen_md_plain end")
+        return md_info_path
 
 
 if __name__ == "__main__":

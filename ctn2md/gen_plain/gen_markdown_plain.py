@@ -7,7 +7,7 @@ import json
 load_dotenv()
 
 #from mmbase.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE, PUBLIC_MIFN
+from ctn2md.src.md_info_base import MdInfo, MIFN, PUBLIC_MIFN
 from ctn2md.utils.util_markdown import find_all_image_refs
 
 def _copy_img_files_in_markdown(doc_pathname:str, out_dir:str) -> list:
@@ -76,14 +76,11 @@ def _copy_orginal_files(md_info:MdInfo, doc_pathname:str) -> str:
     return pathname_s0_md
     
 
-def gen_md_plain(doc_pathname, md_info):
+def gen_markdown_plain(md_info:MdInfo) -> str:
     logging.info(f"##MDFLOW##: gen_md_plain started...")
 
+    doc_pathname = md_info.get_doc_pathname()
     out_dir = md_info.get_out_dir()
-    md_info.set_gen_engine("md2md:plain")
-    md_info.set_doc_pathname(doc_pathname)
-    md_info[MIFN.FHL_QUALITY] = FHL_QUALITY_TYPE.LOW
-
     pathname_final_md = md_info.name_step_pathname(-1)
     if pathname_final_md == doc_pathname:
         raise ValueError(f"src_md cannot be same as dst_md: {doc_pathname}")

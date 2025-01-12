@@ -74,7 +74,7 @@ class GenMd_TextIn(GenMd_Base):
     
     @classmethod
     def _gen_md_core(cls, doc_pathname:str, out_dir:str) -> str:
-        from ctn2md.gen_textin.gen_markdown_textin import generate_markdown_ti, generate_markdown_ti_async
+        from ctn2md.gen_textin.gen_markdown_textin import generate_markdown_textin, generate_markdown_textin_async
         logging.info(f"##MDFLOW##: gen_md_textin started...")
 
         md_info = MdInfo(out_dir)
@@ -85,10 +85,10 @@ class GenMd_TextIn(GenMd_Base):
         mctl_ge_md_async = md_info.get_md_control("mctl_ge_md_async", False)
         if mctl_ge_md_async:
             logging.info(f"##MDFLOW##: gen_md_textin started async  ...")
-            md_info_path = asyncio.run(generate_markdown_ti_async(md_info))
+            md_info_path = asyncio.run(generate_markdown_textin_async(md_info))
         else:
             logging.info(f"##MDFLOW##: gen_md_textin started sync...")
-            md_info_path = generate_markdown_ti(md_info)
+            md_info_path = generate_markdown_textin(md_info)
 
         logging.info(f"##MDFLOW##: gen_md_textin end mctl_ge_md_async={mctl_ge_md_async}")
         return md_info_path

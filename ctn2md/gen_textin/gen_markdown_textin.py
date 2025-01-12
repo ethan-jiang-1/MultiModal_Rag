@@ -37,7 +37,7 @@ def _construct_s0_md_from_pages(md_info:MdInfo) -> str:
         f.write(full_md_text)
     return pathname_step0
 
-async def generate_markdown_ti_async(md_info:MdInfo) -> str:
+async def generate_markdown_textin_async(md_info:MdInfo) -> str:
     """异步版本的主函数"""
     doc_pathname = md_info.get_doc_pathname()
     if (doc_pathname is None) or (not os.path.isfile(doc_pathname)):
@@ -58,7 +58,7 @@ async def generate_markdown_ti_async(md_info:MdInfo) -> str:
     md_info_path = md_info.save()
     return md_info_path
 
-def generate_markdown_ti(md_info:MdInfo) -> str:
+def generate_markdown_textin(md_info:MdInfo) -> str:
     """同步版本的主函数"""
     doc_pathname = md_info.get_doc_pathname()
     if (doc_pathname is None) or (not os.path.isfile(doc_pathname)):
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     if need_sync:
         # 同步测试
         print("\n=== Testing Synchronous Generation ===")
-        ret = generate_markdown_ti(md_info)
+        ret = generate_markdown_textin(md_info)
         rich.print(f"Sync result: {ret}")
 
     else:
@@ -101,7 +101,7 @@ if __name__ == "__main__":
         print("\n=== Testing Asynchronous Generation ===")
 
         async def test_async():
-            ret = await generate_markdown_ti_async(md_info)
+            ret = await generate_markdown_textin_async(md_info)
             rich.print(f"Async result: {ret}")
 
         asyncio.run(test_async())
