@@ -1,5 +1,5 @@
 #import pytest
-from mmbase.utils_llm.llm_base import strip_llm_format_markers
+from mmbase.utils_llm.llm_markdown import strip_llm_format_markers
 
 def test_strip_llm_format_markers():
     """测试清理LLM输出中的markdown格式标记"""
@@ -98,11 +98,11 @@ SELECT
 ```"""
 
     expected = """以下是一个SQL查询示例：
-```
+
 sql
 SELECT
 ...
-```
+
 这个查询统计了活跃用户的订单数量。"""
 
     result = strip_llm_format_markers(content)
@@ -127,11 +127,11 @@ SELECT
 """
 
     expected = """以下是一个SQL查询示例：
-```
+
 sql
 SELECT
 ...
-```
+
 这个查询统计了活跃用户的订单数量。"""
 
     result = strip_llm_format_markers(content)
@@ -160,11 +160,11 @@ SELECT
 """
 
     expected = """以下是一个SQL查询示例：
-```
+
 sql
 SELECT
 ...
-```
+
 这个查询统计了活跃用户的订单数量。"""
 
     result = strip_llm_format_markers(content)

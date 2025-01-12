@@ -63,7 +63,8 @@ if __name__ == "__main__":
     need_preminum_step=True
     
     #md_info_path = "_output/ctn2md_深度学习在视电阻率快速反演中的研究/_info.json"
-    md_info_path = "_output/ctn2md_papers__DeepSeek_V3_lvlm/_info.json"
+    #md_info_path = "_output/ctn2md_papers__DeepSeek_V3_lvlm/_info.json"
+    md_info_path = "_output/ctn2md_mrag__业绩案例_比亚迪驻场线束设计技术服务合同（电子电器）_lvlm/_info.json"
 
     md_info = MdInfo(md_info_path)
 

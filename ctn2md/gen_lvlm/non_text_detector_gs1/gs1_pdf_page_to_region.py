@@ -14,8 +14,8 @@ load_dotenv()
 from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo
 #from ctn2md.gen_lvlm.lvlm_image_cnt_type import get_image_cnt_type, LVLM_IMG_CNT_TYPE
-from ctn2md.gen_lvlm._gs1_pdf_page_paint import detect_paint_regions
-from ctn2md.gen_lvlm._gs1_pdf_page_table import detect_table_regions
+from ctn2md.gen_lvlm.non_text_detector_gs1._gs1_pdf_page_paint import detect_paint_regions
+from ctn2md.gen_lvlm.non_text_detector_gs1._gs1_pdf_page_table import detect_table_regions
 
 
 def _is_near(rect1: BaseGeometry, rect2: BaseGeometry, distance: float = 20) -> bool:

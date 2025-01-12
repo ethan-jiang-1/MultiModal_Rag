@@ -12,11 +12,11 @@ load_dotenv()
 from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lvlm.lvlm_base import get_image_cnt_type, LVLM_IMG_CNT_TYPE
-from ctn2md.gen_lvlm.gs0_pdf_page_to_region import gs0_parse_non_text_rects_in_page
-from ctn2md.gen_lvlm.gs1_pdf_page_to_region import gs1_parse_non_text_rects_in_page
-from ctn2md.gen_lvlm.gs2_pdf_page_to_region import gs2_parse_non_text_rects_in_page
+from ctn2md.gen_lvlm.non_text_detector_gs0.gs0_pdf_page_to_region import gs0_parse_non_text_rects_in_page
+from ctn2md.gen_lvlm.non_text_detector_gs1.gs1_pdf_page_to_region import gs1_parse_non_text_rects_in_page
+from ctn2md.gen_lvlm.non_text_detector_gs2.gs2_pdf_page_to_region import gs2_parse_non_text_rects_in_page
 from ctn2md.utils_gen.gen_base import is_still_in_gen_mode
-from ctn2md.gen_lvlm._draw_redrect_on_page import draw_redrect_on_page
+from ctn2md.gen_lvlm.lvlm_base import draw_redrect_on_page
 
 IMG_EXT = "jpg"  # or "png"
 #IMG_EXT = "png"  # or "png"

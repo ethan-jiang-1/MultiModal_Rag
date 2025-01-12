@@ -12,7 +12,7 @@ load_dotenv()
 
 from ctn2md.src.md_info_base import MdInfo
 from mmbase.utils.util_logging import setup_logger_handlers
-from ctn2md.gen_lvlm._gs2_pdf_page_to_region import (
+from ctn2md.gen_lvlm.non_text_detector_gs2._gs2_pdf_page_to_region import (
     extract_picture_regions,
     call_doclayout_yolo_endpoint
 )
