@@ -56,6 +56,7 @@ if __name__ == "__main__":
     doc_pathname = "_work/ctn2md_mrag__业绩案例_上汽内外饰DRE外包框架服务合同_lvlm/业绩案例、上汽内外饰DRE外包框架服务合同___pdf.md"
 
     out_dir = MdInfo.get_suggested_out_dir(doc_pathname, GenMd_Plain.OD_SUFFIX)
+    os.makedirs(out_dir, exist_ok=True)
     md_info = MdInfo(out_dir)
 
     setup_logger_handlers()
