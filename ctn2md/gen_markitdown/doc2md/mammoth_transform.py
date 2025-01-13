@@ -2,7 +2,9 @@ import logging
 import re
 from typing import Any, Optional, Tuple, Union
 from dotenv import load_dotenv
-from mammoth.documents import Document, Paragraph, Run, Text    
+from mammoth.documents import Document, Paragraph, Run, Text
+
+from ctn2md.gen_markitdown.doc2md.mammoth_style_map import get_known_heading_map    
 #from rich import print
 
 load_dotenv()
@@ -14,6 +16,7 @@ logger = logging.getLogger(__name__)
 # Type aliases
 HeadingLevel = Optional[int]
 HeadingInfo = Tuple[HeadingLevel, str]
+
 
 class HeadingStack:
     """用于跟踪文档标题层级的栈结构"""
@@ -166,6 +169,29 @@ class ContentBasedHeadingParser:
             alignment=None,
             indent=None
         )
+    
+def convert_heading_paragraph_with_style_name(element: Paragraph) -> Paragraph:
+    # 对于有style_name的段落，我们想办法映射到 style_id 为 heading1, heading2, heading3 等  
+    style_name = element.style_name
+    # 如果 style_id 为 heading1, heading2, heading3 等，则保持原样  
+    # 否则，我们尝试映射到 style_id 为 heading1, heading2, heading3 等
+    # 尝试从style_name映射到heading1-6的style_id
+    # 常见的标题样式名称映射
+
+
+    # 尝试从映射表中获取对应的style_id
+    known_heading_map = get_known_heading_map()
+    if style_name.lower() in known_heading_map:
+        style_id = known_heading_map[style_name.lower()]
+    elif style_name in known_heading_map:
+        style_id = known_heading_map[style_name]
+    if style_name.startswith("heading"):
+        style_id = style_name
+    else:
+        style_id = None
+    if style_id is not None:
+        element.style_id = style_id
+    return element
 
 # 创建全局实例
 _heading_parser = ContentBasedHeadingParser()
@@ -224,7 +250,7 @@ def mammoth_transform_document(element: Union[Document, Paragraph, Any]) -> Docu
         # 如果段落有预定义样式，保持原样
         if element.style_name and element.style_name != "dingdocnormal":
             logger.debug(f"Keeping original style: {element.style_name}")
-            return element
+            return convert_heading_paragraph_with_style_name(element)
             
         # 否则尝试解析标题
         level, title_text = _heading_parser.parse_heading(text)
