@@ -3,7 +3,7 @@ import re
 from dotenv import load_dotenv
 load_dotenv()
 
-from ctn2md.gen_markitdown.img_ref.models import ImageReference, IMG_REF_PATTERN
+from ctn2md.gen_base.img_ref.models import ImageReference, IMG_REF_PATTERN
 from ctn2md.src.md_info_base import MdInfo
 
 def _read_markdown_file(file_path: str) -> str:

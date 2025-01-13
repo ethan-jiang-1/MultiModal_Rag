@@ -7,6 +7,7 @@ import rich
 
 load_dotenv()
 
+from ctn2md.gen_base.scan_img_ref_and_update import scan_img_ref_and_update
 from ctn2md.src.md_info_base import MdInfo
 from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.gen_markitdown.doc2md.mammoth_style_map import get_mammoth_style_map
@@ -55,6 +56,9 @@ def gen_md_from_doc(md_info: MdInfo) -> str:
     pathname_step0 = md_info.name_step_pathname(0)
     with open(pathname_step0, "w", encoding="utf-8") as f:
         f.write(markdown_content)
+
+    # 扫描图片引用
+    scan_img_ref_and_update(md_info, pathname_step0)
 
     logger.info(f"Markdown file generated: {pathname_step0}")
 

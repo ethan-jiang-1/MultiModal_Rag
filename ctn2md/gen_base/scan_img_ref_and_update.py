@@ -4,11 +4,11 @@ from rich import print
 from dotenv import load_dotenv
 load_dotenv()
 
-from ctn2md.gen_markitdown.img_ref.img_ref_updater import update_img_ref
 from ctn2md.src.md_info_base import MdInfo, PUBLIC_MIFN
-from ctn2md.gen_markitdown.img_ref.scanner import ImageReferenceScanner
-from ctn2md.gen_markitdown.img_ref.models import ImageReference
-from ctn2md.gen_markitdown.img_ref.description_generator import ImageDescriptionGenerator
+from ctn2md.gen_base.img_ref.img_ref_updater import update_img_ref
+from ctn2md.gen_base.img_ref.scanner import ImageReferenceScanner
+from ctn2md.gen_base.img_ref.models import ImageReference
+from ctn2md.gen_base.img_ref.description_generator import ImageDescriptionGenerator
 
 # 加载环境变量
 load_dotenv()
