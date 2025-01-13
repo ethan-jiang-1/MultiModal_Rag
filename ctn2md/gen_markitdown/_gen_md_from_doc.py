@@ -1,17 +1,20 @@
-import os
-import shutil
-import re
 import logging
+import re
+import shutil
+from pathlib import Path
 from typing import Any, Optional, Tuple, Union
 from dotenv import load_dotenv
-import rich
+
 import mammoth
+import rich
+load_dotenv()
+
+
 from mammoth.documents import Document, Paragraph, Run, Text
 from ctn2md.src.md_info_base import MdInfo
 from mmbase.utils.util_logging import setup_logger_handlers
-from pathlib import Path
 
-load_dotenv()
+
 
 # Type aliases
 HeadingLevel = Optional[int]
@@ -169,9 +172,6 @@ class ContentBasedHeadingParser:
             indent=None
         )
 
-# 创建全局解析器实例
-_heading_parser = ContentBasedHeadingParser()
-
 class ImageExporter:
     """处理文档中的图片导出"""
     _output_dir: str = ""
@@ -194,11 +194,11 @@ class ImageExporter:
         """
         try:
             # 确保图片目录存在
-            image_dir = Path(self.output_dir) 
+            image_dir = Path(ImageExporter._output_dir) 
             
             # 生成图片文件名
             self._image_counter += 1
-            image_filename = f"{self._doc_unique_id}_{self._image_counter}{self._get_image_extension(image_element)}"
+            image_filename = f"{ImageExporter._doc_unique_id}_{self._image_counter}{self._get_image_extension(image_element)}"
             image_path = image_dir / image_filename
             
             # 保存图片
@@ -207,13 +207,14 @@ class ImageExporter:
             
             self.logger.info(f"Exported image to: {image_path}")
             
-            # 创建图片引用段落
-            relative_path = f"{image_filename}"
+            # 创建图片引用段落 - 修改这里以生成正确的 Markdown 图片引用格式
+            relative_path = image_filename
             alt_text = image_element.alt_text or f"image_{self._image_counter}"
+            markdown_image_ref = f"![{alt_text}]({relative_path})"
             
             return Paragraph(
                 children=[Run(
-                    children=[Text(f"![{alt_text}]({relative_path})")],
+                    children=[Text(markdown_image_ref)],
                     style_id=None,
                     style_name=None,
                     is_bold=False,
@@ -251,6 +252,7 @@ class ImageExporter:
             return ".png"  # 默认使用 png
 
 # 创建全局实例
+_heading_parser = ContentBasedHeadingParser()
 _image_exporter = ImageExporter()
 
 def _mammoth_transform_document(element: Union[Document, Paragraph, Any]) -> Document:
@@ -272,17 +274,28 @@ def _mammoth_transform_document(element: Union[Document, Paragraph, Any]) -> Doc
             comments=[]
         )
     elif isinstance(element, Paragraph):
-        # 提取段落中的所有文本
+        # 提取段落中的所有文本和图片
         text_parts = []
+        has_image = False
+        image_paragraph = None
+        
         for child in element.children:
             if isinstance(child, Run):
                 for text_element in child.children:
                     if isinstance(text_element, Text):
                         text_parts.append(text_element.value)
                     elif hasattr(text_element, 'alt_text'):  # 处理图片
-                        # 保持图片的处理
-                        return element
+                        has_image = True
+                        # 使用图片导出器处理图片
+                        image_paragraph = _image_exporter.export_image(text_element)
+                        if image_paragraph:
+                            return image_paragraph
         
+        # 如果这是一个图片段落且成功处理了图片，直接返回图片段落
+        if has_image and image_paragraph:
+            return image_paragraph
+            
+        # 处理普通文本段落
         text = "".join(text_parts)
         logger.info(f"Processing text: {text}")
         
@@ -300,24 +313,39 @@ def _mammoth_transform_document(element: Union[Document, Paragraph, Any]) -> Doc
             logger.info(f"Regular paragraph: {text}")
             return _heading_parser.create_normal_paragraph(text)
     
-    # 保持其他元素不变（包括图片）
+    # 保持其他元素不变
     return element
 
-
-def gen_md_from_doc(md_info: 'MdInfo', pname_unique_doc: str) -> str:
-    """从Word文档生成Markdown文件
-    
-    Args:
-        md_info: Markdown信息对象
-        pname_unique_doc: 唯一的文档路径
-        
-    Returns:
-        生成的Markdown文件路径
+def gen_md_from_doc(doc_path: str, output_dir: str, style_map: str = None, logger: logging.Logger = None) -> str:
     """
-    logger = logging.getLogger(__name__)
-    
+    Convert a docx file to markdown format.
+    :param doc_path: path to the docx file
+    :param output_dir: path to the output directory
+    :param style_map: style map for mammoth
+    :param logger: logger instance
+    :return: path to the generated markdown file
+    """
+    if logger is None:
+        logger = logging.getLogger(__name__)
+
+    # 设置输出目录
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # 复制源文件
+    doc_path = Path(doc_path)
+    doc_name = doc_path.stem
+    doc_copy_path = output_dir / doc_path.name
+
+    # 复制源文件
+    shutil.copy2(doc_path, doc_copy_path)
+
+    # 设置输出文件名
+    output_file = output_dir / f"{doc_name}___docx_s0.md"
+
     # 设置样式映射
-    style_map = """
+    if style_map is None:
+        style_map = """
     p[style-name='heading 1'] => h1:fresh
     p[style-name='heading 2'] => h2:fresh
     p[style-name='heading 3'] => h3:fresh
@@ -335,45 +363,53 @@ def gen_md_from_doc(md_info: 'MdInfo', pname_unique_doc: str) -> str:
     p[style-name='Normal'] => p:fresh
     p[style-name='dingdocnormal'] => p:fresh
     """
-    
-    # 转换文档
-    logger.info(f"Converting document: {pname_unique_doc}")
+
+    logger.info(f"Converting document: {doc_copy_path}")
     logger.info(f"Using style map:\n{style_map}")
 
+    # 转换文档
+    with open(doc_copy_path, "rb") as docx_file:
+        result = mammoth.convert_to_markdown(
+            docx_file,
+            style_map=style_map,
+            transform_document=_mammoth_transform_document,
+            convert_image=mammoth.images.img_element
+        )
+
+    # 写入结果，确保不转义特殊字符
+    markdown_content = result.value
+    markdown_content = markdown_content.replace(r'\!', '!').replace(r'\[', '[').replace(r'\]', ']').replace(r'\(', '(').replace(r'\)', ')')
+    
+    with open(output_file, "w", encoding="utf-8") as f:
+        f.write(markdown_content)
+
+    logger.info(f"Markdown file generated: {output_file}")
+
+    return str(output_file)
+
+def generate_markdown_markitdown(md_info: MdInfo) -> str:
+    """生成Markdown文件
+    
+    Args:
+        md_info: Markdown信息对象
+        
+    Returns:
+        生成的Markdown文件路径
+    """
+    # 获取唯一的文档路径
+    pname_unique_doc = md_info.get_doc_pathname()
+    
+    # 设置图片导出器的状态
     ImageExporter._image_counter = 0
     ImageExporter._doc_unique_id = md_info.get_unique_job_id()
     ImageExporter._output_dir = md_info.get_out_dir()
     
-    result = mammoth.convert_to_markdown(
-        pname_unique_doc,
-        transform_document=_mammoth_transform_document,
-        style_map=style_map
+    # 生成Markdown文件
+    pathname_step0 = gen_md_from_doc(
+        doc_path=pname_unique_doc,
+        output_dir=md_info.get_out_dir()
     )
     
-    # 处理警告
-    for warning in result.messages:
-        logger.warning(warning)
-    
-    # 写入结果
-    pathname_step0 = md_info.name_step_pathname(0) 
-    with open(pathname_step0, "w", encoding="utf-8") as f:
-        f.write(result.value)
-    
-    logger.info(f"Markdown file generated: {pathname_step0}")
-    return pathname_step0
-
-def generate_markdown_markitdown(md_info:MdInfo) -> str:
-    setup_logger_handlers()
-
-    pname_unique_doc = os.path.join(
-        md_info.get_out_dir(),
-        f"{md_info.get_unique_job_id()}.docx"
-    )
-    shutil.copy(md_info.get_doc_pathname(), pname_unique_doc)
-
-    # 生成Markdown
-    pathname_step0 = gen_md_from_doc(md_info, pname_unique_doc)
-    md_info.add_step_into_md_info_mdflow(pathname_step0, "markitdown")
     return pathname_step0
 
 
@@ -381,11 +417,13 @@ if __name__ == "__main__":
     # 设置日志
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
+    
+    # 创建日志目录
     setup_logger_handlers()
 
-    # 获取文档信息
-    md_info = MdInfo("_output/ctn2md_misc__成都交通局_华为说明_mid/_info.json")
+    #md_info_path = "_output/ctn2md_mrag__1__座椅STO间隙_P1_px2m/_info.json"
+    md_info_path = "_output/ctn2md_misc__成都交通局_华为说明_mid/_info.json"
+    md_info = MdInfo(md_info_path)
 
-    # 生成Markdown
     ret = generate_markdown_markitdown(md_info)
     rich.print(ret)
