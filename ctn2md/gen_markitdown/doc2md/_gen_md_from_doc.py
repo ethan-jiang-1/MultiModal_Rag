@@ -51,6 +51,7 @@ def gen_md_from_doc(doc_path: str, output_dir: str) -> str:
         )
     # 写入结果，确保不转义特殊字符
     markdown_content = result.value
+    markdown_content = ImageExporter.recover_img_ref(markdown_content)
     
     pathname_step0 = md_info.name_step_pathname(0)
     with open(pathname_step0, "w", encoding="utf-8") as f:

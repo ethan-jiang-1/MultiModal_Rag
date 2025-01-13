@@ -1,5 +1,6 @@
 import os
 import logging
+import re
 from mammoth import documents
 
 logger = logging.getLogger(__name__)
@@ -43,56 +44,18 @@ class ImageExporter:
     
     @classmethod
     def build_img_ref_object(cls, image_filename: str) -> documents.Paragraph:
-        try:
-            base_name = os.path.basename(image_filename)
-            markdown_ref = "!" + "[" + f"{base_name}" + "]" + "(" + base_name + ")"
-            logger.info(f"Exported image to: {image_filename}")
-            return documents.paragraph(
-                children=[documents.run(
-                    children=[documents.text(markdown_ref)],
-                    style_id=None,
-                    style_name=None,
-                    is_bold=False,
-                    is_italic=False,
-                    is_underline=False,
-                    is_strikethrough=False,
-                    is_all_caps=False,
-                    is_small_caps=False,
-                    vertical_alignment=None,
-                    font=None,
-                    font_size=None,
-                    highlight=None
-                )],
-                style_id="normal",
-                style_name="Normal",
-                numbering=None,
-                alignment=None,
-                indent=None
-            )
-        except Exception as e:
-            logger.error(f"Failed to export image: {str(e)}")
-            return documents.paragraph(
-                children=[documents.run(
-                    children=[documents.text("[Image export failed]")],
-                    style_id=None,
-                    style_name=None,
-                    is_bold=False,
-                    is_italic=False,
-                    is_underline=False,
-                    is_strikethrough=False,
-                    is_all_caps=False,
-                    is_small_caps=False,
-                    vertical_alignment=None,
-                    font=None,
-                    font_size=None,
-                    highlight=None
-                )],
-                style_id="normal",
-                style_name="Normal",
-                numbering=None,
-                alignment=None,
-                indent=None
-            )
+        """构建Markdown图片引用对象,将感叹号和链接分开处理,避免转义字符"""
+        # alt text
+        alt_text = "ImageRef"
+        
+        # 感叹号和链接分开处理
+        exclamation = documents.text("!")
+        link = documents.hyperlink(href=image_filename, children=[documents.text(alt_text)])
+        
+        return documents.paragraph([
+            documents.run([exclamation]),
+            documents.run([link])
+        ])
  
     @classmethod
     def _get_image_extension(cls, image_element: documents.Image) -> str:
@@ -110,4 +73,15 @@ class ImageExporter:
             "image/heic": ".heic",
             "image/heif": ".heif"
         }
-        return content_type_map.get(content_type, ".png")  # Default to PNG
+        return content_type_map.get(content_type, ".png")
+    
+    @classmethod
+    def recover_img_ref(cls, markdown_text: str) -> str:
+        # 转义很麻烦，我们在 markdown 中使用 \![ImageRef](00bd3592_0.png) 来表示图片引用 
+        # 这里我们恢复为 ![ImageRef](00bd3592_0.png)
+        # 特别的地方就是 看到 \![ImageRef] 后知道可以替换，需要恢复为 ![ImageRef](00bd3592_0.png)
+        # 所以需要找到 \![ImageRef] 然后替换为 ![ImageRef](00bd3592_0.png)
+        # 这里使用正则表达式来实现
+        pattern = r"\\!\[ImageRef\]\((.*?)\)"
+        return re.sub(pattern, r"![ImageRef](\1)", markdown_text)
+
