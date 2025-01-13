@@ -1,12 +1,14 @@
-import re
+
 import os
 import zlib
 import cv2
 import numpy as np
 import json
 import json_repair
-from typing import Optional, Tuple
+from typing import Tuple
 from pydantic import BaseModel
+from dotenv import load_dotenv
+load_dotenv()
 
 from ctn2md.utils_llm.llm_gen_vllm_instruction import gen_vllm_instruction_llm
 from ctn2md.utils_vllm.vllm_img_description_qwen import generate_image_description_by_qwen
@@ -119,7 +121,7 @@ class ImageDescriptionGenerator:
         return f"{basename}_desc_{model}_{content_crc}_{img_features}.json"
 
     def generate_description(self, doc_title: str, context_before: str, context_after: str, 
-                           image_path: str, ref_name: str, index: int) -> Tuple[str, str]:
+                           image_path: str, ref_name: str, index: int) -> Tuple[str, str, float]:
         """根据上下文和图片生成figure_name和description
         
         Args:
@@ -130,7 +132,7 @@ class ImageDescriptionGenerator:
             index: 图片序号
             
         Returns:
-            Tuple[str, str]: (figure_name, description)
+            Tuple[str, str, float]: (figure_name, description, relevance_score)
         """
         # 合并上下文
         content_around = f"{context_before} {context_after}"
@@ -143,7 +145,7 @@ class ImageDescriptionGenerator:
             with open(cache_path, 'r', encoding='utf-8') as f:
                 json_data = json.load(f)
                 desc = ImageDescription(**json_data)
-                return desc.FigureName or f"图{index}", desc.PictureDescription
+                return desc.FigureName or f"图{index}", desc.PictureDescription, desc.RelevanceScore
 
         # 生成instruction
         instruction = self._get_image_instruction(doc_title, image_path, content_around)
@@ -157,11 +159,9 @@ class ImageDescriptionGenerator:
             resp = generate_image_description_by_ark(image_path, instruction=instruction)
         else:
             raise ValueError(f"unsupported model: {self.caption_model}")
-
         if resp is None:
-            # 如果生成失败，回退到简单规则
-            return self._generate_simple_description(context_before, context_after, ref_name, index)
-            
+            return "", "", 0.0
+
         # 解析响应
         json_data = json_repair.repair_json(resp, return_objects=True, ensure_ascii=True)
         description = ImageDescription(**json_data)
@@ -170,44 +170,8 @@ class ImageDescriptionGenerator:
         with open(cache_path, 'w', encoding='utf-8') as f:
             json.dump(description.model_dump(), f, ensure_ascii=False, indent=2)
 
-        return description.FigureName or f"图{index}", description.PictureDescription
+        return description.FigureName or f"图{index}", description.PictureDescription, description.RelevanceScore
 
-    def _generate_simple_description(self, context_before: str, context_after: str, 
-                                   ref_name: str, index: int) -> Tuple[str, str]:
-        """使用简单规则生成描述（作为后备方案）"""
-        # 尝试从上下文中提取标题
-        title = self._extract_title_from_context(context_before, context_after)
-        
-        if not title:
-            title = f"图{index}"
-            
-        return title, f"图{index} {title}"
-        
-    def _extract_title_from_context(self, context_before: str, context_after: str) -> Optional[str]:
-        """从上下文中提取标题"""
-        # 尝试从前文中提取
-        title = self._extract_from_text(context_before)
-        if title:
-            return title
-            
-        # 尝试从后文中提取
-        title = self._extract_from_text(context_after)
-        return title
-        
-    def _extract_from_text(self, text: str) -> Optional[str]:
-        """从文本中提取标题"""
-        sentences = re.split('[。；]', text)
-        
-        for sent in sentences:
-            if len(sent) > 50:
-                continue
-                
-            if "图" in sent and not re.search(r'[^\w\s\u4e00-\u9fff]', sent):
-                title = sent.strip()
-                if title:
-                    return title
-                    
-        return None 
 
 if __name__ == "__main__":
     # 测试图片路径和上下文
@@ -222,7 +186,7 @@ if __name__ == "__main__":
     """
     
     # 创建测试用的缓存目录
-    test_cache_dir = "_work/test_cache1"
+    test_cache_dir = "_work/test_cache2"
     os.makedirs(test_cache_dir, exist_ok=True)
     
     print("=== Testing image description generation ===")
@@ -231,7 +195,7 @@ if __name__ == "__main__":
             cache_dir=test_cache_dir
         )
         
-        figure_name, description = generator.generate_description(
+        figure_name, description, relevance_score = generator.generate_description(
             doc_title="神经网络结构说明文档",
             context_before=test_context_before,
             context_after=test_context_after,

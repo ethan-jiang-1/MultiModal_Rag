@@ -1,5 +1,9 @@
 from dataclasses import dataclass
 
+# 匹配两种格式:
+# 1. ![](image.jpg)
+# 2. ![figure_name](image.jpg "description")
+IMG_REF_PATTERN = r'!\[(.*?)\]\(([^"\s]+)(?:\s+"([^"]*)")?\)'
 @dataclass
 class ImageReference:
     """图片引用信息"""
@@ -10,15 +14,17 @@ class ImageReference:
     line_number: int        # 所在行号
     figure_name: str = ""   # 图片标题
     image_description: str = ""  # 图片描述
+    relevance_score: float = 0.0  # 相关性分数
     
     def needs_update(self) -> bool:
         """检查是否需要更新figure_name和image_description"""
         return not (self.figure_name and self.image_description)
     
-    def update_description(self, figure_name: str, description: str) -> None:
+    def update_description(self, figure_name: str, description: str, relevance_score: float) -> None:
         """更新figure_name和image_description"""
         self.figure_name = figure_name
         self.image_description = description
+        self.relevance_score = relevance_score
         
     def to_markdown(self) -> str:
         """生成markdown格式的图片引用"""

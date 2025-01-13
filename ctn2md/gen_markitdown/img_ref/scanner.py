@@ -1,6 +1,10 @@
 import re
 from typing import List
-from .models import ImageReference
+from dotenv import load_dotenv
+load_dotenv()
+
+from ctn2md.gen_markitdown.img_ref.models import ImageReference, IMG_REF_PATTERN
+
 
 class ImageReferenceScanner:
     """扫描markdown文件中的图片引用"""
@@ -12,10 +16,7 @@ class ImageReferenceScanner:
             context_chars: 提取图片前后的上下文字符数
         """
         self.context_chars = context_chars
-        # 匹配两种格式:
-        # 1. ![](image.jpg)
-        # 2. ![figure_name](image.jpg "description")
-        self._pattern = r'!\[(.*?)\]\(([^"\s]+)(?:\s+"([^"]*)")?\)'
+        self._pattern = IMG_REF_PATTERN
     
     def scan_file(self, file_path: str) -> List[ImageReference]:
         """扫描文件中的图片引用
@@ -60,7 +61,8 @@ class ImageReferenceScanner:
                 context_after=context_after,
                 line_number=line_number,
                 figure_name=figure_name,
-                image_description=description
+                image_description=description,
+                relevance_score=0.0
             )
             references.append(ref)
             
@@ -85,3 +87,4 @@ class ImageReferenceScanner:
         start = max(0, start)
         end = min(len(content), end)
         return content[start:end].strip() 
+    

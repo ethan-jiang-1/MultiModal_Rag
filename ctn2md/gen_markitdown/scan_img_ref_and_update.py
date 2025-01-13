@@ -4,10 +4,11 @@ from rich import print
 from dotenv import load_dotenv
 load_dotenv()
 
+from ctn2md.gen_markitdown.img_ref.img_ref_updater import update_img_ref
 from ctn2md.src.md_info_base import MdInfo, PUBLIC_MIFN
-from ctn2md.gen_markitdown.scan_img.scanner import ImageReferenceScanner
-from ctn2md.gen_markitdown.scan_img.models import ImageReference
-from ctn2md.gen_markitdown.scan_img.description_generator import ImageDescriptionGenerator
+from ctn2md.gen_markitdown.img_ref.scanner import ImageReferenceScanner
+from ctn2md.gen_markitdown.img_ref.models import ImageReference
+from ctn2md.gen_markitdown.img_ref.description_generator import ImageDescriptionGenerator
 
 # 加载环境变量
 load_dotenv()
@@ -30,7 +31,7 @@ def scan_img_ref_and_update(md_info: MdInfo, pname_step0: str) -> List[ImageRefe
     idg = ImageDescriptionGenerator(md_info.get_cache_dir())
     for i, ref in enumerate(references, 1):
         if ref.needs_update():
-            figure_name, description = idg.generate_description(
+            figure_name, description, relevance_score = idg.generate_description(
                 md_info.get_doc_title(),
                 ref.context_before,
                 ref.context_after,
@@ -38,11 +39,14 @@ def scan_img_ref_and_update(md_info: MdInfo, pname_step0: str) -> List[ImageRefe
                 ref.ref_name,
                 i
             )
-            ref.update_description(figure_name, description)
+            ref.update_description(figure_name, description, relevance_score)
     
     # 更新md_info
     image_files = [ref.ref_name for ref in references]
     md_info[PUBLIC_MIFN.FNAMES_IMGS] = image_files
+
+    # 更新markdown文件中的图片引用
+    update_img_ref(md_info, references, pname_step0)
     
     return references
 
