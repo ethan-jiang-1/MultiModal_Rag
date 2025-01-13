@@ -178,7 +178,6 @@ def convert_heading_paragraph_with_style_name(element: Paragraph) -> Paragraph:
     # 尝试从style_name映射到heading1-6的style_id
     # 常见的标题样式名称映射
 
-
     # 尝试从映射表中获取对应的style_id
     known_heading_map = get_known_heading_map()
     if style_name.lower() in known_heading_map:

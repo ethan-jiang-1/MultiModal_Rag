@@ -22,12 +22,15 @@ def get_mammoth_style_map():
 
 _KNOWN_HEADING_MAP = {
     'title': 'heading1',
+    'subtitle': 'heading2',
+
     '标题 1': 'heading1', 
     '标题 2': 'heading2',
     '标题 3': 'heading3',
     '标题 4': 'heading4',
     '标题 5': 'heading5',
     '标题 6': 'heading6',
+
     'heading 1': 'heading1',
     'heading 2': 'heading2', 
     'heading 3': 'heading3',
