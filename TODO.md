@@ -4,6 +4,8 @@
 
 ## 2. bm25 document level 
 
+## 3. table (embedded or external)
+
 ## 3. 异步情况下 Textin
 - [ ] 实现请求限流机制
 - [ ] 信号量控制

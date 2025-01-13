@@ -16,7 +16,7 @@ converters/
 ├── converter_pdf_lvlm.py       # LVLM引擎PDF转换器
 ├── converter_pdf_textin.py     # TextIn引擎PDF转换器
 ├── converter_all_llamaparse.py # LlamaParse通用转换器
-├── converter_ppt_pptx2md.py   # PPT专用转换器
+├── converter_ppt_pptx2md.py    # PPT专用转换器
 ├── converter_md_plain.py       # Markdown纯文本转换器
 └── converter_all_markitdown.py # Markitdown通用转换器
 ```

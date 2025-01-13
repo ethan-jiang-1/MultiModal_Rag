@@ -4,7 +4,7 @@
 
 ## 项目特点
 
-- 多引擎支持 (LVLM/TextIn/LlamaParse)
+- 多引擎支持 (LVLM/TextIn/LlamaParse/Markitdown/Pptx2Md)
 - 智能布局分析
 - 高质量转换
 - 批量处理能力
