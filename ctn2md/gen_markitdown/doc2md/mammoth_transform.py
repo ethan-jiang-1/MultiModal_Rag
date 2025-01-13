@@ -67,14 +67,14 @@ class ContentBasedHeadingParser:
     """基于内容的标题解析器，用于处理没有预定义样式的段落
     
     支持的标题格式:
-    1. 一级标题: 中文数字 + "、" (如: 一、二、)
+    1. 一级标题: 中文数字 + "、" (如: 一、二、) 或 "第X讲" (如: 第一讲、)
     2. 二级标题: 括号中文数字 (如: （一）（二）)
     3. 三级标题: 数字 + "、" 或 数字.数字 (如: 1、2、 或 1.1)
     4. 图表标题: "图"或"表" + 数字
     """
     
     _PATTERNS = {
-        'level1': r'^[一二三四五六七八九十]+、',
+        'level1': r'^(?:[一二三四五六七八九十]+、|第[一二三四五六七八九十]+讲[、]?)',
         'level2': r'^（[一二三四五六七八九十]+）',
         'level3': r'^(?:\d+[、.]|\d+\.\d+)',
         'figure': r'^(图|表)\d+[\s\-_]*',
@@ -214,6 +214,9 @@ def mammoth_transform_document(element: Union[Document, Paragraph, Any]) -> Docu
             comments=[]
         )
     elif isinstance(element, Paragraph):
+        # 添加样式信息的日志记录，使用明显的分隔符
+        logger.debug(f"STYLE INFO - style_name: [{element.style_name}], style_id: [{element.style_id}]")
+        
         # 提取段落中的所有文本和图片
         text_parts = []
         has_image = False

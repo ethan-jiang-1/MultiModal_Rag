@@ -94,9 +94,9 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/mrag/4. 前后排座椅间距定义 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/5. back panel 与环境匹配工程校核_P2.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/6. 前后排座椅H点距离要求 P1.pptx"
+    #doc_pathname = "datasrc/exam/raw_docs/mrag/考勤修改统一规则.xlsx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/管理者角色定位与认知课程大纲.docx"
-    doc_pathname = "datasrc/exam/raw_docs/mrag/考勤修改统一规则.xlsx"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/高效沟通之黄金三角模型课程大纲.docx"
+    doc_pathname = "datasrc/exam/raw_docs/mrag/高效沟通之黄金三角模型课程大纲.docx"
 
     #doc_pathname = "datasrc/exam/raw_docs/papers/ “AI+应用”百花齐放，新质生产力前景广阔pdf.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/attention_is_all_you_need.pdf"

@@ -67,7 +67,9 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     #md_info_path = "_output/ctn2md_mrag__1__座椅STO间隙_P1_px2m/_info.json"
-    md_info_path = "_output/ctn2md_misc__成都交通局_华为说明_mid/_info.json"
+    md_info_path = "_output/ctn2md_mrag__管理者角色定位与认知课程大纲_mid/_info.json"   
+    #md_info_path = "_output/ctn2md_mrag__考勤修改统一规则_mid/_info.json"
+
     md_info = MdInfo(md_info_path)
 
     ret = gen_md_from_doc(md_info)
