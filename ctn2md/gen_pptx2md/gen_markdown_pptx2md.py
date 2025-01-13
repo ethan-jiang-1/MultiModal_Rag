@@ -4,6 +4,7 @@ import shutil
 from dotenv import load_dotenv
 load_dotenv()
 
+from ctn2md.gen_base.scan_img_ref_and_update import scan_img_ref_and_update
 from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
 from mmbase.utils.util_logging import setup_logger_handlers
 import rich
@@ -36,9 +37,13 @@ def gen_pages_pptx2md(md_info:MdInfo):
             disable_color=True,
         )
     # Basic usage
-    ret = convert(cfg)
-    rich.print(ret)
-    return ret
+    convert(cfg)
+
+    if not os.path.isfile(out_path):
+        return False
+    
+    scan_img_ref_and_update(md_info, out_path)
+    return True
 
 def generate_markdown_pptx2md(md_info:MdInfo) -> str:
     logging.info(f"##MDFLOW##: gen_md_pptx2md started...")
