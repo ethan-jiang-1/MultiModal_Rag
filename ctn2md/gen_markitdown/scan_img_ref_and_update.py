@@ -27,11 +27,14 @@ def scan_img_ref_and_update(md_info: MdInfo, pname_step0: str) -> List[ImageRefe
     references = scanner.scan_file(pname_step0)
     
     # 为每个引用生成figure_name和description
+    idg = ImageDescriptionGenerator(md_info.get_cache_dir())
     for i, ref in enumerate(references, 1):
         if ref.needs_update():
-            figure_name, description = ImageDescriptionGenerator.generate_description(
+            figure_name, description = idg.generate_description(
+                md_info.get_doc_title(),
                 ref.context_before,
                 ref.context_after,
+                os.path.join(md_info.get_out_dir(), ref.ref_name),
                 ref.ref_name,
                 i
             )
@@ -58,6 +61,7 @@ if __name__ == "__main__":
         
     # 扫描图片引用
     references = scan_img_ref_and_update(md_info, test_file)
+    print(references)
     
     # 打印结果
     print("\n[blue]找到的图片引用:[/blue]")
