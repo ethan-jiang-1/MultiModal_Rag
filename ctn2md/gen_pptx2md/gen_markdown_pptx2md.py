@@ -8,16 +8,21 @@ from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
 from mmbase.utils.util_logging import setup_logger_handlers
 import rich
 
+def _get_unique_doc_pathname(md_info: MdInfo) -> str:
+    unique_id = md_info.get_unique_job_id()
+    src_pathname = md_info.get_doc_pathname()
+    src_suffix = os.path.splitext(src_pathname)[1]
+    unique_doc_pathname = os.path.join(md_info.get_out_dir(), f"{unique_id}{src_suffix}")
+    shutil.copy(src_pathname, unique_doc_pathname)
+    return unique_doc_pathname
+
 def gen_pages_pptx2md(md_info:MdInfo):
     from pptx2md import convert, ConversionConfig
     from pathlib import Path
 
-    unique_id = md_info.get_unique_job_id()
-    dst_pathname = os.path.join(md_info.get_out_dir(), f"{unique_id}.pptx")
-    src_pathname = md_info.get_doc_pathname()
-    shutil.copy(src_pathname, dst_pathname)
+    unique_doc_pathname = _get_unique_doc_pathname(md_info)
 
-    pptx_path = Path(dst_pathname)
+    pptx_path = Path(unique_doc_pathname)
     #out_dir = Path(md_info.get_out_dir())
     img_dir = Path(md_info.get_out_dir())
 
