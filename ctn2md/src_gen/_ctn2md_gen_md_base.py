@@ -132,7 +132,7 @@ class GenMd_Base:
         return False
 
     @classmethod
-    def need_followup_step(cls, step_name:str) -> bool:
+    def need_followup_step(cls, step_name:str, doc_pathname:str) -> bool:
         if step_name == "fix_headings_plc_by_llm":
             return True 
         return True

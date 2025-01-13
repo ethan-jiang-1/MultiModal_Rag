@@ -10,12 +10,14 @@ import rich
 
 
 def gen_pages_markitdown(md_info:MdInfo):
-    from ctn2md.gen_markitdown.doc2md._gen_md_from_doc import gen_md_from_doc
-
     out_path = md_info.name_step_pathname(0)
     ctn_type = md_info.get_ctn_type()    
     if ctn_type == CTN_TYPE.DOC:
-        out_path =gen_md_from_doc(md_info)
+        from ctn2md.gen_markitdown.doc2md._gen_md_from_doc import gen_md_from_doc
+        out_path = gen_md_from_doc(md_info)
+    elif ctn_type == CTN_TYPE.XLS:
+        from ctn2md.gen_markitdown.xls2md._gen_md_from_xls import gen_md_from_xls
+        out_path = gen_md_from_xls(md_info)
     else:
         raise ValueError(f"unsupported ctn_type yet: {ctn_type}")
 
@@ -54,7 +56,10 @@ if __name__ == "__main__":
     setup_logger_handlers()
 
     #md_info_path = "_output/ctn2md_mrag__1__座椅STO间隙_P1_px2m/_info.json"
-    md_info_path = "_output/ctn2md_misc__成都交通局_华为说明_mid/_info.json"
+    #md_info_path = "_output/ctn2md_misc__成都交通局_华为说明_mid/_info.json"
+    #md_info_path = "_output/ctn2md_mrag__业绩案例_比亚迪SJ项目低压线束设计技术服务合同_mid/_info.json"
+    md_info_path = "_output/ctn2md_mrag__主管培训课程清单_mid/_info.json"
+
     md_info = MdInfo(md_info_path)
 
     ret = generate_markdown_markitdown(md_info)

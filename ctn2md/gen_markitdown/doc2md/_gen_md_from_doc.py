@@ -27,11 +27,6 @@ def _get_unique_doc_pathname(md_info: MdInfo) -> str:
 def gen_md_from_doc(md_info: MdInfo) -> str:
     """
     Convert a docx file to markdown format.
-    :param doc_path: path to the docx file
-    :param output_dir: path to the output directory
-    :param style_map: style map for mammoth
-    :param logger: logger instance
-    :return: path to the generated markdown file
     """
     # 设置样式映射
     style_map = get_mammoth_style_map()

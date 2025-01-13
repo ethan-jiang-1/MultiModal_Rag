@@ -38,7 +38,7 @@ class GenMd_Plain(GenMd_Base):
         return md_info.get_md_info_path()
 
     @classmethod
-    def need_followup_step(cls, step_name):
+    def need_followup_step(cls, step_name:str, doc_pathname:str) -> bool:
         if step_name == "fix_headings_plc_by_llm":
             return False 
         return True

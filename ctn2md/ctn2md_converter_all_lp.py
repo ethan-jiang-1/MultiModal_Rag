@@ -43,7 +43,7 @@ def _do_content2md_convert_core_lp(doc_pathname:str,
     md_info.reset_md_flow()
 
     src_step_num = 0
-    if md_generator.need_followup_step("fix_headings_plc_by_llm"):
+    if md_generator.need_followup_step("fix_headings_plc_by_llm", doc_pathname):
         md_info_path = fix_headings_plc_by_llm(md_info_path, src_step_num=src_step_num)
         if md_info_path is None:
             logging.error(f"DCCCLP: failed {md_info_path} @fix_headings_plc_by_llm")

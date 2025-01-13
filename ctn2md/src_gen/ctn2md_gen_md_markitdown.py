@@ -13,7 +13,7 @@ from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src_gen._ctn2md_gen_md_base import GenMd_Base
 
 class GenMd_Markitdown(GenMd_Base):
-    SUPPORT_CNT_TYPES = [CTN_TYPE.DOC, CTN_TYPE.PDF, CTN_TYPE.PPT]
+    SUPPORT_CNT_TYPES = [CTN_TYPE.DOC, CTN_TYPE.PDF, CTN_TYPE.PPT, CTN_TYPE.XLS]
     OD_SUFFIX = "mid"
 
     @classmethod
@@ -47,6 +47,14 @@ class GenMd_Markitdown(GenMd_Base):
                 return None
 
         return md_info.get_md_info_path()
+
+    @classmethod
+    def need_followup_step(cls, step_name:str, doc_pathname:str) -> bool:
+        if step_name == "fix_headings_plc_by_llm":
+            ctn_type = CTN_TYPE.get_ctn_type_by_doc_pathname(doc_pathname)
+            if ctn_type == CTN_TYPE.XLS:
+                return False 
+        return True
     
     @classmethod
     def _gen_md_core(cls, doc_pathname:str, out_dir:str) -> str:
@@ -65,7 +73,8 @@ class GenMd_Markitdown(GenMd_Base):
 
 
 if __name__ == "__main__":
-    doc_pathname = "datasrc/exam/raw_docs/mrag/1. 座椅STO间隙 P1.pptx"
+    #doc_pathname = "datasrc/exam/raw_docs/mrag/1. 座椅STO间隙 P1.pptx"
+    doc_pathname = "datasrc/exam/raw_docs/mrag/主管培训课程清单.xlsx"
 
     out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=GenMd_Markitdown.OD_SUFFIX)
 

@@ -43,7 +43,7 @@ def _do_content2md_convert_core_mid(doc_pathname:str,
     md_info.reset_md_flow()
 
     src_step_num = 0
-    if md_generator.need_followup_step("fix_headings_plc_by_llm"):
+    if md_generator.need_followup_step("fix_headings_plc_by_llm", doc_pathname):
         md_info_path = fix_headings_plc_by_llm(md_info_path, src_step_num=src_step_num)
         if md_info_path is None:
             logging.error(f"DCCMID: failed {md_info_path} @fix_headings_plc_by_llm")
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/mrag/5. back panel 与环境匹配工程校核_P2.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/6. 前后排座椅H点距离要求 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/管理者角色定位与认知课程大纲.docx"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/考勤修改统一规则.xlsx"
+    doc_pathname = "datasrc/exam/raw_docs/mrag/考勤修改统一规则.xlsx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/高效沟通之黄金三角模型课程大纲.docx"
 
     #doc_pathname = "datasrc/exam/raw_docs/papers/ “AI+应用”百花齐放，新质生产力前景广阔pdf.pdf"
@@ -117,7 +117,7 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/misc/AI未来十年_大模型产业落地的机遇与挑战_大数据研究院.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/misc/2024年 AI Agent行业报告-20240430-V8.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/misc/202501-2024年中国AI创业者人群画像报告.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/misc/成都交通局-华为说明.docx"
+    #doc_pathname = "datasrc/exam/raw_docs/misc/成都交通局-华为说明.docx"
 
     #doc_pathname = "datasrc/exam/raw_docs/kmp/Regioselective hydroxylation of cholecalciferol.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/kmp/3_20240131104523599_rearranged.pdf"
