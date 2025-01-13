@@ -1,10 +1,8 @@
 import logging  
 import os
-import shutil
 from dotenv import load_dotenv
 load_dotenv()
 
-from ctn2md.gen_markitdown.doc2md._gen_md_from_doc import gen_md_from_doc
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
 from mmbase.utils.util_logging import setup_logger_handlers
@@ -12,17 +10,12 @@ import rich
 
 
 def gen_pages_markitdown(md_info:MdInfo):
-    unique_id = md_info.get_unique_job_id()
-    src_pathname = md_info.get_doc_pathname()
-    # 获取源文件的后缀名
-    _, src_extension = os.path.splitext(src_pathname)
-    unique_doc_pathname = os.path.join(md_info.get_out_dir(), f"{unique_id}{src_extension}")
-    shutil.copy(src_pathname, unique_doc_pathname)
+    from ctn2md.gen_markitdown.doc2md._gen_md_from_doc import gen_md_from_doc
 
     out_path = md_info.name_step_pathname(0)
     ctn_type = md_info.get_ctn_type()    
     if ctn_type == CTN_TYPE.DOC:
-        gen_md_from_doc(md_info, unique_doc_pathname)
+        out_path =gen_md_from_doc(md_info)
     else:
         raise ValueError(f"unsupported ctn_type yet: {ctn_type}")
 

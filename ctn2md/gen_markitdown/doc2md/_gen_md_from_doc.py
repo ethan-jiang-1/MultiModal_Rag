@@ -23,7 +23,7 @@ def _get_unique_doc_pathname(md_info: MdInfo) -> str:
     shutil.copy(src_pathname, unique_doc_pathname)
     return unique_doc_pathname
 
-def gen_md_from_doc(doc_path: str, output_dir: str) -> str:
+def gen_md_from_doc(md_info: MdInfo) -> str:
     """
     Convert a docx file to markdown format.
     :param doc_path: path to the docx file
@@ -34,7 +34,6 @@ def gen_md_from_doc(doc_path: str, output_dir: str) -> str:
     """
     # 设置样式映射
     style_map = get_mammoth_style_map()
-
     unique_doc_pathname = _get_unique_doc_pathname(md_info)
 
     logger.info(f"Converting document: {unique_doc_pathname}")
@@ -61,26 +60,6 @@ def gen_md_from_doc(doc_path: str, output_dir: str) -> str:
 
     return pathname_step0
 
-def generate_markdown_markitdown(md_info: MdInfo) -> str:
-    """生成Markdown文件
-    
-    Args:
-        md_info: Markdown信息对象
-        
-    Returns:
-        生成的Markdown文件路径
-    """
-    # 获取唯一的文档路径
-    pathname_step0 = gen_md_from_doc(
-        doc_path=md_info.get_doc_pathname(),
-        output_dir=md_info.get_out_dir()
-    )   
-    # 生成Markdown文件
-    pathname_step0 = md_info.name_step_pathname(0)
-    
-    return pathname_step0
-
-
 if __name__ == "__main__":
     # 设置日志
     logger.setLevel(logging.DEBUG)
@@ -92,5 +71,5 @@ if __name__ == "__main__":
     md_info_path = "_output/ctn2md_misc__成都交通局_华为说明_mid/_info.json"
     md_info = MdInfo(md_info_path)
 
-    ret = generate_markdown_markitdown(md_info)
+    ret = gen_md_from_doc(md_info)
     rich.print(ret)
