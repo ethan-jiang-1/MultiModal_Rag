@@ -4,28 +4,28 @@ import shutil
 from dotenv import load_dotenv
 load_dotenv()
 
+from ctn2md.gen_markitdown._gen_md_from_doc import gen_md_from_doc
+from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
 from mmbase.utils.util_logging import setup_logger_handlers
 import rich
 
+
 def gen_pages_markitdown(md_info:MdInfo):
-    from markitdown import MarkItDown
-
-    md = MarkItDown()
-
     unique_id = md_info.get_unique_job_id()
     src_pathname = md_info.get_doc_pathname()
     # 获取源文件的后缀名
     _, src_extension = os.path.splitext(src_pathname)
-    dst_pathname = os.path.join(md_info.get_out_dir(), f"{unique_id}{src_extension}")
-    shutil.copy(src_pathname, dst_pathname)
-    
-    result = md.convert(dst_pathname)
-    print(result.text_content)
+    unique_doc_pathname = os.path.join(md_info.get_out_dir(), f"{unique_id}{src_extension}")
+    shutil.copy(src_pathname, unique_doc_pathname)
 
     out_path = md_info.name_step_pathname(0)
-    with open(out_path, "w", encoding="utf-8") as f:
-        f.write(result.text_content)
+    ctn_type = md_info.get_ctn_type()    
+    if ctn_type == CTN_TYPE.DOC:
+        gen_md_from_doc(md_info, unique_doc_pathname)
+    else:
+        raise ValueError(f"unsupported ctn_type yet: {ctn_type}")
+
     return out_path
 
 def generate_markdown_markitdown(md_info:MdInfo) -> str:
@@ -60,8 +60,8 @@ def generate_markdown_markitdown(md_info:MdInfo) -> str:
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    md_info_path = "_output/ctn2md_mrag__1__座椅STO间隙_P1_px2m/_info.json"
-
+    #md_info_path = "_output/ctn2md_mrag__1__座椅STO间隙_P1_px2m/_info.json"
+    md_info_path = "_output/ctn2md_misc__成都交通局_华为说明_mid/_info.json"
     md_info = MdInfo(md_info_path)
 
     ret = generate_markdown_markitdown(md_info)

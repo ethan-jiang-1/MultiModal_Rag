@@ -23,24 +23,22 @@ Convert PDF page to Markdown through direct content conversion:
 
 2. Document Structure
    - Heading Detection:
-     * Only convert text to heading if it starts a new section, or use your best judgement
-     * Continuing content from previous page is NOT a heading
-     * Numbered sections (e.g., 14., 14.3, 16.2.1) are level 2+ headings (##, ###, etc.)
-   - Heading Hierarchy:
-     * Level 1 (#): Document title only, or when it starts a new part of the document.
-     * Level 2 (##): Major sections
-     * Level 3 (###): Subsections
-     * Level 4 (####): Subsubsections
+     * A line is a heading if it has a number prefix (e.g., 14.3, 16.2.1)
+     * Document title (#) appears only on the first page of document
+     * Continuing paragraphs from previous page are NOT headings
+   - Heading Levels:
+     * Level 1 (#): Main document title only
+     * Level 2 (##): Single number sections (1., 2., etc.)
+     * Level 3 (###): Double number sections (1.1, 2.1, etc.)
+     * Level 4 (####): Triple number sections (1.1.1, etc.)
    - Identify Sections By:
-     * Visual start of new content block
-     * Numbering patterns (1., 1.1., I., 一., 第一章)
-     * Visual prominence
-     * Content relationships
+     * Number prefix at start of line
+     * Visual spacing before and after
+     * Content indentation
    - Maintain Consistency:
      * Keep parallel sections at same level
      * Preserve original hierarchy
      * Ensure logical content flow
-     * Continue section numbers from previous pages
 
 3. Image Handling
    - Process red-rectangle-marked images only
