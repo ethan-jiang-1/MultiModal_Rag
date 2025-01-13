@@ -17,6 +17,10 @@ class GenMd_Base:
     OD_SUFFIX = ""
 
     @classmethod
+    def get_out_dir_suffix(cls) -> str:
+        return cls.OD_SUFFIX
+    
+    @classmethod
     def does_gen_needed(cls, doc_pathname:str, out_dir:Optional[str], enforced_gen:bool) -> Tuple[MdInfo, bool]:
         if out_dir is None:
             out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=cls.OD_SUFFIX)

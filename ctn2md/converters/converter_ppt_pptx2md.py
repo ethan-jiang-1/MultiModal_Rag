@@ -80,47 +80,14 @@ def do_content2md_convert(doc_pathname:str, out_dir:str = None, enforced_gen:boo
 if __name__ == "__main__":
     setup_logger_handlers()
 
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/AIGC时代的人力资源管理进化(徐刚).pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、上汽内外饰部CAD外包框架服务合同.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪ST2H项目低压线束设计技术服务合同（电子电器）.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪车架总成技术服务合同.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪铝大梁式车架及副车架设计外包中标通知书.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪驻场线束设计技术服务合同（电子电器）.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/1. 座椅STO间隙 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/2. 座垫与钢丝间隙 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/3. 头枕杆圆角定义 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/4. 前后排座椅间距定义 P1.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/5. back panel 与环境匹配工程校核_P2.pptx"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/6. 前后排座椅H点距离要求 P1.pptx"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/管理者角色定位与认知课程大纲.docx"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/考勤修改统一规则.xlsx"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/高效沟通之黄金三角模型课程大纲.docx"
 
-    #doc_pathname = "datasrc/exam/raw_docs/papers/ “AI+应用”百花齐放，新质生产力前景广阔pdf.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/papers/attention_is_all_you_need.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/papers/Survey of different Large Language Model Architectures.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/papers/Winning Solution For Meta KDD Cup’ 24 2410.00005v1.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/papers/深度学习在视电阻率快速反演中的研究.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/papers/DeepSeek_V3.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/papers/Long-Context LLMs Meet RAG_compressed.pdf"
-
-    #doc_pathname = "datasrc/exam/raw_docs/papers/ChatGPT intimates a tantalizing future_compressed.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/papers/YOU ONLY 2409.13695v1.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/papers/LongRAG.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/papers/DIFFERENTIAL TRANSFORMER 2410.05258v1.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/papers/A Coin Has Two Sides.pdf"
-
-    #doc_pathname = "datasrc/exam/raw_docs/misc/0530-大模型微调培训-VisualGLM.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/misc/ai602-波士顿咨询：银行业生成式AI应用报告（2023）.pdf"
     doc_pathname = "datasrc/exam/raw_docs/misc/AI未来十年_大模型产业落地的机遇与挑战_大数据研究院.pptx"
-    #doc_pathname = "datasrc/exam/raw_docs/misc/2024年 AI Agent行业报告-20240430-V8.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/misc/202501-2024年中国AI创业者人群画像报告.pdf"
-
-    #doc_pathname = "datasrc/exam/raw_docs/kmp/Regioselective hydroxylation of cholecalciferol.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/kmp/3_20240131104523599_rearranged.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/kmp/tianyang_1_20.pdf"
 
     #os.environ[ENV_MODEL_FLOW] = "ark"
     #os.environ[ENV_MODEL_GEN_TI] = "ark"

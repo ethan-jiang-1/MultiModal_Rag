@@ -28,6 +28,13 @@ def get_crc32_id(unique_str: str) -> str:
     crc32_checksum = binascii.crc32(input_bytes)
     return format(crc32_checksum, '08x')
 
+def normalize_path(path: str) -> str:
+    """规范化路径，确保使用正确的路径分隔符"""
+    return os.path.normpath(path)
+
+def ensure_dir_exists(dir_path: str) -> None:
+    """确保目录存在，如果不存在则创建"""
+    os.makedirs(normalize_path(dir_path), exist_ok=True)
 
 if __name__ == "__main__":
     # 测试根目录获取

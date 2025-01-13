@@ -6,6 +6,7 @@ import rich
 
 load_dotenv()
 
+
 if __name__ == "__main__":
     from dotenv import find_dotenv
     _root_dir = os.path.abspath(os.path.dirname(find_dotenv()))
@@ -13,30 +14,32 @@ if __name__ == "__main__":
 
 from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.src.md_info_base import MdInfo
-from ctn2md.src.md_info_ctrl import ENV_MODEL_FLOW, ENV_MODEL_GEN_TI
+from ctn2md.src.md_info_ctrl import ENV_MODEL_FLOW, ENV_MODEL_GEN_LVLM, ENV_MODEL_GEN_LVLM_REGION
 from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_llm
 from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_hierarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_llm
 from ctn2md.src.make_final_result import make_final_json
-from ctn2md.src_gen.ctn2md_gen_md_textin import GenMd_TextIn
+from ctn2md.src_gen.ctn2md_gen_md_lvlm import GenMd_Lvlm
+from ctn2md.utils.util_file import normalize_path, ensure_dir_exists
 
-def _do_content2md_convert_core_ti(doc_pathname:str, 
-                                   out_dir:Optional[str] = None, 
-                                   enforced_gen:bool = False, 
-                                   mdcontrols:Optional[dict] = None)->str:
+def _do_content2md_convert_core_lvlm(doc_pathname:str, 
+                                     out_dir:Optional[str] = None, 
+                                     enforced_gen:bool = False, 
+                                     mdcontrols:Optional[dict] = None)->str:
     if out_dir is None:
-        out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=GenMd_TextIn.OD_SUFFIX)
-    logging.warning(f"DCCCTI: work out_dir: {out_dir} for {doc_pathname}")
-    os.makedirs(out_dir, exist_ok=True)
+        out_dir = MdInfo.get_suggested_out_dir(doc_pathname, suffix=GenMd_Lvlm.OD_SUFFIX)
+    out_dir = normalize_path(out_dir)
+    logging.warning(f"DCCCLVLM: work out_dir: {out_dir} for {doc_pathname}")
+    ensure_dir_exists(out_dir)
 
-    md_generator = GenMd_TextIn
+    md_generator = GenMd_Lvlm
     if md_generator is None:
         logging.error("")
         return None 
 
     md_info_path = md_generator.generate_markdown(doc_pathname, out_dir=out_dir, enforced_gen=enforced_gen, mdcontrols=mdcontrols)
     if md_info_path is None:
-        logging.error(f"DCCCTI: failed {md_info_path} @initial_gen_md_by_textin")
+        logging.error(f"DCCCLVLM: failed {md_info_path} @initial_gen_md_by_llamaparse")
         return None
 
     md_info = MdInfo(md_info_path)
@@ -46,29 +49,32 @@ def _do_content2md_convert_core_ti(doc_pathname:str,
     if md_generator.need_followup_step("fix_headings_plc_by_llm", doc_pathname):
         md_info_path = fix_headings_plc_by_llm(md_info_path, src_step_num=src_step_num)
         if md_info_path is None:
-            logging.error(f"DCCCTI: failed {md_info_path} @fix_headings_plc_by_llm")
+            logging.error(f"DCCCLVLM: failed {md_info_path} @fix_headings_plc_by_llm")
             return None 
         src_step_num += 1
 
     md_info_path = inject_section_hierarchy(md_info_path, src_step_num=src_step_num)
     if md_info_path is None:
-        logging.error(f"DCCCTI: failed {md_info_path} @inject_section_hierarchy")
+        logging.error(f"DCCCLVLM: failed {md_info_path} @inject_section_hierarchy")
         return None
 
     src_step_num += 1
     md_info_path = summarize_content_by_llm(md_info_path, src_step_num=src_step_num)
     if md_info_path is None:
-        logging.error(f"DCCCTI: failed {md_info_path} @summarize_content_by_llm")
+        logging.error(f"DCCCLVLM: failed {md_info_path} @summarize_content_by_llm")
         return None       
 
     pathname_final_json = make_final_json(md_info_path)
-    logging.info(f"DCCCTI: final json: {pathname_final_json}")
+    logging.info(f"DCCCLVLM: final json: {pathname_final_json}")
     return pathname_final_json
 
 def do_content2md_convert(doc_pathname:str, out_dir:str = None, enforced_gen:bool = False, mdcontrols: dict = None):
     pathname_final_json = None
     try:
-        pathname_final_json = _do_content2md_convert_core_ti(doc_pathname,
+        doc_pathname = normalize_path(doc_pathname)
+        if out_dir is not None:
+            out_dir = normalize_path(out_dir)
+        pathname_final_json = _do_content2md_convert_core_lvlm(doc_pathname,
                                                     out_dir=out_dir,
                                                     enforced_gen=enforced_gen,
                                                     mdcontrols=mdcontrols)
@@ -83,20 +89,11 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/mrag/AIGC时代的人力资源管理进化(徐刚).pdf"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、上汽内外饰DRE外包框架服务合同.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、上汽内外饰部CAD外包框架服务合同.pdf"
-    doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪ST2H项目低压线束设计技术服务合同（电子电器）.pdf"
+    #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf"
+    doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪ST2H项目低压线束设计技术服务合同（电子电器）.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪车架总成技术服务合同.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪铝大梁式车架及副车架设计外包中标通知书.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/mrag/业绩案例、比亚迪驻场线束设计技术服务合同（电子电器）.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/1. 座椅STO间隙 P1.pptx"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/2. 座垫与钢丝间隙 P1.pptx"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/3. 头枕杆圆角定义 P1.pptx"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/4. 前后排座椅间距定义 P1.pptx"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/5. back panel 与环境匹配工程校核_P2.pptx"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/6. 前后排座椅H点距离要求 P1.pptx"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/管理者角色定位与认知课程大纲.docx"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/考勤修改统一规则.xlsx"
-    #doc_pathname = "datasrc/exam/raw_docs/mrag/高效沟通之黄金三角模型课程大纲.docx"
 
     #doc_pathname = "datasrc/exam/raw_docs/papers/ “AI+应用”百花齐放，新质生产力前景广阔pdf.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/papers/attention_is_all_you_need.pdf"
@@ -115,17 +112,15 @@ if __name__ == "__main__":
     #doc_pathname = "datasrc/exam/raw_docs/misc/0530-大模型微调培训-VisualGLM.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/misc/ai602-波士顿咨询：银行业生成式AI应用报告（2023）.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/misc/AI未来十年_大模型产业落地的机遇与挑战_大数据研究院.pptx"
-    #doc_pathname = "datasrc/exam/raw_docs/misc/2024年 AI Agent行业报告-20240430-V8.pdf"
-    #doc_pathname = "datasrc/exam/raw_docs/misc/202501-2024年中国AI创业者人群画像报告.pdf"
 
     #doc_pathname = "datasrc/exam/raw_docs/kmp/Regioselective hydroxylation of cholecalciferol.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/kmp/3_20240131104523599_rearranged.pdf"
     #doc_pathname = "datasrc/exam/raw_docs/kmp/tianyang_1_20.pdf"
 
-    #os.environ[ENV_MODEL_FLOW] = "ark"
-    #os.environ[ENV_MODEL_GEN_TI] = "ark"
+    #os.environ[ENV_MODEL_SOURCE] = "qwen"
     os.environ[ENV_MODEL_FLOW] = "qwen"
-    os.environ[ENV_MODEL_GEN_TI] = "qwen"
+    os.environ[ENV_MODEL_GEN_LVLM] = "qwen"
+    os.environ[ENV_MODEL_GEN_LVLM_REGION] = "gs2"
     mdcontrols = None
 
     out_dir = None

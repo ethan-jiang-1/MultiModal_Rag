@@ -17,18 +17,11 @@ from ctn2md.gen_lvlm.non_text_detector_gs1.gs1_pdf_page_to_region import gs1_par
 from ctn2md.gen_lvlm.non_text_detector_gs2.gs2_pdf_page_to_region import gs2_parse_non_text_rects_in_pdf_page
 from ctn2md.utils_gen.gen_base import is_still_in_gen_mode
 from ctn2md.gen_lvlm.lvlm_base import draw_redrect_on_page
+from ctn2md.utils.util_file import normalize_path, ensure_dir_exists
 
 IMG_EXT = "jpg"  # or "png"
 #IMG_EXT = "png"  # or "png"
 JPG_QUALITY = 90 # 95
-
-def normalize_path(path: str) -> str:
-    """规范化路径，确保使用正确的路径分隔符"""
-    return os.path.normpath(path)
-
-def ensure_dir_exists(dir_path: str) -> None:
-    """确保目录存在，如果不存在则创建"""
-    os.makedirs(normalize_path(dir_path), exist_ok=True)
 
 def _get_non_text_rects(md_info:MdInfo, 
                         page:pymupdf.Page, 

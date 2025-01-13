@@ -12,22 +12,25 @@ if __name__ == "__main__":
     _root_dir = os.path.abspath(os.path.dirname(find_dotenv()))
     os.chdir(_root_dir)
 
-from ctn2md.ctn2md_converter_pdf_lvlm import do_content2md_convert as dcc_lvlm
-from ctn2md.ctn2md_converter_all_lp import do_content2md_convert as dcc_lp
 from mmbase.utils.util_logging import setup_logger_handlers
+from ctn2md.gen_lvlm.lvlm_pdf_pages_to_images import normalize_path
+from ctn2md.cvt_selector import convert_document
 
 def batch_convert(doc_pathnames: List[str]):
     for ndx, doc_pathname in enumerate(doc_pathnames):
         logging.info("\n\n\n")
         logging.info(f"start to convert {ndx+1}/{len(doc_pathnames)}: {doc_pathname}")
         if not os.path.isfile(doc_pathname):
-            logging.error(f"{doc_pathname} not eixist, skip")
+            logging.error(f"{doc_pathname} not exist, skip")
+            continue
 
-        if doc_pathname.endswith(".pdf"):
-            ret = dcc_lvlm(doc_pathname)
-        else:
-            ret = dcc_lp(doc_pathname)
-        rich.print(ret)
+        try:
+            doc_pathname = normalize_path(doc_pathname)
+            result = convert_document(doc_pathname) 
+            rich.print(result)
+        except Exception as ex:
+            logging.error(f"Error converting {doc_pathname}: {str(ex)}")
+            continue
 
 if __name__ == "__main__":
     setup_logger_handlers()
