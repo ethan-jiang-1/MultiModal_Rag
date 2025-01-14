@@ -12,7 +12,7 @@ from mmbase.utils_llm.llm_base import chat_gpt_json, chat_gpt_plain
 from mmbase.utils_llm.llm_base import get_azure_gpt_client as _get_azure_gpt_client
 from mmbase.utils_llm.llm_base import get_dashscope_client as _get_dashscope_client
 from mmbase.utils_llm.llm_base import get_ark_client as _get_ark_client
-from mmbase.utils_llm.llm_diag import LLM_DIAG_SEP, LLM_DIAG_LED, LLM_DIAG_ROL
+from mmbase.utils_llm_debug.llm_diag import LLM_DIAG_SEP, LLM_DIAG_LED, LLM_DIAG_ROL
 
 def _json_loads_repair(response_json_string: str) -> dict:
     """修复并解析可能损坏的JSON字符串"""

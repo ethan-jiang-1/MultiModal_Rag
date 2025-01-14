@@ -32,6 +32,7 @@ def prepare_md_fusion_workspace(md_info: MdInfo) -> List[str]:
     # 3. 复制文件
     workspace_files = []
     for src_path in md_info.get_fnames_pages():
+        src_path = os.path.join(md_info.get_out_dir(), src_path)
         dst_path = os.path.join(workspace_dir, os.path.basename(src_path))
         shutil.copy2(src_path, dst_path)
         workspace_files.append(dst_path)
@@ -118,6 +119,7 @@ class BaseProcessor:
         raise NotImplementedError 
 
 if __name__ == "__main__":
+    import rich
     from dotenv import load_dotenv
     load_dotenv()
     
@@ -141,6 +143,8 @@ if __name__ == "__main__":
     print("读取的内容:", loaded_content)
     
     # 测试工作空间准备
-    md_info = MdInfo.from_json("_output/test_doc/_info.json")
+    pname_info = "_work/ctn2md_mrag__1__座椅STO间隙_P1_lp/_info.json"
+    # 测试MD融合工作空间准备
+    md_info = MdInfo(pname_info)
     workspace_files = prepare_md_fusion_workspace(md_info)
-    print("工作空间文件:", workspace_files) 
+    rich.print("工作空间文件:", workspace_files) 

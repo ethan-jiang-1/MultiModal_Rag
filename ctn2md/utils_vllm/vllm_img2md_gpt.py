@@ -6,7 +6,7 @@ import rich
 
 load_dotenv()
 
-from mmbase.utils_llm.llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
+from mmbase.utils_llm_debug.llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from mmbase.utils_llm.llm_base import get_gpt_messages_multimodal, chat_gpt_plain
 from mmbase.utils_llm.llm_markdown import strip_llm_format_markers
 from ctn2md.utils_vllm.vllm_img2md_gpt_prompt import SYSTEM_PROMPT_IMG2MD, USER_PROMPT_IMG2MD, USER_PROMPT_INST_IMG_RECTS

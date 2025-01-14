@@ -3,12 +3,16 @@ LLM客户端实现
 """
 
 import logging
-from functools import lru_cache
+import os
+import hashlib
+import msgpack
+from typing import Optional
 from dotenv import load_dotenv
 
 load_dotenv()
 
 from ctn2md.gen_base.page_md_processors.llm.schemas import DocumentAnalysis
+from ctn2md.md_info.md_info_base import MdInfo
 
 logger = logging.getLogger(__name__)
 
@@ -17,12 +21,31 @@ class LlmClient:
     处理与LLM的交互，包括缓存、错误处理等
     """
     
-    def __init__(self):
-        """初始化客户端"""
-        # TODO: 初始化实际的LLM客户端
-        pass
+    def __init__(self, md_info: Optional[MdInfo] = None):
+        """初始化客户端
         
-    @lru_cache(maxsize=100)
+        Args:
+            md_info: 文档信息对象，用于获取缓存目录
+        """
+        self.md_info = md_info
+        self.cache_dir = md_info.get_cache_dir() if md_info else None
+        
+    def _get_cache_path(self, prompt: str) -> Optional[str]:
+        """获取缓存文件路径
+        
+        Args:
+            prompt: 分析提示词
+            
+        Returns:
+            缓存文件路径，如果未设置缓存目录则返回None
+        """
+        if not self.cache_dir:
+            return None
+            
+        # 使用prompt的hash作为缓存文件名
+        prompt_hash = hashlib.sha1(prompt.encode()).hexdigest()[:16]
+        return os.path.join(self.cache_dir, f"llm_analysis_{prompt_hash}.msgpack")
+        
     def analyze_document(self, prompt: str) -> DocumentAnalysis:
         """分析文档
         
@@ -33,8 +56,21 @@ class LlmClient:
             文档分析结果
             
         Note:
-            使用lru_cache缓存结果，避免重复调用
+            使用msgpack缓存结果到文件系统，避免重复调用
         """
+        # 获取缓存路径
+        cache_path = self._get_cache_path(prompt)
+        
+        # 如果设置了缓存目录，尝试读取缓存
+        if cache_path and os.path.exists(cache_path):
+            try:
+                with open(cache_path, 'rb') as f:
+                    cache_data = msgpack.unpack(f)
+                    # 将缓存数据转换为DocumentAnalysis对象
+                    return DocumentAnalysis.model_validate(cache_data)
+            except Exception as e:
+                logger.warning(f"Failed to load cache: {e}")
+        
         try:
             # TODO: 实际的LLM调用
             # 这里先返回测试数据
@@ -59,7 +95,19 @@ class LlmClient:
             }
             
             # 使用pydantic模型验证和转换
-            return DocumentAnalysis(**test_response)
+            result = DocumentAnalysis(**test_response)
+            
+            # 如果设置了缓存目录，保存缓存
+            if cache_path:
+                try:
+                    os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+                    with open(cache_path, 'wb') as f:
+                        # 将DocumentAnalysis对象转换为dict并序列化
+                        msgpack.pack(result.model_dump(), f)
+                except Exception as e:
+                    logger.warning(f"Failed to save cache: {e}")
+            
+            return result
             
         except Exception as e:
             logger.error(f"Error calling LLM: {e}")
@@ -90,4 +138,4 @@ if __name__ == "__main__":
     
     result = client.analyze_document(test_prompt)
     print("分析结果:")
-    print(result.json(indent=2, ensure_ascii=False)) 
+    print(result.model_dump_json(indent=2, ensure_ascii=False)) 

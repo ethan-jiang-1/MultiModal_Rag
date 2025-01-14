@@ -124,6 +124,16 @@ def get_ark_client() -> OpenAI:
 
     return client
 
+def get_client_by_model(model:str) -> OpenAI:
+    if model.startswith("gpt"):
+        return get_azure_gpt_client()
+    elif model.startswith("qwen"):
+        return get_dashscope_client()
+    elif model.startswith("ep-"):
+        return get_ark_client()
+    else:
+        raise ValueError(f"Unsupported model: {model}")
+
 def jsons_load_repair(content:str) -> dict:
     resp = json_repair.repair_json(content, 
                                    ensure_ascii=True, 
@@ -186,7 +196,7 @@ def chat_gpt_json(
     if not messages:
         raise ValueError("Messages cannot be empty")
 
-    client = client or get_azure_gpt_client()
+    client = client or get_client_by_model(model)
     
     try:
         with MonitorContextLLM(messages, model, track_id, 0) as mc:
@@ -220,8 +230,7 @@ def chat_gpt_plain(
     if not messages:
         raise ValueError("Messages cannot be empty")
         
-    if client is None:
-        client = get_azure_gpt_client()
+    client = client or get_client_by_model(model)
     
     try:
         with MonitorContextLLM(messages, model, track_id, 0) as mc:

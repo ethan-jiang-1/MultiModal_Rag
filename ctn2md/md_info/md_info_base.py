@@ -242,6 +242,8 @@ class MdInfo(dict):
         if cmajor != vmajor:
             return False 
         if cminor != vminor:
+            if int(int(cminor) / 10) == int(int(vminor) / 10):
+                return True
             return False 
         return True
 
@@ -249,7 +251,8 @@ class MdInfo(dict):
         if os.path.isfile(self._md_info_path):
             self._info = self.load()
             if not self._is_able_to_migrate(self._info[MIFN.VERSION]):
-                raise ValueError(f"Version is not compatiable, Please delete the outputfolder {self.get_out_dir()} and retry.")
+                msg = f"current version is {self._info[MIFN.VERSION]}, not compatiable with {_MIB_INFO_VER}"
+                raise ValueError(f"Version is not compatiable, {msg} Please delete the outputfolder {self.get_out_dir()} and retry.")
             self._info[MIFN.VERSION] = _MIB_INFO_VER
         else:
             self._info = {MIFN.VERSION: _MIB_INFO_VER}

@@ -10,9 +10,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from ctn2md.md_info.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
-from ctn2md.utils_llm.llm_fix_heading_lvl_gpt import fix_heading_lvl_markdown_by_gpt
-from ctn2md.utils_llm.llm_fix_heading_lvl_qwen import fix_heading_lvl_markdown_by_qwen
-from ctn2md.utils_llm.llm_fix_heading_lvl_ark import fix_heading_lvl_markdown_by_ark
+from ctn2md.src.fix_heading_plc.llm_fix_heading_lvl_gpt import fix_heading_lvl_markdown_by_gpt
+from ctn2md.src.fix_heading_plc.llm_fix_heading_lvl_qwen import fix_heading_lvl_markdown_by_qwen
+from ctn2md.src.fix_heading_plc.llm_fix_heading_lvl_ark import fix_heading_lvl_markdown_by_ark
 
 def _get_cache_path(md_info: MdInfo) -> str:
     """获取缓存文件路径"""

@@ -7,24 +7,23 @@ from typing import Optional
 
 load_dotenv()
 
-from ctn2md.utils_llm.llm_fix_heading_lvl_gpt_prompt import SYSTEM_PROMPT_FIX_HEADING_LVL_LOW, USER_PROMPT_FIX_HEADING_LVL_LOW 
-from ctn2md.utils_llm.llm_fix_heading_lvl_gpt_prompt import SYSTEM_PROMPT_FIX_HEADING_LVL_NORMAL, USER_PROMPT_FIX_HEADING_LVL_NORMAL
-from mmbase.utils_llm.llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
-from mmbase.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
+from ctn2md.src.fix_heading_plc.llm_fix_heading_lvl_qwen_prompt import SYSTEM_PROMPT_FIX_HEADING_LVL_LOW, USER_PROMPT_FIX_HEADING_LVL_LOW
+from ctn2md.src.fix_heading_plc.llm_fix_heading_lvl_qwen_prompt import SYSTEM_PROMPT_FIX_HEADING_LVL_NORMAL, USER_PROMPT_FIX_HEADING_LVL_NORMAL 
+from mmbase.utils_llm_debug.llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
+from mmbase.utils_llm.llm_base import get_gpt_messages, chat_gpt_json, get_dashscope_client
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.md_info.md_info_base import FHL_QUALITY_TYPE
 
-
-def fix_heading_lvl_markdown_by_gpt(fhl_org: dict,
-                                    fhl_quality: FHL_QUALITY_TYPE = FHL_QUALITY_TYPE.LOW,
-                                    ctn_type: CTN_TYPE = CTN_TYPE.PDF,
-                                    model: str = "gpt-4o",
-                                    question_num: Optional[int] = None) -> dict:
+def fix_heading_lvl_markdown_by_qwen(fhl_org: dict,
+                                   fhl_quality: FHL_QUALITY_TYPE = FHL_QUALITY_TYPE.LOW,
+                                   ctn_type: CTN_TYPE = CTN_TYPE.PDF,
+                                   model: str = "qwen-max",
+                                   question_num: Optional[int] = None) -> dict:
     if question_num is None:
         question_num = get_next_question_num()
 
     try:
-        if model not in ["gpt-4o-mini", "gpt-4o"]: 
+        if model not in ["qwen-max", "qwen-plus"]: 
             raise ValueError(f"{model} not supported")
 
         if not isinstance(fhl_org, dict):
@@ -41,14 +40,17 @@ def fix_heading_lvl_markdown_by_gpt(fhl_org: dict,
 
         system_prompt = SYSTEM_PROMPT_FIX_HEADING_LVL_LOW
         if fhl_quality != FHL_QUALITY_TYPE.LOW:
-            system_prompt = SYSTEM_PROMPT_FIX_HEADING_LVL_NORMAL      
+            system_prompt = SYSTEM_PROMPT_FIX_HEADING_LVL_NORMAL  
 
         temperature = 0.1
         top_p = 0.95
         messages = get_gpt_messages(system_prompt, user_prompt)
 
+        client = get_dashscope_client()
+
         resp = chat_gpt_json(messages, 
                              model=model,
+                             client=client,
                              temperature=temperature,
                              top_p=top_p,
                              track_id=f"fhl_heading_{question_num}")
@@ -102,5 +104,5 @@ if __name__ == "__main__":
             ]
         ]
     }
-    new_fhl = fix_heading_lvl_markdown_by_gpt(fhl_org)
+    new_fhl = fix_heading_lvl_markdown_by_qwen(fhl_org)
     rich.print(new_fhl)

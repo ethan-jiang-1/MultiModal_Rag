@@ -7,7 +7,7 @@ from typing import Optional
 load_dotenv()
 
 
-from mmbase.utils_llm.llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
+from mmbase.utils_llm_debug.llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from mmbase.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
 from mmbase.utils_llm.llm_base import get_ark_client, get_azure_gpt_client, get_dashscope_client
 

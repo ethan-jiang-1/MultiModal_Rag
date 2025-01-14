@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch 
 #import os
 #import json
-from mmbase.utils_llm.llm_diag import (
+from mmbase.utils_llm_debug.llm_diag import (
     get_chat_messages,
     save_llm_diag_messages,
     get_question_num,
