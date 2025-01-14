@@ -28,7 +28,9 @@ def scan_img_ref_and_update(md_info: MdInfo, pname_step0: str) -> List[ImageRefe
     references = scanner.scan_file(pname_step0)
     
     # 为每个引用生成figure_name和description
-    idg = ImageDescriptionGenerator(md_info.get_cache_dir())
+    idg = ImageDescriptionGenerator(md_info.get_cache_dir(),
+                                    relevance_model=md_info.get_md_control("mctl_flow_model", "qwen"),
+                                    caption_model=md_info.get_md_control("mctl_flow_model", "qwen"))
     for i, ref in enumerate(references, 1):
         if ref.needs_update():
             figure_name, description, relevance_score = idg.generate_description(
@@ -52,11 +54,11 @@ def scan_img_ref_and_update(md_info: MdInfo, pname_step0: str) -> List[ImageRefe
 
 if __name__ == "__main__":
     # 测试目录和文件
-    test_dir = "_output/ctn2md_misc__成都交通局_华为说明_mid"
-    test_file = os.path.join(test_dir, "成都交通局-华为说明___docx_s0.md")
-    
+    pname_info = "_output/ctn2md_misc__AI未来十年_大模型产业落地的机遇与挑战_大数据研究院_px2m/_info.json"
+
     # 创建md_info对象
-    md_info = MdInfo(test_dir)
+    md_info = MdInfo(pname_info)
+    test_file = md_info.name_step_pathname(0)
     
     # 检查文件是否存在
     if not os.path.exists(test_file):

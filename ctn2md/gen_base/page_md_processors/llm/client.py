@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from mmbase.utils_llm.llm_base import chat_gpt_json, get_gpt_messages
 from ctn2md.gen_base.page_md_processors.llm.schemas import DocumentAnalysis
 from ctn2md.md_info.md_info_base import MdInfo
 
@@ -30,11 +31,13 @@ class LlmClient:
         self.md_info = md_info
         self.cache_dir = md_info.get_cache_dir() if md_info else None
         
-    def _get_cache_path(self, prompt: str) -> Optional[str]:
+    def _get_cache_path(self, system_prompt: str, user_prompt: str, model: str) -> Optional[str]:
         """获取缓存文件路径
         
         Args:
-            prompt: 分析提示词
+            system_prompt: 系统提示词
+            user_prompt: 用户提示词
+            model: 模型名称
             
         Returns:
             缓存文件路径，如果未设置缓存目录则返回None
@@ -43,14 +46,28 @@ class LlmClient:
             return None
             
         # 使用prompt的hash作为缓存文件名
-        prompt_hash = hashlib.sha1(prompt.encode()).hexdigest()[:16]
+        hash_str = f"{system_prompt}_{user_prompt}_{model}"
+        prompt_hash = hashlib.sha1(hash_str.encode()).hexdigest()[:16]
         return os.path.join(self.cache_dir, f"llm_analysis_{prompt_hash}.msgpack")
+    
+    def get_model(self) -> str:
+        """获取模型名称"""
+        model = self.md_info.get_md_control("mctl_flow_model", "qwen")
+        if model.startswith("qwen"):
+            return "qwen-plus"
+        elif model.startswith("gpt"):
+            return "gpt-4o"
+        elif model.startswith("ark"):
+            return "ep-20241220101421-4tj5f"
+        else:
+            raise ValueError(f"Invalid model: {model}")
         
-    def analyze_document(self, prompt: str) -> DocumentAnalysis:
+    def analyze_document(self, system_prompt: str, user_prompt: str) -> DocumentAnalysis:
         """分析文档
         
         Args:
-            prompt: 分析提示词
+            system_prompt: 系统提示词
+            user_prompt: 用户提示词
             
         Returns:
             文档分析结果
@@ -58,8 +75,10 @@ class LlmClient:
         Note:
             使用msgpack缓存结果到文件系统，避免重复调用
         """
+        model = self.get_model()
+        
         # 获取缓存路径
-        cache_path = self._get_cache_path(prompt)
+        cache_path = self._get_cache_path(system_prompt, user_prompt, model)
         
         # 如果设置了缓存目录，尝试读取缓存
         if cache_path and os.path.exists(cache_path):
@@ -72,30 +91,19 @@ class LlmClient:
                 logger.warning(f"Failed to load cache: {e}")
         
         try:
-            # TODO: 实际的LLM调用
-            # 这里先返回测试数据
-            test_response = {
-                "remove_actions": [
-                    {
-                        "page": 1,
-                        "lines": [1, 2],
-                        "reason": "页眉"
-                    }
-                ],
-                "merge_actions": [
-                    {
-                        "type": "table",
-                        "pages": [1, 2],
-                        "line_ranges": {
-                            "1": [{"start": 15, "end": 20}],
-                            "2": [{"start": 1, "end": 5}]
-                        }
-                    }
-                ]
-            }
+            # 构造消息
+            messages = get_gpt_messages(system_prompt, user_prompt)
+            
+            # 调用LLM
+            response = chat_gpt_json(
+                messages=messages,
+                model=model,
+                temperature=0.1,  # 分析任务需要高确定性
+                top_p=0.9
+            )
             
             # 使用pydantic模型验证和转换
-            result = DocumentAnalysis(**test_response)
+            result = DocumentAnalysis.model_validate(response)
             
             # 如果设置了缓存目录，保存缓存
             if cache_path:
@@ -112,7 +120,7 @@ class LlmClient:
         except Exception as e:
             logger.error(f"Error calling LLM: {e}")
             # 返回空的分析结果
-            return DocumentAnalysis() 
+            return DocumentAnalysis()
 
 if __name__ == "__main__":
     from mmbase.utils.util_logging import setup_logger_handlers
@@ -136,6 +144,9 @@ if __name__ == "__main__":
     <<<< 第2页 结束 >>>>
     """
     
-    result = client.analyze_document(test_prompt)
+    result = client.analyze_document(
+        system_prompt="你是一个文档分析器",
+        user_prompt=test_prompt
+    )
     print("分析结果:")
     print(result.model_dump_json(indent=2, ensure_ascii=False)) 

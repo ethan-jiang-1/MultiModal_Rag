@@ -2,7 +2,7 @@ from typing import Dict
 import os
 from llama_parse.utils import Language
 
-_MIB_INFO_VER = "0.11.2"
+_MIB_INFO_VER = "0.11.4"
 
 # 环境变量配置
 ENV_MODEL_FLOW = "ENV_MODEL_FLOW"              # models used for flow mode: gpt/qwen/ark
@@ -12,6 +12,10 @@ ENV_MODEL_GEN_LVLM_REGION = "ENV_MODEL_GEN_LVLM_REGION"  # models used for lvlm 
 ENV_MODEL_GEN_TI = "ENV_MODEL_GEN_TI"         # models used for textin mode: gpt/qwen/ark
 
 class DefaultModelSource:
+    @classmethod
+    def get_flow_model(cls) -> str:
+        return os.getenv(ENV_MODEL_FLOW, "qwen")
+
     @classmethod
     def get_flow_fix_heading_model(cls) -> str:
         return os.getenv(ENV_MODEL_FLOW, "qwen")
@@ -57,6 +61,7 @@ def get_default_md_control() -> Dict:
         "mctl_ge_md_async": False,                     # 异步生成开关
         
         # 模型选择
+        "mctl_flow_model": DefaultModelSource.get_flow_model(), # 主数据流的模型
         "mctl_fix_heading_model": DefaultModelSource.get_flow_fix_heading_model(),     # 标题修复模型: gpt/qwen/ark
         "mctl_summarize_model": DefaultModelSource.get_flow_summarize_model(),         # 摘要生成模型: gpt/qwen/ark
     }
