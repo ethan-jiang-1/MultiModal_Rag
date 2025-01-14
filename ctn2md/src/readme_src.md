@@ -1,81 +1,106 @@
-# Source Module
+# Markdown 源码处理模块
 
-核心功能实现模块，提供文档转换的基础功能和流程控制。
+## 快速导航
 
-## 功能特点
+### 关键文件索引
+- `ctn2md_fix_heading_plc.py` - 标题层级修复主入口
+- `ctn2md_inject_section_hierarchy.py` - 章节层级注入主入口
+- `ctn2md_summarize_content.py` - 内容总结主入口
+- `make_final_result.py` - 最终结果生成
+- `page_spe_md.py` - 页面特殊处理
+- `heading_plc_md.py` - 标题位置处理
 
-- 信息管理
-- 流程控制
-- 内容处理
-- 结果生成
-
-## 模块组成
-
-```
-src/
-├── md_info_base.py                    # 基础信息处理
-├── md_info_ctrl.py                    # 控制逻辑
-├── md_process_plc.py                  # 处理流程
-├── ctn2md_fix_heading_plc.py          # 标题修复
-├── ctn2md_inject_section_hierarchy.py # 章节层级注入
-├── ctn2md_summarize_content.py        # 内容总结
-└── make_final_result.py               # 最终结果生成
-```
+### 按功能查找
+- 需要修复标题层级? → 使用 `fix_heading_plc` 模块
+- 需要注入章节结构? → 使用 `inject_section_hierarchy` 模块
+- 需要生成内容总结? → 使用 `summarize_content` 模块
 
 ## 核心功能
 
-### 1. 信息管理
-- 文档信息维护
-- 状态追踪
-- 配置管理
-
-### 2. 内容处理
-- 标题层级优化
-- 章节结构注入
-- 内容智能总结
-
-### 3. 结果生成
-- 格式标准化
-- 质量检查
-- 结果输出
-
-## 使用方法
-
+### 1. 标题层级修复
 ```python
-# 1. 基础信息处理
-from ctn2md.src.md_info_base import MdInfo
-md_info = MdInfo("path/to/info.json")
-
-# 2. 标题修复
 from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_llm
-result = fix_headings_plc_by_llm("path/to/md")
 
-# 3. 章节层级注入
-from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_hierarchy
-result = inject_section_hierarchy("path/to/md")
-
-# 4. 内容总结
-from ctn2md.src.ctn2md_summarize_content import summarize_content_by_llm
-summary = summarize_content_by_llm("path/to/md")
-
-# 5. 最终结果生成
-from ctn2md.src.make_final_result import make_final_json
-final_result = make_final_json("path/to/md")
+# 修复标题层级
+md_info_path = fix_headings_plc_by_llm(md_info_path, src_step_num=0, dst_step_num=1)
 ```
+
+### 2. 章节层级注入
+```python
+from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_hierarchy
+
+# 注入章节层级并分割文件
+md_info_path = inject_section_hierarchy(md_info_path, src_step_num=1, dst_step_num=2)
+```
+
+### 3. 内容总结生成
+```python
+from ctn2md.src.ctn2md_summarize_content import summarize_content_by_llm
+
+# 生成文档总结
+md_info_path = summarize_content_by_llm(md_info_path, src_step_num=2)
+```
+
+## 处理流程
+
+### 1. 标题层级处理流程
+1. **收集标题信息**
+   - 使用 `heading_collector.py` 收集标题
+   - 分析标题层级关系
+   - 生成初始标题映射
+
+2. **计算标题映射**
+   - 使用 LLM 优化标题层级
+   - 缓存计算结果
+   - 验证映射有效性
+
+3. **更新文档内容**
+   - 应用标题映射
+   - 保存处理结果
+   - 更新处理状态
+
+### 2. 章节层级注入流程
+1. **处理层级结构**
+   - 分析文档结构
+   - 注入层级描述
+   - 验证层级正确性
+
+2. **文件分割**
+   - 按章节分割文件
+   - 生成章节索引
+   - 保存分割结果
+
+### 3. 内容总结流程
+1. **文档分析**
+   - 读取文档内容
+   - 移除注释信息
+   - 提取关键信息
+
+2. **生成总结**
+   - 使用 LLM 生成关键词
+   - 生成文档摘要
+   - 保存总结结果
 
 ## 最佳实践
 
-1. 信息管理：
-   - 及时更新状态
-   - 保持配置一致
-   - 处理异常情况
+### 开发建议
+1. **步骤编号管理**
+   - 合理设置 src_step_num
+   - 正确指定 dst_step_num
+   - 保持步骤连续性
 
-2. 内容处理：
-   - 验证标题层级
-   - 检查章节完整性
-   - 优化摘要质量
+2. **错误处理**
+   - 检查文件存在性
+   - 验证处理结果
+   - 保存处理状态
 
-3. 结果生成：
-   - 执行质量检查
-   - 保存中间结果
-   - 记录处理日志 
+### 性能优化
+1. **缓存使用**
+   - LLM 结果缓存
+   - 文件内容缓存
+   - 定期清理缓存
+
+2. **资源管理**
+   - 及时关闭文件
+   - 清理临时文件
+   - 释放内存资源 
