@@ -116,3 +116,31 @@ class BaseProcessor:
             处理后的页面内容
         """
         raise NotImplementedError 
+
+if __name__ == "__main__":
+    from dotenv import load_dotenv
+    load_dotenv()
+    
+    from mmbase.utils.util_logging import setup_logger_handlers
+    setup_logger_handlers()
+    
+    # 测试代码
+    from ctn2md.src.md_info_base import MdInfo
+    
+    # 创建测试目录
+    test_dir = "_output/test_base"
+    os.makedirs(test_dir, exist_ok=True)
+    
+    # 创建测试文件
+    test_file = os.path.join(test_dir, "test.md")
+    test_content = ["测试行1", "测试行2", "测试行3"]
+    save_page_content(test_file, test_content)
+    
+    # 测试读取
+    loaded_content = read_page_content(test_file)
+    print("读取的内容:", loaded_content)
+    
+    # 测试工作空间准备
+    md_info = MdInfo.from_json("_output/test_doc/_info.json")
+    workspace_files = prepare_md_fusion_workspace(md_info)
+    print("工作空间文件:", workspace_files) 

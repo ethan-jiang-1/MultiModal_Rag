@@ -4,11 +4,15 @@
 
 from typing import List
 import logging
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from ctn2md.src.md_info_base import MdInfo
-from .base import BaseProcessor
-from .document_analyzer import DocumentAnalyzer
-from .header_footer import HeaderFooterProcessor
-from .table_processor import TableProcessor
+from ctn2md.gen_base.page_md_processors.base import BaseProcessor
+from ctn2md.gen_base.page_md_processors.llm.document_analyzer import DocumentAnalyzer
+from ctn2md.gen_base.page_md_processors.header_footer import HeaderFooterProcessor
+from ctn2md.gen_base.page_md_processors.table_processor import TableProcessor
 
 logger = logging.getLogger(__name__)
 

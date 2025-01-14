@@ -4,8 +4,12 @@
 
 from typing import List, Dict
 import logging
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from ctn2md.src.md_info_base import MdInfo
-from .base import BaseProcessor
+from ctn2md.gen_base.page_md_processors.base import BaseProcessor
 
 logger = logging.getLogger(__name__)
 

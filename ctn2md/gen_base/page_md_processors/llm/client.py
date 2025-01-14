@@ -4,8 +4,11 @@ LLM客户端实现
 
 import logging
 from functools import lru_cache
+from dotenv import load_dotenv
 
-from .schemas import DocumentAnalysis
+load_dotenv()
+
+from ctn2md.gen_base.page_md_processors.llm.schemas import DocumentAnalysis
 
 logger = logging.getLogger(__name__)
 
@@ -62,3 +65,29 @@ class LlmClient:
             logger.error(f"Error calling LLM: {e}")
             # 返回空的分析结果
             return DocumentAnalysis() 
+
+if __name__ == "__main__":
+    from mmbase.utils.util_logging import setup_logger_handlers
+    setup_logger_handlers()
+    
+    # 测试代码
+    client = LlmClient()
+    
+    # 测试分析
+    test_prompt = """
+    <<<< 第1页 >>>>
+    [P1-L1] 页眉内容
+    [P1-L2] 正文内容
+    [P1-L3] | 表头1 | 表头2 |
+    [P1-L4] | --- | --- |
+    <<<< 第1页 结束 >>>>
+    
+    <<<< 第2页 >>>>
+    [P2-L1] | 数据1 | 数据2 |
+    [P2-L2] 页脚内容
+    <<<< 第2页 结束 >>>>
+    """
+    
+    result = client.analyze_document(test_prompt)
+    print("分析结果:")
+    print(result.json(indent=2, ensure_ascii=False)) 
