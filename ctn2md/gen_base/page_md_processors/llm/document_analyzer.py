@@ -62,4 +62,4 @@ if __name__ == "__main__":
     
     analyzer = DocumentAnalyzer(md_info)
     result = analyzer.analyze(test_pages)
-    print(result.json(indent=2, ensure_ascii=False)) 
+    print(result.model_dump_json(indent=2, ensure_ascii=False)) 
