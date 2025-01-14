@@ -50,56 +50,81 @@ Please identify and return in format:
 1. Headers/footers to remove (based on position and repeating patterns)
 2. Cross-page tables to merge (based on table markers and content continuity)
 
+Analysis Guidelines:
+1. Position Patterns:
+   - Look for repeated elements at page tops/bottoms
+   - Check for consistent line positions across pages
+2. Content Patterns:
+   - Identify table structures (|, ---)
+   - Notice content that continues across page boundaries
+3. Conservative Approach:
+   - When in doubt, preserve the content
+   - Mark ambiguous cases as warnings
 
-Important Notes:
-1. Use the [Px-Ly] markers to identify exact lines
-2. Page numbers come from === PAGE x === markers
-3. Table merging must ensure structural completeness
-4. When uncertain, prefer preservation over removal
-
-Return Format in JSON format:
-{
+Required JSON Output Format:
+{{
+    "debug_info": {{
+        "total_pages": 3,
+        "pages": [
+            {{
+                "page": 1,
+                "total_lines": 25,
+                "first_line": "[P1-L1] First line content",
+                "last_line": "[P1-L25] Last line content"
+            }},
+            {{
+                "page": 2,
+                "total_lines": 20,
+                "first_line": "[P2-L1] First line content",
+                "last_line": "[P2-L20] Last line content"
+            }}
+        ]
+    }},
     "remove_actions": [
-        {
-            "page": 1,                    # Page number from marker
-            "lines": [1, 2],              # Line numbers from marker
-            "reason": "header",           # header/footer
-            "confidence": 0.95,           # Confidence level 0.0-1.0
-            "pattern": "fixed text",      # Matching pattern (optional)
-            "notes": "appears on multiple pages"  # Additional notes (optional)
-        }
+        {{
+            "page": 1,
+            "lines": [1, 2],
+            "reason": "header",
+            "confidence": 0.95
+        }}
     ],
     "merge_actions": [
-        {
-            "type": "table",              # table/paragraph
-            "pages": [1, 2],              # Consecutive page numbers
-            "line_ranges": {              # Line ranges from markers
+        {{
+            "type": "table",
+            "pages": [1, 2],
+            "line_ranges": {{
                 "1": [
-                    {
+                    {{
                         "start": 15,
                         "end": 20,
-                        "content_type": "table_header"  # table_header/table_body
-                    }
+                        "content_type": "table_header"
+                    }}
                 ],
                 "2": [
-                    {
+                    {{
                         "start": 1,
                         "end": 5,
                         "content_type": "table_body"
-                    }
+                    }}
                 ]
-            },
-            "confidence": 0.9,            # Confidence level 0.0-1.0
-            "notes": "table structure complete"  # Additional notes (optional)
-        }
+            }},
+            "confidence": 0.9
+        }}
     ],
-    "warnings": [                         # Warning messages (optional)
-        {
-            "type": "ambiguous_header",   # Warning type
-            "page": 1,                    # Page number from marker
-            "lines": [1],                 # Line numbers from marker
-            "message": "possible header but uncertain"  # Warning message
-        }
+    "warnings": [
+        {{
+            "type": "ambiguous_header",
+            "page": 1,
+            "lines": [1],
+            "message": "possible header but uncertain"
+        }}
     ]
-}
+}}
+
+Important Notes:
+1. All fields shown above are required
+2. All numbers must be integers except confidence values
+3. Arrays must be properly formatted with square brackets
+4. Use the EXACT field names as shown above
+5. When uncertain, prefer preservation over removal
 """

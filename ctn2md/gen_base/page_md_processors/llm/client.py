@@ -6,6 +6,7 @@ import logging
 import os
 import hashlib
 import msgpack
+import rich
 from typing import Optional
 from dotenv import load_dotenv
 
@@ -54,6 +55,9 @@ class LlmClient:
     
     def get_model(self) -> str:
         """获取模型名称"""
+        if not self.md_info:
+            return "qwen-plus"  # 默认使用qwen-plus模型
+            
         model = self.md_info.get_md_control("mctl_flow_model", "qwen")
         if model.startswith("qwen"):
             return "qwen-plus"
@@ -129,7 +133,6 @@ class LlmClient:
             return DocumentAnalysis()
 
 if __name__ == "__main__":
-    import rich
     from mmbase.utils.util_logging import setup_logger_handlers
     from ctn2md.gen_base.page_md_processors.llm.marked_content_maker import MarkedContentMaker
     from ctn2md.gen_base.page_md_processors.llm.prompts import SYSTEM_PROMPT_DOC_ANALYSIS, USER_PROMPT_DOC_ANALYSIS
@@ -146,11 +149,11 @@ if __name__ == "__main__":
 
     maker = MarkedContentMaker()
     marked_content = maker.make_marked_content_from_md_info(md_info, fnames)
+    #rich.print(marked_content)
 
-    system_prompt =SYSTEM_PROMPT_DOC_ANALYSIS
-    user_prompt =USER_PROMPT_DOC_ANALYSIS.replace("{{marked_content_from_pages}}", marked_content)
+    system_prompt = SYSTEM_PROMPT_DOC_ANALYSIS
+    user_prompt = USER_PROMPT_DOC_ANALYSIS.format(marked_content_from_pages=marked_content)
+    #print(user_prompt)
 
-    
     result = llm_client.analyze_document(system_prompt, user_prompt)
-
     rich.print(result)
