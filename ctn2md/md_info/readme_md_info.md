@@ -3,105 +3,136 @@
 ## 快速导航
 
 ### 关键文件索引
-- 核心基类: `md_info_base.py` - 定义了 Markdown 信息的基础数据结构和操作
-- 控制器: `md_info_ctrl.py` - 管理 Markdown 处理的控制参数
-- 特殊页面: `md_page_spe.py` - 处理特殊页面的逻辑
+- `md_info_base.py` - Markdown 信息基础类，提供统一的信息管理接口
+- `md_info_ctrl.py` - 控制参数管理，定义处理流程的配置项
 
 ### 按功能查找
-- 需要管理文档信息? → 看 `md_info_base.py` 中的 `MdInfo` 类
-- 处理页面位置控制? → 看 `md_process_plc.py` 中的注入函数
-- 调整处理参数? → 看 `md_info_ctrl.py` 中的控制参数
-- 处理特殊页面? → 看 `md_page_spe.py` 中的特殊页面逻辑
+- 需要创建/加载文档信息？ → `MdInfo` 类的 `__init__` 和 `load` 方法
+- 想保存处理状态？ → `MdInfo` 类的 `save` 方法
+- 要调整处理参数？ → `md_info_ctrl.py` 中的 `get_default_md_control`
+- 需要版本迁移？ → `MdInfo` 类的 `_migrate` 方法
 
-## 1. 系统设计思路
+## 1. 核心功能
 
-### 1.1 核心原则
-- 统一管理：集中管理文档信息和处理状态
-- 位置追踪：精确跟踪文档内容的位置信息
-- 可扩展性：支持不同类型的文档处理器
-- 错误处理：完整的错误处理和恢复机制
-
-### 1.2 关键创新
-1. **统一的信息管理**：
-   - 使用 `MdInfo` 类统一管理文档信息
-   - 支持信息的持久化和迁移
-   - 提供版本控制和兼容性检查
-
-2. **精确的位置控制**：
-   - 使用 PLC (Position Location Control) 注释系统
-   - 支持页面、行号、字符数统计
-   - 维护文档的逻辑结构
-
-## 2. 核心数据结构
-
-### 2.1 文档信息结构
+### 1.1 文档信息管理
 ```python
-class MdInfo(dict):
-    """文档信息管理类"""
-    def __init__(self, md_info_path_or_out_dir: str):
-        # 初始化文档信息管理器
-        self._md_info_path = self._get_suggested_md_info_path(md_info_path_or_out_dir)
-        self._out_dir = os.path.dirname(self._md_info_path)
+from ctn2md.md_info.md_info_base import MdInfo
+
+# 创建文档信息管理器
+md_info = MdInfo("output_dir")
+
+# 加载已有信息
+md_info.load()
+
+# 保存当前状态
+md_info.save()
 ```
 
+### 1.2 控制参数管理
+```python
+from ctn2md.md_info.md_info_ctrl import get_default_md_control
 
-## 3. 核心功能
+# 获取默认控制参数
+ctrl_params = get_default_md_control()
 
-### 3.1 文档信息管理
-1. **基础操作**：
+# 主要参数组
+general_controls = {
+    "version": "0.11.2",
+    "mctl_move_aux_files": True,
+    "mctl_treat_doc_as_ctntype": "auto",
+    "mctl_ge_md_async": False
+}
+```
+
+## 2. 关键数据结构
+
+### 2.1 文档信息字段
+```python
+class PUBLIC_MIFN:
+    VERSION = "version"                    # 版本信息
+    GEN_ENGINE = "parse_engine"           # 解析引擎
+    PATHNAME_ORG_DOC = "pathname_org_doc" # 原始文档路径
+    DOC_UNIQUE_ID = "doc_unique_id"       # 文档唯一ID
+    DOC_CTN_TYPE = "doc_content_type"     # 文档内容类型
+    DOC_NAME_TITLE = "doc_title_name"     # 文档标题名称
+```
+
+### 2.2 控制参数结构
+```python
+class DefaultModelSource:
+    @classmethod
+    def get_flow_fix_heading_model(cls) -> str:
+        return os.getenv(ENV_MODEL_FLOW, "qwen")
+    
+    @classmethod
+    def get_flow_summarize_model(cls) -> str:
+        return os.getenv(ENV_MODEL_FLOW, "qwen")
+```
+
+## 3. 使用指南
+
+### 3.1 基本流程
+1. **初始化**
    ```python
    md_info = MdInfo("output_dir")
-   md_info.load()  # 加载信息
-   md_info.save()  # 保存信息
+   md_info.load()  # 如果存在则加载
    ```
 
-2. **信息访问**：
+2. **配置参数**
    ```python
-   doc_type = md_info.get_doc_type()
-   ctn_type = md_info.get_ctn_type()
-   doc_title = md_info.get_doc_title()
+   ctrl_params = get_default_md_control()
+   md_info.update(ctrl_params)
    ```
+
+3. **保存状态**
+   ```python
+   md_info.save()
    ```
+
+### 3.2 环境变量
+- `ENV_MODEL_FLOW`: 流程模式使用的模型
+- `ENV_MODEL_GEN_LP`: LlamaParse模式使用的模型
+- `ENV_MODEL_GEN_LVLM`: LVLM模式使用的模型
+- `ENV_MODEL_GEN_TI`: TextIn模式使用的模型
 
 ## 4. 最佳实践
 
-### 4.1 文档处理建议
-1. **初始化顺序**：
-   - 先初始化 `MdInfo` 实例
-   - 加载现有信息或创建新信息
-   - 设置必要的控制参数
+### 4.1 版本管理
+- 使用 `_MIB_INFO_VER` 跟踪版本
+- 通过 `_migrate` 方法处理版本迁移
+- 保持向后兼容性
 
 ### 4.2 错误处理
-1. **常见错误**：
-   - 文件路径不存在
-   - 版本不兼容
-   - 信息格式错误
+```python
+try:
+    md_info = MdInfo(output_dir)
+    md_info.load()
+except ValueError as e:
+    logging.error(f"初始化失败: {e}")
+except FileNotFoundError:
+    logging.error("文件不存在")
+```
 
-2. **处理策略**：
-   - 使用 try-except 捕获异常
-   - 记录详细的错误信息
-   - 实现回滚机制
+## 5. 开发建议
 
-## 5. 开发指南
+### 5.1 新功能开发
+1. **遵循基本原则**
+   - 所有修改必须向后兼容
+   - 新功能需要添加迁移支持
+   - 保持接口的一致性
 
-### 5.1 扩展建议
-1. **添加新功能**：
-   - 继承 `MdInfo` 类
-   - 实现新的处理方法
-   - 保持向后兼容
-
-2. **修改现有功能**：
-   - 遵循版本控制规范
-   - 更新文档和测试
-   - 保持接口稳定
+2. **代码规范**
+   - 使用类型注解
+   - 添加详细注释
+   - 遵循 PEP 8 规范
 
 ### 5.2 测试要求
-1. **单元测试**：
-   - 测试基本功能
-   - 测试边界条件
-   - 测试错误处理
+1. **单元测试**
+   - 测试所有公共方法
+   - 验证错误处理
+   - 检查版本迁移
 
-2. **集成测试**：
+2. **集成测试**
    - 测试与其他模块的交互
-   - 测试完整的处理流程
-   - 测试性能和资源使用 
+   - 验证配置参数的影响
+   - 检查性能和资源使用 
