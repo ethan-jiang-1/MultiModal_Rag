@@ -8,7 +8,7 @@ import markitdown
 load_dotenv()
 
 #from ctn2md.gen_base.scan_img_ref_and_update import scan_img_ref_and_update
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.md_info.md_info_base import MdInfo
 from mmbase.utils.util_logging import setup_logger_handlers
 
 

@@ -8,7 +8,7 @@ load_dotenv()
 
 
 from mmbase.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, MIFN
+from ctn2md.md_info.md_info_base import MdInfo, MIFN
 from ctn2md.utils_gen.gen_base import is_still_in_gen_mode
 
 IMG_EXT = "jpg"  # or "png"

@@ -7,7 +7,7 @@ from llama_parse import LlamaParse
 
 load_dotenv()
 
-from ctn2md.src.md_info_base import MdInfo, MIFN
+from ctn2md.md_info.md_info_base import MdInfo, MIFN
 from ctn2md.gen_llamaparse._download_image_status import ImageStatusTracker
 
 class OCRResult(TypedDict):

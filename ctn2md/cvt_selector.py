@@ -5,10 +5,10 @@ import rich
 
 load_dotenv()
 
-from ctn2md.src.md_info_ctrl import ENV_MODEL_FLOW, ENV_MODEL_GEN_LP, ENV_MODEL_GEN_LVLM, ENV_MODEL_GEN_TI
+from ctn2md.md_info.md_info_ctrl import ENV_MODEL_FLOW, ENV_MODEL_GEN_LP, ENV_MODEL_GEN_LVLM, ENV_MODEL_GEN_TI
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src_gen._ctn2md_gen_md_base import GenMd_Base
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.md_info.md_info_base import MdInfo
 from ctn2md.utils.util_file import normalize_path
 
 def select_converter_func(doc_pathname:str) -> Tuple[Callable, GenMd_Base]:

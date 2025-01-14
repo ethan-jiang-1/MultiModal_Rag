@@ -7,7 +7,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from dotenv import load_dotenv
 load_dotenv()
 
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.md_info.md_info_base import MdInfo
 from ctn2md.gen_textin._ti_img_description import (
     get_img_alt_text_and_description,
     get_img_alt_text_and_description_async

@@ -12,7 +12,7 @@ from ctn2md.utils_llm.llm_fix_heading_lvl_qwen_prompt import SYSTEM_PROMPT_FIX_H
 from mmbase.utils_llm.llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from mmbase.utils_llm.llm_base import get_gpt_messages, chat_gpt_json, get_ark_client
 from ctn2md.utils.util_ctn_type import CTN_TYPE
-from ctn2md.src.md_info_base import FHL_QUALITY_TYPE
+from ctn2md.md_info.md_info_base import FHL_QUALITY_TYPE
 
 
 def fix_heading_lvl_markdown_by_ark(fhl_org: dict, 

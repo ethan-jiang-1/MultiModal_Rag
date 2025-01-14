@@ -7,9 +7,9 @@ import asyncio
 
 load_dotenv()
 
-from ctn2md.src.md_page_spe import SpecialPage
+from ctn2md.md_info.md_page_spe import SpecialPage
 from mmbase.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
+from ctn2md.md_info.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from ctn2md.src_gen._ctn2md_gen_md_base import GenMd_Base
 
@@ -33,7 +33,7 @@ class GenMd_TextIn(GenMd_Base):
     
     @classmethod
     def if_any_md_page_has_error(cls, md_info:MdInfo) -> bool:
-        from ctn2md.src.md_page_spe import SpecialPage 
+        from ctn2md.md_info.md_page_spe import SpecialPage 
         fnames_pages = md_info.get_fnames_pages()
         if isinstance(fnames_pages, list):
             out_dir = md_info.get_out_dir()

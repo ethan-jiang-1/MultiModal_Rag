@@ -12,7 +12,7 @@ from ctn2md.utils_gen.gen_base import is_still_in_gen_mode
 from ctn2md.gen_textin.ti_pdf_pages_to_images import parse_pdf_to_images
 from ctn2md.gen_textin.ti_pdf_images_to_mds import convert_images_to_mds, convert_images_to_mds_async
 from mmbase.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, MIFN
+from ctn2md.md_info.md_info_base import MdInfo, MIFN
 
 def gen_pages_ti(md_info:MdInfo, mdcontrols:dict = None, skip_gen_mds: bool = False, sel_page_indexes: List[int] = None) -> str:
     start_time = time.time()

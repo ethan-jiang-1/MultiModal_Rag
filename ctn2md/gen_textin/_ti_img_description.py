@@ -9,7 +9,7 @@ import zlib
 import cv2
 import numpy as np
 
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.md_info.md_info_base import MdInfo
 from ctn2md.utils_llm.llm_gen_vllm_instruction import gen_vllm_instruction_llm
 from ctn2md.utils_vllm.vllm_img_description_qwen import generate_image_description_by_qwen
 from ctn2md.utils_vllm.vllm_img_description_gpt import generate_image_description_by_gpt

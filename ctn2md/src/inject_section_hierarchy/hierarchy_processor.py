@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from ctn2md.src.md_info_base import MdInfo, MIFN
+from ctn2md.md_info.md_info_base import MdInfo, MIFN
 from ctn2md.utils.util_markdown import remove_comment
 from ctn2md.src.inject_section_hierarchy.heading_stack import HeadingStack
 

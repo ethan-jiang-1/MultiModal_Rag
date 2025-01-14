@@ -6,7 +6,7 @@ import json
 
 load_dotenv()
 
-from ctn2md.src.md_info_base import PUBLIC_MIFN
+from ctn2md.md_info.md_info_base import PUBLIC_MIFN
 from ctn2md.utils.util_ctn_type import CTN_TYPE
 from mrag_vdb.common.doc_meta_info import DocMetaInfo
 

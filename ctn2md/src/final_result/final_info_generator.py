@@ -6,7 +6,7 @@ import logging
 
 load_dotenv()
 
-from ctn2md.src.md_info_base import MdInfo, PUBLIC_MIFN
+from ctn2md.md_info.md_info_base import MdInfo, PUBLIC_MIFN
 
 def generate_final_result_json(md_info: MdInfo) -> str:
     """生成最终结果JSON文件"""

@@ -8,7 +8,7 @@ from typing import Tuple
 from dotenv import load_dotenv
 load_dotenv()
 
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.md_info.md_info_base import MdInfo
 
 def update_markdown_heading_content(md_text: str, md_info: MdInfo, fhl_map: dict) -> Tuple[str, list]:
     """

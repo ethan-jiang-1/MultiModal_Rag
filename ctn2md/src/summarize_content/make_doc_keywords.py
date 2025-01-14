@@ -8,7 +8,7 @@ import logging
 
 load_dotenv()
 
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.md_info.md_info_base import MdInfo
 from ctn2md.utils_llm.llm_summarize_content import summarize_doc_keywords_by_llm
 from ctn2md.src.summarize_content.doc_keywords import DocumentKeywords
 

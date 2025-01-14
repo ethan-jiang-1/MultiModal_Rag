@@ -7,7 +7,7 @@ import logging
 import rich
 from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.utils.util_markdown import read_markdown_file
-from ctn2md.src.md_info_base import MdInfo, MIFN
+from ctn2md.md_info.md_info_base import MdInfo, MIFN
 
 from ctn2md.src.fix_heading_plc.heading_collector import collect_fhl_info
 from ctn2md.src.fix_heading_plc.heading_mapper import cal_new_fhl_map, get_cache_path

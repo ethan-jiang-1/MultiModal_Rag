@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.md_info.md_info_base import MdInfo
 from ctn2md.gen_base.page_md_processors.base import BaseProcessor
 from ctn2md.gen_base.page_md_processors.llm.client import LlmClient
 from ctn2md.gen_base.page_md_processors.llm.prompts import get_document_analysis_prompt

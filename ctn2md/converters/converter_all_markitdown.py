@@ -12,8 +12,8 @@ if __name__ == "__main__":
     os.chdir(_root_dir)
 
 from mmbase.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo
-from ctn2md.src.md_info_ctrl import ENV_MODEL_FLOW # , ENV_MODEL_GEN_TI
+from ctn2md.md_info.md_info_base import MdInfo
+from ctn2md.md_info.md_info_ctrl import ENV_MODEL_FLOW # , ENV_MODEL_GEN_TI
 from ctn2md.src.ctn2md_fix_heading_plc import fix_headings_plc_by_llm
 from ctn2md.src.ctn2md_inject_section_hierarchy import inject_section_hierarchy
 from ctn2md.src.ctn2md_summarize_content import summarize_content_by_llm

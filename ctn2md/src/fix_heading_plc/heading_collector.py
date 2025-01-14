@@ -6,8 +6,8 @@ from typing import Tuple
 from dotenv import load_dotenv
 load_dotenv()
 
-from ctn2md.src.md_info_base import MdInfo, MIFN
-from ctn2md.src.md_process_plc import (
+from ctn2md.md_info.md_info_base import MdInfo, MIFN
+from ctn2md.md_info.md_process_plc import (
     inject_plc_comment_to_page,
     separate_heading_and_plc_comment,
     get_all_normalized_headings_with_plc_info,

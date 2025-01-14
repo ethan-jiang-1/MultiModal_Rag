@@ -10,7 +10,7 @@ load_dotenv()
 
 from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.utils.util_markdown import read_markdown_file
-from ctn2md.src.md_info_base import MdInfo, MIFN
+from ctn2md.md_info.md_info_base import MdInfo, MIFN
 from ctn2md.src.inject_section_hierarchy.hierarchy_processor import process_markdown_hierarchy
 from ctn2md.src.inject_section_hierarchy.file_splitter import split_sections_to_files, clear_section_files
 

@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 import shutil
 
 load_dotenv()
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.md_info.md_info_base import MdInfo
 
 
 class ImageDownloader:

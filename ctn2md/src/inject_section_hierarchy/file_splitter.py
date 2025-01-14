@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.md_info.md_info_base import MdInfo
 from ctn2md.utils.util_file import get_crc32_id
 
 ORDERD_NO_HEADING = "0_NoHeading"

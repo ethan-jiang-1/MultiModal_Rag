@@ -10,7 +10,7 @@ import rich
 load_dotenv()
 
 from mmbase.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, PUBLIC_MIFN
+from ctn2md.md_info.md_info_base import MdInfo, PUBLIC_MIFN
 from ctn2md.src.final_result.md_file_handler import copy_last_step_as_final
 from ctn2md.src.final_result.aux_file_manager import move_aux_files as move_aux_files_func
 from ctn2md.src.final_result.final_info_generator import generate_final_result_json

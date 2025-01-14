@@ -7,7 +7,7 @@ from llama_parse import LlamaParse
 
 load_dotenv()
 
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.md_info.md_info_base import MdInfo
 
 def safe_download_tables(parser:LlamaParse, json_result:List[dict], md_info:MdInfo):
     out_dir = md_info.get_out_dir()

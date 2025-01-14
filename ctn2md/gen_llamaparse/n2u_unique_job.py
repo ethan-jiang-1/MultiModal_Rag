@@ -5,8 +5,8 @@ import shutil
 
 load_dotenv()
 
-from ctn2md.src.md_info_base import MdInfo
-from ctn2md.src.md_page_spe import SpecialPage
+from ctn2md.md_info.md_info_base import MdInfo
+from ctn2md.md_info.md_page_spe import SpecialPage
 
 def n2u_replace_fnames(md_info:MdInfo, 
                        mifn_fnames:str, 

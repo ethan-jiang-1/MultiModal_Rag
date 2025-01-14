@@ -8,7 +8,7 @@ import logging
 
 load_dotenv()
 
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.md_info.md_info_base import MdInfo
 
 def copy_last_step_as_final(md_info:MdInfo)->str:
     """复制最后一步的MD文件作为最终文件"""

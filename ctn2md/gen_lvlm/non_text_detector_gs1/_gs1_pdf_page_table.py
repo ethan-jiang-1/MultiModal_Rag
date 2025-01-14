@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.md_info.md_info_base import MdInfo
 
 def detect_table_regions(md_info: MdInfo, page: fitz.Page) -> List[sg.box]:
     """

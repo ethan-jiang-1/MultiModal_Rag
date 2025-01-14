@@ -6,7 +6,7 @@ import logging
 
 load_dotenv()
 
-from ctn2md.src.md_info_base import MdInfo, MIFN, PUBLIC_MIFN
+from ctn2md.md_info.md_info_base import MdInfo, MIFN, PUBLIC_MIFN
 from ctn2md.utils.util_markdown import find_all_image_refs
 
 def move_aux_files(md_info: MdInfo) -> None:

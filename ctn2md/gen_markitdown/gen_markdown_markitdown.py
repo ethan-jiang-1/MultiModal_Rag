@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from ctn2md.utils.util_ctn_type import CTN_TYPE
-from ctn2md.src.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
+from ctn2md.md_info.md_info_base import MdInfo, MIFN, FHL_QUALITY_TYPE
 from mmbase.utils.util_logging import setup_logger_handlers
 import rich
 

@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from mmbase.utils.util_logging import setup_logger_handlers
-from ctn2md.src.md_info_base import MdInfo, MIFN
+from ctn2md.md_info.md_info_base import MdInfo, MIFN
 from ctn2md.gen_lvlm.lvlm_base import get_image_cnt_type, LVLM_IMG_CNT_TYPE
 from ctn2md.gen_lvlm.non_text_detector_gs0.gs0_pdf_page_to_region import gs0_parse_non_text_rects_in_pdf_page
 from ctn2md.gen_lvlm.non_text_detector_gs1.gs1_pdf_page_to_region import gs1_parse_non_text_rects_in_pdf_page

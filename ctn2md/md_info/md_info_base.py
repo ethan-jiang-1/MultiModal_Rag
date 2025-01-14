@@ -10,7 +10,7 @@ import shutil
 
 _load_dotenv()
 
-from ctn2md.src.md_info_ctrl import (
+from ctn2md.md_info.md_info_ctrl import (
     _MIB_INFO_VER,
     get_default_md_control
 )

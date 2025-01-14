@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from ctn2md.src.md_info_base import MdInfo
+from ctn2md.md_info.md_info_base import MdInfo
 
 logger = logging.getLogger(__name__)
 
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     setup_logger_handlers()
     
     # 测试代码
-    from ctn2md.src.md_info_base import MdInfo
+    from ctn2md.md_info.md_info_base import MdInfo
     
     # 创建测试目录
     test_dir = "_output/test_base"
