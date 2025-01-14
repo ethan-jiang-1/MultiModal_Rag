@@ -10,7 +10,7 @@ from ctn2md.md_info.md_info_base import MdInfo
 from ctn2md.utils_vllm.vllm_img2md_gpt import generate_full_mds_from_image_gpt
 from ctn2md.utils_vllm.vllm_img2md_qwen import generate_full_mds_from_image_qwen
 from ctn2md.utils_vllm.vllm_img2md_ark import generate_full_mds_from_image_ark
-from ctn2md.md_info.md_page_spe import SpecialPage
+from ctn2md.src.page_spe_md import SpecialPage
 
 def _calculate_cache_name(pname_image: str, rects_img: List[str], model: str) -> str:
     # 1. 获取基础文件名（去掉路径和扩展名）

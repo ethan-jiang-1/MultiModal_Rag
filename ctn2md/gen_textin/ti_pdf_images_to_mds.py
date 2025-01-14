@@ -7,7 +7,7 @@ load_dotenv()
 
 from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.md_info.md_info_base import MIFN, MdInfo
-from ctn2md.md_info.md_page_spe import SpecialPage
+from ctn2md.src.page_spe_md import SpecialPage
 from ctn2md.gen_textin._ti_gen_md import convert_image_to_md, convert_image_to_md_async
 from ctn2md.gen_textin._ti_update_img_ref import (
     update_page_md_with_ref_imgs,
