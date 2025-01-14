@@ -7,9 +7,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from ctn2md.md_info.md_info_base import MdInfo
-from ctn2md.utils_vllm.vllm_img2md_gpt import generate_full_mds_from_image_gpt
-from ctn2md.utils_vllm.vllm_img2md_qwen import generate_full_mds_from_image_qwen
-from ctn2md.utils_vllm.vllm_img2md_ark import generate_full_mds_from_image_ark
+from ctn2md.gen_lvlm.image2mds.vllm_img2md_gpt import generate_full_mds_from_image_gpt
+from ctn2md.gen_lvlm.image2mds.vllm_img2md_qwen import generate_full_mds_from_image_qwen
+from ctn2md.gen_lvlm.image2mds.vllm_img2md_ark import generate_full_mds_from_image_ark
 from ctn2md.src.page_spe_md import SpecialPage
 
 def _calculate_cache_name(pname_image: str, rects_img: List[str], model: str) -> str:

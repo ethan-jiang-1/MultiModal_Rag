@@ -24,17 +24,17 @@ def summarize_doc_keywords_by_llm(doc_title:str,
         system_prompt = None
         client = None
         if model.startswith("ep-"): 
-            from ctn2md.utils_llm.llm_summarize_content_ark_prompt import SYSTEM_PROMPT_SUMMARIZE, USER_PROMPT_SUMMARIZE
+            from ctn2md.src.summarize_content.llm_summarize_content_ark_prompt import SYSTEM_PROMPT_SUMMARIZE, USER_PROMPT_SUMMARIZE
             user_prompt = USER_PROMPT_SUMMARIZE
             system_prompt = SYSTEM_PROMPT_SUMMARIZE
             client = get_ark_client()
         elif model.startswith("gpt"):
-            from ctn2md.utils_llm.llm_summarize_content_gpt_prompt import SYSTEM_PROMPT_SUMMARIZE, USER_PROMPT_SUMMARIZE
+            from ctn2md.src.summarize_content.llm_summarize_content_gpt_prompt import SYSTEM_PROMPT_SUMMARIZE, USER_PROMPT_SUMMARIZE
             user_prompt = USER_PROMPT_SUMMARIZE
             system_prompt = SYSTEM_PROMPT_SUMMARIZE
             client = get_azure_gpt_client()
         elif model.startswith("qwen"):
-            from ctn2md.utils_llm.llm_summarize_content_qwen_prompt import SYSTEM_PROMPT_SUMMARIZE, USER_PROMPT_SUMMARIZE
+            from ctn2md.src.summarize_content.llm_summarize_content_qwen_prompt import SYSTEM_PROMPT_SUMMARIZE, USER_PROMPT_SUMMARIZE
             user_prompt = USER_PROMPT_SUMMARIZE 
             system_prompt = SYSTEM_PROMPT_SUMMARIZE
             client = get_dashscope_client()

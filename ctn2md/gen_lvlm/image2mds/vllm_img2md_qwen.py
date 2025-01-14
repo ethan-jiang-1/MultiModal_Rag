@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from ctn2md.utils_vllm.vllm_img2md_qwen_prompt import PROMPT_INSTRUCT_IMG2MD_QWEN, PROMPT_INSTRUCT_IMG2MD_QWEN_IMG_RECTS
+from ctn2md.gen_lvlm.image2mds.vllm_img2md_qwen_prompt import PROMPT_INSTRUCT_IMG2MD_QWEN, PROMPT_INSTRUCT_IMG2MD_QWEN_IMG_RECTS
 from mmbase.utils_llm.llm_base import get_dashscope_client, get_gpt_messages_multimodal, chat_gpt_plain
 from mmbase.utils_llm.llm_markdown import strip_llm_format_markers
 

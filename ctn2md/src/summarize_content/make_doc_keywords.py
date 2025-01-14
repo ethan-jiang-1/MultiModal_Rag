@@ -9,7 +9,7 @@ import logging
 load_dotenv()
 
 from ctn2md.md_info.md_info_base import MdInfo
-from ctn2md.utils_llm.llm_summarize_content import summarize_doc_keywords_by_llm
+from ctn2md.src.summarize_content.llm_summarize_content import summarize_doc_keywords_by_llm
 from ctn2md.src.summarize_content.doc_keywords import DocumentKeywords
 
 def _get_cache_path(md_info: MdInfo) -> str:
