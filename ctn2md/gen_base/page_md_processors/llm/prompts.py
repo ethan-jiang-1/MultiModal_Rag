@@ -46,10 +46,6 @@ Document Format:
 Document Content:
 {marked_content_from_pages}
 
-Please identify and return in format:
-1. Headers/footers to remove (based on position and repeating patterns)
-2. Cross-page tables to merge (based on table markers and content continuity)
-
 Analysis Guidelines:
 1. Position Patterns:
    - Look for repeated elements at page tops/bottoms
@@ -77,6 +73,12 @@ Required JSON Output Format:
                 "total_lines": 20,
                 "first_line": "[P2-L1] First line content",
                 "last_line": "[P2-L20] Last line content"
+            }},
+            {{
+                "page": 3,
+                "total_lines": 19,
+                "first_line": "[P3-L1] First line content",
+                "last_line": "[P3-L19] Last line content"
             }}
         ]
     }},
@@ -121,10 +123,39 @@ Required JSON Output Format:
     ]
 }}
 
-Important Notes:
-1. All fields shown above are required
-2. All numbers must be integers except confidence values
-3. Arrays must be properly formatted with square brackets
-4. Use the EXACT field names as shown above
-5. When uncertain, prefer preservation over removal
+IMPORTANT: Your response must be a valid JSON object with EXACTLY the same structure as shown above:
+1. The debug_info field must contain:
+   - total_pages (integer)
+   - pages (array of page info objects)
+   Each page info object must have:
+   - page (integer)
+   - total_lines (integer)
+   - first_line (string)
+   - last_line (string)
+
+2. The remove_actions array must contain objects with:
+   - page (integer)
+   - lines (array of integers)
+   - reason (string, must be "header" or "footer")
+   - confidence (float between 0.0 and 1.0)
+
+3. The merge_actions array must contain objects with:
+   - type (string, must be "table")
+   - pages (array of consecutive integers)
+   - line_ranges (object mapping page numbers to arrays of range objects)
+   - confidence (float between 0.0 and 1.0)
+   Each range object must have:
+   - start (integer)
+   - end (integer)
+   - content_type (string, must be "table_header" or "table_body")
+
+4. The warnings array must contain objects with:
+   - type (string)
+   - page (integer)
+   - lines (array of integers)
+   - message (string)
+
+5. All arrays must be properly formatted with square brackets
+6. All field names must match EXACTLY as shown
+7. When uncertain, prefer preservation over removal
 """

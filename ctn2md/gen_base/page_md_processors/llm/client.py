@@ -67,8 +67,8 @@ class LlmClient:
             return "ep-20241220101421-4tj5f"
         else:
             raise ValueError(f"Invalid model: {model}")
-        
-    def analyze_document(self, system_prompt: str, user_prompt: str) -> DocumentAnalysis:
+    
+    def analyze_document(self, system_prompt: str, user_prompt: str, using_cache: bool = True) -> DocumentAnalysis:
         """分析文档
         
         Args:
@@ -84,17 +84,19 @@ class LlmClient:
         model = self.get_model()
         
         # 获取缓存路径
-        cache_path = self._get_cache_path(system_prompt, user_prompt, model)
-        
-        # 如果设置了缓存目录，尝试读取缓存
-        if cache_path and os.path.exists(cache_path):
-            try:
-                with open(cache_path, 'rb') as f:
-                    cache_data = msgpack.unpack(f)
-                    # 将缓存数据转换为DocumentAnalysis对象
-                    return DocumentAnalysis.model_validate(cache_data)
-            except Exception as e:
-                logger.warning(f"Failed to load cache: {e}")
+        cache_path = None
+        if using_cache:
+            cache_path = self._get_cache_path(system_prompt, user_prompt, model)
+            
+            # 如果设置了缓存目录，尝试读取缓存
+            if cache_path and os.path.exists(cache_path):
+                try:
+                    with open(cache_path, 'rb') as f:
+                        cache_data = msgpack.unpack(f)
+                        # 将缓存数据转换为DocumentAnalysis对象
+                        return DocumentAnalysis.model_validate(cache_data)
+                except Exception as e:
+                    logger.warning(f"Failed to load cache: {e}")
         
         try:
             # 构造消息
@@ -129,8 +131,7 @@ class LlmClient:
             
         except Exception as e:
             logger.error(f"Error calling LLM: {e}")
-            # 返回空的分析结果
-            return DocumentAnalysis()
+            raise e
 
 if __name__ == "__main__":
     from mmbase.utils.util_logging import setup_logger_handlers
@@ -155,5 +156,5 @@ if __name__ == "__main__":
     user_prompt = USER_PROMPT_DOC_ANALYSIS.format(marked_content_from_pages=marked_content)
     #print(user_prompt)
 
-    result = llm_client.analyze_document(system_prompt, user_prompt)
+    result = llm_client.analyze_document(system_prompt, user_prompt, using_cache=False)
     rich.print(result)
