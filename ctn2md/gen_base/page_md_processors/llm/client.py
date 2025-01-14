@@ -123,30 +123,25 @@ class LlmClient:
             return DocumentAnalysis()
 
 if __name__ == "__main__":
+    import rich
     from mmbase.utils.util_logging import setup_logger_handlers
+    from ctn2md.gen_base.page_md_processors.llm.marked_content_maker import MarkedContentMaker
+    from ctn2md.gen_base.page_md_processors.llm.prompts import SYSTEM_PROMPT_DOC_ANALYSIS, USER_PROMPT_DOC_ANALYSIS
+
     setup_logger_handlers()
     
-    # 测试代码
-    client = LlmClient()
+    pname_info = "_output/ctn2md_papers__深度学习在视电阻率快速反演中的研究_lvlm/_info.json"
+    md_info = MdInfo(pname_info)
+
+    llm_client = LlmClient(md_info)
     
-    # 测试分析
-    test_prompt = """
-    <<<< 第1页 >>>>
-    [P1-L1] 页眉内容
-    [P1-L2] 正文内容
-    [P1-L3] | 表头1 | 表头2 |
-    [P1-L4] | --- | --- |
-    <<<< 第1页 结束 >>>>
+    maker = MarkedContentMaker()
+    marked_content = maker.make_marked_content_from_md_info(md_info)
+
+    system_prompt =SYSTEM_PROMPT_DOC_ANALYSIS
+    user_prompt =USER_PROMPT_DOC_ANALYSIS.replace("{{marked_content_from_pages}}", marked_content)
+
     
-    <<<< 第2页 >>>>
-    [P2-L1] | 数据1 | 数据2 |
-    [P2-L2] 页脚内容
-    <<<< 第2页 结束 >>>>
-    """
-    
-    result = client.analyze_document(
-        system_prompt="你是一个文档分析器",
-        user_prompt=test_prompt
-    )
-    print("分析结果:")
-    print(result.model_dump_json(indent=2, ensure_ascii=False)) 
+    result = llm_client.analyze_document(system_prompt, user_prompt)
+
+    rich.print(result)

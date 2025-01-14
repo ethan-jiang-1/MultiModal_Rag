@@ -27,8 +27,14 @@ Generates marked content with clear boundaries:
 ### END_DOCUMENT ###
 """
 
-from typing import List
+from typing import List, Optional
 from dataclasses import dataclass
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+from ctn2md.md_info.md_info_base import MdInfo
 
 @dataclass
 class MarkdownPage:
@@ -72,29 +78,30 @@ class MarkedContentMaker:
         result.append("### END_DOCUMENT ###")
         
         return "\n\n".join(result)
+    
+    def make_marked_content_from_md_info(self, md_info: MdInfo, fnames: Optional[List[str]] = None) -> str:
+        doc_content = []
+        if fnames is None:
+            fnames = md_info.get_fnames_pages()
+        for fname in fnames:
+            pname = os.path.join(md_info.get_out_dir(), fname)
+            with open(pname, "r", encoding="utf-8") as f:
+                content = f.readlines()
+                doc_content.append(content)
+        return self.make_marked_content(doc_content)
 
 # Usage example
 if __name__ == "__main__":
-    # Example document (2 pages)
-    doc_content = [
-        # Page 1
-        [
-            "Document Title",
-            "",
-            "# Chapter 1",
-            "Content...",
-            "Page 1"
-        ],
-        # Page 2
-        [
-            "Document Title",
-            "Content continues...",
-            "Page 2"
-        ]
-    ]
-    
+    from mmbase.utils.util_logging import setup_logger_handlers
+    import rich 
+
+    setup_logger_handlers()
+
+    pname_info = "_work/ctn2md_mrag__1__座椅STO间隙_P1_lp/_info.json"
+    md_info = MdInfo(pname_info)
+
     # Generate marked content
     maker = MarkedContentMaker()
-    marked_content = maker.make_marked_content(doc_content)
+    marked_content = maker.make_marked_content_from_md_info(md_info)
     print("Generated marked content (for marked_content_from_pages in prompts.py):")
-    print(marked_content) 
+    rich.print(marked_content) 

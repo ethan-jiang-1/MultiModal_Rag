@@ -50,7 +50,14 @@ Please identify and return in format:
 1. Headers/footers to remove (based on position and repeating patterns)
 2. Cross-page tables to merge (based on table markers and content continuity)
 
-Return Format:
+
+Important Notes:
+1. Use the [Px-Ly] markers to identify exact lines
+2. Page numbers come from === PAGE x === markers
+3. Table merging must ensure structural completeness
+4. When uncertain, prefer preservation over removal
+
+Return Format in JSON format:
 {
     "remove_actions": [
         {
@@ -95,10 +102,4 @@ Return Format:
         }
     ]
 }
-
-Important Notes:
-1. Use the [Px-Ly] markers to identify exact lines
-2. Page numbers come from === PAGE x === markers
-3. Table merging must ensure structural completeness
-4. When uncertain, prefer preservation over removal
 """
