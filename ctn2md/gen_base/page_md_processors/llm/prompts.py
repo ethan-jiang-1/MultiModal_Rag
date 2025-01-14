@@ -1,61 +1,104 @@
-PROMPT_DOC_ANALYSIS = """
-请分析这份文档，识别需要处理的内容。
-需要输出可执行的动作指令，每个动作都需要精确的页号和行号。
+SYSTEM_PROMPT_DOC_ANALYSIS = """You are a professional document structure analyzer. Your main responsibilities are:
+1. Accurately identify document structural elements (headers, footers, tables, paragraphs, etc.)
+2. Generate precise processing instructions (with specific page and line numbers)
+3. Ensure the executability of analysis results
 
-文档内容：
+Analysis Principles:
+1. Position Priority: Prioritize using line and page numbers for judgment
+2. Pattern Recognition: Identify repeating patterns in headers and footers
+3. Structural Integrity: Ensure completeness of tables and paragraphs
+4. Conservative Decision: When in doubt, preserve rather than remove
+
+Error Handling:
+1. If line markers are unclear, do not guess - ignore that section
+2. If cross-page judgment is ambiguous, handle conservatively
+3. When encountering unusual formats, note the reason in output
+
+Content Format Note:
+The document content will be provided with clear boundary markers:
+
+### BEGIN_DOCUMENT ###
+=== PAGE 1 ===
+[P1-L1] First line of page 1
+[P1-L2] Second line of page 1
+=== END PAGE 1 ===
+
+=== PAGE 2 ===
+[P2-L1] First line of page 2
+[P2-L2] Second line of page 2
+=== END PAGE 2 ===
+### END_DOCUMENT ###
+
+Each line is prefixed with a marker [Px-Ly] where:
+- x is the page number
+- y is the line number within that page
+"""
+
+USER_PROMPT_DOC_ANALYSIS = """Please analyze this document and identify elements that need processing.
+Based on the line markers [Px-Ly], generate precise processing instructions.
+
+Document Format:
+1. Document is wrapped in ### BEGIN_DOCUMENT ### and ### END_DOCUMENT ###
+2. Each page is wrapped in === PAGE x === and === END PAGE x ===
+3. Each line starts with [Px-Ly] marker (e.g., [P1-L1] for page 1, line 1)
+4. Tables in content use | separators and --- dividers
+
+Document Content:
 {marked_content_from_pages}
 
-请识别以下内容并按格式返回：
-1. 需要删除的页眉页脚
-2. 需要合并的跨页表格
+Please identify and return in format:
+1. Headers/footers to remove (based on position and repeating patterns)
+2. Cross-page tables to merge (based on table markers and content continuity)
 
-返回格式：
-{{
+Return Format:
+{
     "remove_actions": [
-        {{
-            "page": 1,                    # 具体页号
-            "lines": [1, 2],              # 具体需要删除的行号
-            "reason": "页眉"              # 删除原因：页眉/页脚
-        }}
+        {
+            "page": 1,                    # Page number from marker
+            "lines": [1, 2],              # Line numbers from marker
+            "reason": "header",           # header/footer
+            "confidence": 0.95,           # Confidence level 0.0-1.0
+            "pattern": "fixed text",      # Matching pattern (optional)
+            "notes": "appears on multiple pages"  # Additional notes (optional)
+        }
     ],
     "merge_actions": [
-        {{
-            "type": "table",              # 合并类型：表格/段落
-            "pages": [1, 2],              # 涉及的具体页面
-            "line_ranges": {{             # 每页需要合并的具体行范围
+        {
+            "type": "table",              # table/paragraph
+            "pages": [1, 2],              # Consecutive page numbers
+            "line_ranges": {              # Line ranges from markers
                 "1": [
-                    {{
+                    {
                         "start": 15,
-                        "end": 20
-                    }}
+                        "end": 20,
+                        "content_type": "table_header"  # table_header/table_body
+                    }
                 ],
                 "2": [
-                    {{
+                    {
                         "start": 1,
-                        "end": 5
-                    }}
+                        "end": 5,
+                        "content_type": "table_body"
+                    }
                 ]
-            }}
-        }}
+            },
+            "confidence": 0.9,            # Confidence level 0.0-1.0
+            "notes": "table structure complete"  # Additional notes (optional)
+        }
+    ],
+    "warnings": [                         # Warning messages (optional)
+        {
+            "type": "ambiguous_header",   # Warning type
+            "page": 1,                    # Page number from marker
+            "lines": [1],                 # Line numbers from marker
+            "message": "possible header but uncertain"  # Warning message
+        }
     ]
-}}
+}
 
-注意：
-1. 所有行号必须是实际的行号（参考每行前的 [Px-Lx] 标记）
-2. 页号必须是实际的页号（参考 <<<< 第x页 >>>> 标记）
-3. 返回的JSON必须符合上述格式，以便程序处理
-""" 
-
-PROMPT_DOC_MD_PAGES = """
-<<<< 第1页 >>>>
-[P1-L1] 页眉内容
-[P1-L2] 正文内容
-[P1-L3] | 表头1 | 表头2 |
-[P1-L4] | --- | --- |
-<<<< 第1页 结束 >>>>
-
-<<<< 第2页 >>>>
-[P2-L1] | 数据1 | 数据2 |
-[P2-L2] 页脚内容
-<<<< 第2页 结束 >>>>
+Important Notes:
+1. Use the [Px-Ly] markers to identify exact lines
+2. Page numbers come from === PAGE x === markers
+3. Table merging must ensure structural completeness
+4. When uncertain, prefer preservation over removal
 """
