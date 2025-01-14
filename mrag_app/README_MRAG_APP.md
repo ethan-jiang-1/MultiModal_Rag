@@ -1,288 +1,90 @@
-# MRAG App (MultiModal RAG Application)
+# MRAG App 模块
 
-基于 Gradio 构建的多模态检索增强生成（MultiModal RAG）应用界面。
+## 快速导航
 
-## 功能特性
+### 核心文件
+- `app_gradio.py` - 主应用入口，基于 Gradio 的 Web UI 启动器
+- `_app_gradio_base.py` - Gradio UI 核心实现，包含界面布局和交互逻辑
+- `_qa_core.py` - QA 核心处理逻辑
+- `_rag_core_query.py` - RAG 检索查询实现
+- `_rag_response.py` - RAG 响应数据结构和处理
 
-- 提供友好的 Web 界面，支持与多种 LLM 模型交互
-- 支持多种模型后端：
-  - GPT-4/3.5 系列
-  - Qwen (通义千问)
-  - Ark
-  - 本地模型
-- 支持多个知识库切换
-- 实时进度显示和日志监控
-- 自定义 CSS 主题，优化界面展示
-- 支持 Markdown 格式输出，包括图片显示
-- 可配置的检索参数（如检索数量等）
+### 启动变体
+- `app_gradio_local_qwen.py` - 通义千问模型本地部署版本
+- `app_gradio_local_ark.py` - Ark 模型本地部署版本
+- `app_gradio_local_gpt.py` - GPT 模型本地部署版本
 
-## 快速开始
+## 系统设计
 
-### 安装
-
-1. 确保已安装 Python 3.12+
-2. 安装依赖：
-```bash
-# 安装基础依赖
-pip install -r requirements.txt
-
-# 如果需要开发和测试功能，还需要安装
-pip install -r requirements-dev.txt
-```
-
-### 配置
-
-1. 在项目根目录创建 `.env` 文件
-2. 添加必要的配置（参考 [环境配置说明](../README_MRAG_ENV.md)）：
-```bash
-# 必选：Python路径配置
-PYTHONPATH=.
-
-# 必选：至少配置一个LLM服务
-AZURE_OPENAI_ENDPOINT=your-endpoint
-AZURE_OPENAI_API_KEY=your-key
-AZURE_OPENAI_VERSION=2023-05-15
-```
-
-### 启动应用
-
-根据需要选择不同的启动方式：
-
-1. **标准模式**（使用 GPT 模型）：
-```bash
-python app_gradio.py
-```
-
-2. **使用通义千问**：
-```bash
-python app_gradio_local_qwen.py
-```
-
-3. **使用火山方舟**：
-```bash
-python app_gradio_local_ark.py
-```
-
-4. **使用本地 GPT 模型**：
-```bash
-python app_gradio_local_gpt.py
-```
-
-启动后，应用将在本地运行（默认地址：http://localhost:7860）。
-
-## 使用指南
-
-### 界面布局
-
-```
-+------------------------+
-|     模型选择下拉框     |
-+------------------------+
-|     知识库选择下拉框   |
-+------------------------+
-|     检索参数设置       |
-+------------------------+
-|     对话历史区域       |
-+------------------------+
-|     输入框            |
-+------------------------+
-|     发送按钮          |
-+------------------------+
-|     状态显示区域       |
-+------------------------+
-```
-
-### 基本操作流程
-
-1. **选择模型和知识库**
-   - 从下拉框选择要使用的模型
-   - 选择合适的知识库（如 MRAG 或 Papers）
-
-2. **调整检索参数**
-   - 设置检索文档数量（默认为 3）
-   - 调整相似度阈值（可选）
-   - 配置上下文窗口大小（可选）
-
-3. **提问和交互**
-   - 在输入框中输入问题
-   - 点击发送按钮或按回车
-   - 等待回答生成，查看实时进度
-
-4. **查看结果**
-   - 检查生成的回答
-   - 查看相关的参考文档
-   - 根据需要调整参数重试
-
-### 高级功能
-
-#### 1. 自定义提示词
-
-可以使用特殊格式的提示词来控制回答的生成：
-
-```
-/format json  # 以JSON格式输出
-/length short  # 生成简短回答
-/style technical  # 使用技术性语言
-```
-
-#### 2. 知识库管理
-
-- 切换不同知识库：
-  ```python
-  from mrag_app.app_qa_core import switch_knowledge_base
-  switch_knowledge_base("papers")  # 切换到论文知识库
-  ```
-
-- 刷新知识库缓存：
-  ```python
-  from mrag_app.app_qa_core import refresh_kb_cache
-  refresh_kb_cache()
-  ```
-
-#### 3. 进度监控
-
-可以通过日志查看详细的处理进度：
-
+### 核心特性
+1. **多模型支持**
 ```python
-from mrag_app.app_log_monitor import ProgressLogger
-logger = ProgressLogger()
-logger.get_progress_history()  # 获取进度历史
+# 切换不同的模型实现
+RagModelGptSel.set_gpt_model("gpt-4o")  # 或 "qwen", "ark" 等
 ```
 
-## 自定义开发
-
-### 1. 添加新的模型支持
-
-创建新的模型适配器：
-
+2. **进度监控**
 ```python
-from mrag_app.app_qa_core import BaseModelAdapter
-
-class NewModelAdapter(BaseModelAdapter):
-    def __init__(self):
-        super().__init__()
-        
-    async def generate_response(self, prompt, **kwargs):
-        # 实现模型调用逻辑
-        pass
+# 实时进度更新
+ProgressLogger.get_progress_status()
+ProgressLogger.get_progress_history()
 ```
 
-### 2. 自定义界面主题
-
-在 `custom_theme.py` 中定义新主题：
-
+3. **响应处理**
 ```python
-custom_theme = {
-    "primary_color": "#2B7C85",
-    "secondary_color": "#3C9D9B",
-    "background_color": "#FFFFFF",
-    # 更多样式配置...
-}
+# 解析 RAG 响应
+content, details, sources, images = parse_content_from_rag_response(rag_response)
 ```
 
-### 3. 添加新的检索策略
+### 关键配置
+- `GRADIO_USE_LOCAL_FONTS`: 控制字体加载 (默认: True)
+- `GRADIO_DISABLE_PRELOAD`: 禁用预加载 (默认: True)
+- `GRADIO_OFFLINE_MODE`: 强制使用本地资源 (默认: True)
 
-实现自定义的检索策略：
+## 核心功能
 
-```python
-from mrag_app.app_qa_core import BaseRetriever
+### Web UI 功能
+1. **问答交互**
+   - 支持多轮对话
+   - 实时进度显示
+   - 源文档引用
+   - 图片展示
 
-class CustomRetriever(BaseRetriever):
-    def retrieve(self, query, **kwargs):
-        # 实现检索逻辑
-        pass
-```
+2. **系统控制**
+   - 模型切换
+   - 知识库选择
+   - 检索数量调整
+   - 会话清理
 
-## 性能优化
+### 进度监控
+- 实时进度百分比
+- 当前任务状态
+- 详细进度日志
+- 额外状态信息
 
-### 1. 内存管理
+## 最佳实践
 
-- 定期清理缓存：
-  ```python
-  from mrag_app.app_qa_core import clear_cache
-  clear_cache()
-  ```
+### 部署建议
+1. **环境准备**
+   - 安装依赖: `pip install -r requirements.txt`
+   - 配置 `.env` 文件设置必要的环境变量
 
-- 控制并发请求：
-  ```python
-  # 在配置中设置最大并发数
-  MAX_CONCURRENT_REQUESTS = 5
-  ```
+2. **启动选项**
+   - 开发环境: `python app_gradio.py`
+   - 生产环境: 使用对应的模型变体启动器
 
-### 2. 响应速度优化
+3. **性能优化**
+   - 使用本地字体和资源
+   - 禁用不必要的预加载
+   - 合理设置检索数量
 
-- 使用异步处理：
-  ```python
-  async def process_query(query):
-      # 异步处理逻辑
-      pass
-  ```
+### 错误处理
+- 使用 `try-except` 包装核心操作
+- 详细的日志记录
+- 友好的错误提示
 
-- 实现结果缓存：
-  ```python
-  from functools import lru_cache
-  
-  @lru_cache(maxsize=100)
-  def cached_query(query_string):
-      # 查询处理逻辑
-      pass
-  ```
-
-## 故障排除
-
-### 常见问题
-
-1. **应用启动失败**
-   - 检查端口是否被占用
-   - 验证环境变量配置
-   - 确认依赖安装完整
-
-2. **模型调用失败**
-   - 检查API密钥配置
-   - 验证网络连接
-   - 查看错误日志
-
-3. **知识库加载错误**
-   - 确认知识库文件存在
-   - 检查文件权限
-   - 验证向量数据库连接
-
-4. **界面显示异常**
-   - 清除浏览器缓存
-   - 检查CSS加载
-   - 更新Gradio版本
-
-### 日志查看
-
-```bash
-# 查看应用日志
-tail -f logs/app.log
-
-# 查看错误日志
-tail -f logs/error.log
-
-# 查看性能日志
-tail -f logs/performance.log
-```
-
-## 系统要求
-
-- **硬件要求**
-  - CPU: 2核心以上
-  - 内存: 8GB以上（推荐16GB）
-  - 磁盘空间: 10GB以上
-
-- **软件要求**
-  - Python 3.12+
-  - pip 21.0+
-  - Node.js 18+（用于开发）
-
-- **网络要求**
-  - 稳定的互联网连接
-  - 支持HTTPS协议
-  - 端口7860可用
-
-## 参考资料
-
-- [Gradio 官方文档](https://gradio.app/docs/)
-- [项目API文档](../docs/api/) 
+### 开发建议
+- 遵循模块化设计
+- 使用类型注解
+- 保持代码简洁
+- 添加必要的注释 
