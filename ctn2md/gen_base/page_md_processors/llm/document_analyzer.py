@@ -43,12 +43,15 @@ if __name__ == "__main__":
     setup_logger_handlers()
     
     # 测试代码
-    pname_info = "_work/ctn2md_mrag__1__座椅STO间隙_P1_lp/_info.json"
+    pname_info = "_work/ctn2md_papers___paged_md/_info.json"
     md_info = MdInfo(pname_info)
+
+    fnames = md_info.get_fnames_pages()
+    fnames = fnames[:3]
 
     # Generate marked content
     maker = MarkedContentMaker()
-    marked_content = maker.make_marked_content_from_md_info(md_info)
+    marked_content = maker.make_marked_content_from_md_info(md_info, fnames)
 
     analyzer = DocumentAnalyzer(md_info)
     result = analyzer.analyze(fnames=None)

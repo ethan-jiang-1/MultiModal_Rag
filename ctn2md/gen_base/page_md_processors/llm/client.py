@@ -14,6 +14,7 @@ load_dotenv()
 from mmbase.utils_llm.llm_base import chat_gpt_json, get_gpt_messages
 from ctn2md.gen_base.page_md_processors.llm.schemas import DocumentAnalysis
 from ctn2md.md_info.md_info_base import MdInfo
+from mmbase.utils_llm_debug.llm_diag import save_llm_diag_messages
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +22,7 @@ class LlmClient:
     """LLM客户端
     处理与LLM的交互，包括缓存、错误处理等
     """
+    _question_num = 9000
     
     def __init__(self, md_info: Optional[MdInfo] = None):
         """初始化客户端
@@ -93,16 +95,20 @@ class LlmClient:
         try:
             # 构造消息
             messages = get_gpt_messages(system_prompt, user_prompt)
-            
+            temperature = 0.1
+            top_p = 0.9
             # 调用LLM
             response = chat_gpt_json(
                 messages=messages,
                 model=model,
-                temperature=0.1,  # 分析任务需要高确定性
-                top_p=0.9
+                temperature=temperature,  # 分析任务需要高确定性
+                top_p=top_p
             )
-            
+            save_llm_diag_messages(messages, response, model=model, temperature=temperature, top_p=top_p, question_num=self._question_num, prefix="doc_analysis_gpt")
+            self._question_num += 1
+
             # 使用pydantic模型验证和转换
+            rich.print(response)
             result = DocumentAnalysis.model_validate(response)
             
             # 如果设置了缓存目录，保存缓存
@@ -130,13 +136,16 @@ if __name__ == "__main__":
 
     setup_logger_handlers()
     
-    pname_info = "_output/ctn2md_papers__深度学习在视电阻率快速反演中的研究_lvlm/_info.json"
+    pname_info = "_work/ctn2md_papers___paged_md/_info.json"
     md_info = MdInfo(pname_info)
 
     llm_client = LlmClient(md_info)
     
+    fnames = md_info.get_fnames_pages()
+    fnames = fnames[:3]
+
     maker = MarkedContentMaker()
-    marked_content = maker.make_marked_content_from_md_info(md_info)
+    marked_content = maker.make_marked_content_from_md_info(md_info, fnames)
 
     system_prompt =SYSTEM_PROMPT_DOC_ANALYSIS
     user_prompt =USER_PROMPT_DOC_ANALYSIS.replace("{{marked_content_from_pages}}", marked_content)
