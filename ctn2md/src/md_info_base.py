@@ -25,6 +25,7 @@ _MIB_DEFAULT_OUT_ROOT = "_output"
 _MIB_CTN2MD_LEAD = "ctn2md"
 _MIB_AUX_SUBDIR = "_aux"
 _MIB_CACHE_SUBDIR = "_cache"
+_MIB_AUX_SUBDIR_MD_FUSION = "_aux_md_fusion"
 
 class FHL_QUALITY_TYPE:
     HIGH = "high"
@@ -302,6 +303,11 @@ class MdInfo(dict):
         cache_dir = os.path.join(self._out_dir, _MIB_CACHE_SUBDIR)
         os.makedirs(cache_dir, exist_ok=True)
         return cache_dir
+    
+    def get_aux_md_fusion_dir(self) -> str:
+        aux_md_fusion_dir = os.path.join(self._out_dir, _MIB_AUX_SUBDIR_MD_FUSION)
+        os.makedirs(aux_md_fusion_dir, exist_ok=True)
+        return aux_md_fusion_dir
 
     def get_md_info_path(self) -> str:
         return self._md_info_path

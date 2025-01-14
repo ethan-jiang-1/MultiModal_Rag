@@ -2,7 +2,7 @@ from typing import Dict
 import os
 from llama_parse.utils import Language
 
-_MIB_INFO_VER = "0.11.1"
+_MIB_INFO_VER = "0.11.2"
 
 # 环境变量配置
 ENV_MODEL_FLOW = "ENV_MODEL_FLOW"              # models used for flow mode: gpt/qwen/ark
