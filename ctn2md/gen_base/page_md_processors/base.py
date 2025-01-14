@@ -5,7 +5,7 @@
 import os
 import logging
 import shutil
-from typing import List
+from typing import List, Dict
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -39,38 +39,60 @@ def prepare_md_fusion_workspace(md_info: MdInfo) -> List[str]:
     return workspace_files
 
 def read_page_content(page_path: str) -> List[str]:
-    """读取页面内容
-    
-    Args:
-        page_path: 页面文件路径
-        
-    Returns:
-        页面内容行列表
-    """
+    """读取页面内容"""
     try:
         with open(page_path, 'r', encoding='utf-8') as f:
-            return f.readlines()
+            return [line.rstrip('\n') for line in f.readlines()]
     except Exception as e:
         logger.error(f"Error reading page {page_path}: {e}")
         return []
 
 def save_page_content(page_path: str, content: List[str]) -> bool:
-    """保存页面内容
-    
-    Args:
-        page_path: 页面文件路径
-        content: 要保存的内容行列表
-        
-    Returns:
-        是否保存成功
-    """
+    """保存页面内容"""
     try:
         with open(page_path, 'w', encoding='utf-8') as f:
-            f.writelines(content)
+            for line in content:
+                f.write(line + '\n')
         return True
     except Exception as e:
         logger.error(f"Error saving page {page_path}: {e}")
         return False
+
+def load_pages_content(page_paths: List[str]) -> List[List[str]]:
+    """加载所有页面内容
+    
+    Args:
+        page_paths: 页面文件路径列表
+        
+    Returns:
+        所有页面的内容列表
+    """
+    pages_content = []
+    for path in page_paths:
+        content = read_page_content(path)
+        if content:
+            pages_content.append(content)
+    return pages_content
+
+def save_pages_content(page_paths: List[str], pages_content: List[List[str]]) -> bool:
+    """保存所有页面内容
+    
+    Args:
+        page_paths: 页面文件路径列表
+        pages_content: 所有页面的内容列表
+        
+    Returns:
+        是否全部保存成功
+    """
+    if len(page_paths) != len(pages_content):
+        logger.error("Page paths and content count mismatch")
+        return False
+        
+    success = True
+    for path, content in zip(page_paths, pages_content):
+        if not save_page_content(path, content):
+            success = False
+    return success
 
 class BaseProcessor:
     """处理器基类"""
@@ -81,4 +103,16 @@ class BaseProcessor:
         Args:
             md_info: MD信息对象,包含文档相关的配置和上下文信息
         """
-        self.md_info = md_info 
+        self.md_info = md_info
+        
+    def process(self, pages: List[List[str]], actions: Dict) -> List[List[str]]:
+        """处理页面内容
+        
+        Args:
+            pages: 所有页面的内容
+            actions: LLM分析得到的动作指令
+            
+        Returns:
+            处理后的页面内容
+        """
+        raise NotImplementedError 
