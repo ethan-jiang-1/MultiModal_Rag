@@ -7,7 +7,7 @@ load_dotenv()
 
 from mmbase.utils_llm.llm_base import get_dashscope_client, get_gpt_messages_multimodal, chat_gpt_plain
 from ctn2md.utils.util_file import get_root_dir
-from ctn2md.utils_vllm.vllm_img_description_qwen_prompt import TEXT_IMG_DESCRIPTION
+from ctn2md.img_description.vllm_img_description_qwen_prompt import TEXT_IMG_DESCRIPTION
 
 #model='qwen-vl-max-1119'
 #model='qwen-vl-max-0809'
@@ -47,7 +47,7 @@ def test_gen_qas_on_pic():
 
 if __name__ == '__main__':
     from mmbase.utils.util_logging import setup_logger_handlers
-    from ctn2md.utils_vllm.vllm_img_description_qwen_prompt import TEXT_PROMPT_INST_VLLM_GEN_QAS
+    from ctn2md.img_description.vllm_img_description_qwen_prompt import TEXT_PROMPT_INST_VLLM_GEN_QAS
 
     dir_root = get_root_dir()
     setup_logger_handlers()

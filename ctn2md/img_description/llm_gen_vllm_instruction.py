@@ -9,7 +9,7 @@ load_dotenv()
 from mmbase.utils_llm_debug.llm_diag import save_llm_diag_messages, set_question_num, get_next_question_num
 from mmbase.utils_llm.llm_base import get_gpt_messages, chat_gpt_json
 from mmbase.utils_llm.llm_base import get_ark_client, get_azure_gpt_client, get_dashscope_client
-from ctn2md.utils_vllm.vllm_img_description_qwen_prompt import TEXT_PROMPT_INST_VLLM_IMG_RELEVANCE
+from ctn2md.img_description.vllm_img_description_qwen_prompt import TEXT_PROMPT_INST_VLLM_IMG_RELEVANCE
 
 def gen_vllm_instruction_llm(doc_title:str, 
                              page_content:str, 
@@ -23,17 +23,17 @@ def gen_vllm_instruction_llm(doc_title:str,
         system_prompt = None
         client = None
         if model.startswith("ep-"): 
-            from ctn2md.utils_llm.llm_gen_vllm_instruction_qwen_prompt import SYSTEM_PROMPT_GEN_VLLM_CONTEXT, USER_PROMPT_GEN_VLLM_CONTEXT
+            from ctn2md.img_description.llm_gen_vllm_instruction_qwen_prompt import SYSTEM_PROMPT_GEN_VLLM_CONTEXT, USER_PROMPT_GEN_VLLM_CONTEXT
             user_prompt = USER_PROMPT_GEN_VLLM_CONTEXT
             system_prompt = SYSTEM_PROMPT_GEN_VLLM_CONTEXT
             client = get_ark_client()
         elif model.startswith("gpt"):
-            from ctn2md.utils_llm.llm_gen_vllm_instruction_gpt_prompt import SYSTEM_PROMPT_GEN_VLLM_CONTEXT, USER_PROMPT_GEN_VLLM_CONTEXT
+            from ctn2md.img_description.llm_gen_vllm_instruction_gpt_prompt import SYSTEM_PROMPT_GEN_VLLM_CONTEXT, USER_PROMPT_GEN_VLLM_CONTEXT
             user_prompt = USER_PROMPT_GEN_VLLM_CONTEXT
             system_prompt = SYSTEM_PROMPT_GEN_VLLM_CONTEXT
             client = get_azure_gpt_client()
         elif model.startswith("qwen"):
-            from ctn2md.utils_llm.llm_gen_vllm_instruction_qwen_prompt import SYSTEM_PROMPT_GEN_VLLM_CONTEXT, USER_PROMPT_GEN_VLLM_CONTEXT
+            from ctn2md.img_description.llm_gen_vllm_instruction_qwen_prompt import SYSTEM_PROMPT_GEN_VLLM_CONTEXT, USER_PROMPT_GEN_VLLM_CONTEXT
             user_prompt = USER_PROMPT_GEN_VLLM_CONTEXT 
             system_prompt = SYSTEM_PROMPT_GEN_VLLM_CONTEXT
             client = get_dashscope_client()

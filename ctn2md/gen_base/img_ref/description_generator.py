@@ -10,10 +10,10 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 load_dotenv()
 
-from ctn2md.utils_llm.llm_gen_vllm_instruction import gen_vllm_instruction_llm
-from ctn2md.utils_vllm.vllm_img_description_qwen import generate_image_description_by_qwen
-from ctn2md.utils_vllm.vllm_img_description_gpt import generate_image_description_by_gpt
-from ctn2md.utils_vllm.vllm_img_description_ark import generate_image_description_by_ark
+from ctn2md.img_description.llm_gen_vllm_instruction import gen_vllm_instruction_llm
+from ctn2md.img_description.vllm_img_description_qwen import generate_image_description_by_qwen
+from ctn2md.img_description.vllm_img_description_gpt import generate_image_description_by_gpt
+from ctn2md.img_description.vllm_img_description_ark import generate_image_description_by_ark
 
 g_question_num = 9000
 
