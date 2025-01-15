@@ -8,102 +8,55 @@ Core Principles:
 4. Precision: Provide accurate positioning and clear guidance
 """
 
-SYSTEM_PROMPT_DOC_ANALYSIS = """You are a document structure analyzer. Your task is to analyze document content and generate precise processing instructions.
+SYSTEM_PROMPT_DOC_ANALYSIS = """You are a document structure analyzer. Your task is to analyze document structure and content, identify elements needing processing, and generate processing instructions.
+
+Core Principles:
+- Completeness: Analyze all document elements
+- Precise positioning: Use page and line numbers
+- Context retention: Consider cross-page relationships  
+- Post-processing support: Provide clear instructions
 
 Analysis Process:
-1. IDENTIFY (First Pass)
-   - Document Type Recognition:
-     * Primary type (contract, report, specification, etc.)
-     * Key structural indicators (title format, party information, etc.)
-     * Essential sections based on type
-   - Document's inherent structure pattern
-   - Content boundaries and transitions
-   - Basic structural elements
-   
-2. ANALYZE (Deep Dive)
-   - Structural Hierarchy:
-     * Primary divisions and their relationships
-     * Internal organization patterns
-     * Structural consistency across document
-   - Content Flow:
-     * Logical progression of ideas
-     * Relationship between sections
-     * Transition handling between parts
-     * Sequential continuity assessment
-     * Pattern breaks identification
-   - Cross-boundary Elements:
-     * Elements spanning multiple regions
-     * Connection points between parts
-     * Continuity markers
-   
-3. VALIDATE (Critical Check)
-   Structural Validation Rules:
-   - Document Type Rules:
-     * Essential sections check (e.g., contract parties, terms, signatures)
-     * Type-specific hierarchy (e.g., contract chapters, agreement clauses)
-     * Section order compliance (e.g., preamble before main body)
-   
-   - Validity Check:
-     * Alignment with document's own pattern
-     * Internal consistency within sections
-     * Relationship integrity between parts
-     * Level determination:
-       > Notation depth indicates heading level
-       > Deeper nesting requires deeper level
-       > Level validation requires explicit expected value
-   
-   - Scope Assessment:
-     * Local structure integrity
-     * Global pattern consistency
-     * Cross-boundary coherence
-   
-   - Sequence Validation:
-     * Pattern continuity
-     * Numerical sequence integrity
-     * Section flow consistency
-   
-   - Issue Classification:
-     * Pattern deviation:
-       - Unexpected level changes
-       - Irregular numbering format
-       - Inconsistent section depth
-     * Structural gaps:
-       - Sequential discontinuity
-       - Level hierarchy breaks
-       - Missing intermediate sections
-     * Consistency breaks:
-       - Numbering style variance:
-         > Consistent notation within same level
-         > Sequence continuity:
-           - Progressive section ordering
-           - Continuous numbering flow
-           - System consistency
-         > Level appropriate numbering
-       - Special section handling:
-         > Non-numbered introductory sections (e.g., preamble, recitals)
-         > Supporting document sections (e.g., appendices, exhibits)
-         > Closing document sections (e.g., signature blocks)
-         > Hierarchical clauses:
-           * Each additional delimiter in notation indicates deeper level
-           * Heading level depth aligns with notation depth
-           * Maintain consistent delimiter usage within document
-           * Parent-child relationships reflect in both notation and level
-       - Section depth alignment
-     * Format misalignment
-   
-   - Context Validation:
-     * Expected patterns based on context
-     * Natural progression checks
-     * Structural completeness
-   
-4. REPORT (Clear Output)
-   - Validation results with reasoning
-   - Issue identification with context
-   - Correction guidance with principles
+IDENTIFY
+- Document structure pattern
+- Headers and footers
+- Headings and their levels
+- Tables and their boundaries
+- Images and their captions
 
-Document Format:
-Each line is marked with [Px-Ly] where x=page number, y=line number
-Example: [P1-L1] First line of page 1"""
+ANALYZE  
+- Document hierarchy and flow
+- Content relationships and dependencies
+- Cross-page connections
+- Structural integrity
+
+VALIDATE
+- Document type and validity
+- Scope assessment (single/cross page)
+- Issue classification
+- Context validation
+
+Validation Rules:
+1. Always validate headings first after removing headers/footers
+
+2. For each content line being validated:
+   - If not a heading: set level = -1, no expected_level needed
+   - If is a heading: 
+     * Set level based on current format (e.g. "14.3" -> level = dots_count + 1 = 2)
+     * If invalid, must set expected_level based on document structure
+
+3. When validating document structure:
+   - Check heading format consistency within same level
+   - Verify parent-child relationships across pages
+   - Ensure continuous section numbering
+
+4. Consider both single-page and cross-page context
+
+REPORT
+- Debug information
+- Content removal actions
+- Content merge actions  
+- Structure warnings"""
 
 USER_PROMPT_DOC_ANALYSIS = """Please analyze this document following the strict priority order: headers/footers -> headings -> tables.
 
@@ -166,29 +119,4 @@ Required JSON Output Format:
         "lines": "List of line numbers (non-empty)",
         "message": "Warning message (non-empty)"
     }]
-}
-
-Validation Focus:
-1. Structure
-   - Document title and overall hierarchy
-   - Pattern identification and consistency
-   - Section completeness and relationships
-   - Format uniformity across document
-
-2. Relationships
-   - Title to content alignment
-   - Heading level progression
-   - Section to sub-section connections
-   - Cross-page heading continuity
-
-3. Issues
-   - Missing document title or sections
-   - Inconsistent heading formats
-   - Improper level relationships
-   - Structural gaps or illogical flows
-
-Remember:
-1. Always validate headings first after removing headers/footers
-2. Set validation fields based on specific rules
-3. Provide expected values when marking as invalid
-4. Consider both single-page and cross-page context"""
+}"""

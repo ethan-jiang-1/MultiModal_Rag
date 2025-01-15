@@ -2,7 +2,7 @@
 Document Analysis Result Explainer - Convert DocumentAnalysis objects to readable report format
 """
 
-from typing import List, Optional
+from typing import List # , Optional
 import logging
 from dotenv import load_dotenv
 
@@ -10,11 +10,11 @@ load_dotenv()
 
 from ctn2md.gen_base.page_md_processors.llm.da_schemas import (
     DocumentAnalysis, 
-    ValidationScope,
+    #ValidationScope,
     HeadingErrorType,
     ContentType,
     HeadingInfo,
-    HeadingValidation,
+    #HeadingValidation,
     TableStructure,
     LineRange
 )
@@ -53,54 +53,57 @@ class ActionExplainer:
 
     @staticmethod
     def explain_heading_validation(heading: HeadingInfo) -> List[str]:
-        """Explain heading validation results and suggest actions
-        
-        Analyzes heading validation considering:
-        - Notation depth vs heading level alignment
-        - Context relationship with surrounding headings
-        - Consistency of delimiter usage
-        """
+        """Explain heading validation results and suggest actions"""
         lines = []
-        validation: Optional[HeadingValidation] = heading.validation
-        if validation:
-            # Basic validation info
-            lines.append(f"  ├─ Valid: {'Yes' if validation.is_valid else 'No'}")
-            scope: ValidationScope = validation.validation_scope
-            lines.append(f"  ├─ Scope: {scope.value}")
+        validation = heading.validation
+        
+        # Clean heading content - remove trailing punctuation
+        clean_content = heading.content.rstrip('。.，,')
+        
+        # Basic validation info
+        lines.append(f"  ├─ Valid: {'Yes' if validation.is_valid else 'No'}")
+        lines.append(f"  ├─ Scope: {validation.validation_scope}")
+        
+        # Error details and required actions
+        if not validation.is_valid and validation.error_type:
+            lines.append(f"  ├─ Error: {validation.error_type}")
             
-            # Error details and required actions
-            if not validation.is_valid and validation.error_type:
-                error: HeadingErrorType = validation.error_type
-                lines.append(f"  ├─ Error: {error.value}")
+            # Suggest specific actions based on error type
+            if validation.error_type == HeadingErrorType.WRONG_LEVEL:
+                # Extract chapter info if available
+                chapter_match = clean_content.split()[0]  # e.g. "14.3"
+                parent_chapter = chapter_match.split('.')[0] if '.' in chapter_match else None
                 
-                # Suggest specific actions based on error type
-                if error == HeadingErrorType.WRONG_LEVEL:
+                if parent_chapter:
+                    lines.append(f"  ├─ Action Required: Adjust heading level (sub-section of Chapter {parent_chapter})")
+                else:
                     lines.append(f"  ├─ Action Required: Adjust heading level to match notation depth")
-                    if validation.expected_level:
-                        current_markers = "#" * heading.level
-                        expected_markers = "#" * validation.expected_level
-                        lines.append(f"  ├─ Current Depth: {heading.content.count('.')}")
-                        lines.append(f"  ├─ Expected Level: {validation.expected_level}")
-                        lines.append(f"  ├─ Change: {current_markers} -> {expected_markers}")
-                        lines.append(f"  ├─ From: {current_markers} {heading.content}")
-                        lines.append(f"  ├─ To: {expected_markers} {heading.content}")
                 
-                elif error == HeadingErrorType.WRONG_FORMAT:
-                    lines.append(f"  ├─ Action Required: Align notation with document structure")
-                    if validation.expected_content:
-                        lines.append(f"  ├─ Current Format: {heading.content}")
-                        lines.append(f"  ├─ Expected Format: {validation.expected_content}")
-                        lines.append(f"  └─ Note: Maintain consistent delimiter usage")
-                
-                elif error == HeadingErrorType.INCONSISTENT:
-                    lines.append(f"  ├─ Action Required: Fix structural inconsistency")
-                    if validation.expected_level:
-                        lines.append(f"  ├─ Current Level: {heading.level}")
-                        lines.append(f"  ├─ Expected Level: {validation.expected_level}")
-                    if validation.expected_content:
-                        lines.append(f"  ├─ Expected Structure: {validation.expected_content}")
-                    lines.append(f"  └─ Note: Check parent-child relationship")
+                if validation.expected_level:
+                    current_markers = "#" * heading.level
+                    expected_markers = "#" * validation.expected_level
+                    lines.append(f"  ├─ Current Level: {heading.level}")
+                    lines.append(f"  ├─ Expected Level: {validation.expected_level}")
+                    lines.append(f"  ├─ Change: {current_markers} -> {expected_markers}")
+                    lines.append(f"  ├─ From: {current_markers} {clean_content}")
+                    lines.append(f"  ├─ To: {expected_markers} {clean_content}")
             
+            elif validation.error_type == HeadingErrorType.WRONG_FORMAT:
+                lines.append(f"  ├─ Action Required: Align notation with document structure")
+                if validation.expected_content:
+                    lines.append(f"  ├─ Current Format: {heading.content}")
+                    lines.append(f"  ├─ Expected Format: {validation.expected_content}")
+                    lines.append(f"  └─ Note: Maintain consistent delimiter usage")
+            
+            elif validation.error_type == HeadingErrorType.INCONSISTENT:
+                lines.append(f"  ├─ Action Required: Fix structural inconsistency")
+                if validation.expected_level:
+                    lines.append(f"  ├─ Current Level: {heading.level}")
+                    lines.append(f"  ├─ Expected Level: {validation.expected_level}")
+                if validation.expected_content:
+                    lines.append(f"  ├─ Expected Structure: {validation.expected_content}")
+                lines.append(f"  └─ Note: Check parent-child relationship")
+        
         return lines
             
     @classmethod
