@@ -3,7 +3,7 @@ from typing import List
 from dotenv import load_dotenv
 load_dotenv()
 
-from ctn2md.gen_base.img_ref.models import ImageReference, IMG_REF_PATTERN
+from ctn2md.gen_base.img_ref.ir_models import ImageReference, IMG_REF_PATTERN
 
 
 class ImageReferenceScanner:
