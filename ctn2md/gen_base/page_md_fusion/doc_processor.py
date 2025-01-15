@@ -9,10 +9,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from ctn2md.md_info.md_info_base import MdInfo
-from ctn2md.gen_base.page_md_processors.base import BaseProcessor
-from ctn2md.gen_base.page_md_processors.llm.document_analyzer import DocumentAnalyzer
-from ctn2md.gen_base.page_md_processors.header_footer import HeaderFooterProcessor
-from ctn2md.gen_base.page_md_processors.table_processor import TableProcessor
+from ctn2md.gen_base.page_md_fusion.base import BaseProcessor
+from ctn2md.gen_base.page_md_fusion.llm.document_analyzer import DocumentAnalyzer
+from ctn2md.gen_base.page_md_fusion.header_footer import HeaderFooterProcessor
+from ctn2md.gen_base.page_md_fusion.table_processor import TableProcessor
 
 logger = logging.getLogger(__name__)
 

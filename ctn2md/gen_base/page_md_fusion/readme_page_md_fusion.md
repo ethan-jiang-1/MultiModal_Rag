@@ -3,8 +3,9 @@
 ## 快速导航
 
 ### 关键文件索引
+- 主控制器: `page_md_fusion.py` - 页面融合的主控制器
 - 基础组件: `base.py` - 处理器基类和工作空间管理
-- 总入口: `doc_processor.py` - 文档处理流程协调
+- 处理协调: `doc_processor.py` - 文档处理流程协调
 - 页眉页脚: `header_footer.py` - 页眉页脚清理处理
 - 表格处理: `table_processor.py` - 跨页表格合并处理
 - LLM分析: `llm/document_analyzer.py` - 文档结构智能分析
@@ -12,11 +13,13 @@
 - 数据模型: `llm/da_schemas.py` - 核心数据结构定义
 - 提示词管理: `llm/da_prompts.py` - LLM提示词模板
 - LLM客户端: `llm/da_client.py` - LLM服务调用封装
+- 内容标记: `llm/marked_content_maker.py` - 内容标记生成
 
 ### 按功能查找
-- 想了解整体流程? → 看 `doc_processor.py`
+- 想了解整体流程? → 看 `page_md_fusion.py`
 - 需要修改基础功能? → 看 `base.py`
-- 调整页眉页脚处理? → 看 `header_footer.py`
+- 调整处理流程? → 看 `doc_processor.py`
+- 优化页眉页脚? → 看 `header_footer.py`
 - 优化表格合并? → 看 `table_processor.py`
 - 修改LLM分析? → 看 `llm/document_analyzer.py` 和 `da_prompts.py`
 - 调整数据结构? → 看 `llm/da_schemas.py`
@@ -30,7 +33,23 @@
 - 可测试性：每个模块都有独立的测试入口
 
 ### 1.2 关键特性
-1. **统一的处理器接口**：
+1. **主控制器设计**：
+   ```python
+   class PageMdFusion:
+       def __init__(self, md_info: MdInfo):
+           self.md_info = md_info
+           self.processor = DocProcessor(md_info)
+           
+       def process(self) -> bool:
+           # 1. 准备工作空间
+           pages = prepare_md_fusion_workspace(self.md_info)
+           # 2. 处理文档
+           _ = self.processor.process_document(pages)
+           # 3. 保存更新
+           self.md_info.save()
+   ```
+
+2. **统一的处理器接口**：
    ```python
    class BaseProcessor:
        def __init__(self, md_info: MdInfo):
@@ -38,15 +57,6 @@
            
        def process(self, pages: List[List[str]], actions: Dict) -> List[List[str]]:
            raise NotImplementedError
-   ```
-
-2. **工作空间管理**：
-   ```python
-   def prepare_md_fusion_workspace(md_info: MdInfo) -> List[str]:
-       workspace_dir = md_info.get_aux_md_fusion_dir()
-       os.makedirs(workspace_dir, exist_ok=True)
-       # 复制文件到工作空间...
-       return workspace_files
    ```
 
 3. **智能的表格处理**：
@@ -61,25 +71,25 @@
 
 ## 2. 核心组件
 
-### 2.1 处理器基类 (base.py)
+### 2.1 主控制器 (page_md_fusion.py)
+- 协调整体处理流程
+- 工作空间管理
+- 结果保存和错误处理
+
+### 2.2 处理器基类 (base.py)
 - 提供统一的处理器接口
 - 工作空间管理功能
 - 文件读写工具函数
 
-### 2.2 文档处理协调器 (doc_processor.py)
+### 2.3 文档处理协调器 (doc_processor.py)
 - 初始化和协调各个处理器
 - 按顺序执行处理流程
 - 维护处理状态
 
-### 2.3 页眉页脚处理器 (header_footer.py)
-- 基于LLM分析结果执行清理
-- 支持多种页眉页脚模式
-- 保持文档结构完整性
-
-### 2.4 表格处理器 (table_processor.py)
-- 智能识别跨页表格
-- 验证表格连续性
-- 合并保持结构完整
+### 2.4 专用处理器
+- **页眉页脚处理器**：清理页眉页脚
+- **表格处理器**：处理跨页表格
+- **内容标记生成器**：生成内容标记
 
 ## 3. LLM分析组件
 
@@ -107,19 +117,19 @@ class TableRange(BaseModel):
 ### 4.1 基本使用
 ```python
 from ctn2md.md_info.md_info_base import MdInfo
-from ctn2md.gen_base.page_md_processors.doc_processor import DocProcessor
+from ctn2md.gen_base.page_md_fusion.page_md_fusion import PageMdFusion
 
 # 初始化
-md_info = MdInfo(json_path)
-processor = DocProcessor(md_info)
+md_info = MdInfo.from_json(json_path)
+fusion = PageMdFusion(md_info)
 
-# 处理文档
-processed_pages = processor.process_document(pages)
+# 执行处理
+success = fusion.process()
 ```
 
 ### 4.2 自定义处理器
 ```python
-from ctn2md.gen_base.page_md_processors.base import BaseProcessor
+from ctn2md.gen_base.page_md_fusion.base import BaseProcessor
 
 class CustomProcessor(BaseProcessor):
     def process(self, pages: List[List[str]], actions: Dict) -> List[List[str]]:

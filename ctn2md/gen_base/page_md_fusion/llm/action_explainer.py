@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from ctn2md.gen_base.page_md_processors.llm.da_schemas import (
+from ctn2md.gen_base.page_md_fusion.llm.da_schemas import (
     DocumentAnalysis, 
     #ValidationScope,
     HeadingErrorType,
