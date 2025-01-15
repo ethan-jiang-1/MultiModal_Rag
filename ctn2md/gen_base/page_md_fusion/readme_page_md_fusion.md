@@ -4,23 +4,25 @@
 
 ### 关键文件索引
 - 主控制器: `page_md_fusion.py` - 页面融合的主控制器
-- 基础组件: `base.py` - 处理器基类和工作空间管理
-- 处理协调: `doc_processor.py` - 文档处理流程协调
-- 页眉页脚: `header_footer.py` - 页眉页脚清理处理
-- 表格处理: `table_processor.py` - 跨页表格合并处理
-- LLM分析: `llm/document_analyzer.py` - 文档结构智能分析
-- 动作解释: `llm/action_explainer.py` - 处理动作详细说明
-- 数据模型: `llm/da_schemas.py` - 核心数据结构定义
-- 提示词管理: `llm/da_prompts.py` - LLM提示词模板
-- LLM客户端: `llm/da_client.py` - LLM服务调用封装
-- 内容标记: `llm/marked_content_maker.py` - 内容标记生成
+- 处理器组件:
+  - `processor/base.py` - 处理器基类和工作空间管理
+  - `processor/doc_processor.py` - 文档处理流程协调
+  - `processor/header_footer.py` - 页眉页脚清理处理
+  - `processor/table_processor.py` - 跨页表格合并处理
+- LLM组件:
+  - `llm/document_analyzer.py` - 文档结构智能分析
+  - `llm/action_explainer.py` - 处理动作详细说明
+  - `llm/da_schemas.py` - 核心数据结构定义
+  - `llm/da_prompts.py` - LLM提示词模板
+  - `llm/da_client.py` - LLM服务调用封装
+  - `llm/marked_content_maker.py` - 内容标记生成
 
 ### 按功能查找
 - 想了解整体流程? → 看 `page_md_fusion.py`
-- 需要修改基础功能? → 看 `base.py`
-- 调整处理流程? → 看 `doc_processor.py`
-- 优化页眉页脚? → 看 `header_footer.py`
-- 优化表格合并? → 看 `table_processor.py`
+- 需要修改基础功能? → 看 `processor/base.py`
+- 调整处理流程? → 看 `processor/doc_processor.py`
+- 优化页眉页脚? → 看 `processor/header_footer.py`
+- 优化表格合并? → 看 `processor/table_processor.py`
 - 修改LLM分析? → 看 `llm/document_analyzer.py` 和 `da_prompts.py`
 - 调整数据结构? → 看 `llm/da_schemas.py`
 
@@ -41,12 +43,17 @@
            self.processor = DocProcessor(md_info)
            
        def process(self) -> bool:
-           # 1. 准备工作空间
-           pages = prepare_md_fusion_workspace(self.md_info)
-           # 2. 处理文档
-           _ = self.processor.process_document(pages)
-           # 3. 保存更新
-           self.md_info.save()
+           try:
+               # 1. 准备工作空间
+               pages = prepare_md_fusion_workspace(self.md_info)
+               # 2. 处理文档
+               _ = self.processor.process_document(pages)
+               # 3. 保存更新
+               self.md_info.save()
+               return True
+           except Exception as e:
+               logger.error(f"Error during fusion process: {e}")
+               return False
    ```
 
 2. **统一的处理器接口**：
@@ -63,54 +70,60 @@
    ```python
    class TableProcessor(BaseProcessor):
        def process(self, pages: List[List[str]], actions: Dict) -> List[List[str]]:
-           # 处理跨页表格
+           if not actions.get("merge_actions"):
+               return pages
+           
            for action in actions["merge_actions"]:
                if action["type"] == "table" and self._is_cross_page_table(action):
                    processed_pages = self._merge_table(processed_pages, action)
+           return processed_pages
    ```
 
-## 2. 核心组件
+## 2. 目录结构
 
-### 2.1 主控制器 (page_md_fusion.py)
+```
+page_md_fusion/
+├── page_md_fusion.py      # 主控制器
+├── processor/             # 处理器组件
+│   ├── base.py           # 处理器基类
+│   ├── doc_processor.py  # 处理协调器
+│   ├── header_footer.py  # 页眉页脚处理
+│   └── table_processor.py # 表格处理
+└── llm/                  # LLM分析组件
+    ├── document_analyzer.py
+    ├── action_explainer.py
+    ├── da_schemas.py
+    ├── da_prompts.py
+    ├── da_client.py
+    └── marked_content_maker.py
+```
+
+## 3. 核心组件
+
+### 3.1 主控制器 (page_md_fusion.py)
 - 协调整体处理流程
 - 工作空间管理
 - 结果保存和错误处理
 
-### 2.2 处理器基类 (base.py)
-- 提供统一的处理器接口
-- 工作空间管理功能
-- 文件读写工具函数
+### 3.2 处理器组件
+- **基础处理器** (`processor/base.py`):
+  - 提供统一的处理器接口
+  - 工作空间管理功能
+  - 文件读写工具函数
 
-### 2.3 文档处理协调器 (doc_processor.py)
-- 初始化和协调各个处理器
-- 按顺序执行处理流程
-- 维护处理状态
+- **处理协调器** (`processor/doc_processor.py`):
+  - 初始化和协调各个处理器
+  - 按顺序执行处理流程
+  - 维护处理状态
 
-### 2.4 专用处理器
-- **页眉页脚处理器**：清理页眉页脚
-- **表格处理器**：处理跨页表格
+- **专用处理器**:
+  - 页眉页脚处理器：清理页眉页脚
+  - 表格处理器：处理跨页表格
+
+### 3.3 LLM分析组件
+- **文档分析器**：分析文档结构，生成处理指令
+- **动作解释器**：解释处理动作，提供建议
 - **内容标记生成器**：生成内容标记
-
-## 3. LLM分析组件
-
-### 3.1 文档分析器 (document_analyzer.py)
-- 调用LLM分析文档结构
-- 生成处理动作指令
-- 提供分析结果解释
-
-### 3.2 动作解释器 (action_explainer.py)
-- 详细解释处理动作
-- 提供处理建议
-- 辅助调试分析
-
-### 3.3 数据模型 (da_schemas.py)
-```python
-class TableRange(BaseModel):
-    start: int
-    end: int
-    is_header: bool = False
-    has_separator: bool = False
-```
 
 ## 4. 使用示例
 
@@ -129,7 +142,7 @@ success = fusion.process()
 
 ### 4.2 自定义处理器
 ```python
-from ctn2md.gen_base.page_md_fusion.base import BaseProcessor
+from ctn2md.gen_base.page_md_fusion.processor.base import BaseProcessor
 
 class CustomProcessor(BaseProcessor):
     def process(self, pages: List[List[str]], actions: Dict) -> List[List[str]]:
