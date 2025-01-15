@@ -146,6 +146,7 @@ if __name__ == "__main__":
     setup_logger_handlers()
     
     pname_info = "_work/ctn2md_papers___paged_md/_info.json"
+    #pname_info = "_work/ctn2md_mrag___paged_md/_info.json"
     md_info = MdInfo(pname_info)
 
     #llm_client = LlmClient(md_info)
@@ -159,7 +160,7 @@ if __name__ == "__main__":
     #rich.print(marked_content)
 
     system_prompt = SYSTEM_PROMPT_DOC_ANALYSIS
-    user_prompt = USER_PROMPT_DOC_ANALYSIS.format(marked_content_from_pages=marked_content)
+    user_prompt = USER_PROMPT_DOC_ANALYSIS.replace("{marked_content_from_pages}", marked_content)
     #print(user_prompt)
 
     result = llm_client.analyze_document(system_prompt, user_prompt, using_cache=False, model_sel="gpt-4o")

@@ -32,7 +32,7 @@ class DocumentAnalyzer(BaseProcessor):
         marked_content, doc_pages = mcm.make_marked_content_from_md_info(self.md_info, fnames)
         
         system_prompt = SYSTEM_PROMPT_DOC_ANALYSIS
-        user_prompt = USER_PROMPT_DOC_ANALYSIS.format(marked_content_from_pages=marked_content)
+        user_prompt = USER_PROMPT_DOC_ANALYSIS.replace("{marked_content_from_pages}", marked_content)
 
         # 2. 调用LLM分析
         das = self.llm_client.analyze_document(system_prompt, user_prompt)
@@ -50,7 +50,8 @@ if __name__ == "__main__":
     setup_logger_handlers()
     
     # 测试代码
-    pname_info = "_work/ctn2md_papers___paged_md/_info.json"
+    #pname_info = "_work/ctn2md_papers___paged_md/_info.json"
+    pname_info = "_work/ctn2md_mrag___paged_md/_info.json"
     md_info = MdInfo(pname_info)
     
     analyzer = DocumentAnalyzer(md_info)
