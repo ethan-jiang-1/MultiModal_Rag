@@ -8,7 +8,7 @@ import time
 
 load_dotenv()
 
-from ctn2md.gen_base.gen_utils import is_still_in_gen_mode
+from ctn2md.gen_base.utils.gen_utils import is_still_in_gen_mode
 from ctn2md.gen_textin.ti_pdf_pages_to_images import parse_pdf_to_images
 from ctn2md.gen_textin.ti_pdf_images_to_mds import convert_images_to_mds, convert_images_to_mds_async
 from mmbase.utils.util_logging import setup_logger_handlers

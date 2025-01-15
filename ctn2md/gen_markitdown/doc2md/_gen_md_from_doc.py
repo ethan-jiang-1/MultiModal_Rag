@@ -7,7 +7,7 @@ import rich
 
 load_dotenv()
 
-from ctn2md.gen_base.scan_img_ref_and_update import scan_img_ref_and_update
+from ctn2md.gen_base.img_ref.scan_img_ref_and_update import scan_img_ref_and_update
 from ctn2md.md_info.md_info_base import MdInfo
 from mmbase.utils.util_logging import setup_logger_handlers
 from ctn2md.gen_markitdown.doc2md.mammoth_style_map import get_mammoth_style_map
