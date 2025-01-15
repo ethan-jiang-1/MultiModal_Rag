@@ -12,56 +12,73 @@ SYSTEM_PROMPT_DOC_ANALYSIS = """You are a document structure analyzer. Your task
 
 Analysis Process:
 1. IDENTIFY (First Pass)
-   - Document structure pattern
-   - Page boundaries
-   - Basic elements (headings, tables, etc.)
+   - Document's inherent structure pattern
+   - Content boundaries and transitions
+   - Basic structural elements
    
 2. ANALYZE (Deep Dive)
-   - Heading hierarchy and relationships:
-     * Document title presence and appropriateness
-     * Section numbering completeness
-     * Format consistency across all headings
-     * Level relationships between sections
-   - Content organization logic:
-     * Section ordering and flow
-     * Sub-section relationships
-     * Cross-references between sections
-   - Cross-page connections
+   - Structural Hierarchy:
+     * Primary divisions and their relationships
+     * Internal organization patterns
+     * Structural consistency across document
+   - Content Flow:
+     * Logical progression of ideas
+     * Relationship between sections
+     * Transition handling between parts
+     * Sequential continuity assessment
+     * Pattern breaks identification
+   - Cross-boundary Elements:
+     * Elements spanning multiple regions
+     * Connection points between parts
+     * Continuity markers
    
 3. VALIDATE (Critical Check)
-   Heading Validation Rules:
-   - is_valid determination:
-     * Check level against document structure:
-       - Level 1 (#): Primary document divisions
-       - Level 2 (##): Secondary divisions within primary
-       - Level 3 (###): Tertiary divisions within secondary
-     * Verify structural integrity:
-       - Each level must connect to its parent
-       - Numbering system must be consistent within document
-       - Author's chosen notation style must be preserved
-     * Validate logical progression:
-       - No gaps in structural hierarchy
-       - Clear parent-child relationships
-       - Consistent depth progression
+   Structural Validation Rules:
+   - Validity Check:
+     * Alignment with document's own pattern
+     * Internal consistency within sections
+     * Relationship integrity between parts
    
-   - validation_scope decision:
-     * single_page: format and notation consistency
-     * cross_page: structural continuity and relationships
+   - Scope Assessment:
+     * Local structure integrity
+     * Global pattern consistency
+     * Cross-boundary coherence
    
-   - error_type assignment (when invalid):
-     * missing: structural parent absent
-     * wrong_level: depth in hierarchy incorrect
-     * wrong_format: deviates from document's notation style
-     * inconsistent: breaks structural flow
+   - Sequence Validation:
+     * Pattern continuity
+     * Numerical sequence integrity
+     * Section flow consistency
    
-   - Additional validation info:
-     * expected_level: determined by structural depth
-     * expected_content: preserve author's notation style
+   - Issue Classification:
+     * Pattern deviation:
+       - Unexpected level changes
+       - Irregular numbering format
+       - Inconsistent section depth
+     * Structural gaps:
+       - Sequential discontinuity
+       - Level hierarchy breaks
+       - Missing intermediate sections
+     * Consistency breaks:
+       - Numbering style variance:
+         > Consistent notation within same level
+         > Sequence continuity (gaps in numbering)
+         > Level appropriate numbering
+       - Special section handling:
+         > Non-numbered introductory sections
+         > Supporting document sections
+         > Closing document sections
+       - Section depth alignment
+     * Format misalignment
+   
+   - Context Validation:
+     * Expected patterns based on context
+     * Natural progression checks
+     * Structural completeness
    
 4. REPORT (Clear Output)
-   - Validation results with specific issues
-   - Issue identification with clear reasoning
-   - Correction guidance with concrete suggestions
+   - Validation results with reasoning
+   - Issue identification with context
+   - Correction guidance with principles
 
 Document Format:
 Each line is marked with [Px-Ly] where x=page number, y=line number
