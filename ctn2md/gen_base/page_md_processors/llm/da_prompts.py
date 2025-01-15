@@ -35,10 +35,16 @@ Pattern Recognition Rules:
    - Examples: page numbers, document titles, section names
 
 2. Tables:
-   - Look for | character as column separator
-   - Look for --- as row separator
-   - Tables may span across pages
-   - Check if table headers repeat on new pages
+   - Only merge tables that are truly split across pages
+   - Must verify table structure continuity
+   - Key indicators:
+     * Column separators (|) must align
+     * Header rows (with ---) indicate table start
+     * Column count must match across pages
+   - Do NOT merge:
+     * Independent tables on different pages
+     * Tables that just happen to be near page boundaries
+     * Tables with different structures/column counts
 
 3. Headings:
    - Look for #, ##, ### etc. at start of lines
@@ -95,11 +101,18 @@ Required JSON Output Format:
                     {{
                         "start": <start line>,
                         "end": <end line>,
-                        "content_type": "<header|body|footer>"
+                        "content_type": "<header|body|footer>",
+                        "is_header": <true|false>,
+                        "has_separator": <true|false>
                     }}
                 ]
             }},
-            "confidence": <0.0-1.0>
+            "confidence": <0.0-1.0>,
+            "is_cross_page": <true|false>,
+            "table_structure": {{
+                "columns": <number of columns>,
+                "has_header": <true|false>
+            }}
         }}
     ],
     "warnings": [
@@ -112,8 +125,14 @@ Required JSON Output Format:
     ]
 }}
 
-IMPORTANT: Your response must be a valid JSON object with EXACTLY the same structure as shown above.
-The debug_info field is required, other fields are optional.
+IMPORTANT: 
+1. Your response must be a valid JSON object with EXACTLY the same structure as shown above.
+2. The debug_info field is required, other fields are optional.
+3. For tables:
+   - Only merge tables that are truly split across pages
+   - Verify table structure continuity
+   - Set is_cross_page=true only if table needs merging
+   - Include table_structure for validation
 
 For debug_info:
 1. Count headings (lines starting with #), tables (| and --- markers), and images (![)
