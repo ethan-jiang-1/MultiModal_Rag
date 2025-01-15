@@ -53,22 +53,27 @@ class LlmClient:
         prompt_hash = hashlib.sha1(hash_str.encode()).hexdigest()[:16]
         return os.path.join(self.cache_dir, f"llm_analysis_{prompt_hash}.msgpack")
     
-    def get_model(self) -> str:
+    def get_model(self, model_sel: Optional[str] = None) -> str:
         """获取模型名称"""
-        if not self.md_info:
-            return "qwen-plus"  # 默认使用qwen-plus模型
-            
-        model = self.md_info.get_md_control("mctl_flow_model", "qwen")
-        if model.startswith("qwen"):
-            return "qwen-plus"
-        elif model.startswith("gpt"):
+        model_final = None
+        if model_sel:
+            model_final = model_sel
+        else:
+            if self.md_info:
+                model_final = self.md_info.get_md_control("mctl_flow_model", "qwen")
+            else:
+                model_final = "gpt-4o"
+
+        if model_final.startswith("qwen"):
+            return "qwen-max"
+        elif model_final.startswith("gpt"):
             return "gpt-4o"
-        elif model.startswith("ark"):
+        elif model_final.startswith("ark"):
             return "ep-20241220101421-4tj5f"
         else:
-            raise ValueError(f"Invalid model: {model}")
+            raise ValueError(f"Invalid model: {model_final}")
     
-    def analyze_document(self, system_prompt: str, user_prompt: str, using_cache: bool = True) -> DocumentAnalysis:
+    def analyze_document(self, system_prompt: str, user_prompt: str, using_cache: bool = True, model_sel: Optional[str] = None) -> DocumentAnalysis:
         """分析文档
         
         Args:
@@ -81,7 +86,7 @@ class LlmClient:
         Note:
             使用msgpack缓存结果到文件系统，避免重复调用
         """
-        model = self.get_model()
+        model = self.get_model(model_sel)
         
         # 获取缓存路径
         cache_path = None
@@ -143,6 +148,7 @@ if __name__ == "__main__":
     pname_info = "_work/ctn2md_papers___paged_md/_info.json"
     md_info = MdInfo(pname_info)
 
+    #llm_client = LlmClient(md_info)
     llm_client = LlmClient(md_info)
     
     fnames = md_info.get_fnames_pages()
@@ -156,5 +162,5 @@ if __name__ == "__main__":
     user_prompt = USER_PROMPT_DOC_ANALYSIS.format(marked_content_from_pages=marked_content)
     #print(user_prompt)
 
-    result = llm_client.analyze_document(system_prompt, user_prompt, using_cache=False)
+    result = llm_client.analyze_document(system_prompt, user_prompt, using_cache=False, model_sel="gpt-4o")
     rich.print(result)

@@ -1,161 +1,128 @@
-SYSTEM_PROMPT_DOC_ANALYSIS = """You are a professional document structure analyzer. Your main responsibilities are:
-1. Accurately identify document structural elements (headers, footers, tables, paragraphs, etc.)
-2. Generate precise processing instructions (with specific page and line numbers)
-3. Ensure the executability of analysis results
+"""
+Document Analysis Prompts
+
+Core design principles:
+1. Completeness First: Ensure no potential headings are missed
+2. Precise Positioning: Accurate location via page and line numbers
+3. Context Retention: Maintain necessary contextual information
+4. Post-processing Support: Reserve space for future extensions
+"""
+
+SYSTEM_PROMPT_DOC_ANALYSIS = """You are a document structure analyzer. Your task is to:
+1. Analyze document content with page and line markers
+2. Generate precise processing instructions
+3. Return results in a specific JSON format
 
 Analysis Principles:
-1. Position Priority: Prioritize using line and page numbers for judgment
-2. Pattern Recognition: Identify repeating patterns in headers and footers
-3. Structural Integrity: Ensure completeness of tables and paragraphs
-4. Conservative Decision: When in doubt, preserve rather than remove
+1. Position Priority: Use line and page numbers for judgment
+2. Pattern Recognition: Look for repeating patterns at same positions across pages
+3. Conservative Decision: When in doubt, preserve content
 
-Error Handling:
-1. If line markers are unclear, do not guess - ignore that section
-2. If cross-page judgment is ambiguous, handle conservatively
-3. When encountering unusual formats, note the reason in output
-
-Content Format Note:
-The document content will be provided with clear boundary markers:
-
-### BEGIN_DOCUMENT ###
-=== PAGE 1 ===
+Content Format:
+Document content has clear markers:
 [P1-L1] First line of page 1
 [P1-L2] Second line of page 1
-=== END PAGE 1 ===
+...etc.
 
-=== PAGE 2 ===
-[P2-L1] First line of page 2
-[P2-L2] Second line of page 2
-=== END PAGE 2 ===
-### END_DOCUMENT ###
-
-Each line is prefixed with a marker [Px-Ly] where:
-- x is the page number
+Each line is prefixed with [Px-Ly] where:
+- x is the page number 
 - y is the line number within that page
+
+Pattern Recognition Rules:
+1. Headers/Footers:
+   - Look for similar content at same positions across pages
+   - Common positions: first 2-3 lines or last 2-3 lines
+   - Examples: page numbers, document titles, section names
+
+2. Tables:
+   - Look for | character as column separator
+   - Look for --- as row separator
+   - Tables may span across pages
+   - Check if table headers repeat on new pages
+
+3. Headings:
+   - Look for #, ##, ### etc. at start of lines
+   - Consider indentation and formatting
+   - May include numbering like 1., 1.1, etc.
+
+4. Images:
+   - Look for ![ marker indicating image links
+   - May include captions below images
+   - Consider multi-line image descriptions
+
+Please count:
+- Headings: Lines starting with #, ##, ###, etc.
+- Tables: Content between lines with | and --- markers
+- Images: Lines containing ![
 """
 
 USER_PROMPT_DOC_ANALYSIS = """Please analyze this document and identify elements that need processing.
 Based on the line markers [Px-Ly], generate precise processing instructions.
 
-Document Format:
-1. Document is wrapped in ### BEGIN_DOCUMENT ### and ### END_DOCUMENT ###
-2. Each page is wrapped in === PAGE x === and === END PAGE x ===
-3. Each line starts with [Px-Ly] marker (e.g., [P1-L1] for page 1, line 1)
-4. Tables in content use | separators and --- dividers
-
 Document Content:
 {marked_content_from_pages}
-
-Analysis Guidelines:
-1. Position Patterns:
-   - Look for repeated elements at page tops/bottoms
-   - Check for consistent line positions across pages
-2. Content Patterns:
-   - Identify table structures (|, ---)
-   - Notice content that continues across page boundaries
-3. Conservative Approach:
-   - When in doubt, preserve the content
-   - Mark ambiguous cases as warnings
 
 Required JSON Output Format:
 {{
     "debug_info": {{
-        "total_pages": 3,
+        "total_pages": <total number of pages>,
         "pages": [
             {{
-                "page": 1,
-                "total_lines": 25,
-                "first_line": "[P1-L1] First line content",
-                "last_line": "[P1-L25] Last line content"
-            }},
-            {{
-                "page": 2,
-                "total_lines": 20,
-                "first_line": "[P2-L1] First line content",
-                "last_line": "[P2-L20] Last line content"
-            }},
-            {{
-                "page": 3,
-                "total_lines": 19,
-                "first_line": "[P3-L1] First line content",
-                "last_line": "[P3-L19] Last line content"
+                "page": <page number>,
+                "total_lines": <number of lines>,
+                "heading_count": <number of headings>,
+                "table_count": <number of tables>,
+                "image_count": <number of images>,
+                "first_line_preview": "<first 32 chars including [Px-Ly] marker>",
+                "last_line_preview": "<first 32 chars including [Px-Ly] marker>"
             }}
         ]
     }},
     "remove_actions": [
         {{
-            "page": 1,
-            "lines": [1, 2],
-            "reason": "header",
-            "confidence": 0.95
+            "page": <page number>,
+            "lines": [<line numbers>],
+            "reason": "<header|footer|duplicate|etc>",
+            "confidence": <0.0-1.0>
         }}
     ],
     "merge_actions": [
         {{
-            "type": "table",
-            "pages": [1, 2],
+            "type": "<table|paragraph|etc>",
+            "pages": [<page numbers>],
             "line_ranges": {{
-                "1": [
+                "<page>": [
                     {{
-                        "start": 15,
-                        "end": 20,
-                        "content_type": "table_header"
-                    }}
-                ],
-                "2": [
-                    {{
-                        "start": 1,
-                        "end": 5,
-                        "content_type": "table_body"
+                        "start": <start line>,
+                        "end": <end line>,
+                        "content_type": "<header|body|footer>"
                     }}
                 ]
             }},
-            "confidence": 0.9
+            "confidence": <0.0-1.0>
         }}
     ],
     "warnings": [
         {{
-            "type": "ambiguous_header",
-            "page": 1,
-            "lines": [1],
-            "message": "possible header but uncertain"
+            "type": "<warning type>",
+            "page": <page number>,
+            "lines": [<line numbers>],
+            "message": "<detailed warning message>"
         }}
     ]
 }}
 
-IMPORTANT: Your response must be a valid JSON object with EXACTLY the same structure as shown above:
-1. The debug_info field must contain:
-   - total_pages (integer)
-   - pages (array of page info objects)
-   Each page info object must have:
-   - page (integer)
-   - total_lines (integer)
-   - first_line (string)
-   - last_line (string)
+IMPORTANT: Your response must be a valid JSON object with EXACTLY the same structure as shown above.
+The debug_info field is required, other fields are optional.
 
-2. The remove_actions array must contain objects with:
-   - page (integer)
-   - lines (array of integers)
-   - reason (string, must be "header" or "footer")
-   - confidence (float between 0.0 and 1.0)
+For debug_info:
+1. Count headings (lines starting with #), tables (| and --- markers), and images (![)
+2. For first_line_preview and last_line_preview, include first 32 characters
+3. All counts should be integers >= 0
+4. Line numbers should match the [Px-Ly] markers in content
 
-3. The merge_actions array must contain objects with:
-   - type (string, must be "table")
-   - pages (array of consecutive integers)
-   - line_ranges (object mapping page numbers to arrays of range objects)
-   - confidence (float between 0.0 and 1.0)
-   Each range object must have:
-   - start (integer)
-   - end (integer)
-   - content_type (string, must be "table_header" or "table_body")
-
-4. The warnings array must contain objects with:
-   - type (string)
-   - page (integer)
-   - lines (array of integers)
-   - message (string)
-
-5. All arrays must be properly formatted with square brackets
-6. All field names must match EXACTLY as shown
-7. When uncertain, prefer preservation over removal
-"""
+For other fields:
+1. confidence should be float between 0.0 and 1.0
+2. page numbers should match actual pages in content
+3. line numbers should match [Px-Ly] markers
+4. Include clear reason/message for each action"""

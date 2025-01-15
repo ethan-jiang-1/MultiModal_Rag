@@ -1,76 +1,96 @@
 """
-LLM分析结果的数据模型定义
+Data Models for LLM Analysis Results
 
-核心设计思路：
-1. 完整性优先：确保不遗漏任何可能的标题
-2. 位置精确：通过页号和行号准确定位
-3. 保留上下文：维护必要的关联信息
-4. 支持后处理：预留足够的扩展空间
+Core Design Principles:
+1. Completeness First: Ensure no potential headings are missed
+2. Precise Positioning: Accurate location via page and line numbers
+3. Context Retention: Maintain necessary contextual information
+4. Post-processing Support: Reserve space for future extensions
 """
 
 from typing import List, Dict, Optional
 from pydantic import BaseModel, Field
 
 class TableRange(BaseModel):
-    """表格范围 - 精确定位表格位置"""
-    start: int = Field(..., description="起始行号")
-    end: int = Field(..., description="结束行号")
-    content_type: str = Field(..., description="内容类型(table_header/table_body)")
+    """Table Range - Precisely locate table positions"""
+    start: int
+    end: int
+    header: bool = False
 
 class MergeAction(BaseModel):
-    """合并动作 - 处理跨页内容"""
-    type: str = Field(..., description="合并类型(table)")
-    pages: List[int] = Field(..., description="涉及的页面列表")
-    line_ranges: Dict[str, List[TableRange]] = Field(..., description="每页的行范围")
-    confidence: float = Field(..., ge=0.0, le=1.0, description="合并判断的置信度")
+    """Merge Action - Handle cross-page content"""
+    type: str = "table"
+    pages: List[int]
+    line_ranges: Dict[str, List[dict]]
+    confidence: float
 
 class RemoveAction(BaseModel):
-    """删除动作 - 处理冗余内容"""
-    page: int = Field(..., description="页号")
-    lines: List[int] = Field(..., description="需要删除的行号列表")
-    reason: str = Field(..., description="删除原因(header/footer)")
-    confidence: float = Field(..., ge=0.0, le=1.0, description="删除判断的置信度")
+    """Remove Action - Handle redundant content"""
+    page: int
+    lines: List[int]
+    reason: str
+    confidence: float
 
 class Warning(BaseModel):
-    """警告信息 - 记录不确定的判断"""
-    type: str = Field(..., description="警告类型")
-    page: int = Field(..., description="页号")
-    lines: List[int] = Field(..., description="相关行号列表")
-    message: str = Field(..., description="警告信息")
+    """Warning Information - Record uncertain judgments"""
+    type: str
+    page: int
+    lines: List[int]
+    message: str
 
 class PageDebugInfo(BaseModel):
-    """页面调试信息 - 记录页面基本统计数据"""
-    page: int = Field(..., description="页号")
-    total_lines: int = Field(..., description="总行数")
-    first_line: str = Field(..., description="第一行内容")
-    last_line: str = Field(..., description="最后一行内容")
+    """Page Debug Info - Record detailed page statistics"""
+    page: int
+    total_lines: int
+    heading_count: int = Field(description="Number of headings in this page")
+    table_count: int = Field(description="Number of tables in this page")
+    image_count: int = Field(description="Number of images in this page")
+    first_line_preview: str = Field(description="First 32 characters of the first line")
+    last_line_preview: str = Field(description="First 32 characters of the last line")
 
 class DocumentDebugInfo(BaseModel):
-    """文档调试信息 - 记录文档整体统计数据"""
-    total_pages: int = Field(..., description="总页数")
-    pages: List[PageDebugInfo] = Field(..., description="各页面信息")
+    """Document Debug Info - Record overall document statistics"""
+    total_pages: int
+    pages: List[PageDebugInfo]
 
 class DocumentAnalysis(BaseModel):
-    """文档分析结果 - 整合所有分析信息
+    """Document Analysis Result - Integrate all analysis information"""
+    debug_info: DocumentDebugInfo
+    remove_actions: Optional[List[RemoveAction]] = []
+    merge_actions: Optional[List[MergeAction]] = []
+    warnings: Optional[List[Warning]] = []
+
+if __name__ == "__main__":
+    # Create a test document analysis result
+    test_doc = {
+        "debug_info": {
+            "total_pages": 3,
+            "pages": [
+                {
+                    "page": 1,
+                    "total_lines": 25,
+                    "heading_count": 2,
+                    "table_count": 1,
+                    "image_count": 0,
+                    "first_line_preview": "[P1-L1] # 深度学习在视电阻率快速反演中",
+                    "last_line_preview": "[P1-L25] **Abstract** In the field"
+                }
+            ]
+        }
+    }
     
-    设计考虑：
-    1. 调试信息必选：确保基本分析数据
-    2. 其他字段可选：支持渐进式分析
-    3. 保持扩展性：便于后续增加功能
-    """
-    debug_info: DocumentDebugInfo = Field(
-        ...,
-        description="调试信息 - 记录文档基本统计数据"
-    )
-    remove_actions: Optional[List[RemoveAction]] = Field(
-        default_factory=list, 
-        description="删除动作列表 - 处理页眉页脚等"
-    )
-    merge_actions: Optional[List[MergeAction]] = Field(
-        default_factory=list, 
-        description="合并动作列表 - 处理跨页表格等"
-    )
-    warnings: Optional[List[Warning]] = Field(
-        default_factory=list,
-        description="警告列表 - 记录不确定的判断"
-    ) 
+    # Validate the document
+    result = DocumentAnalysis.model_validate(test_doc)
+    print("Valid document analysis:", result)
+    
+    # Test with invalid document
+    invalid_doc = {
+        "debug_info": {
+            "total_pages": 1,
+            "pages": ["invalid page info"]  # This should cause validation error
+        }
+    }
+    try:
+        DocumentAnalysis.model_validate(invalid_doc)
+    except Exception as e:
+        print("Expected validation error:", e) 
