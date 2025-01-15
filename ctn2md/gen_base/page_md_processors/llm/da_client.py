@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from mmbase.utils_llm.llm_base import chat_gpt_json, get_gpt_messages
-from ctn2md.gen_base.page_md_processors.llm.schemas import DocumentAnalysis
+from ctn2md.gen_base.page_md_processors.llm.da_schemas import DocumentAnalysis
 from ctn2md.md_info.md_info_base import MdInfo
 from mmbase.utils_llm_debug.llm_diag import save_llm_diag_messages
 
@@ -141,7 +141,7 @@ class LlmClient:
 if __name__ == "__main__":
     from mmbase.utils.util_logging import setup_logger_handlers
     from ctn2md.gen_base.page_md_processors.llm.marked_content_maker import MarkedContentMaker
-    from ctn2md.gen_base.page_md_processors.llm.prompts import SYSTEM_PROMPT_DOC_ANALYSIS, USER_PROMPT_DOC_ANALYSIS
+    from ctn2md.gen_base.page_md_processors.llm.da_prompts import SYSTEM_PROMPT_DOC_ANALYSIS, USER_PROMPT_DOC_ANALYSIS
 
     setup_logger_handlers()
     

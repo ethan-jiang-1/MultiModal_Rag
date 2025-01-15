@@ -10,9 +10,9 @@ load_dotenv()
 
 from ctn2md.md_info.md_info_base import MdInfo
 from ctn2md.gen_base.page_md_processors.base import BaseProcessor
-from ctn2md.gen_base.page_md_processors.llm.client import LlmClient
-from ctn2md.gen_base.page_md_processors.llm.prompts import SYSTEM_PROMPT_DOC_ANALYSIS, USER_PROMPT_DOC_ANALYSIS
-from ctn2md.gen_base.page_md_processors.llm.schemas import DocumentAnalysis
+from ctn2md.gen_base.page_md_processors.llm.da_client import LlmClient
+from ctn2md.gen_base.page_md_processors.llm.da_prompts import SYSTEM_PROMPT_DOC_ANALYSIS, USER_PROMPT_DOC_ANALYSIS
+from ctn2md.gen_base.page_md_processors.llm.da_schemas import DocumentAnalysis
 from ctn2md.gen_base.page_md_processors.llm.marked_content_maker import MarkedContentMaker
 
 logger = logging.getLogger(__name__)
@@ -44,29 +44,9 @@ if __name__ == "__main__":
     
     # 测试代码
     pname_info = "_work/ctn2md_papers___paged_md/_info.json"
+    md_info = MdInfo(pname_info)
     
-    # 创建测试数据
-    test_content = """### BEGIN_DOCUMENT ###
-=== PAGE 1 ===
-[P1-L1] Document Title
-[P1-L2] Author: John Doe
-[P1-L3] Page 1
-[P1-L4] | Header 1 | Header 2 |
-[P1-L5] |----------|----------|
-[P1-L6] | Data 1   | Data 2   |
-=== END PAGE 1 ===
-
-=== PAGE 2 ===
-[P2-L1] Page 2
-[P2-L2] | Data 3   | Data 4   |
-[P2-L3] | Data 5   | Data 6   |
-[P2-L4] Footer text
-=== END PAGE 2 ===
-### END_DOCUMENT ###"""
-
-    analyzer = DocumentAnalyzer(None)  # We don't need md_info for this test
-    result = analyzer.llm_client.analyze_document(
-        SYSTEM_PROMPT_DOC_ANALYSIS,
-        USER_PROMPT_DOC_ANALYSIS.format(marked_content_from_pages=test_content)
-    )
+    analyzer = DocumentAnalyzer(md_info)
+    fnames = md_info.get_fnames_pages()[:3]  # 只测试前3页
+    result = analyzer.analyze(fnames)
     rich.print(result) 
