@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from ctn2md.md_info.md_info_base import MdInfo
-from ctn2md.gen_base.page_md_fusion.base import BaseProcessor
+from ctn2md.gen_base.page_md_fusion.processor.base import BaseProcessor
 from ctn2md.gen_base.page_md_fusion.llm.da_client import LlmClient
 from ctn2md.gen_base.page_md_fusion.llm.da_prompts import SYSTEM_PROMPT_DOC_ANALYSIS, USER_PROMPT_DOC_ANALYSIS
 from ctn2md.gen_base.page_md_fusion.llm.da_schemas import DocumentAnalysis
