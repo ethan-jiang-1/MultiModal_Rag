@@ -14,6 +14,7 @@ from ctn2md.gen_base.page_md_processors.llm.da_client import LlmClient
 from ctn2md.gen_base.page_md_processors.llm.da_prompts import SYSTEM_PROMPT_DOC_ANALYSIS, USER_PROMPT_DOC_ANALYSIS
 from ctn2md.gen_base.page_md_processors.llm.da_schemas import DocumentAnalysis
 from ctn2md.gen_base.page_md_processors.llm.marked_content_maker import MarkedContentMaker
+from ctn2md.gen_base.page_md_processors.llm.action_explainer import ActionExplainer
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +25,6 @@ class DocumentAnalyzer(BaseProcessor):
         super().__init__(md_info)
         self.llm_client = LlmClient(md_info)
 
-    def _explain_document_analysis(self, das: DocumentAnalysis, doc_pages:List[str]):
-        """解释文档分析结果"""
-        pass
-    
     def analyze(self, fnames: Optional[List[str]] = None) -> DocumentAnalysis:
         """分析文档并生成动作指令"""
         # 1. 准备带标记的文档内容
@@ -37,9 +34,12 @@ class DocumentAnalyzer(BaseProcessor):
         system_prompt = SYSTEM_PROMPT_DOC_ANALYSIS
         user_prompt = USER_PROMPT_DOC_ANALYSIS.format(marked_content_from_pages=marked_content)
 
-        # 3. 调用LLM分析
+        # 2. 调用LLM分析
         das = self.llm_client.analyze_document(system_prompt, user_prompt)
-        self._explain_document_analysis(das, doc_pages)
+        
+        # 3. 生成分析报告
+        explanation = ActionExplainer.explain_document_analysis(das, doc_pages)
+        logger.info("\nDocument Analysis Report:\n%s", explanation)
         
         return das
 
@@ -56,4 +56,7 @@ if __name__ == "__main__":
     analyzer = DocumentAnalyzer(md_info)
     fnames = md_info.get_fnames_pages()  # 只测试前3页
     result = analyzer.analyze(fnames)
+    
+    # 打印分析结果
+    rich.print("\nDocument Analysis Object:")
     rich.print(result) 
