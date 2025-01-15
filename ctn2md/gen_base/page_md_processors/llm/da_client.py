@@ -141,12 +141,13 @@ class LlmClient:
 if __name__ == "__main__":
     from mmbase.utils.util_logging import setup_logger_handlers
     from ctn2md.gen_base.page_md_processors.llm.marked_content_maker import MarkedContentMaker
+    from ctn2md.gen_base.page_md_processors.llm.action_explainer import ActionExplainer
     from ctn2md.gen_base.page_md_processors.llm.da_prompts import SYSTEM_PROMPT_DOC_ANALYSIS, USER_PROMPT_DOC_ANALYSIS
 
     setup_logger_handlers()
     
-    pname_info = "_work/ctn2md_papers___paged_md/_info.json"
-    #pname_info = "_work/ctn2md_mrag___paged_md/_info.json"
+    #pname_info = "_work/ctn2md_papers___paged_md/_info.json"
+    pname_info = "_work/ctn2md_mrag___paged_md/_info.json"
     md_info = MdInfo(pname_info)
 
     #llm_client = LlmClient(md_info)
@@ -156,12 +157,16 @@ if __name__ == "__main__":
     #fnames = fnames[:3】
 
     maker = MarkedContentMaker()
-    marked_content, _ = maker.make_marked_content_from_md_info(md_info, fnames)
+    marked_content, doc_pages = maker.make_marked_content_from_md_info(md_info, fnames)
     #rich.print(marked_content)
 
     system_prompt = SYSTEM_PROMPT_DOC_ANALYSIS
     user_prompt = USER_PROMPT_DOC_ANALYSIS.replace("{marked_content_from_pages}", marked_content)
     #print(user_prompt)
 
-    result = llm_client.analyze_document(system_prompt, user_prompt, using_cache=False, model_sel="gpt-4o")
-    rich.print(result)
+    das = llm_client.analyze_document(system_prompt, user_prompt, using_cache=False, model_sel="gpt-4o")
+    rich.print(das)
+
+    explanation = ActionExplainer.explain_document_analysis(das, doc_pages)
+    logger.info("\nDocument Analysis Report:\n%s", explanation)
+

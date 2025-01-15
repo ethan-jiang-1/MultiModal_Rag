@@ -31,24 +31,32 @@ Analysis Process:
 3. VALIDATE (Critical Check)
    Heading Validation Rules:
    - is_valid determination:
-     * Check level against document structure
-     * Verify format matches document pattern
-     * Confirm presence in logical sequence
-     * Validate hierarchy consistency
+     * Check level against document structure:
+       - Level 1 (#): Primary document divisions
+       - Level 2 (##): Secondary divisions within primary
+       - Level 3 (###): Tertiary divisions within secondary
+     * Verify structural integrity:
+       - Each level must connect to its parent
+       - Numbering system must be consistent within document
+       - Author's chosen notation style must be preserved
+     * Validate logical progression:
+       - No gaps in structural hierarchy
+       - Clear parent-child relationships
+       - Consistent depth progression
    
    - validation_scope decision:
-     * single_page: format/level issues within page
-     * cross_page: sequence/hierarchy across pages
+     * single_page: format and notation consistency
+     * cross_page: structural continuity and relationships
    
    - error_type assignment (when invalid):
-     * missing: required section not found
-     * wrong_level: level inappropriate for content
-     * wrong_format: deviates from heading pattern
-     * inconsistent: breaks heading hierarchy
+     * missing: structural parent absent
+     * wrong_level: depth in hierarchy incorrect
+     * wrong_format: deviates from document's notation style
+     * inconsistent: breaks structural flow
    
    - Additional validation info:
-     * expected_level: correct level for content
-     * expected_content: proper heading format
+     * expected_level: determined by structural depth
+     * expected_content: preserve author's notation style
    
 4. REPORT (Clear Output)
    - Validation results with specific issues
