@@ -47,6 +47,10 @@ Analysis Process:
      * Alignment with document's own pattern
      * Internal consistency within sections
      * Relationship integrity between parts
+     * Level determination:
+       > Notation depth indicates heading level
+       > Deeper nesting requires deeper level
+       > Level validation requires explicit expected value
    
    - Scope Assessment:
      * Local structure integrity
@@ -79,10 +83,11 @@ Analysis Process:
          > Non-numbered introductory sections (e.g., preamble, recitals)
          > Supporting document sections (e.g., appendices, exhibits)
          > Closing document sections (e.g., signature blocks)
-         > Supplementary clauses:
-           * Identify parent section number
-           * Maintain consistent sub-section depth
-           * Preserve numbering continuity within section
+         > Hierarchical clauses:
+           * Each additional delimiter in notation indicates deeper level
+           * Heading level depth aligns with notation depth
+           * Maintain consistent delimiter usage within document
+           * Parent-child relationships reflect in both notation and level
        - Section depth alignment
      * Format misalignment
    

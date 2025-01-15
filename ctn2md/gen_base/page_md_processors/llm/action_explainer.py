@@ -55,11 +55,10 @@ class ActionExplainer:
     def explain_heading_validation(heading: HeadingInfo) -> List[str]:
         """Explain heading validation results and suggest actions
         
-        Args:
-            heading: HeadingInfo object with validation data
-            
-        Returns:
-            List of explanation strings with suggested actions
+        Analyzes heading validation considering:
+        - Notation depth vs heading level alignment
+        - Context relationship with surrounding headings
+        - Consistency of delimiter usage
         """
         lines = []
         validation: Optional[HeadingValidation] = heading.validation
@@ -75,33 +74,32 @@ class ActionExplainer:
                 lines.append(f"  ├─ Error: {error.value}")
                 
                 # Suggest specific actions based on error type
-                if error == HeadingErrorType.MISSING:
-                    lines.append(f"  ├─ Action Required: Add missing heading")
-                    if validation.expected_content:
-                        lines.append(f"  ├─ Add Content: {validation.expected_content}")
-                
-                elif error == HeadingErrorType.WRONG_LEVEL:
-                    lines.append(f"  ├─ Action Required: Adjust heading level")
+                if error == HeadingErrorType.WRONG_LEVEL:
+                    lines.append(f"  ├─ Action Required: Adjust heading level to match notation depth")
                     if validation.expected_level:
                         current_markers = "#" * heading.level
                         expected_markers = "#" * validation.expected_level
+                        lines.append(f"  ├─ Current Depth: {heading.content.count('.')}")
+                        lines.append(f"  ├─ Expected Level: {validation.expected_level}")
                         lines.append(f"  ├─ Change: {current_markers} -> {expected_markers}")
                         lines.append(f"  ├─ From: {current_markers} {heading.content}")
                         lines.append(f"  ├─ To: {expected_markers} {heading.content}")
                 
                 elif error == HeadingErrorType.WRONG_FORMAT:
-                    lines.append(f"  ├─ Action Required: Fix heading format")
+                    lines.append(f"  ├─ Action Required: Align notation with document structure")
                     if validation.expected_content:
-                        lines.append(f"  ├─ From: {heading.content}")
-                        lines.append(f"  ├─ To: {validation.expected_content}")
+                        lines.append(f"  ├─ Current Format: {heading.content}")
+                        lines.append(f"  ├─ Expected Format: {validation.expected_content}")
+                        lines.append(f"  └─ Note: Maintain consistent delimiter usage")
                 
                 elif error == HeadingErrorType.INCONSISTENT:
-                    lines.append(f"  ├─ Action Required: Fix heading structure")
+                    lines.append(f"  ├─ Action Required: Fix structural inconsistency")
                     if validation.expected_level:
+                        lines.append(f"  ├─ Current Level: {heading.level}")
                         lines.append(f"  ├─ Expected Level: {validation.expected_level}")
                     if validation.expected_content:
-                        lines.append(f"  ├─ Expected Content: {validation.expected_content}")
-                    lines.append(f"  └─ Note: Check surrounding headings for consistency")
+                        lines.append(f"  ├─ Expected Structure: {validation.expected_content}")
+                    lines.append(f"  └─ Note: Check parent-child relationship")
             
         return lines
             
