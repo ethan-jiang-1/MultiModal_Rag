@@ -8,141 +8,212 @@ Core Design Principles:
 4. Post-processing Support: Reserve space for future extensions
 """
 
-from typing import List, Dict, Optional, Union
+from typing import List, Dict, Optional
 import os
+import rich 
+from enum import Enum
 from dotenv import load_dotenv, find_dotenv
 from pydantic import BaseModel, Field
 
 load_dotenv()
 
-class TableRange(BaseModel):
-    """表格范围 - 定位表格在页面中的位置
-    
-    Attributes:
-        start: 起始行号(1-based)
-        end: 结束行号(1-based)
-        is_header: 是否为表头部分
-        has_separator: 是否包含分隔符行(---)
-    """
-    start: int = Field(..., description="起始行号(1-based)")
-    end: int = Field(..., description="结束行号(1-based)")
-    is_header: bool = Field(default=False, description="是否为表头部分")
-    has_separator: bool = Field(default=False, description="是否包含分隔符行(---)")
+# Base Enums
+class ContentType(str, Enum):
+    """Content type enumeration"""
+    TABLE = "table"      # Table content
 
-class MergeAction(BaseModel):
-    """合并动作 - 描述需要合并的内容
+class RemoveReason(str, Enum):
+    """Removal reason enumeration"""
+    DUPLICATE = "duplicate"  # Duplicate content
+    NOISE = "noise"         # Noise content
+    INVALID = "invalid"     # Invalid content
+    FOOTER = "footer"       # Page footer
+    HEADER = "header"       # Page header
+
+class WarningType(str, Enum):
+    """Warning type enumeration"""
+    OVERLAP = "overlap"      # Content overlap
+    INCOMPLETE = "incomplete" # Incomplete content
+    AMBIGUOUS = "ambiguous"  # Ambiguous content
+    STRUCTURE = "structure"  # Structure issue
+    FORMAT = "format"       # Format issue
+
+# Base Data Classes
+class LineRange(BaseModel):
+    """Line range - Locates content position within a page
     
     Attributes:
-        type: 合并类型，默认为"table"
-        pages: 涉及的页码列表
-        line_ranges: 每页的行范围
-        confidence: 置信度(0.0-1.0)
-        is_cross_page: 是否确实需要跨页合并
-        table_structure: 表格结构信息
+        start: Starting line number (1-based), must be greater than 0
+        end: Ending line number (1-based), must be greater than or equal to start
+        is_header: Whether this is a header section (table-specific)
+        has_separator: Whether it contains separator line (table-specific)
     """
-    type: str = "table"
-    pages: List[int]
-    line_ranges: Dict[str, List[TableRange]]
-    confidence: float
-    is_cross_page: bool = Field(default=False, description="是否确实需要跨页合并")
-    table_structure: Optional[Dict[str, Union[int, bool]]] = Field(default=None, description="表格结构信息，包含columns和has_header")
+    start: int = Field(gt=0, description="Starting line number (1-based)")
+    end: int = Field(..., description="Ending line number (1-based)")
+    is_header: bool = Field(default=False, description="Whether this is a header section")
+    has_separator: bool = Field(default=False, description="Whether it contains separator line (---)")
+
+    @property
+    def validate_end(self) -> None:
+        """Validate that end is greater than or equal to start"""
+        if self.end < self.start:
+            raise ValueError("end must be greater than or equal to start")
+
+class HeadingInfo(BaseModel):
+    """Heading information - Describes document heading structure
+    
+    Attributes:
+        page: Page number, must be greater than 0
+        line: Line number, must be greater than 0
+        level: Heading level (1-6)
+        content: Heading content, must not be empty
+        confidence: Confidence score (0.0-1.0)
+    """
+    page: int = Field(gt=0, description="Page number")
+    line: int = Field(gt=0, description="Line number")
+    level: int = Field(ge=1, le=6, description="Heading level (1-6)")
+    content: str = Field(min_length=1, description="Heading content")
+    confidence: float = Field(ge=0.0, le=1.0, description="Confidence score")
+
+class TableStructure(BaseModel):
+    """Table structure information
+    
+    Attributes:
+        columns: Number of columns, must be greater than 0
+        has_header: Whether the table has a header row
+    """
+    columns: int = Field(gt=0, description="Number of columns")
+    has_header: bool = Field(description="Whether the table has a header row")
+
+# Action Classes
+class MergeAction(BaseModel):
+    """Merge action - Describes content that needs to be merged
+    
+    Attributes:
+        type: Merge type, currently only supports table
+        pages: List of involved page numbers, must contain at least one page
+        line_ranges: Line ranges for each page, keyed by page number string
+        confidence: Confidence score (0.0-1.0)
+        is_cross_page: Whether this is truly a cross-page merge
+        table_structure: Table structure information
+    """
+    type: ContentType
+    pages: List[int] = Field(min_length=1, description="List of involved page numbers")
+    line_ranges: Dict[str, List[LineRange]]
+    confidence: float = Field(ge=0.0, le=1.0, description="Confidence score")
+    is_cross_page: bool = Field(default=False, description="Whether this is truly a cross-page merge")
+    table_structure: Optional[TableStructure] = Field(default=None, description="Table structure information")
 
 class RemoveAction(BaseModel):
-    """删除动作 - 描述需要删除的内容
+    """Remove action - Describes content that needs to be removed
     
     Attributes:
-        page: 页码
-        lines: 行号列表
-        reason: 删除原因
-        confidence: 置信度(0.0-1.0)
+        page: Page number, must be greater than 0
+        lines: List of line numbers, must not be empty
+        reason: Removal reason
+        confidence: Confidence score (0.0-1.0)
     """
-    page: int
-    lines: List[int]
-    reason: str
-    confidence: float
+    page: int = Field(gt=0, description="Page number")
+    lines: List[int] = Field(min_length=1, description="List of line numbers")
+    reason: RemoveReason
+    confidence: float = Field(ge=0.0, le=1.0, description="Confidence score")
 
 class Warning(BaseModel):
-    """警告信息 - 记录处理过程中的异常情况
+    """Warning information - Records processing anomalies
     
     Attributes:
-        type: 警告类型
-        page: 页码
-        lines: 相关行号
-        message: 警告信息
+        type: Warning type
+        page: Page number, must be greater than 0
+        lines: List of related line numbers, must not be empty
+        message: Warning message, must not be empty
     """
-    type: str
-    page: int
-    lines: List[int]
-    message: str
-
-class PageDebugInfo(BaseModel):
-    """页面调试信息 - 记录单页的统计数据
-    
-    Attributes:
-        page: 页码
-        total_lines: 总行数
-        heading_count: 标题数量
-        table_count: 表格数量
-        image_count: 图片数量
-        first_line_preview: 首行预览(前32字符)
-        last_line_preview: 末行预览(前32字符)
-    """
-    page: int
-    total_lines: int
-    heading_count: int = Field(description="标题数量")
-    table_count: int = Field(description="表格数量")
-    image_count: int = Field(description="图片数量")
-    first_line_preview: str = Field(description="首行预览(前32字符)")
-    last_line_preview: str = Field(description="末行预览(前32字符)")
+    type: WarningType
+    page: int = Field(gt=0, description="Page number")
+    lines: List[int] = Field(min_length=1, description="List of related line numbers")
+    message: str = Field(min_length=1, description="Warning message")
 
 class DocumentDebugInfo(BaseModel):
-    """文档调试信息 - 记录整体统计数据
+    """Document debug information - Records overall statistics
     
     Attributes:
-        total_pages: 总页数
-        pages: 每页的调试信息
+        total_pages: Total number of pages, must be greater than 0
+        total_tables: Total number of tables, must be greater than or equal to 0
+        total_images: Total number of images, must be greater than or equal to 0
+        total_headings: Total number of headings, must be greater than or equal to 0
     """
-    total_pages: int
-    pages: List[PageDebugInfo]
+    total_pages: int = Field(gt=0, description="Total number of pages")
+    total_tables: int = Field(ge=0, description="Total number of tables")
+    total_images: int = Field(ge=0, description="Total number of images")
+    total_headings: int = Field(ge=0, description="Total number of headings")
 
 class DocumentAnalysis(BaseModel):
-    """文档分析结果 - 整合所有分析信息
+    """Document analysis result - Integrates all analysis information
+    
+    Processing Priority Order:
+    1. remove_actions: Handle headers/footers (highest reliability)
+    2. heading_infos: Process basic headings (high reliability)
+    3. merge_actions: Handle table merging (needs more processing)
+    4. warnings: Record anomalies
     
     Attributes:
-        debug_info: 调试信息
-        remove_actions: 删除动作列表
-        merge_actions: 合并动作列表
-        warnings: 警告信息列表
+        debug_info: Debug information
+        remove_actions: List of remove actions for headers/footers
+        heading_infos: List of heading information
+        merge_actions: List of merge actions for tables
+        warnings: List of warnings
     """
     debug_info: DocumentDebugInfo
-    remove_actions: Optional[List[RemoveAction]] = []
-    merge_actions: Optional[List[MergeAction]] = []
-    warnings: Optional[List[Warning]] = []
+    remove_actions: List[RemoveAction] = Field(default_factory=list, description="List of remove actions for headers/footers")
+    heading_infos: List[HeadingInfo] = Field(default_factory=list, description="List of heading information")
+    merge_actions: List[MergeAction] = Field(default_factory=list, description="List of merge actions for tables")
+    warnings: List[Warning] = Field(default_factory=list, description="List of warnings")
 
 if __name__ == "__main__":
-    # 确保在项目根目录下运行
+    # Ensure project root directory is used
     _root_dir = os.path.abspath(os.path.dirname(find_dotenv()))
     os.chdir(_root_dir)
 
     from mmbase.utils.util_logging import setup_logger_handlers
     setup_logger_handlers()
     
-    # 测试数据
+    # Test data
     test_doc = {
         "debug_info": {
             "total_pages": 2,
-            "pages": [
-                {
-                    "page": 1,
-                    "total_lines": 20,
-                    "heading_count": 2,
-                    "table_count": 1,
-                    "image_count": 0,
-                    "first_line_preview": "[P1-L1] # Title",
-                    "last_line_preview": "[P1-L20] End of page"
-                }
-            ]
+            "total_tables": 1,
+            "total_images": 0,
+            "total_headings": 2
         },
+        "heading_infos": [
+            {
+                "page": 1,
+                "line": 1,
+                "level": 1,
+                "content": "Document Title",
+                "confidence": 0.98
+            },
+            {
+                "page": 1,
+                "line": 5,
+                "level": 2,
+                "content": "Chapter 1",
+                "confidence": 0.95
+            }
+        ],
+        "remove_actions": [
+            {
+                "page": 1,
+                "lines": [1, 2],
+                "reason": "header",
+                "confidence": 0.95
+            },
+            {
+                "page": 2,
+                "lines": [20],
+                "reason": "footer",
+                "confidence": 0.98
+            }
+        ],
         "merge_actions": [
             {
                 "type": "table",
@@ -158,20 +229,23 @@ if __name__ == "__main__":
                     ]
                 },
                 "confidence": 0.95,
-                "is_cross_page": True
+                "is_cross_page": True,
+                "table_structure": {
+                    "columns": 3,
+                    "has_header": True
+                }
             }
         ]
     }
     
-    # 验证文档
+    # Validate document
     result = DocumentAnalysis.model_validate(test_doc)
-    print("Valid document analysis:", result)
+    rich.print("Valid document analysis:", result)
     
-    # 测试无效文档
+    # Test invalid document
     invalid_doc = {
         "debug_info": {
-            "total_pages": 1,
-            "pages": ["invalid page info"]  # 应该导致验证错误
+            "total_pages": 1  # Missing necessary statistics
         }
     }
     try:
