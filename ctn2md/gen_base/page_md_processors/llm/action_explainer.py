@@ -1,57 +1,120 @@
 """
-文档分析结果解释器 - 将DocumentAnalysis对象转换为可读的报告格式
+Document Analysis Result Explainer - Convert DocumentAnalysis objects to readable report format
 """
 
-from typing import List
+from typing import List, Optional
 import logging
 from dotenv import load_dotenv
 
 load_dotenv()
 
-from ctn2md.gen_base.page_md_processors.llm.da_schemas import DocumentAnalysis
+from ctn2md.gen_base.page_md_processors.llm.da_schemas import (
+    DocumentAnalysis, 
+    ValidationScope,
+    HeadingErrorType,
+    ContentType,
+    HeadingInfo,
+    HeadingValidation,
+    TableStructure,
+    LineRange
+)
 
 logger = logging.getLogger(__name__)
 
 class ActionExplainer:
-    """文档分析结果解释器"""
+    """Document analysis result explainer"""
     
     @staticmethod
     def get_line_preview(doc_pages: List[List[str]], page: int, line: int) -> str:
-        """获取指定行的预览内容"""
+        """Get preview content for specified line"""
         try:
-            return doc_pages[page - 1][line - 1][:100]  # 显示更多内容以便于理解
+            return doc_pages[page - 1][line - 1][:100]  # Show more content for better understanding
         except (IndexError, TypeError):
             return "<line not found>"
             
     @staticmethod
-    def explain_table_structure(action) -> List[str]:
-        """解释表格结构"""
+    def explain_table_structure(action: TableStructure) -> List[str]:
+        """Explain table structure"""
         lines = []
         if action.table_structure:
-            lines.append(f"  ├─ 列数: {action.table_structure.get('columns', '未知')}")
-            lines.append(f"  ├─ 包含表头: {'是' if action.table_structure.get('has_header', False) else '否'}")
+            lines.append(f"  ├─ Columns: {action.table_structure.columns}")
+            lines.append(f"  ├─ Has Header: {'Yes' if action.table_structure.has_header else 'No'}")
         return lines
             
     @staticmethod
-    def explain_table_range(range_info) -> str:
-        """解释表格范围信息"""
+    def explain_table_range(range_info: LineRange) -> str:
+        """Explain table range information"""
         parts = []
         if range_info.is_header:
-            parts.append("表头")
+            parts.append("Header")
         if range_info.has_separator:
-            parts.append("含分隔符")
+            parts.append("Has Separator")
         return f"({', '.join(parts)})" if parts else ""
+
+    @staticmethod
+    def explain_heading_validation(heading: HeadingInfo) -> List[str]:
+        """Explain heading validation results and suggest actions
+        
+        Args:
+            heading: HeadingInfo object with validation data
+            
+        Returns:
+            List of explanation strings with suggested actions
+        """
+        lines = []
+        validation: Optional[HeadingValidation] = heading.validation
+        if validation:
+            # Basic validation info
+            lines.append(f"  ├─ Valid: {'Yes' if validation.is_valid else 'No'}")
+            scope: ValidationScope = validation.validation_scope
+            lines.append(f"  ├─ Scope: {scope.value}")
+            
+            # Error details and required actions
+            if not validation.is_valid and validation.error_type:
+                error: HeadingErrorType = validation.error_type
+                lines.append(f"  ├─ Error: {error.value}")
+                
+                # Suggest specific actions based on error type
+                if error == HeadingErrorType.MISSING:
+                    lines.append(f"  ├─ Action Required: Add missing heading")
+                    if validation.expected_content:
+                        lines.append(f"  ├─ Add Content: {validation.expected_content}")
+                
+                elif error == HeadingErrorType.WRONG_LEVEL:
+                    lines.append(f"  ├─ Action Required: Adjust heading level")
+                    if validation.expected_level:
+                        current_markers = "#" * heading.level
+                        expected_markers = "#" * validation.expected_level
+                        lines.append(f"  ├─ Change: {current_markers} -> {expected_markers}")
+                        lines.append(f"  ├─ From: {current_markers} {heading.content}")
+                        lines.append(f"  ├─ To: {expected_markers} {heading.content}")
+                
+                elif error == HeadingErrorType.WRONG_FORMAT:
+                    lines.append(f"  ├─ Action Required: Fix heading format")
+                    if validation.expected_content:
+                        lines.append(f"  ├─ From: {heading.content}")
+                        lines.append(f"  ├─ To: {validation.expected_content}")
+                
+                elif error == HeadingErrorType.INCONSISTENT:
+                    lines.append(f"  ├─ Action Required: Fix heading structure")
+                    if validation.expected_level:
+                        lines.append(f"  ├─ Expected Level: {validation.expected_level}")
+                    if validation.expected_content:
+                        lines.append(f"  ├─ Expected Content: {validation.expected_content}")
+                    lines.append(f"  └─ Note: Check surrounding headings for consistency")
+            
+        return lines
             
     @classmethod
     def explain_document_analysis(cls, doc_analysis: DocumentAnalysis, doc_pages: List[List[str]]) -> str:
-        """生成文档分析报告
+        """Generate document analysis report
         
         Args:
-            doc_analysis: 文档分析结果
-            doc_pages: 文档页面内容
+            doc_analysis: Document analysis result
+            doc_pages: Document page content
             
         Returns:
-            可读的分析报告
+            Readable analysis report
         """
         lines = []
         
@@ -59,18 +122,22 @@ class ActionExplainer:
         lines.append("📊 Document Statistics")
         lines.append("-" * 30)
         lines.append(f"• Total Pages: {doc_analysis.debug_info.total_pages}")
-        
-        # Page Statistics
-        for page in doc_analysis.debug_info.pages:
-            lines.append(f"\n• Page {page.page}:")
-            lines.append(f"  ├─ Lines: {page.total_lines}")
-            lines.append(f"  ├─ Headings: {page.heading_count}")
-            lines.append(f"  ├─ Tables: {page.table_count}")
-            lines.append(f"  ├─ Images: {page.image_count}")
-            lines.append(f"  ├─ First Line: {page.first_line_preview}")
-            lines.append(f"  └─ Last Line: {page.last_line_preview}")
-        
+        lines.append(f"• Total Headings: {doc_analysis.debug_info.total_headings}")
+        lines.append(f"• Total Tables: {doc_analysis.debug_info.total_tables}")
+        lines.append(f"• Total Images: {doc_analysis.debug_info.total_images}")
         lines.append("")
+        
+        # Heading Information
+        if doc_analysis.heading_infos:
+            lines.append("📑 Heading Structure")
+            lines.append("-" * 30)
+            for heading in doc_analysis.heading_infos:
+                lines.append(f"• Level {heading.level} Heading (Page {heading.page}, Line {heading.line})")
+                lines.append(f"  ├─ Content: {heading.content}")
+                lines.append(f"  ├─ Confidence: {heading.confidence * 100:.1f}%")
+                # Add validation information
+                lines.extend(cls.explain_heading_validation(heading))
+            lines.append("")
         
         # Content Removal Actions
         if doc_analysis.remove_actions:
@@ -78,7 +145,7 @@ class ActionExplainer:
             lines.append("-" * 30)
             for i, action in enumerate(doc_analysis.remove_actions, 1):
                 lines.append(f"• Page {action.page} - Lines {action.lines}")
-                lines.append(f"  ├─ Type: {action.reason.title()}")
+                lines.append(f"  ├─ Type: {action.reason.value}")
                 lines.append(f"  ├─ Confidence: {action.confidence * 100:.1f}%")
                 preview = cls.get_line_preview(doc_pages, action.page, action.lines[0])
                 lines.append(f"  └─ Content: {preview}")
@@ -89,17 +156,16 @@ class ActionExplainer:
             lines.append("🔄 Content Merge Actions")
             lines.append("-" * 30)
             for i, action in enumerate(doc_analysis.merge_actions, 1):
-                lines.append(f"• Merge #{i}: {action.type.title()}")
+                lines.append(f"• Merge #{i}: {action.type.value}")
                 lines.append(f"  ├─ Pages Involved: {action.pages}")
                 lines.append(f"  ├─ Confidence: {action.confidence * 100:.1f}%")
-                if hasattr(action, 'is_cross_page'):
-                    lines.append(f"  ├─ 需要跨页合并: {'是' if action.is_cross_page else '否'}")
+                lines.append(f"  ├─ Cross-page Merge: {'Yes' if action.is_cross_page else 'No'}")
                 
-                # 添加表格结构信息
-                if action.type == "table":
+                # Add table structure information
+                if action.type == ContentType.TABLE:
                     lines.extend(cls.explain_table_structure(action))
                 
-                # 显示每页的内容范围
+                # Show content range for each page
                 for page, ranges in action.line_ranges.items():
                     for range_info in ranges:
                         range_desc = cls.explain_table_range(range_info)
@@ -115,7 +181,7 @@ class ActionExplainer:
             lines.append("⚠️ Warnings")
             lines.append("-" * 30)
             for warning in doc_analysis.warnings:
-                lines.append(f"• {warning.type} on Page {warning.page}")
+                lines.append(f"• {warning.type.value} on Page {warning.page}")
                 lines.append(f"  ├─ Lines: {warning.lines}")
                 lines.append(f"  └─ Message: {warning.message}")
             lines.append("")
@@ -123,23 +189,81 @@ class ActionExplainer:
         return "\n".join(lines)
 
 if __name__ == "__main__":
-    # Test code
-    # Create test data
+    # Test code with validation issues
     test_doc = {
         "debug_info": {
-            "total_pages": 2,
-            "pages": [
-                {
-                    "page": 1,
-                    "total_lines": 20,
-                    "heading_count": 2,
-                    "table_count": 1,
-                    "image_count": 0,
-                    "first_line_preview": "[P1-L1] # Title",
-                    "last_line_preview": "[P1-L20] End of page"
-                }
-            ]
+            "total_pages": 8,
+            "total_tables": 1,
+            "total_images": 0,
+            "total_headings": 5
         },
+        "heading_infos": [
+            {
+                "page": 1,
+                "line": 1,
+                "level": 1,
+                "content": "深度学习在视电阻率快速反演中的研究与应用",
+                "confidence": 0.98,
+                "validation": {
+                    "is_valid": True,
+                    "validation_scope": "single_page"
+                }
+            },
+            {
+                "page": 2,
+                "line": 1,
+                "level": 1,
+                "content": "0 引言",
+                "confidence": 0.9,
+                "validation": {
+                    "is_valid": False,
+                    "validation_scope": "cross_page",
+                    "error_type": "wrong_level",
+                    "expected_level": 2,
+                    "expected_content": "1 引言"
+                }
+            },
+            {
+                "page": 4,
+                "line": 1,
+                "level": 2,
+                "content": "14.3 地球物理开源程序 SimPEG",
+                "confidence": 0.9,
+                "validation": {
+                    "is_valid": False,
+                    "validation_scope": "cross_page",
+                    "error_type": "wrong_format",
+                    "expected_content": "1.3 地球物理开源程序 SimPEG"
+                }
+            },
+            {
+                "page": 5,
+                "line": 1,
+                "level": 1,
+                "content": "2.2 ARESInvNet 网络结构",
+                "confidence": 0.9,
+                "validation": {
+                    "is_valid": False,
+                    "validation_scope": "cross_page",
+                    "error_type": "inconsistent",
+                    "expected_level": 2,
+                    "expected_content": "2.2 ARESInvNet 网络结构"
+                }
+            },
+            {
+                "page": 6,
+                "line": 2,
+                "level": 2,
+                "content": "<missing>",
+                "confidence": 0.9,
+                "validation": {
+                    "is_valid": False,
+                    "validation_scope": "cross_page",
+                    "error_type": "missing",
+                    "expected_content": "2.3 实验结果分析"
+                }
+            }
+        ],
         "merge_actions": [
             {
                 "type": "table",
@@ -149,7 +273,6 @@ if __name__ == "__main__":
                         {
                             "start": 10,
                             "end": 15,
-                            "content_type": "header",
                             "is_header": True,
                             "has_separator": True
                         }
@@ -166,8 +289,11 @@ if __name__ == "__main__":
     }
     
     doc_pages = [
-        ["[P1-L1] # Title", "[P1-L2] Content"],
-        ["[P2-L1] More content", "[P2-L2] The end"]
+        ["[P1-L1] # 深度学习在视电阻率快速反演中的研究与应用"],
+        ["[P2-L1] # 0 引言"],
+        ["[P4-L1] ## 14.3 地球物理开源程序 SimPEG"],
+        ["[P5-L1] # 2.2 ARESInvNet 网络结构"],
+        ["[P6-L1] Content without heading"],
     ]
     
     # Test explanation

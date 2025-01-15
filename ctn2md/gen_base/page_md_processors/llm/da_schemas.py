@@ -14,6 +14,7 @@ import rich
 from enum import Enum
 from dotenv import load_dotenv, find_dotenv
 from pydantic import BaseModel, Field
+from pydantic.types import confloat
 
 load_dotenv()
 
@@ -38,16 +39,21 @@ class WarningType(str, Enum):
     STRUCTURE = "structure"  # Structure issue
     FORMAT = "format"       # Format issue
 
+class ValidationScope(str, Enum):
+    """Validation scope for heading analysis"""
+    SINGLE_PAGE = "single_page"  # Validation within a single page
+    CROSS_PAGE = "cross_page"    # Validation across multiple pages
+
+class HeadingErrorType(str, Enum):
+    """Error types for heading validation"""
+    MISSING = "missing"          # Heading should exist but not found
+    WRONG_LEVEL = "wrong_level"  # Heading level is incorrect
+    WRONG_FORMAT = "wrong_format"  # Heading format is incorrect (e.g. numbering)
+    INCONSISTENT = "inconsistent"  # Heading is inconsistent with document structure
+
 # Base Data Classes
 class LineRange(BaseModel):
-    """Line range - Locates content position within a page
-    
-    Attributes:
-        start: Starting line number (1-based), must be greater than 0
-        end: Ending line number (1-based), must be greater than or equal to start
-        is_header: Whether this is a header section (table-specific)
-        has_separator: Whether it contains separator line (table-specific)
-    """
+    """Line range - Locates content position within a page"""
     start: int = Field(gt=0, description="Starting line number (1-based)")
     end: int = Field(..., description="Ending line number (1-based)")
     is_header: bool = Field(default=False, description="Whether this is a header section")
@@ -59,21 +65,22 @@ class LineRange(BaseModel):
         if self.end < self.start:
             raise ValueError("end must be greater than or equal to start")
 
+class HeadingValidation(BaseModel):
+    """Validation result for a heading"""
+    is_valid: bool = Field(..., description="Whether the heading is valid")
+    expected_level: Optional[int] = Field(None, description="Expected heading level if current is wrong")
+    expected_content: Optional[str] = Field(None, description="Expected heading content if current is wrong")
+    validation_scope: ValidationScope = Field(..., description="Whether validation is single page or cross page")
+    error_type: Optional[HeadingErrorType] = Field(None, description="Type of error if heading is invalid")
+
 class HeadingInfo(BaseModel):
-    """Heading information - Describes document heading structure
-    
-    Attributes:
-        page: Page number, must be greater than 0
-        line: Line number, must be greater than 0
-        level: Heading level (1-6)
-        content: Heading content, must not be empty
-        confidence: Confidence score (0.0-1.0)
-    """
-    page: int = Field(gt=0, description="Page number")
-    line: int = Field(gt=0, description="Line number")
-    level: int = Field(ge=1, le=6, description="Heading level (1-6)")
-    content: str = Field(min_length=1, description="Heading content")
-    confidence: float = Field(ge=0.0, le=1.0, description="Confidence score")
+    """Information about a heading in the document"""
+    page: int = Field(..., gt=0, description="Page number where heading appears")
+    line: int = Field(..., gt=0, description="Line number where heading appears")
+    level: int = Field(..., ge=1, le=6, description="Heading level (1-6)")
+    content: str = Field(..., min_length=1, description="Heading content without # markers")
+    confidence: confloat(ge=0.8, le=1.0) = Field(..., description="Confidence score for heading detection")
+    validation: Optional[HeadingValidation] = Field(None, description="Validation result for this heading")
 
 class TableStructure(BaseModel):
     """Table structure information
