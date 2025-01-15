@@ -23,18 +23,25 @@ class DocumentAnalyzer(BaseProcessor):
     def __init__(self, md_info: MdInfo):
         super().__init__(md_info)
         self.llm_client = LlmClient(md_info)
+
+    def _explain_document_analysis(self, das: DocumentAnalysis, doc_pages:List[str]):
+        """解释文档分析结果"""
+        pass
     
     def analyze(self, fnames: Optional[List[str]] = None) -> DocumentAnalysis:
         """分析文档并生成动作指令"""
         # 1. 准备带标记的文档内容
-        marked_content = MarkedContentMaker().make_marked_content_from_md_info(self.md_info, fnames)
+        mcm = MarkedContentMaker()
+        marked_content, doc_pages = mcm.make_marked_content_from_md_info(self.md_info, fnames)
         
         system_prompt = SYSTEM_PROMPT_DOC_ANALYSIS
         user_prompt = USER_PROMPT_DOC_ANALYSIS.format(marked_content_from_pages=marked_content)
 
         # 3. 调用LLM分析
-        return self.llm_client.analyze_document(system_prompt, user_prompt)
-    
+        das = self.llm_client.analyze_document(system_prompt, user_prompt)
+        self._explain_document_analysis(das, doc_pages)
+        
+        return das
 
 if __name__ == "__main__":
     from mmbase.utils.util_logging import setup_logger_handlers
@@ -47,6 +54,6 @@ if __name__ == "__main__":
     md_info = MdInfo(pname_info)
     
     analyzer = DocumentAnalyzer(md_info)
-    fnames = md_info.get_fnames_pages()[:3]  # 只测试前3页
+    fnames = md_info.get_fnames_pages()  # 只测试前3页
     result = analyzer.analyze(fnames)
     rich.print(result) 

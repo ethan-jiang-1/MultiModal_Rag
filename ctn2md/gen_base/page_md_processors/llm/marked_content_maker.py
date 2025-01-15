@@ -27,7 +27,7 @@ Generates marked content with clear boundaries:
 ### END_DOCUMENT ###
 """
 
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from dataclasses import dataclass
 from dotenv import load_dotenv
 import os
@@ -79,16 +79,16 @@ class MarkedContentMaker:
         
         return "\n\n".join(result)
     
-    def make_marked_content_from_md_info(self, md_info: MdInfo, fnames: Optional[List[str]] = None) -> str:
-        doc_content = []
+    def make_marked_content_from_md_info(self, md_info: MdInfo, fnames: Optional[List[str]] = None) -> Tuple[str, List[List[str]]]:
+        doc_pages = []
         if fnames is None:
             fnames = md_info.get_fnames_pages()
         for fname in fnames:
             pname = os.path.join(md_info.get_out_dir(), fname)
             with open(pname, "r", encoding="utf-8") as f:
                 content = f.readlines()
-                doc_content.append(content)
-        return self.make_marked_content(doc_content)
+                doc_pages.append(content)
+        return self.make_marked_content(doc_pages), doc_pages
 
 # Usage example
 if __name__ == "__main__":
@@ -102,6 +102,6 @@ if __name__ == "__main__":
 
     # Generate marked content
     maker = MarkedContentMaker()
-    marked_content = maker.make_marked_content_from_md_info(md_info)
+    marked_content, _ = maker.make_marked_content_from_md_info(md_info)
     print("Generated marked content (for marked_content_from_pages in prompts.py):")
     rich.print(marked_content) 

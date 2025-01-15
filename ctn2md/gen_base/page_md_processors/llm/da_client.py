@@ -152,10 +152,10 @@ if __name__ == "__main__":
     llm_client = LlmClient(md_info)
     
     fnames = md_info.get_fnames_pages()
-    fnames = fnames[:3]
+    #fnames = fnames[:3】
 
     maker = MarkedContentMaker()
-    marked_content = maker.make_marked_content_from_md_info(md_info, fnames)
+    marked_content, _ = maker.make_marked_content_from_md_info(md_info, fnames)
     #rich.print(marked_content)
 
     system_prompt = SYSTEM_PROMPT_DOC_ANALYSIS
