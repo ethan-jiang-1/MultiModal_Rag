@@ -14,7 +14,6 @@ import rich
 from enum import Enum
 from dotenv import load_dotenv, find_dotenv
 from pydantic import BaseModel, Field
-from pydantic.types import confloat
 
 load_dotenv()
 
@@ -79,7 +78,7 @@ class HeadingInfo(BaseModel):
     line: int = Field(..., gt=0, description="Line number where heading appears")
     level: int = Field(..., ge=1, le=6, description="Heading level (1-6)")
     content: str = Field(..., min_length=1, description="Heading content without # markers")
-    confidence: confloat(ge=0.8, le=1.0) = Field(..., description="Confidence score for heading detection")
+    confidence: float = Field(..., ge=0.8, le=1.0, description="Confidence score for heading detection")
     validation: Optional[HeadingValidation] = Field(None, description="Validation result for this heading")
 
 class TableStructure(BaseModel):
