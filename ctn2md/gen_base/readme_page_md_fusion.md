@@ -3,259 +3,140 @@
 ## 快速导航
 
 ### 关键文件索引
-- 总入口: `page_md_fusion.py` - 页面融合功能的主入口
-- 文档分析: `page_md_processors/llm/document_analyzer.py` - LLM文档结构分析
-- 处理协调: `page_md_processors/doc_processor.py` - 处理流程协调
-- 页眉页脚: `page_md_processors/header_footer.py` - 页眉页脚处理
-- 表格处理: `page_md_processors/table_processor.py` - 跨页表格处理
-- 数据模型: `page_md_processors/llm/schemas.py` - 核心数据结构定义
+- 基础组件: `base.py` - 处理器基类和工作空间管理
+- 总入口: `doc_processor.py` - 文档处理流程协调
+- 页眉页脚: `header_footer.py` - 页眉页脚清理处理
+- 表格处理: `table_processor.py` - 跨页表格合并处理
+- LLM分析: `llm/document_analyzer.py` - 文档结构智能分析
+- 动作解释: `llm/action_explainer.py` - 处理动作详细说明
+- 数据模型: `llm/da_schemas.py` - 核心数据结构定义
+- 提示词管理: `llm/da_prompts.py` - LLM提示词模板
+- LLM客户端: `llm/da_client.py` - LLM服务调用封装
 
 ### 按功能查找
-- 想了解整体流程? → 看 `page_md_fusion.py`
-- 需要修改LLM分析? → 看 `llm/document_analyzer.py` 和 `llm/prompts.py`
-- 调整处理逻辑? → 看 `doc_processor.py`
-- 页眉页脚处理? → 看 `header_footer.py`
-- 表格合并处理? → 看 `table_processor.py`
-- 修改数据结构? → 看 `llm/schemas.py`
+- 想了解整体流程? → 看 `doc_processor.py`
+- 需要修改基础功能? → 看 `base.py`
+- 调整页眉页脚处理? → 看 `header_footer.py`
+- 优化表格合并? → 看 `table_processor.py`
+- 修改LLM分析? → 看 `llm/document_analyzer.py` 和 `da_prompts.py`
+- 调整数据结构? → 看 `llm/da_schemas.py`
 
 ## 1. 系统设计思路
 
 ### 1.1 核心原则
-- 健壮性：不依赖精确行号，使用特征模式识别
-- 可靠性：完整的验证和错误处理机制
-- 可维护性：清晰的模块划分和状态管理
-- 可扩展性：支持新的处理器和验证规则
-- 可调试性：每个模块尤其是有 __main__ 的模块，必须：
-  - 需要 load_env() 
-  - 所有其他模块引用都是全路径，从项目根目录开始， 在load_env() 之后， 因为load_env() 会设置环境变量， 这些环境变量会影响其他模块的初始化 
-  - 所有的调整都是从根目录开始，不用进入子目录。
+- 模块化：每个处理器专注于单一职责
+- 可扩展：基于BaseProcessor易于添加新处理器
+- 健壮性：完整的错误处理和日志记录
+- 可测试性：每个模块都有独立的测试入口
 
-### 1.2 关键创新
-1. **特征识别替代位置依赖**：
-   - 使用内容特征和上下文定位
-   - 支持模糊匹配和相似度计算
-   - 降低对LLM精确输出的依赖
+### 1.2 关键特性
+1. **统一的处理器接口**：
+   ```python
+   class BaseProcessor:
+       def __init__(self, md_info: MdInfo):
+           self.md_info = md_info
+           
+       def process(self, pages: List[List[str]], actions: Dict) -> List[List[str]]:
+           raise NotImplementedError
+   ```
 
-2. **完整的文档结构分析**：
-   - 维护文档的逻辑结构
-   - 处理复杂的跨页关系
-   - 保持层级和格式的一致性
+2. **工作空间管理**：
+   ```python
+   def prepare_md_fusion_workspace(md_info: MdInfo) -> List[str]:
+       workspace_dir = md_info.get_aux_md_fusion_dir()
+       os.makedirs(workspace_dir, exist_ok=True)
+       # 复制文件到工作空间...
+       return workspace_files
+   ```
 
-3. **健壮的处理流程**：
-   - 预检和后处理机制
-   - 细粒度的错误处理
-   - 支持处理回滚
+3. **智能的表格处理**：
+   ```python
+   class TableProcessor(BaseProcessor):
+       def process(self, pages: List[List[str]], actions: Dict) -> List[List[str]]:
+           # 处理跨页表格
+           for action in actions["merge_actions"]:
+               if action["type"] == "table" and self._is_cross_page_table(action):
+                   processed_pages = self._merge_table(processed_pages, action)
+   ```
 
-## 2. 核心数据结构
+## 2. 核心组件
 
-### 2.1 内容定位与识别
+### 2.1 处理器基类 (base.py)
+- 提供统一的处理器接口
+- 工作空间管理功能
+- 文件读写工具函数
+
+### 2.2 文档处理协调器 (doc_processor.py)
+- 初始化和协调各个处理器
+- 按顺序执行处理流程
+- 维护处理状态
+
+### 2.3 页眉页脚处理器 (header_footer.py)
+- 基于LLM分析结果执行清理
+- 支持多种页眉页脚模式
+- 保持文档结构完整性
+
+### 2.4 表格处理器 (table_processor.py)
+- 智能识别跨页表格
+- 验证表格连续性
+- 合并保持结构完整
+
+## 3. LLM分析组件
+
+### 3.1 文档分析器 (document_analyzer.py)
+- 调用LLM分析文档结构
+- 生成处理动作指令
+- 提供分析结果解释
+
+### 3.2 动作解释器 (action_explainer.py)
+- 详细解释处理动作
+- 提供处理建议
+- 辅助调试分析
+
+### 3.3 数据模型 (da_schemas.py)
 ```python
-class ContentIdentifier(BaseModel):
-    """内容标识器 - 替代简单的行号定位"""
-    content_pattern: str      # 内容特征模式
-    surrounding_text: str     # 周围文本
-    relative_position: str    # 相对位置描述
-    confidence_rules: Dict    # 置信度规则
+class TableRange(BaseModel):
+    start: int
+    end: int
+    is_header: bool = False
+    has_separator: bool = False
 ```
 
-### 2.2 文档结构表示
+## 4. 使用示例
+
+### 4.1 基本使用
 ```python
-class DocumentStructure(BaseModel):
-    """文档结构 - 维护整体逻辑关系"""
-    logical_blocks: List[Block]    # 逻辑块
-    block_relations: Dict          # 块间关系
-    continuity_markers: List       # 连续性标记
-    format_standards: Dict         # 格式标准
+from ctn2md.md_info.md_info_base import MdInfo
+from ctn2md.gen_base.page_md_processors.doc_processor import DocProcessor
+
+# 初始化
+md_info = MdInfo(json_path)
+processor = DocProcessor(md_info)
+
+# 处理文档
+processed_pages = processor.process_document(pages)
 ```
 
-### 2.3 处理流水线
+### 4.2 自定义处理器
 ```python
-class ProcessingPipeline(BaseModel):
-    """处理流水线 - 确保处理可靠性"""
-    pre_checks: List[Check]        # 预检
-    processing_steps: List[Step]   # 处理步骤
-    recovery_points: List[Point]   # 恢复点
-    validation_rules: Dict         # 验证规则
+from ctn2md.gen_base.page_md_processors.base import BaseProcessor
+
+class CustomProcessor(BaseProcessor):
+    def process(self, pages: List[List[str]], actions: Dict) -> List[List[str]]:
+        # 实现自定义处理逻辑
+        return processed_pages
 ```
 
-### 2.4 错误处理
-```python
-class ErrorHandling(BaseModel):
-    """错误处理 - 保证系统稳定性"""
-    error_types: Dict[str, Handler]  # 错误处理器
-    recovery_strategies: Dict        # 恢复策略
-    error_reporting: Reporter        # 错误报告
-```
+## 5. 最佳实践
 
-## 3. 处理流程详解
+### 5.1 开发建议
+- 使用 `load_env()` 确保环境初始化
+- 保持处理器的单一职责
+- 完整的错误处理和日志记录
+- 添加独立的测试入口
 
-### 3.1 预处理阶段
-1. **文档分析**：
-   - 识别文档类型和结构
-   - 建立逻辑块索引
-   - 确定处理策略
-
-2. **特征提取**：
-   - 提取内容特征
-   - 建立上下文关系
-   - 生成特征索引
-
-### 3.2 处理阶段
-1. **页眉页脚处理**：
-   - 基于特征识别而非位置
-   - 使用相似度确认
-   - 保留处理历史
-
-2. **表格处理**：
-   - 识别表格结构
-   - 处理跨页关系
-   - 维护表格完整性
-
-3. **格式处理**：
-   - 统一格式标准
-   - 保持层级关系
-   - 验证格式一致性
-
-### 3.3 后处理阶段
-1. **完整性检查**：
-   - 验证结构完整性
-   - 检查跨页关系
-   - 确认格式一致性
-
-2. **错误修正**：
-   - 自动修正常见错误
-   - 提供修正建议
-   - 记录修正历史
-
-## 4. 验证机制
-
-### 4.1 预检验证
-```python
-class PreCheck(BaseModel):
-    """预检验证"""
-    structure_checks: List[Check]  # 结构检查
-    content_checks: List[Check]    # 内容检查
-    format_checks: List[Check]     # 格式检查
-```
-
-### 4.2 处理验证
-```python
-class ProcessingValidation(BaseModel):
-    """处理验证"""
-    step_validation: Dict[str, Validator]  # 步骤验证器
-    state_validation: StateValidator       # 状态验证
-    consistency_checks: List[Check]        # 一致性检查
-```
-
-### 4.3 结果验证
-```python
-class ResultValidation(BaseModel):
-    """结果验证"""
-    completeness_check: Check      # 完整性检查
-    consistency_check: Check       # 一致性检查
-    quality_metrics: Dict          # 质量指标
-```
-
-## 5. 错误处理机制
-
-### 5.1 错误分类
-1. **结构错误**：
-   - 不完整的表格
-   - 断开的段落
-   - 错误的层级关系
-
-2. **内容错误**：
-   - 误删内容
-   - 重复内容
-   - 格式混乱
-
-3. **处理错误**：
-   - 处理超时
-   - 资源不足
-   - 状态不一致
-
-### 5.2 恢复策略
-1. **自动恢复**：
-   - 使用恢复点
-   - 重试处理
-   - 降级处理
-
-2. **手动干预**：
-   - 提供错误报告
-   - 建议修正方案
-   - 记录处理历史
-
-## 6. 扩展性设计
-
-### 6.1 处理器扩展
-```python
-class ProcessorExtension(BaseModel):
-    """处理器扩展"""
-    processor_type: str           # 处理器类型
-    validation_rules: Dict        # 验证规则
-    error_handlers: Dict          # 错误处理器
-```
-
-### 6.2 规则扩展
-```python
-class RuleExtension(BaseModel):
-    """规则扩展"""
-    rule_type: str               # 规则类型
-    rule_definition: Dict        # 规则定义
-    validation_method: Callable  # 验证方法
-```
-
-## 7. 监控和反馈
-
-### 7.1 处理监控
-```python
-class ProcessingMonitor(BaseModel):
-    """处理监控"""
-    performance_metrics: Dict    # 性能指标
-    resource_usage: Dict        # 资源使用
-    error_statistics: Dict      # 错误统计
-```
-
-### 7.2 质量反馈
-```python
-class QualityFeedback(BaseModel):
-    """质量反馈"""
-    quality_metrics: Dict       # 质量指标
-    improvement_suggestions: List # 改进建议
-    historical_comparison: Dict  # 历史对比
-```
-
-## 8. 最佳实践
-
-### 8.1 开发建议
-1. **特征定义**：
-   - 使用明确的特征模式
-   - 包含足够的上下文
-   - 考虑边界情况
-
-2. **错误处理**：
-   - 实现细粒度的错误捕获
-   - 提供清晰的错误信息
-   - 保持处理的可回滚性
-
-3. **验证规则**：
-   - 定义完整的验证链
-   - 实现多层次的检查
-   - 保持验证的独立性
-
-### 8.2 调试技巧
-1. **日志记录**：
-   - 记录关键处理步骤
-   - 保存中间状态
-   - 追踪错误链
-
-2. **状态检查**：
-   - 验证状态一致性
-   - 检查资源使用
-   - 监控处理性能
-
-这种设计确保了：
-1. 系统的健壮性和可靠性
-2. 处理结果的可预测性
-3. 错误的可控性和可恢复性
-4. 系统的可维护性和可扩展性
+### 5.2 调试技巧
+- 使用 `__main__` 块测试
+- 检查处理日志输出
+- 验证中间处理结果
+- 使用 rich 打印调试信息
