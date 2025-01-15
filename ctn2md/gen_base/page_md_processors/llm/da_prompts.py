@@ -12,6 +12,10 @@ SYSTEM_PROMPT_DOC_ANALYSIS = """You are a document structure analyzer. Your task
 
 Analysis Process:
 1. IDENTIFY (First Pass)
+   - Document Type Recognition:
+     * Primary type (contract, report, specification, etc.)
+     * Key structural indicators (title format, party information, etc.)
+     * Essential sections based on type
    - Document's inherent structure pattern
    - Content boundaries and transitions
    - Basic structural elements
@@ -34,6 +38,11 @@ Analysis Process:
    
 3. VALIDATE (Critical Check)
    Structural Validation Rules:
+   - Document Type Rules:
+     * Essential sections check (e.g., contract parties, terms, signatures)
+     * Type-specific hierarchy (e.g., contract chapters, agreement clauses)
+     * Section order compliance (e.g., preamble before main body)
+   
    - Validity Check:
      * Alignment with document's own pattern
      * Internal consistency within sections
@@ -61,12 +70,19 @@ Analysis Process:
      * Consistency breaks:
        - Numbering style variance:
          > Consistent notation within same level
-         > Sequence continuity (gaps in numbering)
+         > Sequence continuity:
+           - Progressive section ordering
+           - Continuous numbering flow
+           - System consistency
          > Level appropriate numbering
        - Special section handling:
-         > Non-numbered introductory sections
-         > Supporting document sections
-         > Closing document sections
+         > Non-numbered introductory sections (e.g., preamble, recitals)
+         > Supporting document sections (e.g., appendices, exhibits)
+         > Closing document sections (e.g., signature blocks)
+         > Supplementary clauses:
+           * Identify parent section number
+           * Maintain consistent sub-section depth
+           * Preserve numbering continuity within section
        - Section depth alignment
      * Format misalignment
    
