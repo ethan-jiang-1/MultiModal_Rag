@@ -9,37 +9,76 @@ from ctn2md.gen_base.page_md_processors.llm.da_schemas import DocumentAnalysis
 logger = logging.getLogger(__name__)
 
 class ActionExplainer:
-    """解释文档分析结果,生成格式化报告"""
+    """解释文档分析结果,生成格式化报告
+    
+    !!! IMPORTANT DESIGN NOTE - DO NOT DELETE !!!
+    关于文档数据结构的重要说明:
+    
+    doc_pages: List[List[str]] 的具体含义:
+    1. 外层List: 表示整个文档的所有页面的集合
+    2. 内层List: 表示单个页面中的所有行
+    3. str: 表示每一行的原始内容
+    
+    示例数据结构:
+    doc_pages = [
+        # 第1页
+        [
+            "# 深度学习在视电阻率快速反演中的研究与应用",  # 原始内容
+            "",                                        # 空行
+            "### 余传涛1,2，李子伦1，薛俊杰2,3,4*"      # 原始内容
+        ],
+        # 第2页
+        [
+            "# 0 引言",
+            "",
+            "电法勘探是煤炭领域含水结构体探测的主要手段..."
+        ]
+    ]
+    
+    特别注意:
+    - 每行内容都是原始文本，不包含 [Px-Ly] 这样的标记
+    - 页码和行号使用数组索引确定，外层列表索引+1为页码，内层列表索引+1为行号
+    - 这种结构设计使得文档处理保持原始内容的纯净性，更适合后续处理和渲染
+    """
     
     @staticmethod
-    def get_line_preview(doc_pages: List[str], page_num: int, line_num: int) -> str:
-        """Get a preview of a specific line from the document pages.
+    def get_line_preview(doc_pages: List[List[str]], page_num: int, line_num: int) -> str:
+        """Get preview of a specific line from doc_pages.
         
+        !!! IMPORTANT - DO NOT MODIFY WITHOUT UNDERSTANDING !!!
         Args:
-            doc_pages: List of page contents, where each element is the entire content of a page
-            page_num: 1-indexed page number
-            line_num: 1-indexed line number
+            doc_pages: 文档页面集合，其中:
+                      - 外层列表的每个元素是一个页面
+                      - 内层列表的每个元素是该页面的一行原始文本
+                      - 文本内容不包含行号标记，保持原始格式
+            page_num: 1-indexed 页码
+            line_num: 1-indexed 行号
             
         Returns:
-            First 32 characters of the specified line, or error message if line not found
+            First 32 chars of the line or error message if line not found
+            
+        Example:
+            doc_pages = [
+                ["# 标题", "", "正文内容"],  # 第1页
+                ["## 小节", "", "更多内容"]   # 第2页
+            ]
+            get_line_preview(doc_pages, 1, 1) -> "# 标题"
         """
         # Convert to 0-based indexing
         page_idx = page_num - 1
         
         # Check if page exists
         if page_idx < 0 or page_idx >= len(doc_pages):
-            return f"[page {page_num} does not exist]"
-            
-        # Get page content and split into lines
-        lines = doc_pages[page_idx].split('\n')
+            return f"[page {page_num} not found]"
         
-        # Find the line that starts with [Px-Ly]
-        target_marker = f"[P{page_num}-L{line_num}]"
-        for line in lines:
-            if line.startswith(target_marker):
-                return line[:32]
-            
-        return f"[line {line_num} not found on page {page_num}]"
+        # Get the page content
+        page_content = doc_pages[page_idx]
+        
+        # Convert to 0-based line index
+        line_idx = line_num - 1
+        if line_idx < 0 or line_idx >= len(page_content):
+            return f"[line {line_num} not found on page {page_num}]"
+        return page_content[line_idx][:32]
 
     @staticmethod
     def format_section_header(title: str) -> str:
@@ -54,12 +93,12 @@ class ActionExplainer:
         return f"\n{'-' * 30}\n{title}\n{'-' * 30}"
 
     @classmethod
-    def explain_document_analysis(cls, doc_analysis: DocumentAnalysis, doc_pages: List[str]) -> str:
+    def explain_document_analysis(cls, doc_analysis: DocumentAnalysis, doc_pages: List[List[str]]) -> str:
         """Generate a formatted explanation of document analysis results.
         
         Args:
             doc_analysis: The document analysis results
-            doc_pages: List of page contents where each element is the entire content of a page, the first element is the page-1
+            doc_pages: List of page contents where each page is a list of lines
             
         Returns:
             A formatted string explaining the analysis results
