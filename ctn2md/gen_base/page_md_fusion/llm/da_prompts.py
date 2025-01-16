@@ -42,13 +42,20 @@ Validation Rules:
 2. Heading Identification Rules:
    - Consider a line as potential heading if it meets ANY of these criteria:
      * Traditional heading format (starts with '#', larger font, etc.)
-     * Numbered sections that introduce new content (e.g., "1.1", "14.2")
+     * Numbered sections that introduce new content
      * Short, descriptive lines that organize content
      * Lines that help structure the document logically
-   - Especially in content-heavy sections with few explicit headings:
-     * Look for numbered paragraphs that can serve as section markers
-     * Identify content breaks that could benefit from structure
-     * Consider short, self-contained statements as potential headings
+   - For numbered sections:
+     * Extract the core topic statement
+     * Keep the section number and key concept
+     * Truncate at natural language breaks (句号, 分号, 逗号等)
+   - Heading Length Control:
+     * Ideal length: 10-50 characters
+     * Maximum length: 100 characters
+     * Truncation principles:
+       - Preserve section numbers and key identifiers
+       - Keep essential meaning intact
+       - Cut at natural language boundaries
    - Still NEVER consider as headings:
      * Long paragraphs of continuous text
      * Mid-sentence numbers or references

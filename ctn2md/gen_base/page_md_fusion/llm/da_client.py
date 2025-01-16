@@ -146,8 +146,8 @@ if __name__ == "__main__":
 
     setup_logger_handlers()
     
-    #pname_info = "_work/ctn2md_papers___paged_md/_info.json"
-    pname_info = "_work/ctn2md_mrag___paged_md/_info.json"
+    pname_info = "_work/ctn2md_papers___paged_md/_info.json"
+    #pname_info = "_work/ctn2md_mrag___paged_md/_info.json"
     md_info = MdInfo(pname_info)
 
     #llm_client = LlmClient(md_info)
