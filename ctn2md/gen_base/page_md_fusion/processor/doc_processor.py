@@ -10,7 +10,7 @@ load_dotenv()
 
 from ctn2md.md_info.md_info_base import MdInfo
 from ctn2md.gen_base.page_md_fusion.processor.base import BaseProcessor
-from ctn2md.gen_base.page_md_fusion.llm.document_analyzer import DocumentAnalyzer
+from ctn2md.gen_base.page_md_fusion.llm_heading.document_heading_analyzer import DocumentHeadingAnalyzer
 from ctn2md.gen_base.page_md_fusion.processor.header_footer import HeaderFooterProcessor
 from ctn2md.gen_base.page_md_fusion.processor.table_processor import TableProcessor
 
@@ -21,7 +21,7 @@ class DocProcessor(BaseProcessor):
     
     def __init__(self, md_info: MdInfo):
         super().__init__(md_info)
-        self.document_analyzer = DocumentAnalyzer(md_info)
+        self.document_analyzer = DocumentHeadingAnalyzer(md_info)
         
         # 初始化处理器
         self.header_footer_processor = HeaderFooterProcessor(md_info)

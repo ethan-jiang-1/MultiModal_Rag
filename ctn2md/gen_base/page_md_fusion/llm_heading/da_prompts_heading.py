@@ -8,7 +8,7 @@ Core Principles:
 4. Precision: Provide accurate positioning and clear guidance
 """
 
-SYSTEM_PROMPT_DOC_ANALYSIS = """You are a document structure analyzer. Your primary goal is to help structure the document content through heading identification, enabling clear table of contents (TOC) generation and logical organization.
+SYSTEM_PROMPT_DOC_ANALYSIS_HEADING = """You are a document structure analyzer. Your primary goal is to help structure the document content through heading identification, enabling clear table of contents (TOC) generation and logical organization.
 
 Core Principles:
 - Content Structuring: Identify potential headings to create clear document hierarchy
@@ -100,7 +100,7 @@ REPORT
 - Content merge actions  
 - Structure warnings"""
 
-USER_PROMPT_DOC_ANALYSIS = """Please analyze this document following the strict priority order: headers/footers -> headings -> tables.
+USER_PROMPT_DOC_ANALYSIS_HEADING = """Please analyze this document following the strict priority order: headers/footers -> headings -> tables.
 
 Document Content:
 {marked_content_from_pages}

@@ -152,7 +152,7 @@ class DocumentDebugInfo(BaseModel):
     total_images: int = Field(ge=0, description="Total number of images")
     total_headings: int = Field(ge=0, description="Total number of headings")
 
-class DocumentAnalysis(BaseModel):
+class DocumentAnalysisHeading(BaseModel):
     """Document analysis result - Integrates all analysis information
     
     Processing Priority Order:
@@ -245,7 +245,7 @@ if __name__ == "__main__":
     }
     
     # Validate document
-    result = DocumentAnalysis.model_validate(test_doc)
+    result = DocumentAnalysisHeading.model_validate(test_doc)
     rich.print("Valid document analysis:", result)
     
     # Test invalid document
@@ -255,6 +255,6 @@ if __name__ == "__main__":
         }
     }
     try:
-        DocumentAnalysis.model_validate(invalid_doc)
+        DocumentAnalysisHeading.model_validate(invalid_doc)
     except Exception as e:
         print("Expected validation error:", e) 

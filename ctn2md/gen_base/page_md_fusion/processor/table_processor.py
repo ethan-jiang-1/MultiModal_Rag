@@ -16,7 +16,7 @@ load_dotenv()
 
 from ctn2md.md_info.md_info_base import MdInfo
 from ctn2md.gen_base.page_md_fusion.processor.base import BaseProcessor
-from ctn2md.gen_base.page_md_fusion.llm.da_schemas import TableRange
+from ctn2md.gen_base.page_md_fusion.llm_heading.da_schemas_heading import TableRange
 
 logger = logging.getLogger(__name__)
 

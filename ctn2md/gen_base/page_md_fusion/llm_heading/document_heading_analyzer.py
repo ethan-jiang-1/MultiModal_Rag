@@ -10,35 +10,35 @@ load_dotenv()
 
 from ctn2md.md_info.md_info_base import MdInfo
 from ctn2md.gen_base.page_md_fusion.processor.base import BaseProcessor
-from ctn2md.gen_base.page_md_fusion.llm.da_client import LlmClient
-from ctn2md.gen_base.page_md_fusion.llm.da_prompts import SYSTEM_PROMPT_DOC_ANALYSIS, USER_PROMPT_DOC_ANALYSIS
-from ctn2md.gen_base.page_md_fusion.llm.da_schemas import DocumentAnalysis
-from ctn2md.gen_base.page_md_fusion.llm.marked_content_maker import MarkedContentMaker
-from ctn2md.gen_base.page_md_fusion.llm.action_explainer import ActionExplainer
+from ctn2md.gen_base.page_md_fusion.llm_heading.da_client_heading import llmClientHeading
+from ctn2md.gen_base.page_md_fusion.llm_heading.da_prompts_heading import SYSTEM_PROMPT_DOC_ANALYSIS_HEADING, USER_PROMPT_DOC_ANALYSIS_HEADING
+from ctn2md.gen_base.page_md_fusion.llm_heading.da_schemas_heading import DocumentAnalysisHeading
+from ctn2md.gen_base.page_md_fusion.llm_heading.full_marked_content_maker import FullMarkedContentMaker
+from ctn2md.gen_base.page_md_fusion.llm_heading.heading_action_explainer import HeadingActionExplainer
 
 logger = logging.getLogger(__name__)
 
-class DocumentAnalyzer(BaseProcessor):
+class DocumentHeadingAnalyzer(BaseProcessor):
     """文档分析器：生成文档结构分析"""
     
     def __init__(self, md_info: MdInfo):
         super().__init__(md_info)
-        self.llm_client = LlmClient(md_info)
+        self.llm_client = llmClientHeading(md_info)
 
-    def analyze(self, fnames: Optional[List[str]] = None) -> DocumentAnalysis:
+    def analyze(self, fnames: Optional[List[str]] = None) -> DocumentAnalysisHeading:
         """分析文档并生成动作指令"""
         # 1. 准备带标记的文档内容
-        mcm = MarkedContentMaker()
+        mcm = FullMarkedContentMaker()
         marked_content, doc_pages = mcm.make_marked_content_from_md_info(self.md_info, fnames)
         
-        system_prompt = SYSTEM_PROMPT_DOC_ANALYSIS
-        user_prompt = USER_PROMPT_DOC_ANALYSIS.replace("{marked_content_from_pages}", marked_content)
+        system_prompt = SYSTEM_PROMPT_DOC_ANALYSIS_HEADING
+        user_prompt = USER_PROMPT_DOC_ANALYSIS_HEADING.replace("{marked_content_from_pages}", marked_content)
 
         # 2. 调用LLM分析
         das = self.llm_client.analyze_document(system_prompt, user_prompt)
         
         # 3. 生成分析报告
-        explanation = ActionExplainer.explain_document_analysis(das, doc_pages)
+        explanation = HeadingActionExplainer.explain_document_analysis(das, doc_pages)
         logger.info("\nDocument Analysis Report:\n%s", explanation)
         
         return das
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     pname_info = "_test/ctn2md_mrag___paged_md/_info.json"
     md_info = MdInfo(pname_info)
     
-    analyzer = DocumentAnalyzer(md_info)
+    analyzer = DocumentHeadingAnalyzer(md_info)
     fnames = md_info.get_fnames_pages()  # 只测试前3页
     result = analyzer.analyze(fnames)
     

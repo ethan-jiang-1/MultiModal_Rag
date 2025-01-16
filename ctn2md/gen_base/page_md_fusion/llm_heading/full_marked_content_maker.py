@@ -50,7 +50,7 @@ class MarkdownPage:
         result.append(f"=== END PAGE {self.page_num} ===")
         return "\n".join(result)
 
-class MarkedContentMaker:
+class FullMarkedContentMaker:
     """Content marker for generating marked_content_from_pages in prompts.py"""
     
     @staticmethod
@@ -101,7 +101,7 @@ if __name__ == "__main__":
     md_info = MdInfo(pname_info)
 
     # Generate marked content
-    maker = MarkedContentMaker()
+    maker = FullMarkedContentMaker()
     marked_content, _ = maker.make_marked_content_from_md_info(md_info)
     print("Generated marked content (for marked_content_from_pages in prompts.py):")
     rich.print(marked_content) 

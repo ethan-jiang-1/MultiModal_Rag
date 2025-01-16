@@ -8,8 +8,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from ctn2md.gen_base.page_md_fusion.llm.da_schemas import (
-    DocumentAnalysis, 
+from ctn2md.gen_base.page_md_fusion.llm_heading.da_schemas_heading import (
+    DocumentAnalysisHeading, 
     #ValidationScope,
     HeadingErrorType,
     ContentType,
@@ -21,7 +21,7 @@ from ctn2md.gen_base.page_md_fusion.llm.da_schemas import (
 
 logger = logging.getLogger(__name__)
 
-class ActionExplainer:
+class HeadingActionExplainer:
     """Document analysis result explainer"""
     
     @staticmethod
@@ -107,7 +107,7 @@ class ActionExplainer:
         return lines
             
     @classmethod
-    def explain_document_analysis(cls, doc_analysis: DocumentAnalysis, doc_pages: List[List[str]]) -> str:
+    def explain_document_analysis(cls, doc_analysis: DocumentAnalysisHeading, doc_pages: List[List[str]]) -> str:
         """Generate document analysis report
         
         Args:
@@ -298,6 +298,6 @@ if __name__ == "__main__":
     ]
     
     # Test explanation
-    doc_analysis = DocumentAnalysis.model_validate(test_doc)
-    explanation = ActionExplainer.explain_document_analysis(doc_analysis, doc_pages)
+    doc_analysis = DocumentAnalysisHeading.model_validate(test_doc)
+    explanation = HeadingActionExplainer.explain_document_analysis(doc_analysis, doc_pages)
     print(explanation) 

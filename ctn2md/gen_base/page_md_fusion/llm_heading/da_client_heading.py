@@ -13,13 +13,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from mmbase.utils_llm.llm_base import chat_gpt_json, get_gpt_messages
-from ctn2md.gen_base.page_md_fusion.llm.da_schemas import DocumentAnalysis
+from ctn2md.gen_base.page_md_fusion.llm_heading.da_schemas_heading import DocumentAnalysisHeading
 from ctn2md.md_info.md_info_base import MdInfo
 from mmbase.utils_llm_debug.llm_diag import save_llm_diag_messages
 
 logger = logging.getLogger(__name__)
 
-class LlmClient:
+class llmClientHeading:
     """LLM客户端
     处理与LLM的交互，包括缓存、错误处理等
     """
@@ -73,7 +73,7 @@ class LlmClient:
         else:
             raise ValueError(f"Invalid model: {model_final}")
     
-    def analyze_document(self, system_prompt: str, user_prompt: str, using_cache: bool = True, model_sel: Optional[str] = None) -> DocumentAnalysis:
+    def analyze_document(self, system_prompt: str, user_prompt: str, using_cache: bool = True, model_sel: Optional[str] = None) -> DocumentAnalysisHeading:
         """分析文档
         
         Args:
@@ -99,7 +99,7 @@ class LlmClient:
                     with open(cache_path, 'rb') as f:
                         cache_data = msgpack.unpack(f)
                         # 将缓存数据转换为DocumentAnalysis对象
-                        return DocumentAnalysis.model_validate(cache_data)
+                        return DocumentAnalysisHeading.model_validate(cache_data)
                 except Exception as e:
                     logger.warning(f"Failed to load cache: {e}")
         
@@ -120,7 +120,7 @@ class LlmClient:
 
             # 使用pydantic模型验证和转换
             rich.print(response)
-            result = DocumentAnalysis.model_validate(response)
+            result = DocumentAnalysisHeading.model_validate(response)
             
             # 如果设置了缓存目录，保存缓存
             if cache_path:
@@ -139,9 +139,9 @@ class LlmClient:
 
 if __name__ == "__main__":
     from mmbase.utils.util_logging import setup_logger_handlers
-    from ctn2md.gen_base.page_md_fusion.llm.marked_content_maker import MarkedContentMaker
-    from ctn2md.gen_base.page_md_fusion.llm.action_explainer import ActionExplainer
-    from ctn2md.gen_base.page_md_fusion.llm.da_prompts import SYSTEM_PROMPT_DOC_ANALYSIS, USER_PROMPT_DOC_ANALYSIS
+    from ctn2md.gen_base.page_md_fusion.llm_heading.full_marked_content_maker import FullMarkedContentMaker
+    from ctn2md.gen_base.page_md_fusion.llm_heading.heading_action_explainer import HeadingActionExplainer
+    from ctn2md.gen_base.page_md_fusion.llm_heading.da_prompts_heading import SYSTEM_PROMPT_DOC_ANALYSIS_HEADING, USER_PROMPT_DOC_ANALYSIS_HEADING
 
     setup_logger_handlers()
     
@@ -151,22 +151,22 @@ if __name__ == "__main__":
     md_info = MdInfo(pname_info)
 
     #llm_client = LlmClient(md_info)
-    llm_client = LlmClient(md_info)
+    llm_client = llmClientHeading(md_info)
     
     fnames = md_info.get_fnames_pages()
     #fnames = fnames[:3】
 
-    maker = MarkedContentMaker()
+    maker = FullMarkedContentMaker()
     marked_content, doc_pages = maker.make_marked_content_from_md_info(md_info, fnames)
     #rich.print(marked_content)
 
-    system_prompt = SYSTEM_PROMPT_DOC_ANALYSIS
-    user_prompt = USER_PROMPT_DOC_ANALYSIS.replace("{marked_content_from_pages}", marked_content)
+    system_prompt = SYSTEM_PROMPT_DOC_ANALYSIS_HEADING
+    user_prompt = USER_PROMPT_DOC_ANALYSIS_HEADING.replace("{marked_content_from_pages}", marked_content)
     #print(user_prompt)
 
     das = llm_client.analyze_document(system_prompt, user_prompt, using_cache=False, model_sel="gpt-4o")
     rich.print(das)
 
-    explanation = ActionExplainer.explain_document_analysis(das, doc_pages)
+    explanation = HeadingActionExplainer.explain_document_analysis(das, doc_pages)
     logger.info("\nDocument Analysis Report:\n%s", explanation)
 
