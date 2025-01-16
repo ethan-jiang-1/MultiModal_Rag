@@ -50,8 +50,8 @@ if __name__ == "__main__":
     setup_logger_handlers()
     
     # 测试代码
-    #pname_info = "_work/ctn2md_papers___paged_md/_info.json"
-    pname_info = "_work/ctn2md_mrag___paged_md/_info.json"
+    #pname_info = "_test/ctn2md_papers___paged_md/_info.json"
+    pname_info = "_test/ctn2md_mrag___paged_md/_info.json"
     md_info = MdInfo(pname_info)
     
     analyzer = DocumentAnalyzer(md_info)

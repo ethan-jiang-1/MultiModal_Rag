@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
     setup_logger_handlers()
 
-    pname_info = "_work/ctn2md_mrag__1__座椅STO间隙_P1_lp/_info.json"
+    pname_info = "_test/ctn2md_mrag___paged_md/_info.json"
     md_info = MdInfo(pname_info)
 
     # Generate marked content
