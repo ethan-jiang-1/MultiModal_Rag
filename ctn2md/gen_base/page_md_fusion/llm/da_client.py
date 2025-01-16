@@ -136,7 +136,6 @@ class LlmClient:
             
         except Exception as e:
             logger.error(f"Error calling LLM: {e}")
-            raise e
 
 if __name__ == "__main__":
     from mmbase.utils.util_logging import setup_logger_handlers
@@ -146,8 +145,9 @@ if __name__ == "__main__":
 
     setup_logger_handlers()
     
-    pname_info = "_test/ctn2md_papers___paged_md/_info.json"
+    #pname_info = "_test/ctn2md_papers___paged_md/_info.json"
     #pname_info = "_test/ctn2md_mrag___paged_md/_info.json"
+    pname_info = "_test/ctn2md_mrag___faked/_info.json"
     md_info = MdInfo(pname_info)
 
     #llm_client = LlmClient(md_info)

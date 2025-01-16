@@ -117,7 +117,7 @@ Required JSON Output Format:
     "remove_actions": [{
         "page": "Page number (>0)",
         "lines": "List of line numbers (non-empty)",
-        "reason": "header|footer|duplicate|noise|invalid",
+        "reason": "One of: header, footer, duplicate, noise, invalid",
         "confidence": "0.95-1.0"
     }],
     
