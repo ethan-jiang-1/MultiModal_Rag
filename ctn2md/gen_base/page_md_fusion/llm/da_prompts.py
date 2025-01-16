@@ -39,18 +39,53 @@ VALIDATE
 Validation Rules:
 1. Always validate headings first after removing headers/footers
 
-2. For each content line being validated:
-   - If not a heading: set level = -1, no expected_level needed
-   - If is a heading: 
-     * Set level based on current format (e.g. "14.3" -> level = dots_count + 1 = 2)
-     * If invalid, must set expected_level based on document structure
+2. Heading Identification Rules:
+   - A line is ONLY considered a heading if it meets ALL these criteria:
+     * Is relatively short (typically less than 100 characters)
+     * Leads to subsequent content or sub-sections
+     * Serves as a content organizer or topic indicator
+     * Has clear visual distinction from regular text
+   - Must also meet ONE of these format criteria:
+     * Starts with one or more '#' characters
+     * Has significantly larger font size than body text
+     * Has distinct formatting (bold, underline, etc.)
+   - NEVER consider as headings:
+     * Long paragraphs or sentences
+     * Numbered lines without heading formatting
+     * Content that doesn't lead to other content
+     * Regular body text even if it starts with numbers
 
-3. When validating document structure:
-   - Check heading format consistency within same level
-   - Verify parent-child relationships across pages
-   - Ensure continuous section numbering
+3. For heading level determination:
+   - Count the number of '#' at the start of line to determine level
+   - For example: 
+     * "# Title" -> level = 1
+     * "## Section" -> level = 2
+     * "### Subsection" -> level = 3
+   - If no '#' markers but confirmed as heading:
+     * Use visual formatting cues
+     * Compare with surrounding headings
+     * Use document hierarchy to determine level
 
-4. Consider both single-page and cross-page context
+4. Strict Validation Requirements:
+   - Every heading MUST be validated against document structure
+   - If a heading's level doesn't match its position in hierarchy:
+     * Set is_valid = false
+     * Set error_type = "wrong_level"
+     * Set expected_level based on document structure
+   - If a heading's format is inconsistent:
+     * Set is_valid = false
+     * Set error_type = "wrong_format"
+     * Set expected_content with correct format
+   - Never leave validation fields as null when there's an error
+   - Cross-page validation is required for all headings
+
+5. Document Structure Rules:
+   - A heading's level must be exactly one more than its parent
+   - No skipping levels (e.g., h1 -> h3 is invalid)
+   - Numbered sections must maintain consistent format
+   - All sections at same level must use same numbering style
+
+6. Consider both single-page and cross-page context
 
 REPORT
 - Debug information
