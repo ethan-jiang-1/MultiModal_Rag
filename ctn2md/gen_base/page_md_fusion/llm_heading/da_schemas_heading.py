@@ -151,7 +151,7 @@ class HeadingInfo(BaseModel):
     page: int = Field(..., description="页码", gt=0)
     line: int = Field(..., description="行号", gt=0)
     content: str = Field(..., description="标题内容")
-    heading_id: str = Field(..., description="标题唯一标识符")
+    heading_id: str = Field(description="标题唯一标识符 (从1开始的自然数序号的字符串形式，如 '1', '2', '3')")
     current_level: Optional[int] = Field(None, description="当前层级", ge=1, le=6)
     expected_level: int = Field(..., description="期望层级", ge=1, le=6)
     confidence: float = Field(..., description="置信度", ge=0.8, le=1.0)
@@ -199,25 +199,25 @@ if __name__ == "__main__":
                     "page": 1,
                     "line": 5,
                     "content": "1.2 系统架构",
-                    "heading_id": "h1",
-                    "current_level": None,
+                    "heading_id": "1",
+                    "current_level": 2,
                     "expected_level": 2,
                     "confidence": 0.95,
                     "validation": {
-                        "is_valid": False,
-                        "current_level": None,
+                        "is_valid": True,
+                        "current_level": 2,
                         "expected_level": 2,
-                        "error_type": "needs_level",
+                        "error_type": None,
                         "validation_scope": "single_page",
                         "confidence": 0.95,
                         "judgment_basis": {
                             "format_features": ["number_format"],
-                            "content_features": ["length", "topic"],
+                            "content_features": ["length"],
                             "context_features": ["section_level"],
                             "position_features": ["para_start"]
                         },
                         "context": {
-                            "prev_heading": "1. 系统概述",
+                            "prev_heading_id": "1",
                             "prev_level": 1,
                             "is_cross_page": False
                         }
@@ -272,7 +272,7 @@ if __name__ == "__main__":
                     "page": 1,
                     "line": 10,
                     "content": "普通段落",
-                    "heading_id": "h2",
+                    "heading_id": "3",
                     "current_level": 2,
                     "expected_level": 1,
                     "confidence": 0.92,
@@ -331,7 +331,7 @@ if __name__ == "__main__":
                     "page": 2,
                     "line": 1,
                     "content": "2.1.1 详细设计",
-                    "heading_id": "h3",
+                    "heading_id": "2",
                     "current_level": 3,
                     "expected_level": 3,
                     "confidence": 0.98,

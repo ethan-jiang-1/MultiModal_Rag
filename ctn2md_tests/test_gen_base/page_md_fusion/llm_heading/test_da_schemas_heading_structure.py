@@ -26,7 +26,8 @@ def complex_document_with_gaps():
                     "expected_level": 1,
                     "validation_scope": "single_page",
                     "confidence": 0.95
-                }
+                },
+                "heading_id": "1"
             },
             {
                 "page": 1,
@@ -41,7 +42,8 @@ def complex_document_with_gaps():
                     "expected_level": 2,
                     "validation_scope": "single_page",
                     "confidence": 0.95
-                }
+                },
+                "heading_id": "2"
             }
         ],
         "structure_validation": {
@@ -87,7 +89,8 @@ def complex_document_with_wrong_order():
                     "expected_level": 1,
                     "validation_scope": "single_page",
                     "confidence": 0.95
-                }
+                },
+                "heading_id": "2"
             },
             {
                 "page": 1,
@@ -102,7 +105,8 @@ def complex_document_with_wrong_order():
                     "expected_level": 1,
                     "validation_scope": "single_page",
                     "confidence": 0.95
-                }
+                },
+                "heading_id": "1"
             }
         ],
         "structure_validation": {
@@ -148,7 +152,8 @@ def complex_document_with_wrong_level():
                     "expected_level": 1,
                     "validation_scope": "single_page",
                     "confidence": 0.95
-                }
+                },
+                "heading_id": "1"
             },
             {
                 "page": 1,
@@ -164,7 +169,8 @@ def complex_document_with_wrong_level():
                     "error_type": "wrong_level",
                     "validation_scope": "single_page",
                     "confidence": 0.95
-                }
+                },
+                "heading_id": "2"
             }
         ],
         "structure_validation": {
@@ -238,7 +244,8 @@ def test_mixed_structure_issues():
                     "expected_level": 1,
                     "validation_scope": "single_page",
                     "confidence": 0.95
-                }
+                },
+                "heading_id": "2"
             },
             {
                 "page": 1,
@@ -254,7 +261,8 @@ def test_mixed_structure_issues():
                     "error_type": "wrong_level",
                     "validation_scope": "single_page",
                     "confidence": 0.95
-                }
+                },
+                "heading_id": "1"
             }
         ],
         structure_validation={
