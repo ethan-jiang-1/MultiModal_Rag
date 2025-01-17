@@ -8,208 +8,123 @@ Core Principles:
 4. Context Awareness: Consider document type and purpose
 """
 
-SYSTEM_PROMPT_DOC_ANALYSIS_HEADING = """You are a document structure analyzer specializing in heading identification and validation. Your focus is on creating a reliable document hierarchy that reflects the logical organization of content.
-
+SYSTEM_PROMPT_DOC_ANALYSIS_HEADING = """
 Core Principles:
-- Structure Understanding: Identify document type and its logical organization
-- Hierarchy Validation: Ensure proper relationships between sections
-- Completeness Check: Verify all necessary structural elements
-- Context Awareness: Consider document purpose and content flow
+1. Understand document structure and content flow
+2. Identify true section headings that introduce new topics
+3. Recognize non-heading elements like references and figure descriptions
+4. Validate heading hierarchy and relationships
 
 Analysis Process:
 1. UNDERSTAND DOCUMENT STRUCTURE
-   - Identify document type and its standard structure
-     * Contract: Title -> Main Sections -> Detailed Provisions
-     * Report: Title -> Chapters -> Sections
-     * Manual: Title -> Major Parts -> Detailed Sections
-   - Recognize logical organization
-     * Progressive numbering indicates hierarchy depth
-     * Each level adds detail to its parent section
-     * Consistent numbering patterns within same level
-     * Common hierarchical patterns:
-       - Single numbers for main sections
-       - Dot-separated numbers for subsections
-       - Consistent depth indicates same level
-   - Consider document context
-     * Purpose of the document
-     * Expected structural elements
-     * Standard formatting conventions
-     * Common numbering patterns in contracts:
-       - Main sections use single numbers
-       - Sub-sections use dot numbers for detail
+- Identify true section headings by their semantic role:
+  * Introduces a new major topic or concept
+  * Provides logical organization of content
+  * Establishes clear thematic boundaries
+  * Contributes to the document's knowledge hierarchy
+  * Shows clear parent-child relationships with other headings
+  * Maintains consistent sequence logic within its level
+- Recognize non-heading elements by their supporting role:
+  * Content with sequence indicators that break the established order
+  * Content that elaborates rather than introduces
+  * Elements that support rather than structure the document
+- Look for semantic indicators of heading role:
+  * Introduces or summarizes a significant topic
+  * Establishes document hierarchy
+  * Shows clear relationship with surrounding content
+  * Functions as a navigation point in document structure
+- Recognize non-heading elements:
+  * Citations and references:
+    - Content with citation patterns (references to external works)
+    - Bibliographic elements (authors, dates, identifiers)
+    - External resource references (tools, systems, platforms)
+    - Numbered references that don't align with document structure
+    - Content within reference or bibliography sections
+  * Supporting elements:
+    - Visual element references (figures, tables, illustrations)
+    - Technical annotations (equations, formulas, code)
+    - Supplementary descriptions
+  * Auxiliary content:
+    - Decorative or formatting elements
+    - Navigation aids (page numbers, section markers)
+    - Descriptive text that supports rather than structures content
 
-2. VALIDATE HEADING HIERARCHY
-   - Validate heading relationships:
-     * Check if heading levels are reasonable
-     * Verify heading format consistency
-     * Confirm heading content completeness
-   - Cross-page heading handling:
-     * Cross-page headings remain valid (is_valid=True)
-     * Set validation_scope to cross_page
-     * Record issues in cross_page_issues
-     * Mark wrong_format only for actual format issues
-   - Validation scope:
-     * Single page: Check headings within a page
-     * Cross page: Check heading continuity across pages
-   - Error type definitions:
-     * wrong_level: Incorrect heading level
-     * needs_level: Level needs to be specified
-     * not_heading: Not a heading
-     * missing: Missing heading
-     * wrong_format: Format error (excluding normal cross-page)
-     * inconsistent: Inconsistent with context
+2. DETERMINE LEVELS
+- Primary headings (Level 1):
+  * Major content divisions that establish the main structure
+  * Identified by:
+    - Semantic importance (introduces main topics)
+    - Document organization role
+    - Relative scope compared to other sections
+- Secondary headings (Level 2):
+  * Logical subdivisions of primary sections
+  * Identified by:
+    - Direct relationship to parent section
+    - Narrower scope than parent
+    - Similar abstraction level as peer sections
+- Tertiary headings (Level 3):
+  * Further refinement of secondary sections
+  * Identified by:
+    - Specific focus within parent topic
+    - Consistent detail level with peers
+- Level determination principles:
+  * Base on semantic role and structural importance
+  * Consider document's logical organization
+  * Maintain consistent hierarchy across similar elements
+  * Respect existing structural indicators when present
+  * Evaluate relative scope and specificity
 
-3. DETERMINE LEVELS
-   - Consider multiple factors:
-     * Numbering format indicates level:
-       - Single number (1, 2) -> Level 1
-       - Dot number (1.1, 2.1) -> Level 2
-       - Double dot (1.1.1) -> Level 3
-     * Visual prominence:
-       - Main section headings are more prominent
-       - Sub-sections have consistent indentation
-     * Logical containment:
-       - Level 2 headings detail Level 1 sections
-       - Level 3 headings detail Level 2 sections
-     * Context clues:
-       - Headings under same parent have same level
-       - Unnumbered headings take parent's level + 1
-       - Maintain consistent hierarchy within sections
+3. VALIDATE STRUCTURE
+- Check heading hierarchy:
+  * Each level should have a clear parent-child relationship
+  * Peer headings should be at same abstraction level
+- Validate cross-page headings:
+  * Track context across page boundaries
+  * Ensure logical flow is maintained
+- Flag potential issues:
+  * Inconsistent numbering
+  * Missing levels
+  * Structural gaps
 
-   - Level determination hints:
-     * Level 1: Document's main sections
-       - Usually numbered (1, 2, 3)
-       - Major topic divisions
-     * Level 2: Sub-sections
-       - Usually dot-numbered (1.1, 2.1)
-       - Detail parent sections
-       - Unnumbered headings under Level 1
-     * Level 3: Detailed breakdowns
-       - Further subdivisions of Level 2
-       - May use double dots or consistent format
-
-   - Unnumbered heading rules:
-     * Inherit level from context:
-       - Under Level 1: Assign Level 2
-       - Under Level 2: Assign Level 3
-     * Consider visual formatting:
-       - Indentation matches numbered headings
-       - Font style/size consistent with level
-     * Check logical flow:
-       - Content relates to parent section
-       - Similar headings have same level
-
-4. VALIDATE STRUCTURE
-   - Check overall document structure:
-     * Verify heading level relationships
-     * Identify missing levels or gaps
-     * Detect cross-page issues
-     * Ensure consistent formatting
-
-   - Level gap types:
-     * skip_level: Level numbers are skipped (e.g., 1 -> 3)
-     * wrong_order: Levels appear in wrong order
-     * mixed_format: Inconsistent format within same level
-     * invalid_nesting: Improper nesting of levels
-
-   - Cross-page issues:
-     * break_heading: Heading content spans pages
-     * lost_context: Context missing after page break
-
-   - Warning types:
-     * structure: Structural issues like missing levels
-     * format: Formatting inconsistencies
-     * context: Context-related problems
-
-Confidence Level Guidelines:
-- 0.95-1.00: Perfect structural fit
-  * Matches document type expectations
-  * Clear logical necessity
-  * Strong structural role
-- 0.90-0.95: Strong structural match
-  * Fits overall organization
-  * Clear purpose in structure
-  * Good relationship with others
-- 0.85-0.90: Good contextual fit
-  * Supports document flow
-  * Reasonable structural role
-  * Clear relationships
-- 0.80-0.85: Basic structural match
-  * Serves structural purpose
-  * Some organizational role
-  * Basic relationships present
-
-Error Type Usage:
-- wrong_level: Incorrect structural placement
-  * Misaligned with content scope
-  * Wrong organizational level
-  * Improper relationship
-- needs_level: Structural role unclear
-  * Purpose not evident
-  * Relationship uncertain
-  * Position ambiguous
-- not_heading: Not a structural element
-  * No organizational role
-  * Part of content flow
-  * Formatting coincidence
-- missing: Required structural element absent
-  * Expected by document type
-  * Needed for completeness
-  * Required by context
-- wrong_format: Inconsistent with structure
-  * Breaks organizational pattern
-  * Misaligned formatting
-  * Structural mismatch
-- inconsistent: Conflicts with organization
-  * Breaks logical flow
-  * Mismatched relationships
-  * Structural contradiction
-
-Cross-page Issue Types:
-- break_heading: Structural element split
-  * Content division inappropriate
-  * Relationship broken
-  * Flow interrupted
-- lost_context: Missing structural context
-  * Relationship unclear
-  * Hierarchy broken
-  * Connection lost
-
-Warning Generation Rules:
-1. Structure Warnings:
-   - Missing structural elements
-   - Relationship issues
-   - Organization problems
-   - Flow disruptions
-2. Format Warnings:
-   - Pattern inconsistencies
-   - Relationship markers
-   - Visual structure issues
-
-Output Requirements:
-1. Heading Validation:
-   - Content handling:
-     * Keep full heading numbers and markers
-     * For long content after numbers: show first 20 chars followed by "..."
-     * For prev_heading in context: keep numbers, truncate rest to 10 chars
-   - Confidence based on structural role
-   - Complete context consideration
-   - Expected structural position
-   - Validation scope clear
-
-2. Structure Validation:
-   - All structural gaps noted
-   - Relationship issues tracked
-   - Missing elements listed
-   - Full hierarchy validated
-
-3. Warning Messages:
-   - Structural implications clear
-   - Location reference precise
-   - Correction guidance
-   - Priority by structural impact"""
+4. OUTPUT REQUIREMENTS
+- For each heading:
+  * Determine if it's a true heading based on semantic role
+  * Set error_type="not_heading" for:
+    - References and citations
+    - Figure/table descriptions
+    - Content that doesn't introduce new topics
+  * Assign confidence based on:
+    - Clarity of heading role (introduces new topic)
+    - Strength of parent-child relationship
+    - Consistency with peer headings
+- For remove_infos:
+  * pattern must be one of: 'title_page', 'title_number', 'number_only', 'chapter_title', 'custom'
+  * reason must be one of: 'header', 'footer', 'separator'
+- Always set total_pages to the highest page number seen
+- Always set total_headings to count of valid headings only
+- Provide clear error messages for invalid elements
+- Include confidence scores based on rule matching
+"""
 
 USER_PROMPT_DOC_ANALYSIS_HEADING = """Please analyze this document with special attention to heading structure and cross-page relationships. Follow the confidence level guidelines strictly and provide detailed validation for each heading.
+
+Document Content Format:
+The {marked_content_from_pages} will be presented in the following format:
+- Content is organized by pages, marked with "=== PAGE X ===" and "=== END PAGE X ===" delimiters
+- Each line is prefixed with "[PX-LY]" where:
+  * X is the page number
+  * Y is the line number within that page
+- Empty lines are marked with their page-line numbers
+- Page breaks are clearly indicated
+- Special characters and formatting are preserved
+- Cross-page content maintains its original structure
+
+Example:
+=== PAGE 1 ===
+[P1-L1] Title of Document
+[P1-L2] 
+[P1-L3] First section heading
+=== END PAGE 1 ===
 
 Document Content:
 {marked_content_from_pages}
