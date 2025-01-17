@@ -125,10 +125,9 @@ class HeadingJudgmentBasis(BaseModel):
     position_features: List[HeadingPositionFeature] = Field(default_factory=list, description="位置特征")
 
 class HeadingContext(BaseModel):
-    """标题上下文信息"""
-    prev_heading: Optional[str] = Field(None, description="前一个标题内容")
-    prev_level: Optional[int] = Field(None, description="前一个标题层级")
-    is_cross_page: bool = Field(default=False, description="是否跨页")
+    """标题上下文"""
+    prev_heading_id: Optional[str] = Field(None, description="前一个标题ID")
+    is_cross_page: bool = Field(False, description="是否跨页")
 
 class HeadingValidation(BaseModel):
     """标题验证结果"""
@@ -149,14 +148,15 @@ class HeadingValidation(BaseModel):
 
 class HeadingInfo(BaseModel):
     """标题信息"""
-    page: int = Field(..., gt=0, description="页码")
-    line: int = Field(..., gt=0, description="行号")
-    content: str = Field(..., min_length=1, description="标题内容")
-    current_level: Optional[int] = Field(None, ge=1, le=6, description="当前层级(1-6)")
-    expected_level: Optional[int] = Field(None, ge=1, le=6, description="期望层级(1-6)")
-    confidence: float = Field(..., ge=0.8, le=1.0, description="置信度")
-    validation: HeadingValidation = Field(..., description="验证结果")
-    related_headings: List[int] = Field(default_factory=list, description="相关标题的索引")
+    page: int = Field(..., description="页码", gt=0)
+    line: int = Field(..., description="行号", gt=0)
+    content: str = Field(..., description="标题内容")
+    heading_id: str = Field(..., description="标题唯一标识符")
+    current_level: Optional[int] = Field(None, description="当前层级", ge=1, le=6)
+    expected_level: int = Field(..., description="期望层级", ge=1, le=6)
+    confidence: float = Field(..., description="置信度", ge=0.8, le=1.0)
+    validation: Optional[HeadingValidation] = Field(None, description="验证结果")
+    related_headings: List[str] = Field(default_factory=list, description="相关标题ID列表")
 
 class HeadingRemoveInfo(BaseModel):
     """需要移除的内容信息"""
@@ -199,6 +199,7 @@ if __name__ == "__main__":
                     "page": 1,
                     "line": 5,
                     "content": "1.2 系统架构",
+                    "heading_id": "h1",
                     "current_level": None,
                     "expected_level": 2,
                     "confidence": 0.95,
@@ -271,13 +272,14 @@ if __name__ == "__main__":
                     "page": 1,
                     "line": 10,
                     "content": "普通段落",
+                    "heading_id": "h2",
                     "current_level": 2,
-                    "expected_level": None,
+                    "expected_level": 1,
                     "confidence": 0.92,
                     "validation": {
                         "is_valid": False,
                         "current_level": 2,
-                        "expected_level": None,
+                        "expected_level": 1,
                         "error_type": "not_heading",
                         "validation_scope": "single_page",
                         "confidence": 0.92,
@@ -329,6 +331,7 @@ if __name__ == "__main__":
                     "page": 2,
                     "line": 1,
                     "content": "2.1.1 详细设计",
+                    "heading_id": "h3",
                     "current_level": 3,
                     "expected_level": 3,
                     "confidence": 0.98,

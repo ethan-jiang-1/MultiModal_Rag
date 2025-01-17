@@ -2,13 +2,13 @@
 
 This module provides explanation functionality for heading analysis results.
 """
-from typing import List
+from typing import List, Optional
 
 from ctn2md.gen_base.page_md_fusion.llm_heading.da_schemas_heading import (
     HeadingValidation, HeadingRemoveInfo, HeadingStructureValidation,
     _HeadingWarningInfo, HeadingErrorType, HeadingValidationScope,
     HeadingLevelGapType, HeadingCrossPageIssueType, HeadingHeaderPattern,
-    DocumentAnalysisHeading
+    DocumentAnalysisHeading, HeadingInfo, HeadingContext
 )
 
 class HeadingActionExplainer:
@@ -67,10 +67,11 @@ class HeadingActionExplainer:
         # Context information
         if validation.context:
             ctx = validation.context
-            if ctx.prev_heading:
-                parts.append(f"上文标题: {ctx.prev_heading}")
-            if ctx.prev_level:
-                parts.append(f"上文层级: {ctx.prev_level}")
+            if ctx.prev_heading_id:
+                prev_heading = self._get_heading_by_id(ctx.prev_heading_id)
+                if prev_heading:
+                    parts.append(f"上文标题: {prev_heading.content[:10]}...")
+                    parts.append(f"上文层级: {prev_heading.current_level}")
             if ctx.is_cross_page:
                 parts.append("跨页相关")
                 
@@ -167,6 +168,25 @@ class HeadingActionExplainer:
             parts.append(f"  说明: {warn.message}")
             
         return "\n".join(parts)
+        
+    def _explain_context(self, ctx: HeadingContext) -> List[str]:
+        """解释上下文信息"""
+        parts = []
+        if ctx.prev_heading_id:
+            prev_heading = self._get_heading_by_id(ctx.prev_heading_id)
+            if prev_heading:
+                parts.append(f"上文标题: {prev_heading.content[:10]}...")
+                parts.append(f"上文层级: {prev_heading.current_level}")
+        if ctx.is_cross_page:
+            parts.append("跨页相关")
+        return parts
+
+    def _get_heading_by_id(self, heading_id: str) -> Optional[HeadingInfo]:
+        """根据ID获取标题信息"""
+        for heading in self.doc_analysis.headings:
+            if heading.heading_id == heading_id:
+                return heading
+        return None
         
     def explain(self) -> str:
         """Generate complete explanation for document analysis results."""

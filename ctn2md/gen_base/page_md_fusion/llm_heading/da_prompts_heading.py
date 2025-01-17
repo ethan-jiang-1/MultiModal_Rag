@@ -39,70 +39,87 @@ Analysis Process:
        - Sub-sections use dot numbers for detail
 
 2. VALIDATE HEADING HIERARCHY
-   - Check structural completeness:
-     * All major sections are present
-     * Required sub-sections exist
-     * Logical flow is maintained
-     * Look for continuous sub-sections:
-       - Same parent section may have multiple sub-sections
-       - Sub-sections often follow sequential numbering (2.1, 2.2, 2.3...)
-       - Each sub-section has equal structural importance
-       * Identify sub-heading patterns:
-         - Look for dot-number format (e.g. 1.1, 2.1)
-         - Check if they belong to a parent section
-         - Verify sequential numbering within same parent
-         - Confirm consistent formatting and indentation
-   - Verify level relationships:
-     * Each level supports its parent's purpose
-     * Sub-sections properly detail their parent
-     * Siblings have similar structural roles
-   - Analyze cross-references:
-     * References between sections
-     * Dependencies in content
-     * Continuity across pages
+   - Validate heading relationships:
+     * Check if heading levels are reasonable
+     * Verify heading format consistency
+     * Confirm heading content completeness
+   - Cross-page heading handling:
+     * Cross-page headings remain valid (is_valid=True)
+     * Set validation_scope to cross_page
+     * Record issues in cross_page_issues
+     * Mark wrong_format only for actual format issues
+   - Validation scope:
+     * Single page: Check headings within a page
+     * Cross page: Check heading continuity across pages
+   - Error type definitions:
+     * wrong_level: Incorrect heading level
+     * needs_level: Level needs to be specified
+     * not_heading: Not a heading
+     * missing: Missing heading
+     * wrong_format: Format error (excluding normal cross-page)
+     * inconsistent: Inconsistent with context
 
 3. DETERMINE LEVELS
-   - Based on logical structure:
-     * Level 1: Document's main identity and scope
-     * Level 2: Major logical divisions
-     * Level 3: Detailed breakdowns of parent sections
    - Consider multiple factors:
-     * Numbering depth reflects structural depth
-       - Single numbers (1, 2) indicate main sections
-       - Dot numbers (1.1, 2.1) indicate sub-sections
-     * Visual and semantic prominence
-     * Logical containment relationships
-     * Look for hierarchical indicators:
-       - Parent sections often contain subsections
-       - Numbering depth suggests relationship depth
-       - Similar patterns indicate same level content
-     * Level determination hints:
-       - Level 1: Document title, most prominent
-       - Level 2: Main sections with single numbers (1, 2, 14)
-       - Level 3: Subsections with dot numbers (1.1, 2.1, 14.1)
-       - Deeper levels follow similar pattern
-   - Not just format-based:
-     * Consider overall document organization
-     * Evaluate semantic importance
-     * Examine parent-child relationships
-     * Look for hierarchical indicators:
-       - Parent sections often contain subsections
-       - Numbering depth suggests relationship depth
-       - Similar patterns indicate same level content
+     * Numbering format indicates level:
+       - Single number (1, 2) -> Level 1
+       - Dot number (1.1, 2.1) -> Level 2
+       - Double dot (1.1.1) -> Level 3
+     * Visual prominence:
+       - Main section headings are more prominent
+       - Sub-sections have consistent indentation
+     * Logical containment:
+       - Level 2 headings detail Level 1 sections
+       - Level 3 headings detail Level 2 sections
+     * Context clues:
+       - Headings under same parent have same level
+       - Unnumbered headings take parent's level + 1
+       - Maintain consistent hierarchy within sections
+
+   - Level determination hints:
+     * Level 1: Document's main sections
+       - Usually numbered (1, 2, 3)
+       - Major topic divisions
+     * Level 2: Sub-sections
+       - Usually dot-numbered (1.1, 2.1)
+       - Detail parent sections
+       - Unnumbered headings under Level 1
+     * Level 3: Detailed breakdowns
+       - Further subdivisions of Level 2
+       - May use double dots or consistent format
+
+   - Unnumbered heading rules:
+     * Inherit level from context:
+       - Under Level 1: Assign Level 2
+       - Under Level 2: Assign Level 3
+     * Consider visual formatting:
+       - Indentation matches numbered headings
+       - Font style/size consistent with level
+     * Check logical flow:
+       - Content relates to parent section
+       - Similar headings have same level
 
 4. VALIDATE STRUCTURE
-   - Check heading completeness:
-     * All necessary sections present
-     * Proper level progression
-     * Logical content organization
-   - Verify relationships:
-     * Parent-child connections clear
-     * Sibling sections balanced
-     * Cross-references valid
-   - Track structural issues:
-     * Missing required sections
-     * Improper level jumps
-     * Inconsistent organization
+   - Check overall document structure:
+     * Verify heading level relationships
+     * Identify missing levels or gaps
+     * Detect cross-page issues
+     * Ensure consistent formatting
+
+   - Level gap types:
+     * skip_level: Level numbers are skipped (e.g., 1 -> 3)
+     * wrong_order: Levels appear in wrong order
+     * mixed_format: Inconsistent format within same level
+     * invalid_nesting: Improper nesting of levels
+
+   - Cross-page issues:
+     * break_heading: Heading content spans pages
+     * lost_context: Context missing after page break
+
+   - Warning types:
+     * structure: Structural issues like missing levels
+     * format: Formatting inconsistencies
+     * context: Context-related problems
 
 Confidence Level Guidelines:
 - 0.95-1.00: Perfect structural fit
@@ -171,6 +188,10 @@ Warning Generation Rules:
 
 Output Requirements:
 1. Heading Validation:
+   - Content handling:
+     * Keep full heading numbers and markers
+     * For long content after numbers: show first 20 chars followed by "..."
+     * For prev_heading in context: keep numbers, truncate rest to 10 chars
    - Confidence based on structural role
    - Complete context consideration
    - Expected structural position
@@ -196,23 +217,29 @@ Document Content:
 Required Output Format:
 {
     "headings": [{
-        "page": "Page number (>0)",
-        "line": "Line number (>0)",
-        "content": "Heading text",
-        "current_level": "Heading level (1-6 or null if uncertain)",
-        "expected_level": "Expected level based on structure",
-        "confidence": ">=0.8, lower for uncertain cases",
+        "page": "Page number (integer)",
+        "line": "Line number (integer)",
+        "content": "Heading content (string)",
+        "heading_id": "Unique heading identifier (string) - can be any format as long as it's unique within the document",
+        "current_level": "Current level (integer 1-6 or null)",
+        "expected_level": "Expected level (integer 1-6)",
+        "confidence": "Confidence score (float 0.8-1.0)",
         "validation": {
-            "is_valid": "true|false",
-            "current_level": "Current level (1-6 or null)",
-            "expected_level": "Expected level (1-6)",
-            "error_type": "wrong_level|needs_level|not_heading|missing|wrong_format|inconsistent",
+            "is_valid": "Whether the heading is valid (boolean)",
+            "current_level": "Current level (integer 1-6 or null)",
+            "expected_level": "Expected level (integer 1-6)",
+            "error_type": "Error type, one of:
+              - wrong_level: Incorrect heading level
+              - needs_level: Level needs to be specified
+              - not_heading: Not a heading
+              - missing: Missing heading
+              - wrong_format: Format error
+              - inconsistent: Inconsistent with context",
             "validation_scope": "single_page|cross_page",
-            "confidence": ">=0.8",
+            "confidence": "Confidence score (float 0.8-1.0)",
             "context": {
-                "prev_heading": "Previous heading content",
-                "prev_level": "Previous heading level (1-6 or null)",
-                "is_cross_page": "true|false"
+                "prev_heading_id": "ID of the previous heading in document order (e.g., if previous heading has heading_id='h2', use 'h2'), or null if no previous heading",
+                "is_cross_page": "Whether spans across pages (boolean)"
             }
         }
     }],
@@ -226,27 +253,33 @@ Required Output Format:
     }],
     
     "structure_validation": {
-        "is_valid": "true|false",
-        "missing_levels": "Array of missing levels [1-6]",
+        "is_valid": "Whether overall structure is valid (boolean)",
+        "missing_levels": "Array of missing levels",
         "level_gaps": [{
-            "type": "skip_level|wrong_order|mixed_format|invalid_nesting",
-            "start_level": "Start level (1-6)",
-            "end_level": "End level (1-6)",
-            "page": "Page number (>0)"
+            "type": "Gap type, one of:
+              - skip_level: Level skipped
+              - wrong_order: Wrong level order
+              - mixed_format: Mixed format used
+              - invalid_nesting: Invalid nesting",
+            "start_level": "Start level (integer)",
+            "end_level": "End level (integer)",
+            "page": "Page number (integer)"
         }],
         "cross_page_issues": [{
-            "type": "break_heading|lost_context",
-            "start_page": "Start page (>0)",
-            "end_page": "End page (>0)",
+            "type": "Issue type, one of:
+              - break_heading: Heading breaks across pages
+              - lost_context: Context lost across pages",
+            "start_page": "Start page number (integer)",
+            "end_page": "End page number (integer)",
             "heading_index": "Index in headings array"
         }]
     },
     
     "warnings": [{
-        "type": "structure|format",
-        "page": "Page number (>0)",
-        "lines": "Line numbers [>0]",
-        "message": "Warning message"
+        "type": "warning类型 (structure|format)",
+        "page": "页码 (整数)",
+        "lines": "行号列表，例如 [1, 2, 3]",
+        "message": "警告信息"
     }],
     
     "total_pages": "Total pages (>0)",
