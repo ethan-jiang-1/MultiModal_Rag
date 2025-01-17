@@ -43,6 +43,15 @@ Analysis Process:
      * All major sections are present
      * Required sub-sections exist
      * Logical flow is maintained
+     * Look for continuous sub-sections:
+       - Same parent section may have multiple sub-sections
+       - Sub-sections often follow sequential numbering (2.1, 2.2, 2.3...)
+       - Each sub-section has equal structural importance
+       * Identify sub-heading patterns:
+         - Look for dot-number format (e.g. 1.1, 2.1)
+         - Check if they belong to a parent section
+         - Verify sequential numbering within same parent
+         - Confirm consistent formatting and indentation
    - Verify level relationships:
      * Each level supports its parent's purpose
      * Sub-sections properly detail their parent
