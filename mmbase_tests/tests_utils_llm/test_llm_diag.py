@@ -76,7 +76,7 @@ def test_question_num_operations():
 
 # Tests for file operations
 def test_save_llm_diag_messages(tmp_path, sample_messages, sample_response):
-    with patch('mmbase.utils_llm.llm_diag._get_root_dir') as mock_root:
+    with patch('mmbase.utils_llm_debug.llm_diag._get_root_dir') as mock_root:
         mock_root.return_value = str(tmp_path)
         
         save_llm_diag_messages(
