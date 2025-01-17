@@ -101,7 +101,7 @@ class _HeadingWarningInfo(BaseModel):
     type: HeadingWarningType
     page: int = Field(gt=0)
     lines: List[int]
-    message: str = Field(max_length=100)  # 限制消息长度
+    message: str = Field(max_length=200)  # 增加消息长度限制
 
 class _HeadingLevelGapInfo(BaseModel):
     """层级断层信息"""
