@@ -38,7 +38,7 @@ class DocumentHeadingAnalyzer(BaseProcessor):
         das = self.llm_client.analyze_document(system_prompt, user_prompt)
         
         # 3. 生成分析报告
-        explanation = HeadingActionExplainer.explain_document_analysis(das, doc_pages)
+        explanation = HeadingActionExplainer(das).explain()
         logger.info("\nDocument Analysis Report:\n%s", explanation)
         
         return das

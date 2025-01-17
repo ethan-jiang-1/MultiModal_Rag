@@ -73,15 +73,17 @@ class llmClientHeading:
         else:
             raise ValueError(f"Invalid model: {model_final}")
     
-    def analyze_document(self, system_prompt: str, user_prompt: str, using_cache: bool = True, model_sel: Optional[str] = None) -> DocumentAnalysisHeading:
+    def analyze_document(self, system_prompt: str, user_prompt: str, using_cache: bool = True, model_sel: Optional[str] = None) -> Optional[DocumentAnalysisHeading]:
         """分析文档
         
         Args:
             system_prompt: 系统提示词
             user_prompt: 用户提示词
+            using_cache: 是否使用缓存
+            model_sel: 指定模型
             
         Returns:
-            文档分析结果
+            文档分析结果，如果处理失败则返回None
             
         Note:
             使用msgpack缓存结果到文件系统，避免重复调用
@@ -105,7 +107,10 @@ class llmClientHeading:
         
         try:
             # 构造消息
-            messages = get_gpt_messages(system_prompt, user_prompt)
+            messages = get_gpt_messages(
+                system_prompt=system_prompt,
+                user_prompt=f"Please analyze this document and provide a JSON response. The response should follow the specified format.\n\n{user_prompt}"
+            )
             temperature = 0.1
             top_p = 0.9
             # 调用LLM
@@ -136,37 +141,45 @@ class llmClientHeading:
             
         except Exception as e:
             logger.error(f"Error calling LLM: {e}")
+            return None
 
 if __name__ == "__main__":
     from mmbase.utils.util_logging import setup_logger_handlers
-    from ctn2md.gen_base.page_md_fusion.llm_heading.full_marked_content_maker import FullMarkedContentMaker
     from ctn2md.gen_base.page_md_fusion.llm_heading.heading_action_explainer import HeadingActionExplainer
     from ctn2md.gen_base.page_md_fusion.llm_heading.da_prompts_heading import SYSTEM_PROMPT_DOC_ANALYSIS_HEADING, USER_PROMPT_DOC_ANALYSIS_HEADING
 
     setup_logger_handlers()
     
-    #pname_info = "_test/ctn2md_papers___paged_md/_info.json"
-    #pname_info = "_test/ctn2md_mrag___paged_md/_info.json"
-    pname_info = "_test/ctn2md_mrag___faked/_info.json"
-    md_info = MdInfo(pname_info)
+    # 测试跨页场景
+    test_content = """[Page 1]
+1. 引言
+这是引言的内容。
 
-    #llm_client = LlmClient(md_info)
-    llm_client = llmClientHeading(md_info)
+2. 系统
+这是系统章节的开始，但是标题被分割在两个页面之间。
+
+[Page 2]
+设计概述
+这是系统设计概述的内容。
+
+功能模块
+这是功能模块的内容。
+
+[Page 3]
+2.2 接口设计
+这是接口设计的内容。"""
+
+    llm_client = llmClientHeading()
     
-    fnames = md_info.get_fnames_pages()
-    #fnames = fnames[:3】
-
-    maker = FullMarkedContentMaker()
-    marked_content, doc_pages = maker.make_marked_content_from_md_info(md_info, fnames)
-    #rich.print(marked_content)
-
     system_prompt = SYSTEM_PROMPT_DOC_ANALYSIS_HEADING
-    user_prompt = USER_PROMPT_DOC_ANALYSIS_HEADING.replace("{marked_content_from_pages}", marked_content)
-    #print(user_prompt)
-
+    user_prompt = USER_PROMPT_DOC_ANALYSIS_HEADING.replace("{marked_content_from_pages}", test_content)
+    
     das = llm_client.analyze_document(system_prompt, user_prompt, using_cache=False, model_sel="gpt-4o")
-    rich.print(das)
-
-    explanation = HeadingActionExplainer.explain_document_analysis(das, doc_pages)
-    logger.info("\nDocument Analysis Report:\n%s", explanation)
+    if das:
+        rich.print(das)
+        # 打印分析报告
+        explanation = HeadingActionExplainer(das).explain()
+        logger.info("\nDocument Analysis Report:\n%s", explanation)
+    else:
+        logger.error("Document analysis failed")
 
