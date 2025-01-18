@@ -24,7 +24,7 @@ class DocumentHeadingAnalyzer(BaseProcessor):
     def __init__(self, md_info: MdInfo):
         super().__init__(md_info)
         self.llm_client = llmClientHeading(md_info)
-
+  
     def analyze(self, fnames: Optional[List[str]] = None) -> DocumentAnalysisHeading:
         """分析文档并生成动作指令"""
         # 1. 准备带标记的文档内容
@@ -37,7 +37,17 @@ class DocumentHeadingAnalyzer(BaseProcessor):
         # 2. 调用LLM分析
         das = self.llm_client.analyze_document(system_prompt, user_prompt)
         
-        # 3. 生成分析报告
+        # 3. 修复heading_id格式
+        if das and das.headings:
+            for i, heading in enumerate(das.headings, 1):
+                heading.heading_id = str(i)
+                if heading.validation and heading.validation.context:
+                    if i > 1:
+                        heading.validation.context.prev_heading_id = str(i-1)
+                    else:
+                        heading.validation.context.prev_heading_id = None
+        
+        # 4. 生成分析报告
         explanation = HeadingActionExplainer(das).explain()
         logger.info("\nDocument Analysis Report:\n%s", explanation)
         

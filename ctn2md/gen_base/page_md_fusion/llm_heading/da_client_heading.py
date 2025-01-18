@@ -176,6 +176,9 @@ if __name__ == "__main__":
     
     das = llm_client.analyze_document(system_prompt, user_prompt, using_cache=False, model_sel="gpt-4o")
     if das:
+        # 确保使用数字序列作为heading_id
+        for i, heading in enumerate(das.headings, start=1):
+            heading.heading_id = str(i)
         rich.print(das)
         # 打印分析报告
         explanation = HeadingActionExplainer(das).explain()

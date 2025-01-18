@@ -26,7 +26,6 @@ def document_with_broken_heading():
                     "confidence": 0.85,
                     "context": {
                         "prev_heading_id": "1",
-                        "prev_level": 2,
                         "is_cross_page": True
                     }
                 },
@@ -47,8 +46,7 @@ def document_with_broken_heading():
                     "validation_scope": "cross_page",
                     "confidence": 0.85,
                     "context": {
-                        "prev_heading_id": "1.2 系统",
-                        "prev_level": 2,
+                        "prev_heading_id": "2",
                         "is_cross_page": True
                     }
                 },
@@ -123,7 +121,6 @@ def document_with_lost_context():
                     "confidence": 0.8,
                     "context": {
                         "prev_heading_id": "1",
-                        "prev_level": 1,
                         "is_cross_page": True
                     }
                 },
@@ -199,7 +196,6 @@ def document_with_mixed_cross_page():
                     "confidence": 0.85,
                     "context": {
                         "prev_heading_id": "1",
-                        "prev_level": 1,
                         "is_cross_page": True
                     }
                 },
@@ -221,7 +217,6 @@ def document_with_mixed_cross_page():
                     "confidence": 0.85,
                     "context": {
                         "prev_heading_id": "2",
-                        "prev_level": 1,
                         "is_cross_page": True
                     }
                 },
@@ -242,8 +237,7 @@ def document_with_mixed_cross_page():
                     "validation_scope": "cross_page",
                     "confidence": 0.8,
                     "context": {
-                        "prev_heading_id": "2. 系统设计概述",
-                        "prev_level": 1,
+                        "prev_heading_id": "3",
                         "is_cross_page": True
                     }
                 },
@@ -263,8 +257,7 @@ def document_with_mixed_cross_page():
                     "validation_scope": "cross_page",
                     "confidence": 0.95,
                     "context": {
-                        "prev_heading_id": "功能模块",
-                        "prev_level": None,
+                        "prev_heading_id": "4",
                         "is_cross_page": True
                     }
                 },

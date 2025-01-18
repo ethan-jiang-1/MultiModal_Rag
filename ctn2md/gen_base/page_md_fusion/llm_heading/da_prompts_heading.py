@@ -10,81 +10,36 @@ Core Principles:
 
 SYSTEM_PROMPT_DOC_ANALYSIS_HEADING = """
 Core Principles:
-1. Understand document structure and content flow
-2. Identify true section headings that introduce new topics
-3. Recognize non-heading elements like references and figure descriptions
-4. Validate heading hierarchy and relationships
+1. Headings form the knowledge organization framework
+2. Headings guide readers' understanding of document structure
+3. Headings reflect hierarchical relationships between topics
 
 Analysis Process:
 1. UNDERSTAND DOCUMENT STRUCTURE
-- Identify true section headings by their semantic role:
-  * Introduces a new major topic or concept
-  * Provides logical organization of content
-  * Establishes clear thematic boundaries
-  * Contributes to the document's knowledge hierarchy
-  * Shows clear parent-child relationships with other headings
-  * Maintains consistent sequence logic within its level
-- Recognize non-heading elements by their supporting role:
-  * Content with sequence indicators that break the established order
-  * Content that elaborates rather than introduces
-  * Elements that support rather than structure the document
-- Look for semantic indicators of heading role:
-  * Introduces or summarizes a significant topic
-  * Establishes document hierarchy
-  * Shows clear relationship with surrounding content
-  * Functions as a navigation point in document structure
-- Recognize non-heading elements:
-  * Citations and references:
-    - Content with citation patterns (references to external works)
-    - Bibliographic elements (authors, dates, identifiers)
-    - External resource references (tools, systems, platforms)
-    - Numbered references that don't align with document structure
-    - Content within reference or bibliography sections
-  * Supporting elements:
-    - Visual element references (figures, tables, illustrations)
-    - Technical annotations (equations, formulas, code)
-    - Supplementary descriptions
-  * Auxiliary content:
-    - Decorative or formatting elements
-    - Navigation aids (page numbers, section markers)
-    - Descriptive text that supports rather than structures content
+- A true heading should:
+  - Help organize and navigate knowledge
+  - Guide readers in understanding document structure
+  - Form clear hierarchical relationships with other headings
+  - Reflect the author's knowledge organization approach
+- Content is NOT a heading when it:
+  - States rather than organizes knowledge
+  - Describes details rather than structure
+  - Serves as supporting information
+  - Does not help in document navigation
 
 2. DETERMINE LEVELS
-- Primary headings (Level 1):
-  * Major content divisions that establish the main structure
-  * Identified by:
-    - Semantic importance (introduces main topics)
-    - Document organization role
-    - Relative scope compared to other sections
-- Secondary headings (Level 2):
-  * Logical subdivisions of primary sections
-  * Identified by:
-    - Direct relationship to parent section
-    - Narrower scope than parent
-    - Similar abstraction level as peer sections
-- Tertiary headings (Level 3):
-  * Further refinement of secondary sections
-  * Identified by:
-    - Specific focus within parent topic
-    - Consistent detail level with peers
-- Level determination principles:
-  * Base on semantic role and structural importance
-  * Consider document's logical organization
-  * Maintain consistent hierarchy across similar elements
-  * Respect existing structural indicators when present
-  * Evaluate relative scope and specificity
+- Consider how each level:
+  - Contributes to knowledge organization
+  - Guides progressive understanding
+  - Reflects topic relationships
+  - Shows relative importance of content
 
 3. VALIDATE STRUCTURE
-- Check heading hierarchy:
-  * Each level should have a clear parent-child relationship
-  * Peer headings should be at same abstraction level
-- Validate cross-page headings:
-  * Track context across page boundaries
-  * Ensure logical flow is maintained
-- Flag potential issues:
-  * Inconsistent numbering
-  * Missing levels
-  * Structural gaps
+- Ensure the structure:
+  - Forms a coherent knowledge framework
+  - Enables effective navigation
+  - Reflects logical topic relationships
+  - Maintains consistent organization
 
 4. OUTPUT REQUIREMENTS
 - For each heading:
@@ -97,6 +52,10 @@ Analysis Process:
     - Clarity of heading role (introduces new topic)
     - Strength of parent-child relationship
     - Consistency with peer headings
+  * Assign heading_id as a simple numeric string:
+    - Use "1" for first heading, "2" for second, etc.
+    - Must be a string representation of a positive integer
+    - Must be sequential and unique within the document
 - For remove_infos:
   * pattern must be one of: 'title_page', 'title_number', 'number_only', 'chapter_title', 'custom'
   * reason must be one of: 'header', 'footer', 'separator'
@@ -135,7 +94,7 @@ Required Output Format:
         "page": "Page number (integer)",
         "line": "Line number (integer)",
         "content": "Heading content (string)",
-        "heading_id": "Unique heading identifier (string) - can be any format as long as it's unique within the document",
+        "heading_id": "Sequential numeric string starting from '1' (e.g., '1', '2', '3')",
         "current_level": "Current level (integer 1-6 or null)",
         "expected_level": "Expected level (integer 1-6)",
         "confidence": "Confidence score (float 0.8-1.0)",
@@ -153,7 +112,7 @@ Required Output Format:
             "validation_scope": "single_page|cross_page",
             "confidence": "Confidence score (float 0.8-1.0)",
             "context": {
-                "prev_heading_id": "ID of the previous heading in document order (e.g., if previous heading has heading_id='h2', use 'h2'), or null if no previous heading",
+                "prev_heading_id": "ID of the previous heading (e.g., if previous heading has heading_id='2', use '2'), or null if no previous heading",
                 "is_cross_page": "Whether spans across pages (boolean)"
             }
         }

@@ -24,8 +24,7 @@ def valid_judgment_basis():
 @pytest.fixture
 def valid_context():
     return {
-        "prev_heading": "1. 引言",
-        "prev_level": 1,
+        "prev_heading_id": "1",
         "is_cross_page": False
     }
 
@@ -45,8 +44,7 @@ def valid_validation():
             "position_features": ["para_start"]
         },
         "context": {
-            "prev_heading": "1. 引言",
-            "prev_level": 1,
+            "prev_heading_id": "1",
             "is_cross_page": False
         }
     }
@@ -75,8 +73,7 @@ def valid_heading():
                 "position_features": ["para_start"]
             },
             "context": {
-                "prev_heading": "1. 引言",
-                "prev_level": 1,
+                "prev_heading_id": "1",
                 "is_cross_page": False
             }
         }
@@ -108,8 +105,7 @@ def valid_document():
                         "position_features": ["para_start"]
                     },
                     "context": {
-                        "prev_heading": "1. 引言",
-                        "prev_level": 1,
+                        "prev_heading_id": "1",
                         "is_cross_page": False
                     }
                 }
@@ -147,8 +143,7 @@ def test_heading_judgment_basis(valid_judgment_basis):
 def test_heading_context(valid_context):
     """测试标题上下文的创建和验证"""
     context = HeadingContext(**valid_context)
-    assert context.prev_heading == "1. 引言"
-    assert context.prev_level == 1
+    assert context.prev_heading_id == "1"
     assert not context.is_cross_page
 
 def test_heading_validation(valid_validation):
@@ -230,8 +225,7 @@ def test_minimal_document():
 def test_cross_page_context():
     """测试跨页上下文"""
     context = HeadingContext(
-        prev_heading="上一页标题",
-        prev_level=1,
+        prev_heading_id="1",
         is_cross_page=True
     )
     assert context.is_cross_page
@@ -287,3 +281,71 @@ def test_complex_structure_validation():
     assert len(validation.missing_levels) == 2
     assert len(validation.level_gaps) == 1
     assert len(validation.cross_page_issues) == 1 
+
+# 添加 heading_id 格式测试
+def test_heading_id_validation():
+    """测试 heading_id 的格式验证"""
+    # 有效的 heading_id
+    valid_heading = {
+        "page": 1,
+        "line": 5,
+        "content": "测试标题",
+        "heading_id": "1",
+        "expected_level": 1,
+        "confidence": 0.95
+    }
+    heading = HeadingInfo(**valid_heading)
+    assert heading.heading_id == "1"
+
+    # 测试无效的 heading_id 格式
+    invalid_cases = [
+        "h1",           # 旧格式
+        "heading1",     # 非数字
+        "0",           # 非正数
+        "-1",          # 负数
+        "1.5",         # 非整数
+        "",            # 空字符串
+    ]
+
+    for invalid_id in invalid_cases:
+        invalid_heading = valid_heading.copy()
+        invalid_heading["heading_id"] = invalid_id
+        with pytest.raises(ValueError, match="Heading ID must be"):
+            HeadingInfo(**invalid_heading)
+
+def test_sequential_heading_ids():
+    """测试连续的 heading_id 序列"""
+    doc_data = {
+        "headings": [
+            {
+                "page": 1,
+                "line": 1,
+                "content": "标题1",
+                "heading_id": "1",
+                "expected_level": 1,
+                "confidence": 0.95
+            },
+            {
+                "page": 1,
+                "line": 2,
+                "content": "标题2",
+                "heading_id": "2",
+                "expected_level": 1,
+                "confidence": 0.95
+            },
+            {
+                "page": 1,
+                "line": 3,
+                "content": "标题3",
+                "heading_id": "3",
+                "expected_level": 1,
+                "confidence": 0.95
+            }
+        ],
+        "structure_validation": {"is_valid": True},
+        "total_pages": 1,
+        "total_headings": 3
+    }
+    
+    doc = DocumentAnalysisHeading(**doc_data)
+    assert [h.heading_id for h in doc.headings] == ["1", "2", "3"] 

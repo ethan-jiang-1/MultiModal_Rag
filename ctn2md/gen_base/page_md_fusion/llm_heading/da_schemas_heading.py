@@ -126,8 +126,21 @@ class HeadingJudgmentBasis(BaseModel):
 
 class HeadingContext(BaseModel):
     """标题上下文"""
-    prev_heading_id: Optional[str] = Field(None, description="前一个标题ID")
+    prev_heading_id: Optional[str] = Field(None, description="前一个标题ID (从1开始的自然数序号的字符串形式)")
     is_cross_page: bool = Field(False, description="是否跨页")
+
+    @field_validator('prev_heading_id')
+    def validate_prev_heading_id(cls, v):
+        """验证prev_heading_id是否为有效的自然数字符串"""
+        if v is None:
+            return v
+        try:
+            num = int(v)
+            if num < 1:
+                raise ValueError('Previous heading ID must be a positive integer')
+        except ValueError:
+            raise ValueError('Previous heading ID must be a string representation of a positive integer (e.g., "1", "2", "3")')
+        return v
 
 class HeadingValidation(BaseModel):
     """标题验证结果"""
@@ -157,6 +170,17 @@ class HeadingInfo(BaseModel):
     confidence: float = Field(..., description="置信度", ge=0.8, le=1.0)
     validation: Optional[HeadingValidation] = Field(None, description="验证结果")
     related_headings: List[str] = Field(default_factory=list, description="相关标题ID列表")
+
+    @field_validator('heading_id')
+    def validate_heading_id(cls, v):
+        """验证heading_id是否为有效的自然数字符串"""
+        try:
+            num = int(v)
+            if num < 1:
+                raise ValueError('Heading ID must be a positive integer')
+        except ValueError:
+            raise ValueError('Heading ID must be a string representation of a positive integer (e.g., "1", "2", "3")')
+        return v
 
 class HeadingRemoveInfo(BaseModel):
     """需要移除的内容信息"""
