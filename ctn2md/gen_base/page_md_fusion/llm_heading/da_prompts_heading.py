@@ -37,38 +37,40 @@ Analysis Process:
   * Could it stand alone as a section identifier?
 
 2. CONFIDENCE SCORING GUIDELINES
-- Score based on heading essence (10-point scale):
+- Score based on heading essence (5-tier scale):
   1.0: Perfect structural heading
     * Major document sections (e.g. "1. Introduction", "2. Methods")
     * Clear numbering and perfect formatting
     * Essential for document navigation
     * Creates primary knowledge boundaries
 
-  0.9: Strong heading
+  0.8: Strong heading
     * Subsections with clear hierarchy (e.g. "1.1", "2.3")
     * Standard formatting
     * Clear organizational role
     * Strong structural significance
 
-  0.8: Basic heading
+  0.6: Basic heading
     * Valid sections without numbering (e.g. "Conclusion", "References")
     * May have minor format variations
     * Clear but simpler structural role
 
-  0.5: Weak/Ambiguous content
+  0.4: Weak/Ambiguous content
     * Mixed organizational/detail content
     * Unclear structural role
     * Format inconsistencies
     * Questionable navigation value
 
-  0.3 or lower: Non-heading content
-    * Figure/table titles (-0.6 deduction)
-    * Author/attribution information (-0.6 deduction)
-    * Technical specifications (-0.5 deduction)
-    * Running text, footnotes, page numbers
-    * Pure descriptive or administrative content
+  0.2 or lower: Non-heading content
+    * Figure/table titles
+    * Chart descriptions
+    * Author/attribution information
+    * Technical specifications
+    * Pure descriptive content
+    * Footnotes, page numbers
+    * Administrative text
 
-- Key indicators for non-headings (should score ≤0.5):
+- Key indicators for non-headings (should score ≤0.2):
   * Describes rather than organizes
   * Part of content flow
   * No meaningful structural role
@@ -136,22 +138,39 @@ Analysis Process:
 USER_PROMPT_DOC_ANALYSIS_HEADING = """Please analyze this document with special attention to heading structure and cross-page relationships. Follow the confidence level guidelines strictly and provide detailed validation for each heading.
 
 Document Content Format:
-The `marked_content_from_pages` will be presented in the following format:
-- Content is organized by pages, marked with "=== PAGE X ===" and "=== END PAGE X ===" delimiters
-- Each line is prefixed with "[PX-LY]" where:
-  * X is the page number
-  * Y is the line number within that page
-- Empty lines are explicitly marked with "<empty>"
-- Page breaks are clearly indicated
-- Special characters and formatting are preserved
-- Cross-page content maintains its original structure
+The `Document Content` will be presented in a structured XML format that clearly delineates pages and their relationships:
 
-Example:
+1. Document Structure:
+   - Content is wrapped in <document> tags to define document boundaries
+   - Pages are marked with "=== PAGE X ===" and "=== END PAGE X ===" to ensure clear page separation
+   - Each line has a unique identifier "[PX-LY]" where:
+     * X: Page number (continuous across document)
+     * Y: Line number (resets each page)
+
+2. Content Organization:
+   - Empty lines are explicitly marked with "<empty>" to preserve structure
+   - Page breaks are clearly indicated to maintain document flow
+   - Special characters and formatting are preserved verbatim
+   - Cross-page relationships are maintained through consistent numbering
+
+3. Example Structure:
+<document>
 === PAGE 1 ===
 [P1-L1] Title of Document
 [P1-L2] <empty>
 [P1-L3] First section heading
 === END PAGE 1 ===
+
+=== PAGE 2 ===
+[P2-L1] Continuation of content
+=== END PAGE 2 ===
+</document>
+
+This format ensures:
+- Clear page boundaries and relationships
+- Consistent line numbering for reference
+- Preserved document structure and flow
+- Maintained cross-page context
 
 Document Content:
 <document>
