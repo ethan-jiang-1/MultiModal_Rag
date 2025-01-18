@@ -33,6 +33,10 @@ Analysis Process:
   - Guides progressive understanding
   - Reflects topic relationships
   - Shows relative importance of content
+- For headings without explicit markers:
+  - If it appears to be a heading but lacks level markers, mark it as wrong_format
+  - If its level can be inferred from context, set expected_level accordingly
+  - Set current_level to null in such cases
 
 3. VALIDATE STRUCTURE
 - Ensure the structure:
@@ -40,21 +44,29 @@ Analysis Process:
   - Enables effective navigation
   - Reflects logical topic relationships
   - Maintains consistent organization
+- For structural gaps, use ONLY these types:
+  - skip_level: When levels are skipped (e.g., h1 to h3)
+  - wrong_order: When levels are in wrong order
+  - mixed_format: When different heading formats are mixed (e.g., some headings use '#' while others don't)
+  - invalid_nesting: When nesting is incorrect
+- Note: For format inconsistencies, always use mixed_format in level_gaps
+- Always provide both start_level and end_level as integers
 
 4. OUTPUT REQUIREMENTS
 - For each heading:
   * Determine if it's a true heading based on semantic role
-  * Set error_type="not_heading" for:
-    - References and citations
-    - Figure/table descriptions
-    - Content that doesn't introduce new topics
+  * Set error_type to one of:
+    - wrong_level: Incorrect heading level
+    - wrong_format: Format error (for headings without proper markers)
+    - not_heading: Not a heading
+    - missing: Missing heading
+    - inconsistent: Inconsistent with context
   * Assign confidence based on:
     - Clarity of heading role (introduces new topic)
     - Strength of parent-child relationship
     - Consistency with peer headings
   * Assign heading_id as a simple numeric string:
     - Use "1" for first heading, "2" for second, etc.
-    - Must be a string representation of a positive integer
     - Must be sequential and unique within the document
 - For remove_infos:
   * pattern must be one of: 'title_page', 'title_number', 'number_only', 'chapter_title', 'custom'

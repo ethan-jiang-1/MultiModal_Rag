@@ -64,7 +64,8 @@ if __name__ == "__main__":
     #pname_info = "_test/ctn2md_mrag___paged_md/_info.json"
     md_info = MdInfo(pname_info)
     
-    analyzer = DocumentHeadingAnalyzer(md_info)
+    #analyzer = DocumentHeadingAnalyzer(md_info)
+    analyzer = DocumentHeadingAnalyzer() # 不使用md_info，避免缓存
     fnames = md_info.get_fnames_pages()  # 只测试前3页
     result = analyzer.analyze(fnames)
     

@@ -150,35 +150,51 @@ if __name__ == "__main__":
 
     setup_logger_handlers()
     
-    # 测试跨页场景
-    test_content = """[Page 1]
-1. 引言
-这是引言的内容。
+    # 测试各种标题场景
+    test_content = """### BEGIN_DOCUMENT ###
 
-2. 系统
-这是系统章节的开始，但是标题被分割在两个页面之间。
+=== PAGE 1 ===
+[P1-L1] # 技术研究报告
+[P1-L2] <empty>
+[P1-L3] **作者：张三**
+[P1-L4] <empty>
+[P1-L5] ## 1. 引言
+[P1-L6] <empty>
+[P1-L7] 本研究旨在探讨...
+[P1-L8] <empty>
+[P1-L9] ### 1.1 研究背景
+[P1-L10] 近年来，随着技术的发展...
+=== END PAGE 1 ===
 
-[Page 2]
-设计概述
-这是系统设计概述的内容。
+=== PAGE 2 ===
+[P2-L1] 1.2 研究适应范围
+[P2-L2] 以后这里会写研究适应范围。。。
+[P2-L3] ## 2. 技术方案
+[P2-L4] <empty>
+[P2-L5] 2.1 系统架构
+[P2-L6] 本系统采用以下架构...
+[P2-L7] <empty>
+[P2-L8] 关键技术指标
+[P2-L9] 系统具有以下特点：
+[P2-L10] <empty>
+[P2-L11] 表1：性能指标
+[P2-L12] | 指标 | 数值 |
+=== END PAGE 2 ===
 
-功能模块
-这是功能模块的内容。
-
-[Page 3]
-2.2 接口设计
-这是接口设计的内容。"""
+### END_DOCUMENT ###"""
 
     llm_client = llmClientHeading()
     
     system_prompt = SYSTEM_PROMPT_DOC_ANALYSIS_HEADING
     user_prompt = USER_PROMPT_DOC_ANALYSIS_HEADING.replace("{marked_content_from_pages}", test_content)
     
+    print("\n=== Testing Current Prompt ===")
     das = llm_client.analyze_document(system_prompt, user_prompt, using_cache=False, model_sel="gpt-4o")
     if das:
         # 确保使用数字序列作为heading_id
         for i, heading in enumerate(das.headings, start=1):
             heading.heading_id = str(i)
+        rich.print("\nAnalysis Result:")
         rich.print(das)
         # 打印分析报告
         explanation = HeadingActionExplainer(das).explain()
