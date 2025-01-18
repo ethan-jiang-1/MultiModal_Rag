@@ -10,58 +10,105 @@ Core Principles:
 
 SYSTEM_PROMPT_DOC_ANALYSIS_HEADING = """
 Core Principles:
-1. Headings are cognitive anchors that organize knowledge and guide understanding
-2. Headings create natural boundaries between distinct topics and ideas
-3. Headings form a hierarchical framework that reveals document structure
-4. Headings maintain their organizational role regardless of formatting or page breaks
+1. Headings are cognitive anchors that:
+   - Create mental models of document structure
+   - Enable efficient knowledge navigation
+   - Define conceptual boundaries
+   - Establish information hierarchy
+
+2. True headings serve as:
+   - Knowledge Organizers: Like a library's classification system
+   - Navigation Points: Like landmarks in a city
+   - Scope Definers: Like chapter titles in a book
+   - Relationship Builders: Like family trees
+
+3. Non-headings are supporting elements that:
+   - Provide details (like footnotes)
+   - Attribute content (like citations)
+   - Describe visuals (like captions)
+   - Manage metadata (like page numbers)
 
 Analysis Process:
-1. UNDERSTAND HEADING ESSENCE
-- Evaluate organizational function:
-  - Does it define a new knowledge domain or topic space?
-  - Does it create meaningful cognitive boundaries?
-  - Does it help construct a mental model of the content?
-  - Does it guide readers through the document's knowledge structure?
-  
-- Assess structural relationships:
-  - Does it establish clear parent-child relationships?
-  - Does it maintain logical connections with peer sections?
-  - Does it contribute to the document's hierarchical organization?
-  - Does it preserve context across document boundaries?
+1. EVALUATE HEADING ESSENCE
+- Consider how the content functions:
+  * Does it help build a mental map of the document?
+  * Would it appear in a meaningful table of contents?
+  * Does it create a natural pause in reading flow?
+  * Could it stand alone as a section identifier?
 
-- Distinguish from non-heading elements:
-  - Does it organize knowledge or merely describe content?
-  - Does it establish structure or just provide information?
-  - Does it serve a navigational purpose or a descriptive one?
-  - Does it contribute to the document's cognitive framework?
+2. CONFIDENCE SCORING GUIDELINES
+- Score based on heading essence (10-point scale):
+  1.0: Perfect structural heading
+    * Major document sections (e.g. "1. Introduction", "2. Methods")
+    * Clear numbering and perfect formatting
+    * Essential for document navigation
+    * Creates primary knowledge boundaries
 
-2. DETERMINE HIERARCHY
-- Evaluate structural significance:
-  - What scope of content does it organize?
-  - How does it relate to the document's main themes?
-  - What is its role in the knowledge hierarchy?
-  - How does it connect to surrounding headings?
-- Consider contextual relationships:
-  - Analyze semantic connections between sections
-  - Understand thematic groupings
-  - Recognize logical progression of ideas
-  - Maintain consistency in hierarchical relationships
+  0.9: Strong heading
+    * Subsections with clear hierarchy (e.g. "1.1", "2.3")
+    * Standard formatting
+    * Clear organizational role
+    * Strong structural significance
 
-3. VALIDATE STRUCTURE
-- Ensure knowledge framework:
-  - Maintains logical coherence
-  - Supports effective navigation
-  - Preserves hierarchical relationships
-  - Enables clear understanding
-- Address structural issues using:
-  - skip_level: For gaps in hierarchy
-  - wrong_order: For logical sequence breaks
-  - mixed_format: For inconsistent presentation
-  - invalid_nesting: For hierarchy violations
-- Focus on semantic relationships over formatting
-- Preserve cross-page context and connections
+  0.8: Basic heading
+    * Valid sections without numbering (e.g. "Conclusion", "References")
+    * May have minor format variations
+    * Clear but simpler structural role
 
-4. OUTPUT REQUIREMENTS
+  0.5: Weak/Ambiguous content
+    * Mixed organizational/detail content
+    * Unclear structural role
+    * Format inconsistencies
+    * Questionable navigation value
+
+  0.3 or lower: Non-heading content
+    * Figure/table titles (-0.6 deduction)
+    * Author/attribution information (-0.6 deduction)
+    * Technical specifications (-0.5 deduction)
+    * Running text, footnotes, page numbers
+    * Pure descriptive or administrative content
+
+- Key indicators for non-headings (should score ≤0.5):
+  * Describes rather than organizes
+  * Part of content flow
+  * No meaningful structural role
+  * Serves technical/administrative function
+
+- Context Deductions:
+  * -0.6: Clear figure/table caption patterns
+  * -0.6: Pure attribution/metadata content
+  * -0.5: Technical specifications
+  * -0.3: Format inconsistencies
+  * -0.2: Minor numbering variations
+
+- Key indicators for non-headings (should score <0.5):
+  * Describes rather than organizes
+  * Part of content flow
+  * Serves technical/administrative function
+  * No structural significance
+
+- Common non-heading patterns (should score <0.6):
+  * Figure/table titles (should score 0.4-0.5)
+  * Technical specifications (should score 0.3-0.4)
+  * Author/citation information (should score <0.3)
+  * Running text headings (should score 0.4-0.5)
+  * Metadata entries (should score <0.3)
+
+3. ASSESS STRUCTURAL ROLE
+- Key considerations:
+  - Position in document hierarchy
+  - Relationship to other headings
+  - Scope of content organized
+  - Contribution to document navigation
+
+4. VALIDATE RELATIONSHIPS
+- Critical checks:
+  - Logical progression of ideas
+  - Consistent hierarchical structure
+  - Clear parent-child connections
+  - Coherent cross-page links
+
+5. OUTPUT REQUIREMENTS
 - For each heading:
   * Determine if it's a true heading based on semantic role
   * Set error_type to one of:
@@ -89,7 +136,7 @@ Analysis Process:
 USER_PROMPT_DOC_ANALYSIS_HEADING = """Please analyze this document with special attention to heading structure and cross-page relationships. Follow the confidence level guidelines strictly and provide detailed validation for each heading.
 
 Document Content Format:
-The {marked_content_from_pages} will be presented in the following format:
+The `marked_content_from_pages` will be presented in the following format:
 - Content is organized by pages, marked with "=== PAGE X ===" and "=== END PAGE X ===" delimiters
 - Each line is prefixed with "[PX-LY]" where:
   * X is the page number
@@ -107,7 +154,9 @@ Example:
 === END PAGE 1 ===
 
 Document Content:
+<document>
 {marked_content_from_pages}
+</document>
 
 Required Output Format:
 {

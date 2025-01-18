@@ -8,6 +8,8 @@
 - It reflects the author's logical structuring of knowledge
 - It enables both quick overview and targeted reading
 - It reveals the natural boundaries between different topics and concepts
+- It functions as a cognitive framework for document comprehension
+- It mirrors how humans naturally organize and process information
 
 ### Why Headings Matter
 1. **Knowledge Organization**
@@ -30,6 +32,36 @@
    - Impact document navigability when present or absent
    - Maintain coherence across document sections
    - Bridge gaps between high-level concepts and detailed content
+
+4. **Cognitive Anchoring**
+   - Act as mental landmarks in the knowledge landscape
+   - Create natural cognitive boundaries between concepts
+   - Enable efficient mental model construction
+   - Support progressive knowledge building
+   - Facilitate information chunking and recall
+
+### Understanding Through Analogies
+1. **Knowledge Architecture**
+   - Headings as Library Classification System
+     * Organize information into logical categories
+     * Enable efficient content location
+     * Create clear hierarchical relationships
+   
+   - Headings as City Landmarks
+     * Provide navigation reference points
+     * Create memorable mental maps
+     * Enable intuitive wayfinding
+
+2. **Content Flow**
+   - Headings as Chapter Titles in Books
+     * Define clear thematic boundaries
+     * Set reader expectations
+     * Create natural reading pauses
+   
+   - Headings as Family Trees
+     * Show clear parent-child relationships
+     * Maintain generational hierarchy
+     * Represent logical inheritance
 
 ## Technical Implementation
 
@@ -67,6 +99,17 @@
    - Considering topic relationships
    - Maintaining consistent hierarchy
 
+### Cognitive-First Approach
+1. **Mental Model Alignment**
+   - Evaluate content based on its role in understanding
+   - Consider how it contributes to document mental map
+   - Assess its function in knowledge organization
+
+2. **Natural Information Processing**
+   - Mirror how humans naturally parse documents
+   - Support intuitive navigation patterns
+   - Enable progressive understanding
+
 ## Prompt Engineering Insights
 
 ### Core Principles
@@ -88,6 +131,13 @@
    - Check both individual headings and overall structure
    - Validate hierarchical relationships
    - Ensure navigation effectiveness
+
+4. **Cognitive Processing Perspective**
+   - Consider how content supports mental model building
+   - Evaluate contribution to document understanding
+   - Assess role in knowledge structure formation
+   - Focus on natural information organization
+   - Support intuitive document navigation
 
 ### Common Pitfalls
 1. **Over-reliance on Formatting**
