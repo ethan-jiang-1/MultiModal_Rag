@@ -73,7 +73,7 @@ The {marked_content_from_pages} will be presented in the following format:
 - Each line is prefixed with "[PX-LY]" where:
   * X is the page number
   * Y is the line number within that page
-- Empty lines are marked with their page-line numbers
+- Empty lines are explicitly marked with "<empty>"
 - Page breaks are clearly indicated
 - Special characters and formatting are preserved
 - Cross-page content maintains its original structure
@@ -81,7 +81,7 @@ The {marked_content_from_pages} will be presented in the following format:
 Example:
 === PAGE 1 ===
 [P1-L1] Title of Document
-[P1-L2] 
+[P1-L2] <empty>
 [P1-L3] First section heading
 === END PAGE 1 ===
 

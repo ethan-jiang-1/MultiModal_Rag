@@ -43,10 +43,18 @@ class MarkdownPage:
     lines: List[str]
     
     def add_markers(self) -> str:
-        """Add page and line markers"""
+        """Add page and line markers
+        
+        Improvements:
+        1. Remove extra newlines to reduce token usage
+        2. Use explicit marker for empty lines (<empty>) for better LLM understanding
+        3. Maintain page-line markers for cross-page relationship understanding
+        """
         result = [f"=== PAGE {self.page_num} ==="]
         for i, line in enumerate(self.lines, 1):
-            result.append(f"[P{self.page_num}-L{i}] {line}")
+            # Use explicit marker for empty lines
+            content = "<empty>" if not line.strip() else line
+            result.append(f"[P{self.page_num}-L{i}] {content}")
         result.append(f"=== END PAGE {self.page_num} ===")
         return "\n".join(result)
 
