@@ -4,6 +4,7 @@
 
 from typing import List, Optional
 import logging
+import rich
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -87,8 +88,9 @@ class DocStructureProcessor:
             
             # 6. 如果是调试模式，输出处理结果说明
             if self.debug:
+                rich.print(doc_analysis)
                 explainer = MdProcessorExplainer(pages_content, doc_analysis)
-                logger.info("\nProcessing Results:\n%s", explainer.explain())
+                logger.info("\n\nProcessing Results from DocStructureProcessor:\n%s", explainer.explain())
                 
             logger.info("Document processing completed successfully")
             return pages_content

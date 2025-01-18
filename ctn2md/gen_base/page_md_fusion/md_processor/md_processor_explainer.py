@@ -3,7 +3,6 @@ MD处理器结果说明 - 用于展示处理后的文档结构
 """
 
 from typing import List, Dict, Tuple
-import re
 from ctn2md.gen_base.page_md_fusion.llm_heading.da_schemas_heading import DocumentAnalysisHeading
 
 class MdProcessorExplainer:
@@ -19,39 +18,18 @@ class MdProcessorExplainer:
         self.pages_content = pages_content
         self.doc_analysis = doc_analysis
         
-    def _extract_headings(self) -> List[Tuple[int, int, str, int]]:
-        """从处理后的内容中提取标题
+    def _format_toc(self) -> str:
+        """格式化目录结构，使用doc_analysis中的标题信息
         
-        Returns:
-            标题列表，每个元素为 (页码, 行号, 标题内容, 层级)
-        """
-        headings = []
-        heading_pattern = re.compile(r'^(#{1,6})\s+(.+)$')
-        
-        for page_idx, page in enumerate(self.pages_content, 1):
-            for line_idx, line in enumerate(page, 1):
-                match = heading_pattern.match(line)
-                if match:
-                    level = len(match.group(1))
-                    content = match.group(2)
-                    headings.append((page_idx, line_idx, content, level))
-                    
-        return headings
-        
-    def _format_toc(self, headings: List[Tuple[int, int, str, int]]) -> str:
-        """格式化目录结构
-        
-        Args:
-            headings: 标题列表
-            
         Returns:
             格式化的目录字符串
         """
         toc_lines = ["目录结构："]
         
-        for page, line, content, level in headings:
+        for heading in self.doc_analysis.headings:
+            level = heading.expected_level
             indent = "  " * (level - 1)
-            toc_lines.append(f"{indent}- {content} (第{page}页, 第{line}行)")
+            toc_lines.append(f"{indent}- {heading.content} (第{heading.page}页, 第{heading.line}行)")
             
         return "\n".join(toc_lines)
         
@@ -100,11 +78,17 @@ class MdProcessorExplainer:
         """
         parts = []
         
-        # 1. 提取并格式化目录
-        headings = self._extract_headings()
-        parts.append(self._format_toc(headings))
+        # 1. 添加文档基本信息
+        parts.append(f"文档信息:")
+        parts.append(f"- 总页数: {self.doc_analysis.total_pages}")
+        parts.append(f"- 总标题数: {self.doc_analysis.total_headings}")
         
-        # 2. 总结移除的内容
-        parts.append("\n\n" + self._summarize_removals())
+        # 2. 格式化目录
+        parts.append("\nToC结构:")
+        parts.append(self._format_toc())
+        
+        # 3. 总结移除的内容
+        parts.append("\n移除内容:")
+        parts.append(self._summarize_removals())
         
         return "\n".join(parts) 
