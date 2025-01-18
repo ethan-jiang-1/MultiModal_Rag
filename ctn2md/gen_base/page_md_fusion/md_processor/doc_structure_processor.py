@@ -17,6 +17,7 @@ from ctn2md.gen_base.page_md_fusion.md_processor.base import (
 from ctn2md.gen_base.page_md_fusion.llm_heading.da_schemas_heading import DocumentAnalysisHeading
 from ctn2md.gen_base.page_md_fusion.md_processor.heading_processor import HeadingProcessor
 from ctn2md.gen_base.page_md_fusion.md_processor.header_footer import HeaderFooterProcessor
+from ctn2md.gen_base.page_md_fusion.md_processor.md_processor_explainer import MdProcessorExplainer
 from mmbase.utils.util_logging import setup_logger_handlers
 
 logger = logging.getLogger(__name__)
@@ -83,6 +84,11 @@ class DocStructureProcessor:
                 logger.error("Failed to save results")
                 raise ValueError("Failed to save results")
             logger.info(f"Results saved to {len(page_paths)} files")
+            
+            # 6. 如果是调试模式，输出处理结果说明
+            if self.debug:
+                explainer = MdProcessorExplainer(pages_content, doc_analysis)
+                logger.info("\nProcessing Results:\n%s", explainer.explain())
                 
             logger.info("Document processing completed successfully")
             return pages_content
