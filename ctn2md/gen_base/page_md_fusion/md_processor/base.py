@@ -1,11 +1,11 @@
 """
-页面处理器的基类和通用工具函数
+页面处理相关的工具函数
 """
 
 import os
 import logging
 import shutil
-from typing import List, Dict
+from typing import List
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -13,31 +13,6 @@ load_dotenv()
 from ctn2md.md_info.md_info_base import MdInfo
 
 logger = logging.getLogger(__name__)
-
-def prepare_md_fusion_workspace(md_info: MdInfo) -> List[str]:
-    """准备MD融合的工作空间
-    
-    Args:
-        md_info: MD信息对象
-        
-    Returns:
-        工作目录中的文件路径列表
-    """
-    # 1. 获取工作目录
-    workspace_dir = md_info.get_aux_md_fusion_dir()
-    
-    # 2. 准备工作空间
-    os.makedirs(workspace_dir, exist_ok=True)
-    
-    # 3. 复制文件
-    workspace_files = []
-    for src_path in md_info.get_fnames_pages():
-        src_path = os.path.join(md_info.get_out_dir(), src_path)
-        dst_path = os.path.join(workspace_dir, os.path.basename(src_path))
-        shutil.copy2(src_path, dst_path)
-        workspace_files.append(dst_path)
-        
-    return workspace_files
 
 def read_page_content(page_path: str) -> List[str]:
     """读取页面内容"""
@@ -95,41 +70,38 @@ def save_pages_content(page_paths: List[str], pages_content: List[List[str]]) ->
             success = False
     return success
 
-class BaseProcessor:
-    """处理器基类"""
+def prepare_workspace(md_info: MdInfo) -> List[str]:
+    """准备工作空间
     
-    def __init__(self, md_info: MdInfo):
-        """初始化
+    Args:
+        md_info: MD信息对象
         
-        Args:
-            md_info: MD信息对象,包含文档相关的配置和上下文信息
-        """
-        self.md_info = md_info
+    Returns:
+        工作空间中的文件路径列表
+    """
+    # 1. 获取工作目录
+    workspace_dir = md_info.get_aux_md_fusion_dir()
+    
+    # 2. 清理并准备工作空间
+    if os.path.exists(workspace_dir):
+        shutil.rmtree(workspace_dir)
+    os.makedirs(workspace_dir)
+    
+    # 3. 复制文件
+    workspace_files = []
+    for src_path in md_info.get_fnames_pages():
+        src_path = os.path.join(md_info.get_out_dir(), src_path)
+        dst_path = os.path.join(workspace_dir, os.path.basename(src_path))
+        shutil.copy2(src_path, dst_path)
+        workspace_files.append(dst_path)
         
-    def process(self, pages: List[List[str]], actions: Dict) -> List[List[str]]:
-        """处理页面内容
-        
-        Args:
-            pages: 所有页面的内容
-            actions: LLM分析得到的动作指令
-            
-        Returns:
-            处理后的页面内容
-        """
-        raise NotImplementedError 
+    return workspace_files
 
 if __name__ == "__main__":
-    import rich
-    from dotenv import load_dotenv
-    load_dotenv()
-    
     from mmbase.utils.util_logging import setup_logger_handlers
     setup_logger_handlers()
     
     # 测试代码
-    from ctn2md.md_info.md_info_base import MdInfo
-    
-    # 创建测试目录
     test_dir = "_output/test_base"
     os.makedirs(test_dir, exist_ok=True)
     
@@ -144,7 +116,6 @@ if __name__ == "__main__":
     
     # 测试工作空间准备
     pname_info = "_work/ctn2md_mrag__1__座椅STO间隙_P1_lp/_info.json"
-    # 测试MD融合工作空间准备
     md_info = MdInfo(pname_info)
-    workspace_files = prepare_md_fusion_workspace(md_info)
-    rich.print("工作空间文件:", workspace_files) 
+    workspace_files = prepare_workspace(md_info)
+    print("工作空间文件:", workspace_files) 

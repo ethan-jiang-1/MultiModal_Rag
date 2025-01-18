@@ -17,11 +17,11 @@ from ctn2md.gen_base.page_md_fusion.llm_heading.heading_action_explainer import 
 
 logger = logging.getLogger(__name__)
 
-class DocumentHeadingAnalyzer():
+class DocumentHeadingAnalyzer:
     """文档分析器：生成文档结构分析"""
     
     def __init__(self, md_info: MdInfo, using_cache: bool = True):
-        super().__init__(md_info)
+        self.md_info = md_info
         self.llm_client = llmClientHeading(md_info, using_cache=using_cache)
   
     def analyze(self, fnames: Optional[List[str]] = None) -> DocumentAnalysisHeading:
