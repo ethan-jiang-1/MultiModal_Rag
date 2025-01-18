@@ -10,47 +10,56 @@ Core Principles:
 
 SYSTEM_PROMPT_DOC_ANALYSIS_HEADING = """
 Core Principles:
-1. Headings form the knowledge organization framework
-2. Headings guide readers' understanding of document structure
-3. Headings reflect hierarchical relationships between topics
+1. Headings are cognitive anchors that organize knowledge and guide understanding
+2. Headings create natural boundaries between distinct topics and ideas
+3. Headings form a hierarchical framework that reveals document structure
+4. Headings maintain their organizational role regardless of formatting or page breaks
 
 Analysis Process:
-1. UNDERSTAND DOCUMENT STRUCTURE
-- A true heading should:
-  - Help organize and navigate knowledge
-  - Guide readers in understanding document structure
-  - Form clear hierarchical relationships with other headings
-  - Reflect the author's knowledge organization approach
-- Content is NOT a heading when it:
-  - States rather than organizes knowledge
-  - Describes details rather than structure
-  - Serves as supporting information
-  - Does not help in document navigation
+1. UNDERSTAND HEADING ESSENCE
+- Evaluate organizational function:
+  - Does it define a new knowledge domain or topic space?
+  - Does it create meaningful cognitive boundaries?
+  - Does it help construct a mental model of the content?
+  - Does it guide readers through the document's knowledge structure?
+  
+- Assess structural relationships:
+  - Does it establish clear parent-child relationships?
+  - Does it maintain logical connections with peer sections?
+  - Does it contribute to the document's hierarchical organization?
+  - Does it preserve context across document boundaries?
 
-2. DETERMINE LEVELS
-- Consider how each level:
-  - Contributes to knowledge organization
-  - Guides progressive understanding
-  - Reflects topic relationships
-  - Shows relative importance of content
-- For headings without explicit markers:
-  - If it appears to be a heading but lacks level markers, mark it as wrong_format
-  - If its level can be inferred from context, set expected_level accordingly
-  - Set current_level to null in such cases
+- Distinguish from non-heading elements:
+  - Does it organize knowledge or merely describe content?
+  - Does it establish structure or just provide information?
+  - Does it serve a navigational purpose or a descriptive one?
+  - Does it contribute to the document's cognitive framework?
+
+2. DETERMINE HIERARCHY
+- Evaluate structural significance:
+  - What scope of content does it organize?
+  - How does it relate to the document's main themes?
+  - What is its role in the knowledge hierarchy?
+  - How does it connect to surrounding headings?
+- Consider contextual relationships:
+  - Analyze semantic connections between sections
+  - Understand thematic groupings
+  - Recognize logical progression of ideas
+  - Maintain consistency in hierarchical relationships
 
 3. VALIDATE STRUCTURE
-- Ensure the structure:
-  - Forms a coherent knowledge framework
-  - Enables effective navigation
-  - Reflects logical topic relationships
-  - Maintains consistent organization
-- For structural gaps, use ONLY these types:
-  - skip_level: When levels are skipped (e.g., h1 to h3)
-  - wrong_order: When levels are in wrong order
-  - mixed_format: When different heading formats are mixed (e.g., some headings use '#' while others don't)
-  - invalid_nesting: When nesting is incorrect
-- Note: For format inconsistencies, always use mixed_format in level_gaps
-- Always provide both start_level and end_level as integers
+- Ensure knowledge framework:
+  - Maintains logical coherence
+  - Supports effective navigation
+  - Preserves hierarchical relationships
+  - Enables clear understanding
+- Address structural issues using:
+  - skip_level: For gaps in hierarchy
+  - wrong_order: For logical sequence breaks
+  - mixed_format: For inconsistent presentation
+  - invalid_nesting: For hierarchy violations
+- Focus on semantic relationships over formatting
+- Preserve cross-page context and connections
 
 4. OUTPUT REQUIREMENTS
 - For each heading:

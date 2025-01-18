@@ -25,7 +25,7 @@ class llmClientHeading:
     """
     _question_num = 9000
     
-    def __init__(self, md_info: Optional[MdInfo] = None):
+    def __init__(self, md_info: Optional[MdInfo] = None, using_cache: bool = True):
         """初始化客户端
         
         Args:
@@ -33,6 +33,7 @@ class llmClientHeading:
         """
         self.md_info = md_info
         self.cache_dir = md_info.get_cache_dir() if md_info else None
+        self.using_cache = using_cache
         
     def _get_cache_path(self, system_prompt: str, user_prompt: str, model: str) -> Optional[str]:
         """获取缓存文件路径
@@ -45,6 +46,9 @@ class llmClientHeading:
         Returns:
             缓存文件路径，如果未设置缓存目录则返回None
         """
+        if not self.using_cache:
+            return None
+        
         if not self.cache_dir:
             return None
             

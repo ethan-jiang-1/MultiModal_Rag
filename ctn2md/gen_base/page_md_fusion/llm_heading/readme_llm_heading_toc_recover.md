@@ -7,17 +7,29 @@
 - It serves as a cognitive map helping readers navigate through the document
 - It reflects the author's logical structuring of knowledge
 - It enables both quick overview and targeted reading
+- It reveals the natural boundaries between different topics and concepts
 
 ### Why Headings Matter
 1. **Knowledge Organization**
    - Headings form the skeleton of document structure
    - They create clear hierarchical relationships between topics
    - They guide progressive understanding of content
+   - They establish the scope and domain of content sections
+   - They represent logical boundaries in the knowledge flow
 
 2. **Reader Navigation**
    - Help readers quickly grasp document scope
    - Enable efficient location of specific information
    - Show relationships between different parts of content
+   - Create natural breaks in content flow
+   - Serve as mental anchors for information processing
+
+3. **Structural Significance**
+   - Stand above the content they organize
+   - Create consistent patterns with peer sections
+   - Impact document navigability when present or absent
+   - Maintain coherence across document sections
+   - Bridge gaps between high-level concepts and detailed content
 
 ## Technical Implementation
 
@@ -62,11 +74,15 @@
    - Ask "Does this organize knowledge?" not "Does this look like a heading?"
    - Consider how content contributes to document navigation
    - Evaluate relationship with surrounding content
+   - Assess impact on document's cognitive map
+   - Consider content's role in establishing topic boundaries
 
 2. **Context Awareness**
    - Consider document type and purpose
    - Understand typical structure patterns
    - Recognize special sections (references, appendices)
+   - Evaluate content's relationship with document flow
+   - Consider impact on reader's mental model
 
 3. **Validation Depth**
    - Check both individual headings and overall structure

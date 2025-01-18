@@ -21,9 +21,9 @@ logger = logging.getLogger(__name__)
 class DocumentHeadingAnalyzer(BaseProcessor):
     """文档分析器：生成文档结构分析"""
     
-    def __init__(self, md_info: MdInfo):
+    def __init__(self, md_info: MdInfo, using_cache: bool = True):
         super().__init__(md_info)
-        self.llm_client = llmClientHeading(md_info)
+        self.llm_client = llmClientHeading(md_info, using_cache=using_cache)
   
     def analyze(self, fnames: Optional[List[str]] = None) -> DocumentAnalysisHeading:
         """分析文档并生成动作指令"""
@@ -64,8 +64,7 @@ if __name__ == "__main__":
     #pname_info = "_test/ctn2md_mrag___paged_md/_info.json"
     md_info = MdInfo(pname_info)
     
-    #analyzer = DocumentHeadingAnalyzer(md_info)
-    analyzer = DocumentHeadingAnalyzer() # 不使用md_info，避免缓存
+    analyzer = DocumentHeadingAnalyzer(md_info, using_cache=False)  # 使用md_info初始化
     fnames = md_info.get_fnames_pages()  # 只测试前3页
     result = analyzer.analyze(fnames)
     
