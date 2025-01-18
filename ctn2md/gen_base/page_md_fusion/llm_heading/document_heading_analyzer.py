@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from ctn2md.md_info.md_info_base import MdInfo
-from ctn2md.gen_base.page_md_fusion.processor.base import BaseProcessor
 from ctn2md.gen_base.page_md_fusion.llm_heading.da_client_heading import llmClientHeading
 from ctn2md.gen_base.page_md_fusion.llm_heading.da_prompts_heading import SYSTEM_PROMPT_DOC_ANALYSIS_HEADING, USER_PROMPT_DOC_ANALYSIS_HEADING
 from ctn2md.gen_base.page_md_fusion.llm_heading.da_schemas_heading import DocumentAnalysisHeading
@@ -18,7 +17,7 @@ from ctn2md.gen_base.page_md_fusion.llm_heading.heading_action_explainer import 
 
 logger = logging.getLogger(__name__)
 
-class DocumentHeadingAnalyzer(BaseProcessor):
+class DocumentHeadingAnalyzer():
     """文档分析器：生成文档结构分析"""
     
     def __init__(self, md_info: MdInfo, using_cache: bool = True):

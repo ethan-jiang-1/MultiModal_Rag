@@ -4,6 +4,7 @@
 
 from typing import List
 import logging
+import os
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -36,24 +37,42 @@ class DocProcessor(BaseProcessor):
         Returns:
             处理后的页面内容
         """
-        # 1. LLM分析得到动作指令
+        # 1. 准备工作目录
+        fusion_dir = self.md_info.get_aux_md_fusion_dir()
+        os.makedirs(fusion_dir, exist_ok=True)
+        
+        # 复制原始文件到工作目录
+        fusion_pages = []
+        for i, page_content in enumerate(pages, 1):
+            page_file = os.path.join(fusion_dir, f"page_{i}.md")
+            with open(page_file, "w", encoding="utf-8") as f:
+                f.write("\n".join(page_content))
+            fusion_pages.append(page_file)
+            
+        # 2. LLM分析得到动作指令
         doc_analysis = self.document_analyzer.analyze()
         logger.info(f"Got document analysis: {doc_analysis}")
         
-        # 2. 执行处理
+        # 3. 在工作目录中执行处理
         processed_pages = pages.copy()
         
-        # 2.1 先处理标题结构（不改变行号）
+        # 3.1 先处理标题结构（不改变行号）
         processed_pages = self.heading_processor.process(
             processed_pages,
             doc_analysis
         )
         
-        # 2.2 再处理页眉页脚（会改变行号）
+        # 3.2 再处理页眉页脚（会改变行号）
         processed_pages = self.header_footer_processor.process(
             processed_pages, 
             doc_analysis.remove_infos
         )
+        
+        # 4. 保存处理后的文件
+        for i, page_content in enumerate(processed_pages, 1):
+            page_file = os.path.join(fusion_dir, f"processed_page_{i}.md")
+            with open(page_file, "w", encoding="utf-8") as f:
+                f.write("\n".join(page_content))
         
         return processed_pages
 
