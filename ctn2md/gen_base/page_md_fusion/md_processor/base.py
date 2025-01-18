@@ -81,20 +81,28 @@ def prepare_workspace(md_info: MdInfo) -> List[str]:
     """
     # 1. 获取工作目录
     workspace_dir = md_info.get_aux_md_fusion_dir()
+    logger.info(f"Preparing workspace at: {workspace_dir}")
     
     # 2. 清理并准备工作空间
     if os.path.exists(workspace_dir):
+        logger.info(f"Cleaning existing workspace directory: {workspace_dir}")
         shutil.rmtree(workspace_dir)
+    logger.info(f"Creating workspace directory: {workspace_dir}")
     os.makedirs(workspace_dir)
     
     # 3. 复制文件
     workspace_files = []
-    for src_path in md_info.get_fnames_pages():
+    source_files = md_info.get_fnames_pages()
+    logger.info(f"Found {len(source_files)} files to process")
+    
+    for src_path in source_files:
         src_path = os.path.join(md_info.get_out_dir(), src_path)
         dst_path = os.path.join(workspace_dir, os.path.basename(src_path))
+        logger.debug(f"Copying file: {src_path} -> {dst_path}")
         shutil.copy2(src_path, dst_path)
         workspace_files.append(dst_path)
         
+    logger.info(f"Successfully prepared workspace with {len(workspace_files)} files: {workspace_files}")
     return workspace_files
 
 if __name__ == "__main__":

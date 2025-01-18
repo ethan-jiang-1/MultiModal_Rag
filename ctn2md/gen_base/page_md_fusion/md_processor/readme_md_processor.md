@@ -7,8 +7,8 @@
 #### 代码目录
 ```
 ctn2md/gen_base/page_md_fusion/md_processor/
-├── base.py               # 基础处理器
-├── doc_processor.py      # 文档处理协调器
+├── base.py               # 工具函数(文件操作、工作空间准备等)
+├── doc_structure_processor.py      # 文档结构处理协调器
 ├── heading_processor.py  # 标题处理器
 └── header_footer.py      # 页眉页脚处理器
 ```

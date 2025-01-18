@@ -14,14 +14,10 @@ from ctn2md.gen_base.page_md_fusion.md_processor.base import (
     save_pages_content,
     prepare_workspace
 )
+from ctn2md.gen_base.page_md_fusion.llm_heading.da_schemas_heading import DocumentAnalysisHeading
 from ctn2md.gen_base.page_md_fusion.md_processor.heading_processor import HeadingProcessor
 from ctn2md.gen_base.page_md_fusion.md_processor.header_footer import HeaderFooterProcessor
-from ctn2md.gen_base.page_md_fusion.llm_heading.da_schemas_heading import (
-    DocumentAnalysisHeading,
-    HeadingInfo,
-    HeadingStructureValidation,
-    HeadingRemoveInfo
-)
+from mmbase.utils.util_logging import setup_logger_handlers
 
 logger = logging.getLogger(__name__)
 
@@ -49,115 +45,67 @@ class DocStructureProcessor:
         """
         try:
             # 1. 准备工作空间
-            logger.info("Preparing workspace...")
+            logger.info("Step 1: Preparing workspace...")
             page_paths = prepare_workspace(self.md_info)
+            logger.info(f"Workspace prepared with {len(page_paths)} files")
             
             # 2. 读取页面内容
+            logger.info("Step 2: Loading pages content...")
             pages_content = load_pages_content(page_paths)
             if not pages_content:
+                logger.error("Failed to load pages content")
                 raise ValueError("Failed to load pages content")
+            logger.info(f"Loaded {len(pages_content)} pages")
             
             # 3. 处理标题
-            logger.info("Processing headings...")
+            logger.info("Step 3: Processing headings...")
+            logger.info(f"Found {len(doc_analysis.headings)} headings to process")
             pages_content = self.heading_processor.process(pages_content, doc_analysis)
             if not pages_content:
+                logger.error("Failed to process headings")
                 raise ValueError("Failed to process headings")
+            logger.info("Headings processed successfully")
                 
             # 4. 处理页眉页脚
-            logger.info("Processing headers and footers...")
+            logger.info("Step 4: Processing headers and footers...")
+            logger.info(f"Found {len(doc_analysis.remove_infos)} items to remove")
             pages_content = self.header_footer_processor.process(pages_content, doc_analysis.remove_infos)
             if not pages_content:
+                logger.error("Failed to process headers and footers")
                 raise ValueError("Failed to process headers and footers")
+            logger.info("Headers and footers processed successfully")
                 
             # 5. 保存结果
-            logger.info("Saving results...")
+            logger.info("Step 5: Saving results...")
             if not save_pages_content(page_paths, pages_content):
+                logger.error("Failed to save results")
                 raise ValueError("Failed to save results")
+            logger.info(f"Results saved to {len(page_paths)} files")
                 
+            logger.info("Document processing completed successfully")
             return pages_content
             
         except Exception as e:
-            logger.error(f"Error during document processing: {e}", exc_info=True)
+            logger.error(f"Error during document processing: {str(e)}", exc_info=True)
             return None
 
 if __name__ == "__main__":
-    from mmbase.utils.util_logging import setup_logger_handlers
+    from ctn2md.md_info.md_info_base import MdInfo
+    from ctn2md.gen_base.page_md_fusion.llm_heading.document_heading_analyzer import DocumentHeadingAnalyzer
+
     setup_logger_handlers()
+
+    # 创建测试实例
+    md_info = MdInfo("_test/ctn2md_papers___paged_md")
+    doc_processor = DocStructureProcessor(md_info)
+    doc_analyzer = DocumentHeadingAnalyzer(md_info)
+
+    # 分析文档
+    logger.info("Analyzing document...")
+    doc_analysis = doc_analyzer.analyze()
     
-    # 测试代码
-    json_path = "_output/test_doc/_info.json"
-    md_info = MdInfo.from_json(json_path)
-    
-    # 准备测试页面
-    test_pages = [
-        [  # 第1页
-            "页眉",
-            "# 一级标题",
-            "正文内容",
-            "## 二级标题",
-            "| 表头1 | 表头2 |",
-            "| --- | --- |",
-            "| 数据1 | 数据2 |",
-            "页脚"
-        ],
-        [  # 第2页
-            "页眉",
-            "### 三级标题",
-            "| 数据3 | 数据4 |",
-            "| 数据5 | 数据6 |",
-            "正文继续",
-            "页脚"
-        ]
-    ]
-    
-    # 构造文档分析结果
-    test_doc_analysis = DocumentAnalysisHeading(
-        headings=[
-            HeadingInfo(
-                page=1,
-                line=2,
-                content="一级标题",
-                expected_level=1,
-                validation=HeadingStructureValidation(is_valid=True)
-            ),
-            HeadingInfo(
-                page=1,
-                line=4,
-                content="二级标题",
-                expected_level=2,
-                validation=HeadingStructureValidation(is_valid=True)
-            ),
-            HeadingInfo(
-                page=2,
-                line=2,
-                content="三级标题",
-                expected_level=3,
-                validation=HeadingStructureValidation(is_valid=True)
-            )
-        ],
-        remove_infos=[
-            HeadingRemoveInfo(
-                page=1,
-                lines=[1, 8],
-                reason="header"
-            ),
-            HeadingRemoveInfo(
-                page=2,
-                lines=[1, 6],
-                reason="footer"
-            )
-        ],
-        structure_validation=HeadingStructureValidation(is_valid=True)
-    )
-    
-    # 测试处理
-    processor = DocStructureProcessor(md_info)
-    result = processor.process_document(test_doc_analysis)
-    
-    # 打印结果
-    if result:
-        for idx, page in enumerate(result, 1):
-            print(f"\n=== 处理后的第{idx}页 ===")
-            print("\n".join(page))
-    else:
-        print("处理失败") 
+    # 处理文档
+    logger.info("Processing document...")
+    processed_pages = doc_processor.process_document(doc_analysis)
+
+    logger.info("Test completed successfully.") 
