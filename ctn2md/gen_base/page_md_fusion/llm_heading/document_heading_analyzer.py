@@ -20,11 +20,12 @@ logger = logging.getLogger(__name__)
 class DocumentHeadingAnalyzer:
     """文档分析器：生成文档结构分析"""
     
-    def __init__(self, md_info: MdInfo, using_cache: bool = True):
+    def __init__(self, md_info: MdInfo, using_cache: bool = True, debug: bool = False):
         self.md_info = md_info
         self.llm_client = llmClientHeading(md_info, using_cache=using_cache)
+        self.debug = debug
   
-    def analyze(self, fnames: Optional[List[str]] = None) -> DocumentAnalysisHeading:
+    def analyze(self, fnames: Optional[List[str]] = None, debug: bool = False) -> DocumentAnalysisHeading:
         """分析文档并生成动作指令"""
         # 1. 准备带标记的文档内容
         mcm = FullMarkedContentMaker()
@@ -47,8 +48,9 @@ class DocumentHeadingAnalyzer:
                         heading.validation.context.prev_heading_id = None
         
         # 4. 生成分析报告
-        explanation = HeadingActionExplainer(das).explain()
-        logger.info("\nDocument Analysis Report:\n%s", explanation)
+        if self.debug:
+            explanation = HeadingActionExplainer(das).explain()
+            logger.info("\nDocument Analysis Report:\n%s", explanation)
         
         return das
 
@@ -63,7 +65,7 @@ if __name__ == "__main__":
     #pname_info = "_test/ctn2md_mrag___paged_md/_info.json"
     md_info = MdInfo(pname_info)
     
-    analyzer = DocumentHeadingAnalyzer(md_info, using_cache=False)  # 使用md_info初始化
+    analyzer = DocumentHeadingAnalyzer(md_info, using_cache=False, debug=True)  # 使用md_info初始化
     fnames = md_info.get_fnames_pages()  # 只测试前3页
     result = analyzer.analyze(fnames)
     

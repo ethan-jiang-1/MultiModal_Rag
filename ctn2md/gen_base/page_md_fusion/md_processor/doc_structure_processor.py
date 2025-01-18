@@ -24,13 +24,15 @@ logger = logging.getLogger(__name__)
 class DocStructureProcessor:
     """文档结构处理器：协调标题和页眉页脚的处理"""
     
-    def __init__(self, md_info: MdInfo):
+    def __init__(self, md_info: MdInfo, debug: bool = False):
         """初始化
         
         Args:
             md_info: MD信息对象
+            debug: 是否开启调试模式
         """
         self.md_info = md_info
+        self.debug = debug
         self.heading_processor = HeadingProcessor(md_info)
         self.header_footer_processor = HeaderFooterProcessor(md_info)
         

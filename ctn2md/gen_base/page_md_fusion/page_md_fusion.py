@@ -27,15 +27,16 @@ logger = logging.getLogger(__name__)
 class PageMdFusion:
     """页面MD融合的主控制器"""
     
-    def __init__(self, md_info: MdInfo):
+    def __init__(self, md_info: MdInfo, debug: bool = False):
         """初始化
         
         Args:
             md_info: MD信息对象，包含页面文件列表等信息
         """
         self.md_info = md_info
-        self.document_analyzer = DocumentHeadingAnalyzer(md_info)
-        self.processor = DocStructureProcessor(md_info)
+        self.debug = debug
+        self.document_analyzer = DocumentHeadingAnalyzer(md_info, debug)
+        self.processor = DocStructureProcessor(md_info, debug)
 
     def process(self) -> bool:
         """执行融合处理流程
@@ -75,5 +76,5 @@ if __name__ == "__main__":
     pname_info = "_test/ctn2md_papers___paged_md"
     md_info = MdInfo(pname_info)  # 直接使用构造函数
     
-    fusion = PageMdFusion(md_info)
+    fusion = PageMdFusion(md_info, debug=True)
     fusion.process() 
