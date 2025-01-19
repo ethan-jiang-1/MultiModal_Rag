@@ -8,7 +8,7 @@ from ctn2md.gen_base.page_md_fusion.llm_heading.da_schemas_heading import (
     HeadingValidation, HeadingRemoveInfo, HeadingStructureValidation,
     _HeadingWarningInfo, HeadingErrorType, HeadingValidationScope,
     HeadingLevelGapType, HeadingCrossPageIssueType, HeadingHeaderPattern,
-    DocumentAnalysisHeading, HeadingInfo, HeadingContext
+    DocumentAnalysisHeading, HeadingInfo, HeadingContext, HeadingRemoveReason
 )
 
 class HeadingActionExplainer:
@@ -90,9 +90,11 @@ class HeadingActionExplainer:
         
         # Removal reason
         reason_desc = {
-            "header": "页眉",
-            "footer": "页脚",
-            "separator": "分隔符"
+            HeadingRemoveReason.HEADER: "页眉",
+            HeadingRemoveReason.FOOTER: "页脚",
+            HeadingRemoveReason.DUPLICATE: "重复内容",
+            HeadingRemoveReason.NOISE: "噪声内容",
+            HeadingRemoveReason.SEPARATOR: "分隔符"
         }
         parts.append(f"类型: {reason_desc[remove.reason]}")
         

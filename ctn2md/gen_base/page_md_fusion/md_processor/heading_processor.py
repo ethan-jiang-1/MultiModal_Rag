@@ -2,11 +2,12 @@
 标题处理器 - 处理文档标题结构
 """
 
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import logging
 import os
 import json
 from dotenv import load_dotenv
+import re
 
 load_dotenv()
 
@@ -32,6 +33,41 @@ class HeadingProcessor:
             md_info: MD信息对象
         """
         self.md_info = md_info
+        self._heading_pattern = re.compile(r'^(#{1,6})?(?:\s*)(.+)$')
+            
+    def _normalize_heading_format(self, content: str) -> Tuple[Optional[int], str]:
+        """规范化标题格式，提取当前层级和内容
+        
+        Args:
+            content: 原始标题内容
+                
+        Returns:
+            (current_level, clean_content): 当前层级（如果有）和清理后的内容
+        """
+        match = self._heading_pattern.match(content)
+        if not match:
+            return None, content
+            
+        level_marks, clean_content = match.groups()
+        current_level = len(level_marks) if level_marks else None
+        return current_level, clean_content.strip()
+            
+    def _format_heading(self, content: str, level: int) -> str:
+        """格式化标题
+        
+        Args:
+            content: 标题内容
+            level: 目标层级
+                
+        Returns:
+            格式化后的标题
+        """
+        # 1. 规范化当前格式
+        _, clean_content = self._normalize_heading_format(content)
+        
+        # 2. 添加正确的层级标记
+        prefix = "#" * level
+        return f"{prefix} {clean_content}"
             
     def process(self, pages_content: List[List[str]], doc_analysis: DocumentAnalysisHeading) -> Optional[List[List[str]]]:
         """处理标题结构
@@ -81,19 +117,6 @@ class HeadingProcessor:
         except Exception as e:
             logger.error(f"Error during heading processing: {e}", exc_info=True)
             return None
-            
-    def _format_heading(self, content: str, level: int) -> str:
-        """格式化标题
-        
-        Args:
-            content: 标题内容
-            level: 标题层级
-                
-        Returns:
-            格式化后的标题
-        """
-        prefix = "#" * level
-        return f"{prefix} {content}"
             
     def _handle_invalid_heading(
         self, 

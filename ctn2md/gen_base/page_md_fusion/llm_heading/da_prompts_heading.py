@@ -9,149 +9,179 @@ Core Principles:
 """
 
 SYSTEM_PROMPT_DOC_ANALYSIS_HEADING = """
-Core Principles:
-1. Headings are cognitive anchors that:
-   - Create mental models of document structure
-   - Enable efficient knowledge navigation
-   - Define conceptual boundaries
-   - Establish information hierarchy
+Heading Identification Framework:
 
-2. True headings serve as:
-   - Knowledge Organizers: Like a library's classification system
-   - Navigation Points: Like landmarks in a city
-   - Scope Definers: Like chapter titles in a book
-   - Relationship Builders: Like family trees
+1. SEMANTIC ROLE EVALUATION (Primary Decision Layer)
+   Question: "Does this content organize knowledge?"
+   
+   A. True Heading Characteristics:
+      - Introduces new topic or concept
+      - Creates clear knowledge boundary
+      - Functions as section organizer
+      - Enables document navigation
+      - Belongs in a meaningful TOC
+   
+   B. Non-Heading Characteristics:
+      - Describes rather than organizes
+      - Continues previous content
+      - Serves technical/administrative function
+      - Contains detailed information
+      - Functions as caption or attribution
 
-3. Non-headings are supporting elements that:
-   - Provide details (like footnotes)
-   - Attribute content (like citations)
-   - Describe visuals (like captions)
-   - Manage metadata (like page numbers)
+2. CONTEXTUAL ANALYSIS (Secondary Decision Layer)
+   Question: "How does it relate to document flow?"
+   
+   A. Context Indicators:
+      Strong Heading Context:
+      - Followed by new content section
+      - Clear hierarchy with siblings
+      - Independent of previous content
+      - Creates natural content break
+      
+      Non-Heading Context:
+      - Depends on previous content
+      - Part of continuous paragraph
+      - Subordinate to nearby content
+      - Technical/supplementary role
 
-Analysis Process:
-1. EVALUATE HEADING ESSENCE
-- Consider how the content functions:
-  * Does it help build a mental map of the document?
-  * Would it appear in a meaningful table of contents?
-  * Does it create a natural pause in reading flow?
-  * Could it stand alone as a section identifier?
+3. IMMEDIATE REJECTION PATTERNS
+   Automatically classify as non-heading if matches:
+   
+   A. Figure/Table Patterns:
+      - Starts with: "Fig.", "Figure", "Table"
+      - Contains: "shown in figure", "as illustrated"
+   
+   B. Reference Patterns:
+      - Starts with: "Source:", "Reference:", "Cited from"
+      - Contains: "et al.", "DOI:", "ISBN:"
+   
+   C. Metadata Patterns:
+      - Copyright notices: "©", "All rights reserved"
+      - Page numbers: "Page", "页码"
+      - Author information: "Author:", "作者:"
 
-2. CONFIDENCE SCORING GUIDELINES
-- Score based on heading essence (5-tier scale):
-  1.0: Perfect structural heading
-    * Major document sections (e.g. "1. Introduction", "2. Methods")
-    * Clear numbering and perfect formatting
-    * Essential for document navigation
-    * Creates primary knowledge boundaries
+4. CONFIDENCE SCORING SYSTEM
+   Base Score (0.0-1.0) * Context Multiplier * Format Multiplier
 
-  0.8: Strong heading
-    * Subsections with clear hierarchy (e.g. "1.1", "2.3")
-    * Standard formatting
-    * Clear organizational role
-    * Strong structural significance
+   A. Base Score Assignment:
+      1.0: Perfect structural heading
+      - Major document sections
+      - Clear numbering and formatting
+      - Essential for navigation
+      - Creates primary knowledge boundaries
 
-  0.6: Basic heading
-    * Valid sections without numbering (e.g. "Conclusion", "References")
-    * May have minor format variations
-    * Clear but simpler structural role
+      0.8: Strong heading
+      - Clear subsections
+      - Standard formatting
+      - Strong organizational role
+      - Clear structural significance
 
-  0.4: Weak/Ambiguous content
-    * Mixed organizational/detail content
-    * Unclear structural role
-    * Format inconsistencies
-    * Questionable navigation value
+      0.6: Basic heading
+      - Valid but simpler sections
+      - Minor format variations
+      - Clear but basic structure role
 
-  0.2 or lower: Non-heading content
-    * Figure/table titles
-    * Chart descriptions
-    * Author/attribution information
-    * Technical specifications
-    * Pure descriptive content
-    * Footnotes, page numbers
-    * Administrative text
+      0.4: Weak/Ambiguous
+      - Mixed content type
+      - Unclear structural role
+      - Format inconsistencies
+      - Questionable navigation value
 
-- Key indicators for non-headings (should score ≤0.2):
-  * Describes rather than organizes
-  * Part of content flow
-  * No meaningful structural role
-  * Serves technical/administrative function
+      0.2: Non-heading content
+      - Pure descriptive content
+      - Technical specifications
+      - Administrative text
+      - Supplementary information
 
-- Context Deductions:
-  * -0.6: Clear figure/table caption patterns
-  * -0.6: Pure attribution/metadata content
-  * -0.5: Technical specifications
-  * -0.3: Format inconsistencies
-  * -0.2: Minor numbering variations
+   B. Context Multipliers:
+      - Clear section start: *1.2
+      - Consistent hierarchy: *1.1
+      - Mixed context: *0.8
+      - Broken flow: *0.6
 
-- Key indicators for non-headings (should score <0.5):
-  * Describes rather than organizes
-  * Part of content flow
-  * Serves technical/administrative function
-  * No structural significance
+   C. Format Multipliers:
+      - Standard format: *1.0
+      - Minor issues: *0.9
+      - Major issues: *0.7
+      - Wrong format: *0.5
 
-- Common non-heading patterns (should score <0.6):
-  * Figure/table titles (should score 0.4-0.5)
-  * Technical specifications (should score 0.3-0.4)
-  * Author/citation information (should score <0.3)
-  * Running text headings (should score 0.4-0.5)
-  * Metadata entries (should score <0.3)
+   D. Automatic Deductions:
+      - Contains figure/table markers: -0.6
+      - Contains references: -0.5
+      - Contains metadata: -0.4
+      - Excessive length: -0.3
 
-3. ASSESS STRUCTURAL ROLE
-- Key considerations:
-  - Position in document hierarchy
-  - Relationship to other headings
-  - Scope of content organized
-  - Contribution to document navigation
+5. VALIDATION REQUIREMENTS
+   For each heading candidate:
 
-4. VALIDATE RELATIONSHIPS
-- Critical checks:
-  - Logical progression of ideas
-  - Consistent hierarchical structure
-  - Clear parent-child connections
-  - Coherent cross-page links
+   A. Basic Validation:
+      - Verify semantic role first
+      - Check context relationships
+      - Evaluate format consistency
+      - Assess structural importance
 
-5. OUTPUT REQUIREMENTS
-- For each heading:
-  * Determine if it's a true heading based on semantic role
-  * Set error_type to one of:
-    - wrong_level: Incorrect heading level
-    - wrong_format: Format error (for headings without proper markers)
-    - not_heading: Not a heading
-    - missing: Missing heading
-    - inconsistent: Inconsistent with context
-  * Assign confidence based on:
-    - Clarity of heading role (introduces new topic)
-    - Strength of parent-child relationship
-    - Consistency with peer headings
-  * Assign heading_id as a simple numeric string:
-    - Use "1" for first heading, "2" for second, etc.
-    - Must be sequential and unique within the document
-- For remove_infos:
-  * pattern must be one of: 'title_page', 'title_number', 'number_only', 'chapter_title', 'custom'
-  * reason must be one of: 'header', 'footer', 'separator'
-- Always set total_pages to the highest page number seen
-- Always set total_headings to count of valid headings only
-- Provide clear error messages for invalid elements
-- Include confidence scores based on rule matching
-"""
+   B. Cross-Page Validation:
+      - Check context continuation
+      - Verify hierarchy maintenance
+      - Evaluate reference resolution
+      - Assess content flow
 
-USER_PROMPT_DOC_ANALYSIS_HEADING = """Please analyze this document with special attention to heading structure and cross-page relationships. Follow the confidence level guidelines strictly and provide detailed validation for each heading.
+   C. Error Type Assignment:
+      wrong_level: Incorrect heading level
+      needs_level: Level needs to be specified
+      not_heading: Not a heading
+      missing: Missing heading
+      wrong_format: Format error
+      inconsistent: Inconsistent with context
+
+6. OUTPUT GUIDELINES
+   Strictly follow the schema defined in da_schemas_heading.py:
+   
+   A. HeadingInfo requirements:
+      - Assign sequential heading_id (1, 2, 3...)
+      - Set confidence based on scoring system
+      - Include complete validation details
+      - Provide context information
+
+   B. RemoveInfo requirements:
+      - Identify headers/footers accurately
+      - Specify correct removal reason
+      - Use appropriate pattern type
+      - Maintain high confidence (>=0.8)
+
+   C. Structure Validation:
+      - Verify overall document structure
+      - Identify missing levels
+      - Report level gaps
+      - Document cross-page issues
+
+Remember: Always prioritize semantic role over formatting. A well-formatted line might not be a heading, while a less-formatted line with clear organizational function should be considered a heading.
+
+Output Format Rules:
+1. Validation scope must be one of: 'single_page', 'cross_page', or 'document'
+2. All heading confidence scores must be >= 0.8
+3. Remove info reasons must be one of: 'header', 'footer', 'duplicate', 'noise', or 'separator'
+4. Remove info patterns must be one of: 'title_page', 'title_number', 'number_only', 'chapter_title', or 'custom'
+
+Follow these rules strictly when formatting the output JSON, while applying the heading identification framework above."""
+
+USER_PROMPT_DOC_ANALYSIS_HEADING = """Please analyze this document following the Heading Identification Framework. Focus on semantic role and context before considering format. Provide detailed validation for each heading candidate.
 
 Document Content Format:
 The `Document Content` will be presented in a structured XML format that clearly delineates pages and their relationships:
 
 1. Document Structure:
-   - Content is wrapped in <document> tags to define document boundaries
-   - Pages are marked with "=== PAGE X ===" and "=== END PAGE X ===" to ensure clear page separation
-   - Each line has a unique identifier "[PX-LY]" where:
-     * X: Page number (continuous across document)
-     * Y: Line number (resets each page)
+   - Content is wrapped in <document> tags
+   - Pages marked with "=== PAGE X ===" and "=== END PAGE X ==="
+   - Each line has identifier "[PX-LY]" where:
+     * X: Page number
+     * Y: Line number within page
 
 2. Content Organization:
-   - Empty lines are explicitly marked with "<empty>" to preserve structure
-   - Page breaks are clearly indicated to maintain document flow
-   - Special characters and formatting are preserved verbatim
-   - Cross-page relationships are maintained through consistent numbering
+   - Empty lines marked with "<empty>"
+   - Page breaks clearly indicated
+   - Special characters preserved
+   - Cross-page relationships maintained
 
 3. Example Structure:
 <document>
@@ -166,12 +196,6 @@ The `Document Content` will be presented in a structured XML format that clearly
 === END PAGE 2 ===
 </document>
 
-This format ensures:
-- Clear page boundaries and relationships
-- Consistent line numbering for reference
-- Preserved document structure and flow
-- Maintained cross-page context
-
 Document Content:
 <document>
 {marked_content_from_pages}
@@ -180,71 +204,59 @@ Document Content:
 Required Output Format:
 {
     "headings": [{
-        "page": "Page number (integer)",
-        "line": "Line number (integer)",
-        "content": "Heading content (string)",
-        "heading_id": "Sequential numeric string starting from '1' (e.g., '1', '2', '3')",
-        "current_level": "Current level (integer 1-6 or null)",
-        "expected_level": "Expected level (integer 1-6)",
-        "confidence": "Confidence score (float 0.8-1.0)",
+        "page": int,
+        "line": int,
+        "content": string,
+        "heading_id": string,
+        "current_level": int or null,
+        "expected_level": int,
+        "confidence": float,
         "validation": {
-            "is_valid": "Whether the heading is valid (boolean)",
-            "current_level": "Current level (integer 1-6 or null)",
-            "expected_level": "Expected level (integer 1-6)",
-            "error_type": "Error type, one of:
-              - wrong_level: Incorrect heading level
-              - needs_level: Level needs to be specified
-              - not_heading: Not a heading
-              - missing: Missing heading
-              - wrong_format: Format error
-              - inconsistent: Inconsistent with context",
-            "validation_scope": "single_page|cross_page",
-            "confidence": "Confidence score (float 0.8-1.0)",
+            "is_valid": boolean,
+            "current_level": int or null,
+            "expected_level": int,
+            "error_type": string or null,
+            "validation_scope": string,
+            "confidence": float,
             "context": {
-                "prev_heading_id": "ID of the previous heading (e.g., if previous heading has heading_id='2', use '2'), or null if no previous heading",
-                "is_cross_page": "Whether spans across pages (boolean)"
+                "prev_heading_id": string or null,
+                "is_cross_page": boolean
             }
         }
     }],
     
     "remove_infos": [{
-        "page": "Page number (>0)",
-        "lines": "Line numbers [>0]",
-        "reason": "header|footer|separator",
-        "confidence": ">=0.8",
-        "pattern": "title_page|title_number|mixed_format|custom"
+        "page": int,
+        "lines": [int],
+        "reason": string,
+        "confidence": float,
+        "pattern": string
     }],
     
     "structure_validation": {
-        "is_valid": "Whether overall structure is valid (boolean)",
-        "missing_levels": "Array of missing levels",
+        "is_valid": boolean,
+        "missing_levels": [int],
         "level_gaps": [{
-            "type": "Gap type, one of:
-              - skip_level: Level skipped
-              - wrong_order: Wrong level order
-              - mixed_format: Mixed format used
-              - invalid_nesting: Invalid nesting",
-            "start_level": "Start level (integer)",
-            "end_level": "End level (integer)",
-            "page": "Page number (integer)"
+            "type": string,
+            "start_level": int,
+            "end_level": int,
+            "page": int
         }],
         "cross_page_issues": [{
-            "type": "Issue type, one of:
-              - break_heading: Heading breaks across pages
-              - lost_context: Context lost across pages",
-            "start_page": "Start page number (integer)",
-            "end_page": "End page number (integer)",
-            "heading_index": "Index in headings array"
+            "type": string,
+            "start_page": int,
+            "end_page": int,
+            "heading_index": int
         }]
     },
     
     "warnings": [{
-        "type": "warning类型 (structure|format)",
-        "page": "页码 (整数)",
-        "lines": "行号列表，例如 [1, 2, 3]",
-        "message": "警告信息"
+        "type": string,
+        "page": int,
+        "lines": [int],
+        "message": string
     }],
     
-    "total_pages": "Total pages (>0)",
-    "total_headings": "Total headings (>=0)"
+    "total_pages": int,
+    "total_headings": int
 }"""
