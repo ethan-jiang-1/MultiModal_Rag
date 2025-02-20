@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description: Standards for Python module imports and initialization.
+globs: ["*.py"]
 ---
 # Python Module Import Rules
 

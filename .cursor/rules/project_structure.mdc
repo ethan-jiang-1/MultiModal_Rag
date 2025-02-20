@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description: Guidelines for Python project organization focusing on maintainability and AI-friendly structure.
+globs: ["*.py", "**/*.py"]
 ---
 # Project Structure Standards
 
