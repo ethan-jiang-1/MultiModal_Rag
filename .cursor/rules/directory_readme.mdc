@@ -1,3 +1,7 @@
+---
+description: 
+globs: 
+---
 # Directory-Specific README Guidelines
 
 > file_patterns: ["README_*.md", "**/README_*.md"]

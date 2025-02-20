@@ -1,3 +1,7 @@
+---
+description: 
+globs: 
+---
 # README Documentation Guidelines
 
 > file_patterns: ["README.md", "**/README.md"]
