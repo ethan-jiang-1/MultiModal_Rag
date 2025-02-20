@@ -1,0 +1,144 @@
+---
+description: 
+globs: 
+---
+# Python Development Standards
+
+> file_patterns: ["*.py"]
+> description: Core principles and standards for Python development
+
+## Core Principles
+
+### KISS Principle
+Keep It Simple Stupid
+
+- Write the simplest possible code
+- Avoid over-design
+- Keep code easy to understand and maintain
+- Ensure code is easily comprehensible for others and AI
+
+### Single Responsibility
+Each component should have a single, well-defined purpose
+
+- One file per module
+- Each module should have minimal functionality
+- Clear responsibility for each class/function
+
+### Incremental Development
+Develop code incrementally with small iterations
+
+- Small iterative steps
+- Build framework first, then details
+- Maintain testability
+
+## Code Quality
+
+### Type Annotations
+> required: true
+
+- Use type hints for all function parameters
+- Use type hints for all return values
+- Use Optional[] for nullable values
+- Use Union[] for multiple types
+- Keep type hints simple and readable
+
+### Documentation
+> required: true
+
+- Include purpose description
+- Document parameters and return values
+- Include usage examples where helpful
+- Document exceptions and edge cases
+- Keep existing comments up to date
+
+### Code Style
+> required: true
+
+- Follow PEP 8 conventions
+- Use consistent naming conventions
+- Maintain proper indentation
+- Keep line lengths reasonable
+
+## Data Processing
+
+### Data Structures
+Use dataclass for data structure definitions
+
+- Use dataclasses for data containers
+- Include type hints for all fields
+- Use frozen=True for immutable data
+- Consider slots=True for performance
+
+### Data Validation
+Use pydantic for data validation
+
+- Define clear validation rules
+- Use appropriate field types
+- Include error messages
+- Handle validation errors gracefully
+
+### Caching
+Use lru_cache for computation results
+
+- Cache expensive computations
+- Set appropriate cache sizes
+- Consider TTL for time-sensitive data
+- Clear cache when needed
+
+## Error Handling
+
+### Async Processing
+Use async/await for asynchronous operations
+
+- Use async for I/O operations
+- Handle concurrent operations properly
+- Use appropriate async patterns
+- Consider performance implications
+
+### Logging
+Implement unified logging approach
+
+- Use structured logging
+- Include relevant context
+- Use appropriate log levels
+- Configure proper log handlers
+
+### Error Management
+Proper error handling with context
+
+- Use specific exception types
+- Include error context
+- Handle errors at appropriate levels
+- Provide meaningful error messages
+
+## AI Friendliness
+
+### Code Structure
+- Use clear and logical file organization
+- Keep functions focused and well-named
+- Use descriptive variable names
+- Add comments for complex logic
+
+### Type System
+- Use type hints consistently
+- Keep type annotations readable
+- Avoid overly complex type constructs
+- Document type usage where needed
+
+### Documentation
+- Write clear and concise docstrings
+- Include examples in documentation
+- Explain non-obvious decisions
+- Keep documentation up to date
+
+### Testing
+- Write clear test cases
+- Include test documentation
+- Make tests easy to understand
+- Test edge cases explicitly
+
+## Validation Requirements
+- Code must follow all required guidelines
+- Documentation must be complete and clear
+- Tests must cover all functionality
+- Code must be AI-friendly and maintainable 

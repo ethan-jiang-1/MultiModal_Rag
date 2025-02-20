@@ -1,0 +1,37 @@
+# Python Module Import Rules
+
+> file_patterns: ["*.py"]
+> description: Standards for Python module imports and initialization
+
+## Environment Initialization
+> priority: 1
+
+Rules for environment initialization:
+- Execute load_env() at file top
+- Ensure project root directory is correctly identified
+- All subsequent module imports should be based on this root directory
+
+## Module Independence
+Each module should be independently runnable:
+- Every core module must have a __main__ test entry point
+- Depends on environment initialization
+- Must be runnable from project root directory
+- Important models should be independently debuggable for AI understanding
+
+## Import Path Rules
+Standards for import path usage:
+- Use absolute import paths from project root
+- Avoid relative imports with . or ..
+- Prevent import errors due to module location changes
+
+## Rule Interdependency
+These rules are mutually supportive:
+- Environment initialization provides foundation for absolute imports
+- Absolute imports ensure module independence
+- Module independence validates first two rules
+
+## Best Practices
+- Always initialize environment before imports
+- Keep imports organized and grouped by type
+- Use __all__ to define public interfaces
+- Document any non-standard import patterns 

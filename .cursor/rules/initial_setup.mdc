@@ -1,0 +1,84 @@
+---
+description: 
+globs: 
+---
+# Initial Project Setup Guidelines
+
+> file_patterns: ["*.py", "setup.py", "requirements.txt"]
+> description: Guidelines for initial project setup and structure
+
+## Basic Framework Setup
+Guidelines for initial development:
+- Implement minimum viable feature set
+- Establish clear module boundaries
+- Define core interfaces and data structures
+
+### Code Quality Baseline
+> required: true
+
+Essential quality requirements:
+- Complete type annotations
+- Standard docstrings
+- Basic unit tests
+- Unified code style
+
+### Configuration Setup
+Required configuration elements:
+- Environment variable configuration
+- Logging system setup
+- Dependency version management
+- Development environment setup
+
+## Design Pattern Implementation
+
+### Processor Pattern
+Guidelines for business logic organization:
+- Business logic layer for flow orchestration only
+- Complex logic delegated to processors
+- Base processors independently testable
+
+### Workspace Management
+Guidelines for workspace handling:
+- Share context through md_info
+- Ensure workspace isolation for safety
+- Avoid direct original file modification
+
+### Basic Patterns
+Common design patterns to consider:
+- Factory pattern for object creation
+- Strategy pattern for algorithm variants
+- Observer pattern for event handling
+- Decorator pattern for feature extension
+
+## Project Initialization
+
+### Environment Setup
+> required: true
+
+Initial environment requirements:
+- Virtual environment creation
+- Dependencies installation
+- Environment variable configuration
+- Development tools setup
+
+### Version Control Setup
+> required: true
+
+Initial repository setup:
+- Git initialization
+- .gitignore configuration
+- Branch strategy setup
+- Commit message guidelines
+
+### Documentation Setup
+Initial documentation requirements:
+- README.md creation
+- API documentation structure
+- Development guide setup
+- Contribution guidelines
+
+## Validation Requirements
+- Project structure must follow standards
+- All required files must be present
+- Initial tests must pass
+- Documentation must be complete 

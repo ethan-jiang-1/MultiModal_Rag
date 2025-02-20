@@ -1,0 +1,60 @@
+# Project Structure Standards
+
+> file_patterns: ["*"]
+> description: Guidelines for organizing project structure and dependencies
+
+## Directory Organization
+Standards for directory structure:
+- Separate source code, tests, docs, and configs
+- Use README.md for functionality documentation
+- Store architecture diagrams in diagrams/
+- Avoid excessive directory nesting
+
+## Dependency Management
+Guidelines for managing project dependencies:
+- Use venv for virtual environment management (.venv directory)
+- Use .env for configuration and secrets
+- Use .gitignore for version control management
+- Follow dependency injection principles
+
+## Project Layout
+
+### Required Files
+> required: true
+
+- README.md
+- requirements.txt
+- .env.example
+- .gitignore
+
+### Required Directories
+> required: true
+
+- src/
+- tests/
+- docs/
+- config/
+
+## Best Practices
+- Keep project structure clean and logical
+- Isolate dependencies properly
+- Separate configuration from code
+- Document directory structure in README
+
+## File Organization
+- Group related files together
+- Use clear and consistent naming
+- Keep directory depth reasonable
+- Include necessary __init__.py files
+
+## Configuration Management
+- Use environment variables for configuration
+- Keep secrets separate from code
+- Document all configuration options
+- Provide example configurations
+
+## Version Control
+- Use meaningful .gitignore rules
+- Keep sensitive data out of version control
+- Document branching strategy
+- Include contribution guidelines 

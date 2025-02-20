@@ -1,0 +1,98 @@
+# README Documentation Guidelines
+
+> file_patterns: ["README.md", "**/README.md"]
+> description: Standards for writing and maintaining README documentation
+
+## Core Principles
+
+### Deep Code Analysis
+- Must understand core code implementation first
+- Extract key technical features and innovations
+- Avoid generic content
+
+### Practical Orientation
+- Design navigation from problem perspective
+- Point to key functions and features
+- Provide complete code examples
+
+### Emphasis
+- Core functionality first
+- Configuration information centralized
+- Performance metrics clearly listed
+
+## Quick Navigation
+
+### Key File Index
+- File name with one-line core functionality description
+- Function-based search (specific problems to specific solutions)
+- Clear directory structure
+- Reference to directory-specific READMEs (README_*.md)
+
+### System Design
+- Core features (with code examples)
+- Key configurations (environment variables, recommended parameters)
+- Architecture explanation (component relationships, data flow)
+- Directory organization and relationships
+
+## Directory Documentation
+> required: true
+
+### Directory-Specific READMEs
+- Each major directory must have a README_<DIR>.md
+- Follow directory-specific README guidelines
+- Link to relevant subdirectory documentation
+- Maintain consistency across documentation
+
+### Directory Structure
+- Document overall project structure
+- Explain directory organization
+- Reference directory-specific guidelines
+- Maintain directory relationship diagram
+
+## Core Functionality
+
+### Usage Examples
+- Must be directly runnable code
+- Include key parameter explanations
+- Show typical usage scenarios
+- Link to directory-specific examples
+
+### Configuration Details
+- Complete environment variable listing
+- Parameter recommendation explanations
+- Performance benchmark baselines
+- Directory-specific configurations
+
+### Important Notes
+- Error handling recommendations
+- Performance optimization guide
+- Development suggestions
+- Directory-specific considerations
+
+## Format Standards
+
+### Markdown Usage
+- Use standard Markdown syntax
+- Specify language for code blocks
+- Clear hierarchical structure
+- Consistent formatting across all READMEs
+
+### Content Organization
+- Group related information
+- Use consistent formatting
+- Keep sections focused
+- Follow directory-specific patterns
+
+### Maintenance
+- Regular updates with changes
+- Version compatibility notes
+- Migration guides when needed
+- Synchronize with directory READMEs
+
+## Validation Requirements
+- README must be clear and comprehensive
+- Code examples must be tested and working
+- Structure must be logical and navigable
+- Content must be up to date
+- All required directory READMEs must exist
+- Directory documentation must be consistent 

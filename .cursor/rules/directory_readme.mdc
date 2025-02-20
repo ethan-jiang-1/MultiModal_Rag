@@ -1,0 +1,102 @@
+# Directory-Specific README Guidelines
+
+> file_patterns: ["README_*.md", "**/README_*.md"]
+> description: Standards for directory-specific README documentation
+
+## Naming Convention
+> required: true
+
+### Pattern Rules
+- Use format `README_<DIRECTORY_NAME>.md`
+- Directory name should be in UPPERCASE
+- Use underscores for word separation
+- Name should reflect directory's purpose
+
+### Examples
+- `README_TESTS.md` for test directory
+- `README_DOCS.md` for documentation directory
+- `README_CONFIG.md` for configuration directory
+- `README_UTILS.md` for utilities directory
+
+## Content Structure
+> required: true
+
+### Directory Overview
+- Clear description of directory purpose
+- Explanation of directory scope
+- List of key components
+- Dependencies and relationships
+
+### File Organization
+- List and explain key files
+- Describe file naming conventions
+- Document directory structure
+- Explain any special patterns
+
+### Component Documentation
+- Document main components
+- Explain component interactions
+- Describe internal dependencies
+- Note external dependencies
+
+## Special Requirements
+
+### Code Examples
+- Include directory-specific examples
+- Show typical usage patterns
+- Demonstrate file interactions
+- Provide setup instructions
+
+### Configuration
+- Document directory-specific settings
+- List environment variables
+- Explain configuration files
+- Note default values
+
+### Testing
+- Describe test organization
+- Explain test naming patterns
+- Document test dependencies
+- Provide test examples
+
+## Integration Guidelines
+
+### Parent Directory
+- Explain relationship with parent
+- Document inheritance patterns
+- Note shared resources
+- Describe communication patterns
+
+### Sibling Directories
+- Document dependencies
+- Explain interactions
+- Note shared resources
+- Describe interfaces
+
+### Child Directories
+- List and explain subdirectories
+- Document organization rules
+- Explain inheritance patterns
+- Note special requirements
+
+## Maintenance
+
+### Updates
+- When to update documentation
+- What to include in updates
+- How to verify changes
+- Update checklist
+
+### Version Control
+- Document version dependencies
+- Note compatibility requirements
+- Track major changes
+- Maintain change history
+
+## Validation Requirements
+- Must follow naming convention
+- Must document all key components
+- Must explain directory purpose
+- Must maintain consistency with parent README
+- Must be up to date with current structure
+- Must include all required sections 

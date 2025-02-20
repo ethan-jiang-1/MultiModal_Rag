@@ -1,0 +1,58 @@
+# Incremental Code Modification Principles
+
+> file_patterns: ["*.py", "*.md", "*.json", "*.yaml"]
+> description: Guidelines for making progressive code changes
+
+## Step by Step Approach
+Make changes incrementally and verify each step:
+- Modify one critical point at a time
+- Verify effect after each modification
+- Maintain stability of other components
+
+## Modification Strategy
+Strategic approach to code changes:
+- Progress from abstract to concrete
+- Move from general to specific
+- Prefer augmentation over replacement
+
+## Verification Process
+Ensure quality of changes:
+- Run tests after each change
+- Compare behavior before and after changes
+- Confirm no unintended side effects
+
+## Best Practices
+Guidelines for implementing changes:
+- Find appropriate location within existing structure
+- Maintain consistent abstraction levels
+- Ensure new content matches context expression style
+
+## Common Pitfalls
+Mistakes to avoid:
+- Avoid changing too many things at once
+- Don't alter existing abstraction levels
+- Always verify effects of changes
+
+## Code Review Process
+- Review changes in small batches
+- Focus on one component at a time
+- Ensure changes follow project standards
+- Verify documentation is updated
+
+## Testing Requirements
+- Write tests before making changes
+- Update existing tests as needed
+- Verify all tests pass after changes
+- Document test modifications
+
+## Documentation Updates
+- Update relevant documentation
+- Document change rationale
+- Note any breaking changes
+- Keep changelog current
+
+## Validation Requirements
+- Changes must be atomic and verifiable
+- Each change must maintain system stability
+- Changes should follow existing patterns
+- All changes must be tested 

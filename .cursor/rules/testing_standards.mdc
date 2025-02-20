@@ -1,0 +1,73 @@
+# Testing Standards
+
+> file_patterns: ["*_test.py", "test_*.py", "*_tests/*.py"]
+> description: Guidelines for test organization and implementation
+
+## Test Organization
+Standards for organizing test files
+
+- Test directories should be named ./xxx_tests
+- Organize test files by module name
+- Create necessary __init__.py files
+- Group related tests in test classes
+- Separate unit tests from integration tests
+
+## Test Implementation
+
+### Framework
+> required: true
+
+Use pytest and its plugins exclusively:
+- Use pytest.mark for test categorization
+- Use pytest fixtures for setup/teardown
+- Use pytest.raises for exception testing
+- Use pytest-cov for coverage reporting
+
+### Documentation
+> required: true
+
+All tests must have type annotations and documentation:
+- Document test purpose and expectations
+- Include type hints for test functions
+- Document fixture usage and requirements
+- Explain complex test scenarios
+
+### Test Utilities
+Best practices for test utilities:
+- Use fixtures for resource reuse
+- Use parametrize for test parameterization
+- Use mock for external dependency simulation
+- Create helper functions for common operations
+
+## Test Entry Points
+Guidelines for test entry points:
+- Simple tests in __main__
+- Complex tests in pytest
+- Provide quick validation through __main__
+- Include example usage in __main__
+
+## Test Cases
+
+### Coverage Requirements
+- Test all public interfaces
+- Test edge cases and error conditions
+- Test both success and failure paths
+- Maintain minimum 80% code coverage
+
+### Test Quality
+- Tests should be independent
+- Tests should be deterministic
+- Tests should be fast
+- Tests should be readable
+
+### Test Data
+- Use meaningful test data
+- Avoid hardcoded test values
+- Use factories for complex objects
+- Clean up test data after use
+
+## Validation Requirements
+- All code must have corresponding tests
+- Tests must be independent and repeatable
+- Test coverage should be maintained
+- Tests must be well-documented and maintainable 
