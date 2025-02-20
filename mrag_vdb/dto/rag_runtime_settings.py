@@ -81,6 +81,26 @@ class RagRetrievalNum:
             cls._g_retrieval_num = retrieval_num
         return cls._g_retrieval_num
 
+class RagRerankOrder:
+    """
+    Rerank settings.
+    Manages the order of rerankers.
+    """
+    _g_rerank_order: List[str] = ['QWEN', 'JINAAI', 'AUTODL']
+    SUPPORTED_RERANKERS: List[str] = ['AUTODL', 'QWEN', 'JINAAI']
+
+    @classmethod
+    def get_rerank_order(cls) -> List[str]:
+        """Get current rerank order."""
+        return cls._g_rerank_order
+
+    @classmethod
+    def set_rerank_order(cls, rerank_order: List[str]) -> List[str]:
+        """Set rerank order if all are supported."""
+        if all(reranker in cls.SUPPORTED_RERANKERS for reranker in rerank_order):
+            cls._g_rerank_order = rerank_order
+        return cls._g_rerank_order
+
 
 if __name__ == "__main__":
     # Test GPT model selection

@@ -44,24 +44,30 @@ def convert_to_documents_and_distance_results(scored_sections: List[ScoredRecove
     distance_results = normalize_scores(distance_results, 0, 1)
     return indexed_documents, sorted_sections, distance_results
     
-def embedding_rerank(query_str:str, documents: List[str], top_n: int = None) -> List[RerankResult]:
+
+def embedding_rerank(query_str: str, documents: List[str], top_n: int = None) -> List[RerankResult]:
     from mrag_vdb.rerank._embeding_rerankers import qwen_gte_rerank, autodl_jina_rerank, jinaai_jina_rerank
-    try:
-        return autodl_jina_rerank(query_str, documents, top_n=top_n)
-    except Exception as ex:
-        logging.error(f"embedding_rerank exception occured(0): {ex}")
+    from mrag_vdb.dto.rag_runtime_settings import RagRerankOrder
 
-    try:
-        return qwen_gte_rerank(query_str, documents, top_n=top_n)
-    except Exception as ex:
-        logging.error(f"embedding_rerank exception occured(1): {ex}")
+    rerankers = {
+        'AUTODL': autodl_jina_rerank,
+        'QWEN': qwen_gte_rerank,
+        'JINAAI': jinaai_jina_rerank
+    }
 
-    try:
-        return jinaai_jina_rerank(query_str, documents, top_n=top_n)
-    except Exception as ex:
-        logging.error(f"embedding_rerank exception occured(2): {ex}")
+    rerank_order = RagRerankOrder.get_rerank_order()
 
-    raise ValueError("no alive reranker")
+    for reranker_name in rerank_order:
+        reranker = rerankers.get(reranker_name)
+        if reranker:
+            try:
+                result = reranker(query_str, documents, top_n=top_n)
+                if result:
+                    return result
+            except Exception as ex:
+                logging.error(f"embedding_rerank exception occurred with {reranker_name}: {ex}")
+
+    raise ValueError("No alive reranker")
 
 def calculate_rrf_multiple(sources: List[Any], k: int = 60) -> List[RrfRerankResult]:
     """
