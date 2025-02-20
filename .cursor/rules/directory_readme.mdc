@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description: Guidelines for maintaining consistent directory-specific README documentation.
+globs: ["README_*.md", "**/README_*.md"]
 ---
 # Directory-Specific README Guidelines
 
