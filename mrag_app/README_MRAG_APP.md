@@ -3,11 +3,11 @@
 ## 快速导航
 
 ### 核心文件
-- `app_gradio.py` - 主应用入口，基于 Gradio 的 Web UI 启动器
-- `_app_gradio_base.py` - Gradio UI 核心实现，包含界面布局和交互逻辑
-- `_qa_core.py` - QA 核心处理逻辑
-- `_rag_core_query.py` - RAG 检索查询实现
-- `_rag_response.py` - RAG 响应数据结构和处理
+- `ui/app_gradio.py` - 主应用入口，基于 Gradio 的 Web UI 启动器
+- `ui/_app_gradio_base.py` - Gradio UI 核心实现，包含界面布局和交互逻辑
+- `core/_qa_core.py` - QA 核心处理逻辑
+- `core/_rag_core_query.py` - RAG 检索查询实现
+- `responses/_rag_response.py` - RAG 响应数据结构和处理
 
 ### 启动变体
 - `app_gradio_local_qwen.py` - 通义千问模型本地部署版本
@@ -70,7 +70,7 @@ content, details, sources, images = parse_content_from_rag_response(rag_response
    - 配置 `.env` 文件设置必要的环境变量
 
 2. **启动选项**
-   - 开发环境: `python app_gradio.py`
+   - 开发环境: `python ui/app_gradio.py`
    - 生产环境: 使用对应的模型变体启动器
 
 3. **性能优化**
