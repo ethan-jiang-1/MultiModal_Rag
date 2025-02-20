@@ -7,12 +7,19 @@
 - `ui/_app_gradio_base.py` - Gradio UI 核心实现，包含界面布局和交互逻辑
 - `core/_qa_core.py` - QA 核心处理逻辑
 - `core/_rag_core_query.py` - RAG 检索查询实现
+- `core/_app_qa_core.py` - 额外的 QA 核心逻辑
 - `responses/_rag_response.py` - RAG 响应数据结构和处理
 
 ### 启动变体
-- `app_gradio_local_qwen.py` - 通义千问模型本地部署版本
-- `app_gradio_local_ark.py` - Ark 模型本地部署版本
-- `app_gradio_local_gpt.py` - GPT 模型本地部署版本
+- `ui/app_gradio_local_qwen.py` - 通义千问模型本地部署版本
+- `ui/app_gradio_local_ark.py` - Ark 模型本地部署版本
+- `ui/app_gradio_local_gpt.py` - GPT 模型本地部署版本
+
+### 工具和资源
+- `utils/_app_log_monitor.py` - 日志监控工具
+- `utils/_app_qa_progress_step.py` - 进度步骤工具
+- `resources/_app_qa_examples.py` - QA 示例数据
+- `resources/_app_gradio_css.py` - Gradio 界面自定义 CSS
 
 ## 系统设计
 
@@ -62,29 +69,3 @@ content, details, sources, images = parse_content_from_rag_response(rag_response
 - 详细进度日志
 - 额外状态信息
 
-## 最佳实践
-
-### 部署建议
-1. **环境准备**
-   - 安装依赖: `pip install -r requirements.txt`
-   - 配置 `.env` 文件设置必要的环境变量
-
-2. **启动选项**
-   - 开发环境: `python ui/app_gradio.py`
-   - 生产环境: 使用对应的模型变体启动器
-
-3. **性能优化**
-   - 使用本地字体和资源
-   - 禁用不必要的预加载
-   - 合理设置检索数量
-
-### 错误处理
-- 使用 `try-except` 包装核心操作
-- 详细的日志记录
-- 友好的错误提示
-
-### 开发建议
-- 遵循模块化设计
-- 使用类型注解
-- 保持代码简洁
-- 添加必要的注释 
