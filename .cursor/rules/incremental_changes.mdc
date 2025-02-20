@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description: Guidelines for making progressive code changes.
+globs: ["*.py", "*.md", "*.json", "*.yaml"]
 ---
 # Incremental Code Modification Principles
 
