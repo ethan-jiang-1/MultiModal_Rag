@@ -212,89 +212,97 @@ def toggle_help_content(is_help_visible: bool) -> Tuple[str, bool]:
 
 # 模拟提交功能，使用 parse_final_result 函数
 def on_submit(user_input: str) -> Generator[Tuple[Any, Any, Any, Any, Any], None, None]:
-    ProgressLogger.clear_progress_history()
-    prgs = ProgressLogger.get_progress_history()
-    last_prgs_count = len(prgs)
-
-    thread_main = threading.Thread(target=main_loop_gradio,
-                                args=(user_input,))
-
-    thread_main.start()
-    progress_log = ""
-    while True:
-        time.sleep(1)
-
+    try:
+        ProgressLogger.clear_progress_history()
         prgs = ProgressLogger.get_progress_history()
-        prgs_count = len(prgs)
+        last_prgs_count = len(prgs)
 
-        if prgs_count == last_prgs_count:
-            continue
+        thread_main = threading.Thread(target=main_loop_gradio,
+                                    args=(user_input,))
 
-        last_prg = prgs[-1]
+        thread_main.start()
+        progress_log = ""
+        while True:
+            time.sleep(1)
 
-        progress_percentage = last_prg["percentage"]
-        if last_prg['extra_info'] is not None:
-            current_task = f"{last_prg['task_name']}#{last_prg['extra_info']}"
-        else:
-            current_task = f"{last_prg['task_name']}"
+            prgs = ProgressLogger.get_progress_history()
+            prgs_count = len(prgs)
 
-        for ndx in range(last_prgs_count, prgs_count):
-            prg = prgs[ndx]
-            if prg['extra_info'] is not None:
-                progress_log += f"Step{prg['step']}: {prg['task_name']}#{prg['extra_info']}<br>"
+            if prgs_count == last_prgs_count:
+                continue
+
+            last_prg = prgs[-1]
+
+            progress_percentage = last_prg["percentage"]
+            if last_prg['extra_info'] is not None:
+                current_task = f"{last_prg['task_name']}#{last_prg['extra_info']}"
             else:
-                progress_log += f"Step{prg['step']}: {prg['task_name']}<br>"
+                current_task = f"{last_prg['task_name']}"
 
-        last_prgs_count = prgs_count
-        yield (
-            update_progress(progress_percentage, current_task, progress_log),  # 更新进度HTML
-            "",  # 保持 result_md 内容为空，等待最终结果
-            gr.update(visible=False),  # 隐藏 file_name_md
-            gr.update(visible=False),  # 隐藏 image_name_md
-            gr.update(value=None, visible=False),  # 清空并隐藏图片显示
+            for ndx in range(last_prgs_count, prgs_count):
+                prg = prgs[ndx]
+                if prg['extra_info'] is not None:
+                    progress_log += f"Step{prg['step']}: {prg['task_name']}#{prg['extra_info']}<br>"
+                else:
+                    progress_log += f"Step{prg['step']}: {prg['task_name']}<br>"
+
+            last_prgs_count = prgs_count
+            yield (
+                update_progress(progress_percentage, current_task, progress_log),  # 更新进度HTML
+                "",  # 保持 result_md 内容为空，等待最终结果
+                gr.update(visible=False),  # 隐藏 file_name_md
+                gr.update(visible=False),  # 隐藏 image_name_md
+                gr.update(value=None, visible=False),  # 清空并隐藏图片显示
+            )
+
+            if progress_percentage >= 99.9:
+                break
+        
+        time.sleep(1)
+        thread_main.join()
+
+        rag_response = get_rag_response_from_main_loop()
+
+        # 使用 parse_final_result 获取回答内容、文件和图片组合情况
+        rag_response.user_input = user_input
+        content, content_details, srcs_name_title_pname, imgs_name_title_pname = parse_content_from_rag_response(rag_response)
+        rich.print(content)
+        rich.print(content_details)
+        rich.print(srcs_name_title_pname)
+        rich.print(imgs_name_title_pname)
+
+        # 生成文件和图片的下载链接
+        file_links_html = (
+            "<p>相关的文件：</p><ul>" + "".join(
+                [f"<li><a href='file://{html.escape(name_title_pname[2])}' download>{os.path.basename(name_title_pname[0])}</a></li>"
+                for name_title_pname in srcs_name_title_pname]
+            ) + "</ul>" if srcs_name_title_pname else "<p>没有文件可下载。</p>"
         )
 
-        if progress_percentage >= 99.9:
-            break
-    
-    time.sleep(1)
-    thread_main.join()
+        # 生成图片下载链接的HTML
+        image_links_html = (
+            "<p>相关的图片：</p><ul>" + "".join(
+                [f"<li><a href='file://{html.escape(name_title_pname[2])}' download>{os.path.basename(name_title_pname[0])}</a></li>"
+                for name_title_pname in imgs_name_title_pname]
+            ) + "</ul>" if imgs_name_title_pname else "<p>没有图片可下载。</p>"
+        )
 
-    rag_response = get_rag_response_from_main_loop()
-
-    # 使用 parse_final_result 获取回答内容、文件和图片组合情况
-    rag_response.user_input = user_input
-    content, content_details, srcs_name_title_pname, imgs_name_title_pname = parse_content_from_rag_response(rag_response)
-    rich.print(content)
-    rich.print(content_details)
-    rich.print(srcs_name_title_pname)
-    rich.print(imgs_name_title_pname)
-
-    # 生成文件和图片的下载链接
-    #root_dir = "http://your-server-address"
-    # 生成文件下载链接的HTML
-    file_links_html = (
-        "<p>相关的文件：</p><ul>" + "".join(
-            [f"<li><a href='file://{html.escape(name_title_pname[2])}' download>{os.path.basename(name_title_pname[0])}</a></li>"
-            for name_title_pname in srcs_name_title_pname]
-        ) + "</ul>" if srcs_name_title_pname else "<p>没有文件可下载。</p>"
-    )
-
-    # 生成图片下载链接的HTML
-    image_links_html = (
-        "<p>相关的图片：</p><ul>" + "".join(
-            [f"<li><a href='file://{html.escape(name_title_pname[2])}' download>{os.path.basename(name_title_pname[0])}</a></li>"
-            for name_title_pname in imgs_name_title_pname]
-        ) + "</ul>" if imgs_name_title_pname else "<p>没有图片可下载。</p>"
-    )
-
-    yield (
-        update_progress(100, "所有任务完成", progress_log),
-        content,  # 显示最终回答内容
-        gr.update(value=file_links_html, visible=bool(srcs_name_title_pname)),  # 文件名和下载链接HTML
-        gr.update(value=image_links_html, visible=bool(imgs_name_title_pname)),  # 图片名和下载链接HTML
-        gr.update(value=[ntp[2] for ntp in imgs_name_title_pname] if imgs_name_title_pname else None, visible=bool(imgs_name_title_pname))  # 显示/隐藏图片列表
-    )
+        yield (
+            update_progress(100, "所有任务完成", progress_log),
+            content,  # 显示最终回答内容
+            gr.update(value=file_links_html, visible=bool(srcs_name_title_pname)),  # 文件名和下载链接HTML
+            gr.update(value=image_links_html, visible=bool(imgs_name_title_pname)),  # 图片名和下载链接HTML
+            gr.update(value=[ntp[2] for ntp in imgs_name_title_pname] if imgs_name_title_pname else None, visible=bool(imgs_name_title_pname))  # 显示/隐藏图片列表
+        )
+    except Exception as e:
+        logging.exception("Error in on_submit")
+        yield (
+            update_progress(0, f"发生错误: {str(e)}", ""),
+            str(e),
+            gr.update(visible=False),
+            gr.update(visible=False),
+            gr.update(visible=False)
+        )
 
 def _get_version_info() -> str:
     return f"mrag: {get_git_version()} gradio:{gr.__version__} model:{RagModelGptSel.get_gpt_model()} kbname: {RagKbNameSel.get_kbname()} rtv_num: {RagRetrievalNum.get_retrieval_num()}"
