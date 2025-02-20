@@ -37,6 +37,33 @@ Mistakes to avoid:
 - Don't alter existing abstraction levels
 - Always verify effects of changes
 
+## Configuration File Changes
+> required: true
+
+### JSON/YAML Modification Rules
+- Always backup configuration files before modification
+- Maintain existing indentation and formatting style
+- Add new fields at the end of their respective sections
+- Document all configuration changes in changelog
+
+### Structure Changes
+- Never delete or rename existing root level keys
+- Add new fields with default values
+- Deprecate fields instead of removing them
+- Maintain backwards compatibility
+
+### Value Modifications
+- Validate all value changes against schema
+- Update related configuration documentation
+- Test with both old and new values
+- Provide migration scripts for major changes
+
+### Format Requirements
+- Preserve file format (JSON vs YAML)
+- Maintain consistent indentation
+- Keep comments in YAML files
+- Follow file-specific style guides
+
 ## Code Review Process
 - Review changes in small batches
 - Focus on one component at a time
@@ -59,4 +86,5 @@ Mistakes to avoid:
 - Changes must be atomic and verifiable
 - Each change must maintain system stability
 - Changes should follow existing patterns
-- All changes must be tested 
+- All changes must be tested
+- Configuration changes must be backwards compatible 
