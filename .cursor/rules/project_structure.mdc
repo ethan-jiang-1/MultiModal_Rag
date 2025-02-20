@@ -1,7 +1,145 @@
+---
+description: 
+globs: 
+---
 # Project Structure Standards
 
-> file_patterns: ["*"]
-> description: Guidelines for organizing project structure and dependencies
+> file_patterns: ["*.py", "**/*.py"]
+> description: Guidelines for Python project organization focusing on maintainability and AI-friendly structure
+
+## File Organization Principles
+> required: true
+
+### File Size and Responsibility
+- Keep files small (recommended < 200 lines)
+- One primary functionality per file
+- Split large files into focused modules
+- Use clear, purpose-indicating filenames
+
+### Function-First Approach
+- Prefer functions over classes
+- Use pure functions when possible
+- Keep functions focused and small
+- Group related functions logically
+
+### Class Usage Guidelines
+- Use classes only when necessary:
+  - For data containers (dataclasses)
+  - When state management is essential
+  - For framework requirements
+  - For clear interface definitions
+- Keep classes small and focused
+- Prefer composition over inheritance
+
+## Directory Structure
+> required: true
+
+### Directory Size Management
+- Keep directories focused and small
+- Limit files per directory (recommended < 10)
+- Create subdirectories for logical grouping
+- Maintain shallow but wide directory structure
+
+### Directory Naming and Organization
+- Use descriptive directory names
+- Group by functionality not type
+- Create dedicated feature directories
+- Keep test directories parallel to source
+
+### Example Structure
+```
+project/
+├── core/
+│   ├── config/
+│   │   ├── settings.py
+│   │   └── constants.py
+│   └── utils/
+│       ├── file_handlers.py
+│       └── validators.py
+├── features/
+│   ├── auth/
+│   │   ├── login.py
+│   │   └── permissions.py
+│   └── data_processing/
+│       ├── cleaners.py
+│       └── transformers.py
+└── tests/
+    ├── core/
+    └── features/
+```
+
+## Module Organization
+
+### Import Management
+- Keep imports at file top
+- Group imports logically
+- Use absolute imports
+- Minimize dependencies between modules
+
+### Function Organization
+- Place main functionality first
+- Group helper functions near related code
+- Keep utility functions in separate modules
+- Use meaningful function names
+
+## Best Practices
+
+### Code Organization
+- Prefer flat structures over deep nesting
+- Keep code paths simple and traceable
+- Use meaningful file and directory names
+- Maintain consistent organization patterns
+
+### Functional Programming
+- Use immutable data when possible
+- Avoid global state
+- Implement pure functions
+- Use list comprehensions and generators
+- Leverage functional tools (map, filter, reduce)
+
+### Context Management
+- Keep context size manageable for AI
+- Organize related functionality together
+- Make dependencies explicit
+- Document file relationships
+
+### File Naming Conventions
+- Use lowercase with underscores
+- Make names descriptive but concise
+- Include purpose in name
+- Follow consistent patterns:
+  - `process_data.py` not `processor.py`
+  - `validate_input.py` not `validation.py`
+  - `transform_json.py` not `json_handler.py`
+
+## AI-Friendly Organization
+
+### Context Optimization
+- Keep related code easily discoverable
+- Maintain clear file boundaries
+- Use consistent patterns
+- Document relationships between files
+
+### Directory Navigation
+- Create logical groupings
+- Use clear naming patterns
+- Maintain reasonable directory sizes
+- Document directory purposes
+
+### Code Discoverability
+- Use descriptive names
+- Maintain consistent structure
+- Keep dependencies clear
+- Document code relationships
+
+## Validation Requirements
+- Files must be focused and small
+- Directories must be well-organized
+- Functions should be preferred over classes
+- Structure must be AI-friendly
+- Dependencies must be clear and minimal
+- Documentation must explain organization
+- Names must be clear and purposeful
 
 ## Directory Organization
 Standards for directory structure:
@@ -34,18 +172,6 @@ Guidelines for managing project dependencies:
 - tests/
 - docs/
 - config/
-
-## Best Practices
-- Keep project structure clean and logical
-- Isolate dependencies properly
-- Separate configuration from code
-- Document directory structure in README
-
-## File Organization
-- Group related files together
-- Use clear and consistent naming
-- Keep directory depth reasonable
-- Include necessary __init__.py files
 
 ## Configuration Management
 - Use environment variables for configuration

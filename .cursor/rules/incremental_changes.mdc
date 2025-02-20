@@ -1,3 +1,7 @@
+---
+description: 
+globs: 
+---
 # Incremental Code Modification Principles
 
 > file_patterns: ["*.py", "*.md", "*.json", "*.yaml"]

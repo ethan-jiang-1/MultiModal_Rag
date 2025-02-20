@@ -1,3 +1,7 @@
+---
+description: 
+globs: 
+---
 # Python Module Import Rules
 
 > file_patterns: ["*.py"]
