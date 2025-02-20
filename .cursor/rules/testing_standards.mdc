@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description: Guidelines for test organization and implementation.
+globs: ["*_test.py", "test_*.py", "*_tests/*.py"]
 ---
 # Testing Standards
 
