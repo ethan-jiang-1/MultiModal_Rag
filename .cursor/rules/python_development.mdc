@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description: Core principles and standards for Python development.
+globs: ["*.py"]
 ---
 # Python Development Standards
 

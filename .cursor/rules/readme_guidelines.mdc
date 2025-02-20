@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description: Standards for writing and maintaining README documentation.
+globs: ["README.md", "**/README.md"]
 ---
 # README Documentation Guidelines
 

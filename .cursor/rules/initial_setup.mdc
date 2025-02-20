@@ -1,10 +1,10 @@
 ---
 description: Guidelines for initial project setup and structure.
-globs: ["*.py", "requirements.txt"]
+globs: ["*.py"]
 ---
 # Initial Project Setup Guidelines
 
-> file_patterns: ["*.py", "requirements.txt"]
+> file_patterns: ["*.py"]
 > description: Guidelines for initial project setup and structure
 
 ## Basic Framework Setup

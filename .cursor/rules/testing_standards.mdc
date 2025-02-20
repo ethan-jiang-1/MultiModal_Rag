@@ -1,3 +1,7 @@
+---
+description: 
+globs: 
+---
 # Testing Standards
 
 > file_patterns: ["*_test.py", "test_*.py", "*_tests/*.py"]
