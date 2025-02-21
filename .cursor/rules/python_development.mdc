@@ -1,144 +1,231 @@
 ---
-description: Core principles and standards for Python development.
+description: Python开发规范指南
 globs: ["*.py"]
 ---
-# Python Development Standards
+# Python开发规范
 
 > file_patterns: ["*.py"]
-> description: Core principles and standards for Python development
+> description: Python开发的具体实施规范和最佳实践
 
-## Core Principles
-
-### KISS Principle
-Keep It Simple Stupid
-
-- Write the simplest possible code
-- Avoid over-design
-- Keep code easy to understand and maintain
-- Ensure code is easily comprehensible for others and AI
-
-### Single Responsibility
-Each component should have a single, well-defined purpose
-
-- One file per module
-- Each module should have minimal functionality
-- Clear responsibility for each class/function
-
-### Incremental Development
-Develop code incrementally with small iterations
-
-- Small iterative steps
-- Build framework first, then details
-- Maintain testability
-
-## Code Quality
-
-### Type Annotations
+## 根本原则
 > required: true
 
-- Use type hints for all function parameters
-- Use type hints for all return values
-- Use Optional[] for nullable values
-- Use Union[] for multiple types
-- Keep type hints simple and readable
+### 1. 可读性第一
+```python
+# ✅ 推荐：代码即文档，一目了然
+def calculate_average_score(scores: List[float]) -> float:
+    """计算平均分数"""
+    if not scores:
+        return 0.0
+    return sum(scores) / len(scores)
 
-### Documentation
+# ❌ 不推荐：晦涩难懂
+def calc(s):
+    return s and sum(s)/len(s) or 0
+```
+
+### 2. 显式优于隐式
+```python
+# ✅ 推荐：明确表达意图
+def get_user_by_id(user_id: int) -> Optional[User]:
+    """根据ID获取用户信息"""
+    if not isinstance(user_id, int):
+        raise ValueError("用户ID必须是整数")
+    return db.query(User).filter_by(id=user_id).first()
+
+# ❌ 不推荐：隐含多种情况
+def get_user(id):
+    return db.query(User).filter_by(id=id).first()
+```
+
+### 3. 简单胜于复杂
+```python
+# ✅ 推荐：直接了当
+def is_adult(age: int) -> bool:
+    """判断是否成年"""
+    return age >= 18
+
+# ❌ 不推荐：过度设计
+class AgeValidator:
+    def __init__(self, threshold: int = 18):
+        self.threshold = threshold
+    
+    def validate(self, age: int) -> bool:
+        return self._check_age(age)
+    
+    def _check_age(self, age: int) -> bool:
+        return age >= self.threshold
+```
+
+### 4. 局部优于全局
+```python
+# ✅ 推荐：依赖注入
+class UserService:
+    def __init__(self, db_session):
+        self.db = db_session
+    
+    def get_user(self, user_id: int) -> User:
+        return self.db.query(User).get(user_id)
+
+# ❌ 不推荐：使用全局变量
+global_db = Database()
+def get_user(user_id: int) -> User:
+    return global_db.query(User).get(user_id)
+```
+
+### 5. 组合优于继承
+```python
+# ✅ 推荐：使用组合
+class FileProcessor:
+    def __init__(self, reader, writer):
+        self.reader = reader
+        self.writer = writer
+    
+    def process(self, filename: str):
+        data = self.reader.read(filename)
+        processed = self._process_data(data)
+        self.writer.write(filename, processed)
+
+# ❌ 不推荐：过度继承
+class BaseProcessor:
+    def read(self): pass
+    def write(self): pass
+    def process(self): pass
+
+class JsonProcessor(BaseProcessor):
+    def read(self): pass
+    def write(self): pass
+    def process(self): pass
+```
+
+### 6. 单一职责
+```python
+# ✅ 推荐：职责单一
+class UserAuthenticator:
+    def authenticate(self, username: str, password: str) -> bool:
+        """仅负责用户认证"""
+        return self._verify_credentials(username, password)
+
+class UserProfileManager:
+    def update_profile(self, user_id: int, data: Dict) -> None:
+        """仅负责档案管理"""
+        self._validate_data(data)
+        self._save_profile(user_id, data)
+
+# ❌ 不推荐：职责混杂
+class UserManager:
+    def authenticate(self): pass
+    def update_profile(self): pass
+    def send_email(self): pass
+    def generate_report(self): pass
+```
+
+### 7. 显式错误优于隐式错误
+```python
+# ✅ 推荐：明确的错误处理
+def divide(a: float, b: float) -> float:
+    """安全的除法运算"""
+    if b == 0:
+        raise ValueError("除数不能为零")
+    return a / b
+
+# ❌ 不推荐：隐藏错误
+def divide(a, b):
+    try:
+        return a / b
+    except:
+        return 0  # 静默处理错误，掩盖问题
+```
+
+## 代码规范示例
 > required: true
 
-- Include purpose description
-- Document parameters and return values
-- Include usage examples where helpful
-- Document exceptions and edge cases
-- Keep existing comments up to date
+### 类型注解和文档
+```python
+from typing import List, Optional, Dict
+from dataclasses import dataclass
+from datetime import datetime
 
-### Code Style
+@dataclass(frozen=True)
+class UserProfile:
+    """用户档案数据结构
+    
+    用于存储和处理用户基本信息。
+    
+    Attributes:
+        user_id: 用户唯一标识
+        username: 用户名
+        email: 电子邮件
+        created_at: 创建时间
+    """
+    user_id: int
+    username: str
+    email: str
+    created_at: datetime
+    last_login: Optional[datetime] = None
+```
+
+### 错误处理
+```python
+class ConfigError(Exception):
+    """配置相关错误的基类"""
+    pass
+
+def load_config(config_path: Path) -> Dict:
+    """加载配置文件
+    
+    Args:
+        config_path: 配置文件路径
+        
+    Raises:
+        ConfigError: 配置加载失败
+    """
+    try:
+        with config_path.open() as f:
+            return json.load(f)
+    except Exception as e:
+        raise ConfigError(f"配置加载失败: {e}")
+```
+
+### 性能优化
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=100)
+def compute_expensive_result(x: int, y: int) -> int:
+    """计算耗时操作的结果（使用缓存）"""
+    time.sleep(1)  # 模拟耗时操作
+    return x * y
+
+def process_large_dataset(data_iterator):
+    """使用生成器处理大数据集"""
+    for chunk in data_iterator:
+        yield process_chunk(chunk)
+```
+
+## 代码检查清单
 > required: true
 
-- Follow PEP 8 conventions
-- Use consistent naming conventions
-- Maintain proper indentation
-- Keep line lengths reasonable
+### 根本原则检查
+- [ ] 代码是否容易理解（可读性）
+- [ ] 意图是否明确（显式）
+- [ ] 实现是否简单（简单性）
+- [ ] 依赖是否局部化（作用域）
+- [ ] 是否避免过度继承（组合）
+- [ ] 职责是否单一（内聚性）
+- [ ] 错误是否明确（透明性）
 
-## Data Processing
+### 代码质量检查
+- [ ] 是否使用了类型注解
+- [ ] 是否包含完整的文档字符串
+- [ ] 是否有适当的错误处理
+- [ ] 是否遵循PEP 8规范
+- [ ] 是否避免使用全局变量
+- [ ] 是否有单元测试覆盖
 
-### Data Structures
-Use dataclass for data structure definitions
-
-- Use dataclasses for data containers
-- Include type hints for all fields
-- Use frozen=True for immutable data
-- Consider slots=True for performance
-
-### Data Validation
-Use pydantic for data validation
-
-- Define clear validation rules
-- Use appropriate field types
-- Include error messages
-- Handle validation errors gracefully
-
-### Caching
-Use lru_cache for computation results
-
-- Cache expensive computations
-- Set appropriate cache sizes
-- Consider TTL for time-sensitive data
-- Clear cache when needed
-
-## Error Handling
-
-### Async Processing
-Use async/await for asynchronous operations
-
-- Use async for I/O operations
-- Handle concurrent operations properly
-- Use appropriate async patterns
-- Consider performance implications
-
-### Logging
-Implement unified logging approach
-
-- Use structured logging
-- Include relevant context
-- Use appropriate log levels
-- Configure proper log handlers
-
-### Error Management
-Proper error handling with context
-
-- Use specific exception types
-- Include error context
-- Handle errors at appropriate levels
-- Provide meaningful error messages
-
-## AI Friendliness
-
-### Code Structure
-- Use clear and logical file organization
-- Keep functions focused and well-named
-- Use descriptive variable names
-- Add comments for complex logic
-
-### Type System
-- Use type hints consistently
-- Keep type annotations readable
-- Avoid overly complex type constructs
-- Document type usage where needed
-
-### Documentation
-- Write clear and concise docstrings
-- Include examples in documentation
-- Explain non-obvious decisions
-- Keep documentation up to date
-
-### Testing
-- Write clear test cases
-- Include test documentation
-- Make tests easy to understand
-- Test edge cases explicitly
-
-## Validation Requirements
-- Code must follow all required guidelines
-- Documentation must be complete and clear
-- Tests must cover all functionality
-- Code must be AI-friendly and maintainable 
+### 性能优化检查
+- [ ] 是否使用了适当的缓存
+- [ ] 是否优化了循环和算法
+- [ ] 是否处理了内存使用
+- [ ] 是否使用了生成器处理大数据
+- [ ] 是否避免了重复计算 
