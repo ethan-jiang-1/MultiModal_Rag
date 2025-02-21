@@ -1,90 +1,186 @@
 ---
-description: Guidelines for making progressive code changes.
+description: 代码渐进式修改指南
 globs: ["*.py", "*.md", "*.json", "*.yaml"]
 ---
-# Incremental Code Modification Principles
+# 代码渐进式修改指南
 
 > file_patterns: ["*.py", "*.md", "*.json", "*.yaml"]
-> description: Guidelines for making progressive code changes
+> description: 代码渐进式修改的具体实施方法
 
-## Step by Step Approach
-Make changes incrementally and verify each step:
-- Modify one critical point at a time
-- Verify effect after each modification
-- Maintain stability of other components
-
-## Modification Strategy
-Strategic approach to code changes:
-- Progress from abstract to concrete
-- Move from general to specific
-- Prefer augmentation over replacement
-
-## Verification Process
-Ensure quality of changes:
-- Run tests after each change
-- Compare behavior before and after changes
-- Confirm no unintended side effects
-
-## Best Practices
-Guidelines for implementing changes:
-- Find appropriate location within existing structure
-- Maintain consistent abstraction levels
-- Ensure new content matches context expression style
-
-## Common Pitfalls
-Mistakes to avoid:
-- Avoid changing too many things at once
-- Don't alter existing abstraction levels
-- Always verify effects of changes
-
-## Configuration File Changes
+## 修改基本原则
 > required: true
 
-### JSON/YAML Modification Rules
-- Always backup configuration files before modification
-- Maintain existing indentation and formatting style
-- Add new fields at the end of their respective sections
-- Document all configuration changes in changelog
+### 步骤拆分示例
+❌ 错误做法：
+```python
+# 一次性修改多个功能
+def process_data(data):
+    # 同时修改数据处理逻辑
+    processed = new_process_logic(data)
+    # 同时修改验证逻辑
+    validated = new_validation_logic(processed)
+    # 同时修改输出格式
+    return new_output_format(validated)
+```
 
-### Structure Changes
-- Never delete or rename existing root level keys
-- Add new fields with default values
-- Deprecate fields instead of removing them
-- Maintain backwards compatibility
+✅ 正确做法：
+```python
+# 第一步：只修改数据处理逻辑
+def process_data(data):
+    # 新的处理逻辑
+    processed = new_process_logic(data)
+    # 保持原有的验证和输出逻辑
+    validated = old_validation_logic(processed)
+    return old_output_format(validated)
 
-### Value Modifications
-- Validate all value changes against schema
-- Update related configuration documentation
-- Test with both old and new values
-- Provide migration scripts for major changes
+# 第二步：修改验证逻辑
+def process_data(data):
+    processed = new_process_logic(data)
+    # 新的验证逻辑
+    validated = new_validation_logic(processed)
+    return old_output_format(validated)
 
-### Format Requirements
-- Preserve file format (JSON vs YAML)
-- Maintain consistent indentation
-- Keep comments in YAML files
-- Follow file-specific style guides
+# 第三步：修改输出格式
+def process_data(data):
+    processed = new_process_logic(data)
+    validated = new_validation_logic(processed)
+    # 新的输出格式
+    return new_output_format(validated)
+```
 
-## Code Review Process
-- Review changes in small batches
-- Focus on one component at a time
-- Ensure changes follow project standards
-- Verify documentation is updated
+## 配置文件修改
+> required: true
 
-## Testing Requirements
-- Write tests before making changes
-- Update existing tests as needed
-- Verify all tests pass after changes
-- Document test modifications
+### JSON配置修改示例
+❌ 错误做法：
+```json
+// 直接替换整个配置块
+{
+    "api_settings": {
+        "new_endpoint": "https://api.new.com",
+        "new_timeout": 30,
+        "new_retry": 3
+    }
+}
+```
 
-## Documentation Updates
-- Update relevant documentation
-- Document change rationale
-- Note any breaking changes
-- Keep changelog current
+✅ 正确做法：
+```json
+// 逐步添加新配置，保持向后兼容
+{
+    "api_settings": {
+        "endpoint": "https://api.old.com",  // 保留旧配置
+        "new_endpoint": "https://api.new.com",  // 添加新配置
+        "timeout": 10,  // 保留旧配置
+        "new_timeout": 30,  // 添加新配置
+        "retry": 2,  // 保留旧配置
+        "new_retry": 3  // 添加新配置
+    }
+}
+```
 
-## Validation Requirements
-- Changes must be atomic and verifiable
-- Each change must maintain system stability
-- Changes should follow existing patterns
-- All changes must be tested
-- Configuration changes must be backwards compatible 
+### YAML配置修改示例
+```yaml
+# 第一步：添加新字段，保留旧字段
+database:
+  # 原有配置
+  host: localhost
+  port: 5432
+  # 新增配置，使用 new_ 前缀
+  new_host: db.example.com
+  new_port: 6432
+  
+  # 添加迁移说明
+  _migration_note: |
+    2024-03: 添加新的数据库配置
+    - new_host 将在 v2.0 成为默认配置
+    - new_port 将在 v2.0 成为默认配置
+```
+
+## 测试策略
+> required: true
+
+### 单元测试修改示例
+```python
+# 原有测试
+def test_process_data():
+    data = {"id": 1, "value": "test"}
+    result = process_data(data)
+    assert result["status"] == "success"
+
+# 新增测试，不修改原有测试
+def test_process_data_new_format():
+    data = {"id": 1, "value": "test"}
+    result = process_data(data)
+    # 验证新格式
+    assert "new_status" in result
+    assert result["new_status"] == "success"
+    # 同时验证向后兼容
+    assert result["status"] == "success"  # 确保旧格式仍然可用
+```
+
+## 代码审查清单
+> required: true
+
+### 提交前检查
+- [ ] 每个提交只包含一个逻辑变更
+- [ ] 提交信息清晰说明变更内容
+- [ ] 新旧功能并存，确保向后兼容
+- [ ] 添加/更新相关测试
+- [ ] 更新相关文档
+
+### 提交信息模板
+```
+feat(模块): 添加新特性
+
+- 具体改动：添加新的数据处理逻辑
+- 影响范围：仅影响 X 模块的数据处理
+- 向后兼容：保留旧处理逻辑
+- 测试覆盖：添加新的测试用例
+
+相关问题: #123
+```
+
+## 紧急修复指南
+> required: true
+
+### 修复步骤
+1. **临时修复**
+```python
+# 添加临时日志，不修改核心逻辑
+def process_data(data):
+    try:
+        return original_process(data)
+    except Exception as e:
+        log.error(f"数据处理错误: {e}")
+        # 临时返回安全值
+        return {"status": "error", "fallback": True}
+```
+
+2. **正式修复**
+```python
+# 添加完整的错误处理
+def process_data(data):
+    try:
+        return original_process(data)
+    except ValidationError as e:
+        log.error(f"数据验证错误: {e}")
+        return handle_validation_error(e)
+    except ProcessError as e:
+        log.error(f"处理错误: {e}")
+        return handle_process_error(e)
+```
+
+### 回滚准备
+```bash
+# 1. 标记当前版本
+git tag pre_fix_v1.0.1
+
+# 2. 应用修复
+git commit -am "fix: 数据处理错误修复"
+
+# 3. 如需回滚
+git revert HEAD
+# 或
+git reset --hard pre_fix_v1.0.1
+``` 

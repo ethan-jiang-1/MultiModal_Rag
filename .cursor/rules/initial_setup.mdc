@@ -1,84 +1,255 @@
 ---
-description: Guidelines for initial project setup and structure.
+description: 项目初始化设置指南
 globs: ["*.py"]
 ---
-# Initial Project Setup Guidelines
+# 项目初始化设置指南
 
 > file_patterns: ["*.py"]
-> description: Guidelines for initial project setup and structure
+> description: 项目初始化和结构设置的具体实施方法
 
-## Basic Framework Setup
-Guidelines for initial development:
-- Implement minimum viable feature set
-- Establish clear module boundaries
-- Define core interfaces and data structures
-
-### Code Quality Baseline
+## 项目结构示例
 > required: true
 
-Essential quality requirements:
-- Complete type annotations
-- Standard docstrings
-- Basic unit tests
-- Unified code style
+### 标准项目结构
+```bash
+项目名称/
+├── src/                    # 源代码目录
+│   ├── core/              # 核心功能模块
+│   │   ├── __init__.py
+│   │   └── processor.py   # 核心处理器
+│   ├── utils/             # 工具函数
+│   │   ├── __init__.py
+│   │   └── helpers.py     # 通用辅助函数
+│   └── config/            # 配置文件
+│       ├── __init__.py
+│       └── settings.py    # 配置管理
+├── tests/                 # 测试目录
+│   ├── __init__.py
+│   ├── test_core.py      # 核心功能测试
+│   └── test_utils.py     # 工具函数测试
+├── docs/                  # 文档目录
+│   ├── api/              # API文档
+│   └── guides/           # 使用指南
+├── .env.example          # 环境变量示例
+├── requirements.txt      # 生产环境依赖
+├── requirements-dev.txt  # 开发环境依赖
+├── setup.py             # 包安装配置
+└── README.md            # 项目说明文档
+```
 
-### Configuration Setup
-Required configuration elements:
-- Environment variable configuration
-- Logging system setup
-- Dependency version management
-- Development environment setup
-
-## Design Pattern Implementation
-
-### Processor Pattern
-Guidelines for business logic organization:
-- Business logic layer for flow orchestration only
-- Complex logic delegated to processors
-- Base processors independently testable
-
-### Workspace Management
-Guidelines for workspace handling:
-- Share context through md_info
-- Ensure workspace isolation for safety
-- Avoid direct original file modification
-
-### Basic Patterns
-Common design patterns to consider:
-- Factory pattern for object creation
-- Strategy pattern for algorithm variants
-- Observer pattern for event handling
-- Decorator pattern for feature extension
-
-## Project Initialization
-
-### Environment Setup
+## 代码规范示例
 > required: true
 
-Initial environment requirements:
-- Virtual environment creation
-- Dependencies installation
-- Environment variable configuration
-- Development tools setup
+### 类型注解和文档字符串
+```python
+from typing import Dict, List, Optional
+from datetime import datetime
 
-### Version Control Setup
+class DataProcessor:
+    """数据处理器基类
+    
+    用于处理输入数据并生成标准化输出。
+    
+    Attributes:
+        config: 处理器配置
+        logger: 日志记录器
+    """
+    
+    def __init__(self, config: Dict[str, any]) -> None:
+        """初始化数据处理器
+        
+        Args:
+            config: 处理器配置字典
+            
+        Raises:
+            ValueError: 配置参数无效时抛出
+        """
+        self.config = self._validate_config(config)
+        self.logger = self._setup_logger()
+    
+    def process(self, data: List[Dict]) -> Dict[str, any]:
+        """处理输入数据
+        
+        Args:
+            data: 输入数据列表
+            
+        Returns:
+            处理后的数据字典
+        """
+        raise NotImplementedError
+```
+
+## 配置管理示例
 > required: true
 
-Initial repository setup:
-- Git initialization
-- .gitignore configuration
-- Branch strategy setup
-- Commit message guidelines
+### 环境变量配置
+```python
+# config/settings.py
+import os
+from pathlib import Path
+from typing import Dict, Any
 
-### Documentation Setup
-Initial documentation requirements:
-- README.md creation
-- API documentation structure
-- Development guide setup
-- Contribution guidelines
+class Settings:
+    """配置管理类"""
+    
+    def __init__(self):
+        """初始化配置"""
+        # 基础路径配置
+        self.BASE_DIR = Path(__file__).parent.parent
+        
+        # API配置
+        self.API_KEY = os.getenv("API_KEY")
+        self.API_URL = os.getenv("API_URL", "http://api.example.com")
+        self.API_VERSION = os.getenv("API_VERSION", "v1")
+        
+        # 数据库配置
+        self.DB_HOST = os.getenv("DB_HOST", "localhost")
+        self.DB_PORT = int(os.getenv("DB_PORT", "5432"))
+        self.DB_NAME = os.getenv("DB_NAME", "mydb")
+        
+        # 验证配置
+        self._validate_config()
+    
+    def _validate_config(self) -> None:
+        """验证必要的配置项"""
+        if not self.API_KEY:
+            raise ValueError("API_KEY must be set")
 
-## Validation Requirements
-- Project structure must follow standards
-- All required files must be present
-- Initial tests must pass
-- Documentation must be complete 
+# 使用示例
+settings = Settings()
+```
+
+### 环境变量模板
+```bash
+# .env.example
+# API设置
+API_KEY=your_api_key_here
+API_URL=http://api.example.com
+API_VERSION=v1
+
+# 数据库设置
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=mydb
+DB_USER=myuser
+DB_PASSWORD=mypassword
+
+# 日志设置
+LOG_LEVEL=INFO
+LOG_PATH=/var/log/myapp/
+```
+
+## 测试框架示例
+> required: true
+
+### 基础测试设置
+```python
+# tests/conftest.py
+import pytest
+from typing import Dict, Any
+
+@pytest.fixture
+def sample_config() -> Dict[str, Any]:
+    """测试配置夹具"""
+    return {
+        "api_key": "test_key",
+        "api_url": "http://test.example.com",
+        "timeout": 30
+    }
+
+@pytest.fixture
+def mock_processor(sample_config):
+    """处理器夹具"""
+    from src.core.processor import DataProcessor
+    return DataProcessor(sample_config)
+```
+
+### 单元测试示例
+```python
+# tests/test_core.py
+import pytest
+from src.core.processor import DataProcessor
+
+def test_processor_initialization(sample_config):
+    """测试处理器初始化"""
+    processor = DataProcessor(sample_config)
+    assert processor.config["api_key"] == "test_key"
+    assert processor.config["timeout"] == 30
+
+def test_invalid_config():
+    """测试无效配置处理"""
+    with pytest.raises(ValueError):
+        DataProcessor({})  # 空配置应该抛出错误
+```
+
+## 版本控制配置
+> required: true
+
+### Git配置模板
+```bash
+# .gitignore
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 环境文件
+.env
+.venv
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 日志
+*.log
+logs/
+```
+
+### 分支策略
+```bash
+# 创建开发分支
+git checkout -b develop
+
+# 创建功能分支
+git checkout -b feature/user-authentication develop
+
+# 创建发布分支
+git checkout -b release/v1.0.0 develop
+
+# 创建修复分支
+git checkout -b hotfix/login-issue main
+```
+
+## 初始化检查清单
+> required: true
+
+- [ ] 项目结构已按标准创建
+- [ ] 所有必要的配置文件已创建
+- [ ] 环境变量模板已提供
+- [ ] 基础测试框架已设置
+- [ ] Git仓库已正确配置
+- [ ] 依赖管理文件已创建
+- [ ] README文档已包含必要信息
+- [ ] 开发环境配置已完成 

@@ -1,186 +1,184 @@
 ---
-description: Guidelines for Python project organization focusing on maintainability and AI-friendly structure.
+description: Python项目结构规范指南
 globs: ["*.py", "**/*.py"]
 ---
-# Project Structure Standards
+# Python项目结构规范
 
 > file_patterns: ["*.py", "**/*.py"]
-> description: Guidelines for Python project organization focusing on maintainability and AI-friendly structure
+> description: Python项目结构和组织的具体实施方法
 
-## File Organization Principles
+## 项目结构示例
 > required: true
 
-### File Size and Responsibility
-- Keep files small (recommended < 200 lines)
-- One primary functionality per file
-- Split large files into focused modules
-- Use clear, purpose-indicating filenames
-
-### Function-First Approach
-- Prefer functions over classes
-- Use pure functions when possible
-- Keep functions focused and small
-- Group related functions logically
-
-### Class Usage Guidelines
-- Use classes only when necessary:
-  - For data containers (dataclasses)
-  - When state management is essential
-  - For framework requirements
-  - For clear interface definitions
-- Keep classes small and focused
-- Prefer composition over inheritance
-
-## Directory Structure
-> required: true
-
-### Directory Size Management
-- Keep directories focused and small
-- Limit files per directory (recommended < 10)
-- Create subdirectories for logical grouping
-- Maintain shallow but wide directory structure
-
-### Directory Naming and Organization
-- Use descriptive directory names
-- Group by functionality not type
-- Create dedicated feature directories
-- Keep test directories parallel to source
-
-### Example Structure
-```
-project/
-├── core/
-│   ├── config/
-│   │   ├── settings.py
-│   │   └── constants.py
-│   └── utils/
-│       ├── file_handlers.py
-│       └── validators.py
-├── features/
-│   ├── auth/
-│   │   ├── login.py
-│   │   └── permissions.py
-│   └── data_processing/
-│       ├── cleaners.py
-│       └── transformers.py
-└── tests/
-    ├── core/
-    └── features/
+### 标准项目结构
+```bash
+my_project/                    # 项目根目录
+├── src/                      # 源代码目录
+│   ├── core/                # 核心功能
+│   │   ├── __init__.py
+│   │   ├── data_processor.py    # 数据处理器
+│   │   └── model_manager.py     # 模型管理器
+│   ├── features/            # 功能模块
+│   │   ├── __init__.py
+│   │   ├── text_analysis/       # 文本分析功能
+│   │   │   ├── __init__.py
+│   │   │   ├── tokenizer.py     # 分词器
+│   │   │   └── classifier.py    # 分类器
+│   │   └── image_processing/    # 图像处理功能
+│   │       ├── __init__.py
+│   │       ├── resizer.py       # 图像缩放
+│   │       └── enhancer.py      # 图像增强
+│   └── utils/               # 工具函数
+│       ├── __init__.py
+│       ├── file_handlers.py     # 文件处理
+│       └── validators.py        # 数据验证
+├── tests/                   # 测试目录
+│   ├── __init__.py
+│   ├── test_core/              # 核心功能测试
+│   ├── test_features/          # 功能模块测试
+│   └── test_utils/             # 工具函数测试
+├── docs/                    # 文档目录
+│   ├── api/                    # API文档
+│   └── guides/                 # 使用指南
+├── config/                  # 配置文件目录
+│   ├── __init__.py
+│   ├── settings.py             # 基础配置
+│   └── logging.py             # 日志配置
+├── scripts/                 # 脚本目录
+│   ├── setup.sh               # 环境设置脚本
+│   └── deploy.sh              # 部署脚本
+├── .env.example            # 环境变量示例
+├── requirements.txt        # 生产环境依赖
+├── requirements-dev.txt    # 开发环境依赖
+└── README.md              # 项目说明文档
 ```
 
-## Module Organization
-
-### Import Management
-- Keep imports at file top
-- Group imports logically
-- Use absolute imports
-- Minimize dependencies between modules
-
-### Function Organization
-- Place main functionality first
-- Group helper functions near related code
-- Keep utility functions in separate modules
-- Use meaningful function names
-
-## Best Practices
-
-### Code Organization
-- Prefer flat structures over deep nesting
-- Keep code paths simple and traceable
-- Use meaningful file and directory names
-- Maintain consistent organization patterns
-
-### Functional Programming
-- Use immutable data when possible
-- Avoid global state
-- Implement pure functions
-- Use list comprehensions and generators
-- Leverage functional tools (map, filter, reduce)
-
-### Context Management
-- Keep context size manageable for AI
-- Organize related functionality together
-- Make dependencies explicit
-- Document file relationships
-
-### File Naming Conventions
-- Use lowercase with underscores
-- Make names descriptive but concise
-- Include purpose in name
-- Follow consistent patterns:
-  - `process_data.py` not `processor.py`
-  - `validate_input.py` not `validation.py`
-  - `transform_json.py` not `json_handler.py`
-
-## AI-Friendly Organization
-
-### Context Optimization
-- Keep related code easily discoverable
-- Maintain clear file boundaries
-- Use consistent patterns
-- Document relationships between files
-
-### Directory Navigation
-- Create logical groupings
-- Use clear naming patterns
-- Maintain reasonable directory sizes
-- Document directory purposes
-
-### Code Discoverability
-- Use descriptive names
-- Maintain consistent structure
-- Keep dependencies clear
-- Document code relationships
-
-## Validation Requirements
-- Files must be focused and small
-- Directories must be well-organized
-- Functions should be preferred over classes
-- Structure must be AI-friendly
-- Dependencies must be clear and minimal
-- Documentation must explain organization
-- Names must be clear and purposeful
-
-## Directory Organization
-Standards for directory structure:
-- Separate source code, tests, docs, and configs
-- Use README.md for functionality documentation
-- Store architecture diagrams in diagrams/
-- Avoid excessive directory nesting
-
-## Dependency Management
-Guidelines for managing project dependencies:
-- Use venv for virtual environment management (.venv directory)
-- Use .env for configuration and secrets
-- Use .gitignore for version control management
-- Follow dependency injection principles
-
-## Project Layout
-
-### Required Files
+## 文件组织规范
 > required: true
 
-- README.md
-- requirements.txt
-- .env.example
-- .gitignore
+### ✅ 推荐的文件组织方式
+```python
+# data_processor.py - 单一功能文件示例
+from typing import Dict, List
+from .validators import validate_input
+from .handlers import process_data
 
-### Required Directories
+def process_batch(data: List[Dict]) -> List[Dict]:
+    """处理数据批次
+    
+    Args:
+        data: 输入数据列表
+        
+    Returns:
+        处理后的数据列表
+    """
+    # 1. 数据验证
+    validated_data = [validate_input(item) for item in data]
+    
+    # 2. 数据处理
+    processed_data = [process_data(item) for item in validated_data]
+    
+    return processed_data
+
+# 独立运行测试
+if __name__ == "__main__":
+    test_data = [{"id": 1, "text": "test"}]
+    result = process_batch(test_data)
+    print(f"处理结果: {result}")
+```
+
+### ❌ 不推荐的文件组织方式
+```python
+# utils.py - 功能混杂的文件示例
+class DataProcessor:
+    def process_data(self): pass
+    def validate_input(self): pass
+    def handle_errors(self): pass
+    def generate_report(self): pass
+    def send_email(self): pass
+    # ... 更多不相关的方法
+
+class FileHandler:
+    def read_file(self): pass
+    def write_file(self): pass
+    def delete_file(self): pass
+    # ... 文件处理方法混杂在同一个文件中
+```
+
+## 目录组织规范
 > required: true
 
-- src/
-- tests/
-- docs/
-- config/
+### 功能模块示例
+```bash
+features/
+├── text_analysis/           # 文本分析模块
+│   ├── __init__.py
+│   ├── tokenizer.py        # 只包含分词相关功能
+│   └── classifier.py       # 只包含分类相关功能
+└── image_processing/       # 图像处理模块
+    ├── __init__.py
+    ├── resizer.py         # 只包含缩放相关功能
+    └── enhancer.py        # 只包含增强相关功能
+```
 
-## Configuration Management
-- Use environment variables for configuration
-- Keep secrets separate from code
-- Document all configuration options
-- Provide example configurations
+### 测试目录组织
+```bash
+tests/
+├── test_core/              # 核心功能测试
+│   ├── __init__.py
+│   ├── test_processor.py   # 对应 core/processor.py
+│   └── test_manager.py     # 对应 core/manager.py
+└── test_features/          # 功能模块测试
+    ├── __init__.py
+    ├── test_tokenizer.py   # 对应 features/text_analysis/tokenizer.py
+    └── test_resizer.py     # 对应 features/image_processing/resizer.py
+```
 
-## Version Control
-- Use meaningful .gitignore rules
-- Keep sensitive data out of version control
-- Document branching strategy
-- Include contribution guidelines 
+## 配置文件组织
+> required: true
+
+### 配置文件示例
+```python
+# config/settings.py
+from pathlib import Path
+from typing import Dict, Any
+
+class Settings:
+    """项目配置管理"""
+    
+    def __init__(self):
+        # 基础路径配置
+        self.BASE_DIR = Path(__file__).parent.parent
+        self.DATA_DIR = self.BASE_DIR / 'data'
+        self.LOGS_DIR = self.BASE_DIR / 'logs'
+        
+        # 功能配置
+        self.MAX_WORKERS = 4
+        self.BATCH_SIZE = 1000
+        self.TIMEOUT = 30
+        
+        # 确保目录存在
+        self.DATA_DIR.mkdir(exist_ok=True)
+        self.LOGS_DIR.mkdir(exist_ok=True)
+```
+
+## 项目检查清单
+> required: true
+
+### 目录结构检查
+- [ ] 项目结构是否符合标准布局
+- [ ] 各功能模块是否正确分组
+- [ ] 测试目录结构是否与源码对应
+- [ ] 配置文件是否集中管理
+
+### 文件组织检查
+- [ ] 文件是否职责单一（每个文件<200行）
+- [ ] 是否避免功能混杂
+- [ ] 是否使用了合适的文件命名
+- [ ] 是否包含必要的文档和注释
+
+### 依赖管理检查
+- [ ] requirements.txt 是否完整
+- [ ] 开发依赖是否分离
+- [ ] 是否包含版本信息
+- [ ] 是否避免循环依赖 

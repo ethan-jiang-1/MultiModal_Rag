@@ -1,106 +1,123 @@
 ---
-description: Guidelines for maintaining consistent directory-specific README documentation.
+description: 目录专用README文档的维护指南。
 globs: ["README_*.md", "**/README_*.md"]
 ---
-# Directory-Specific README Guidelines
+# 目录专用README指南
 
 > file_patterns: ["README_*.md", "**/README_*.md"]
-> description: Standards for directory-specific README documentation
+> description: 目录专用README文档的标准规范
 
-## Naming Convention
+## 命名规范
 > required: true
 
-### Pattern Rules
-- Use format `README_<DIRECTORY_NAME>.md`
-- Directory name should be in UPPERCASE
-- Use underscores for word separation
-- Name should reflect directory's purpose
+### 目录对应关系
+- README文件必须与其所在目录关联
+- 格式：`README_<当前目录名>.md`，目录名必须大写
+- 示例：
+  ```
+  目录结构                    对应的README文件
+  mrag_app/                  README_MRAG_APP.md
+  mrag_app/core/            README_CORE.md
+  mrag_app/utils/           README_UTILS.md
+  ```
 
-### Examples
-- `README_TESTS.md` for test directory
-- `README_DOCS.md` for documentation directory
-- `README_CONFIG.md` for configuration directory
-- `README_UTILS.md` for utilities directory
+### 命名检查
+✅ 正确示例：
+```
+📁 mrag_core/                  
+   └── README_MRAG_CORE.md    # ✓ 目录名完全匹配
 
-## Content Structure
+📁 vector_store/              
+   └── README_VECTOR_STORE.md # ✓ 下划线分隔，全大写
+```
+
+❌ 错误示例：
+```
+📁 mrag_core/          
+   └── README.md           # × 缺少目录名
+   └── README_CORE.md      # × 目录名不完整
+   └── Readme_mrag_core.md # × 大小写错误
+```
+
+## 文档结构
 > required: true
 
-### Directory Overview
-- Clear description of directory purpose
-- Explanation of directory scope
-- List of key components
-- Dependencies and relationships
+### 必需章节
+每个README必须包含以下章节：
 
-### File Organization
-- List and explain key files
-- Describe file naming conventions
-- Document directory structure
-- Explain any special patterns
+1. **目录用途**
+```markdown
+## 🎯 目录用途
+本目录实现了[具体功能]：
+- 功能点1
+- 功能点2
+```
 
-### Component Documentation
-- Document main components
-- Explain component interactions
-- Describe internal dependencies
-- Note external dependencies
+2. **目录结构**
+```markdown
+## 📁 目录结构
+[目录名]/
+├── [子目录1]/     # 用途说明
+│   ├── file1.py   # 功能说明
+│   └── file2.py   # 功能说明
+└── [子目录2]/     # 用途说明
+```
 
-## Special Requirements
+3. **环境要求**（如果有）
+```markdown
+## ⚙️ 环境配置
+- Python >= 3.8
+- 依赖：requirements.txt
+- 环境变量：
+  ```python
+  OPENAI_API_KEY=sk-xxx  # API密钥
+  MODEL_PATH=./models    # 模型路径
+  ```
+```
 
-### Code Examples
-- Include directory-specific examples
-- Show typical usage patterns
-- Demonstrate file interactions
-- Provide setup instructions
+4. **使用示例**
+```markdown
+## 💡 使用示例
+```python
+from module import function
 
-### Configuration
-- Document directory-specific settings
-- List environment variables
-- Explain configuration files
-- Note default values
+# 示例代码
+result = function(param)
+```
+```
 
-### Testing
-- Describe test organization
-- Explain test naming patterns
-- Document test dependencies
-- Provide test examples
+### 更新维护
+1. **更新时机**
+   - 新增/删除文件时
+   - 修改接口时
+   - 更改依赖时
+   - 调整结构时
 
-## Integration Guidelines
+2. **更新步骤**
+   ```bash
+   # 1. 确认文件名正确
+   mv README.md README_DIRNAME.md
+   
+   # 2. 更新目录结构
+   tree -L 2 --dirsfirst > temp_tree.txt
+   
+   # 3. 更新文档内容
+   # 4. 添加更新记录
+   ```
 
-### Parent Directory
-- Explain relationship with parent
-- Document inheritance patterns
-- Note shared resources
-- Describe communication patterns
+3. **更新记录**
+   ```markdown
+   ## 📝 更新记录
+   - 2024-02-21: 添加新组件xxx
+   - 2024-02-20: 更新依赖要求
+   ```
 
-### Sibling Directories
-- Document dependencies
-- Explain interactions
-- Note shared resources
-- Describe interfaces
+## 验证清单
+> required: true
 
-### Child Directories
-- List and explain subdirectories
-- Document organization rules
-- Explain inheritance patterns
-- Note special requirements
-
-## Maintenance
-
-### Updates
-- When to update documentation
-- What to include in updates
-- How to verify changes
-- Update checklist
-
-### Version Control
-- Document version dependencies
-- Note compatibility requirements
-- Track major changes
-- Maintain change history
-
-## Validation Requirements
-- Must follow naming convention
-- Must document all key components
-- Must explain directory purpose
-- Must maintain consistency with parent README
-- Must be up to date with current structure
-- Must include all required sections 
+- [ ] README文件名与目录名匹配
+- [ ] 包含所有必需章节
+- [ ] 目录结构是最新的
+- [ ] 示例代码可以运行
+- [ ] 依赖说明完整
+- [ ] 更新记录已添加 
