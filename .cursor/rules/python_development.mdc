@@ -5,227 +5,202 @@ globs: ["*.py"]
 # Python开发规范
 
 > file_patterns: ["*.py"]
-> description: Python开发的具体实施规范和最佳实践
+> description: Python开发的核心规范和关键实践
 
-## 根本原则
+## 核心原则
 > required: true
 
-### 1. 可读性第一
+### KISS原则
 ```python
-# ✅ 推荐：代码即文档，一目了然
-def calculate_average_score(scores: List[float]) -> float:
-    """计算平均分数"""
-    if not scores:
-        return 0.0
-    return sum(scores) / len(scores)
+# ✅ 推荐：简单直接的实现
+class UserService:
+    """用户服务，保持简单"""
+    def get_user(self, user_id: int) -> Dict:
+        return self.db.query(f"SELECT * FROM users WHERE id = {user_id}")
+    
+    def validate_user(self, user: Dict) -> bool:
+        return bool(user and user.get('id') and user.get('name'))
 
-# ❌ 不推荐：晦涩难懂
-def calc(s):
-    return s and sum(s)/len(s) or 0
+# ❌ 避免：过度设计
+class UserServiceFactory:
+    @staticmethod
+    def create_service(type: str) -> UserServiceBase:
+        if type == "admin":
+            return AdminUserService(UserValidator(), UserRepository())
+        elif type == "guest":
+            return GuestUserService(GuestValidator(), GuestRepository())
+        # 过度的抽象和工厂模式
 ```
 
-### 2. 显式优于隐式
+### 显式优于隐式
 ```python
-# ✅ 推荐：明确表达意图
-def get_user_by_id(user_id: int) -> Optional[User]:
-    """根据ID获取用户信息"""
+# ✅ 推荐：明确的参数验证和返回值
+def get_user_by_id(user_id: int) -> Optional[Dict]:
+    """根据ID获取用户信息，不存在返回None"""
     if not isinstance(user_id, int):
         raise ValueError("用户ID必须是整数")
     return db.query(User).filter_by(id=user_id).first()
 
-# ❌ 不推荐：隐含多种情况
+# ❌ 避免：隐含的类型转换和返回值
 def get_user(id):
+    # 可能隐式转换id类型，可能返回None或抛出异常
     return db.query(User).filter_by(id=id).first()
 ```
 
-### 3. 简单胜于复杂
+### 组合优于继承
 ```python
-# ✅ 推荐：直接了当
-def is_adult(age: int) -> bool:
-    """判断是否成年"""
-    return age >= 18
-
-# ❌ 不推荐：过度设计
-class AgeValidator:
-    def __init__(self, threshold: int = 18):
-        self.threshold = threshold
-    
-    def validate(self, age: int) -> bool:
-        return self._check_age(age)
-    
-    def _check_age(self, age: int) -> bool:
-        return age >= self.threshold
-```
-
-### 4. 局部优于全局
-```python
-# ✅ 推荐：依赖注入
-class UserService:
-    def __init__(self, db_session):
-        self.db = db_session
-    
-    def get_user(self, user_id: int) -> User:
-        return self.db.query(User).get(user_id)
-
-# ❌ 不推荐：使用全局变量
-global_db = Database()
-def get_user(user_id: int) -> User:
-    return global_db.query(User).get(user_id)
-```
-
-### 5. 组合优于继承
-```python
-# ✅ 推荐：使用组合
-class FileProcessor:
-    def __init__(self, reader, writer):
+# ✅ 推荐：使用组合实现功能
+class DataProcessor:
+    """通过组合方式处理数据"""
+    def __init__(self, reader: DataReader, validator: DataValidator):
         self.reader = reader
-        self.writer = writer
+        self.validator = validator
     
-    def process(self, filename: str):
-        data = self.reader.read(filename)
-        processed = self._process_data(data)
-        self.writer.write(filename, processed)
+    def process(self, data_path: str) -> Dict:
+        data = self.reader.read(data_path)
+        return self.validator.validate(data)
 
-# ❌ 不推荐：过度继承
+# ❌ 避免：过度继承
 class BaseProcessor:
     def read(self): pass
-    def write(self): pass
+    def validate(self): pass
     def process(self): pass
 
-class JsonProcessor(BaseProcessor):
+class JsonProcessor(BaseProcessor):  # 继承导致强耦合
     def read(self): pass
-    def write(self): pass
-    def process(self): pass
+    def validate(self): pass
 ```
 
-### 6. 单一职责
+### 局部优于全局
 ```python
-# ✅ 推荐：职责单一
-class UserAuthenticator:
-    def authenticate(self, username: str, password: str) -> bool:
-        """仅负责用户认证"""
-        return self._verify_credentials(username, password)
-
-class UserProfileManager:
-    def update_profile(self, user_id: int, data: Dict) -> None:
-        """仅负责档案管理"""
-        self._validate_data(data)
-        self._save_profile(user_id, data)
-
-# ❌ 不推荐：职责混杂
-class UserManager:
-    def authenticate(self): pass
-    def update_profile(self): pass
-    def send_email(self): pass
-    def generate_report(self): pass
-```
-
-### 7. 显式错误优于隐式错误
-```python
-# ✅ 推荐：明确的错误处理
-def divide(a: float, b: float) -> float:
-    """安全的除法运算"""
-    if b == 0:
-        raise ValueError("除数不能为零")
-    return a / b
-
-# ❌ 不推荐：隐藏错误
-def divide(a, b):
-    try:
-        return a / b
-    except:
-        return 0  # 静默处理错误，掩盖问题
-```
-
-## 代码规范示例
-> required: true
-
-### 类型注解和文档
-```python
-from typing import List, Optional, Dict
-from dataclasses import dataclass
-from datetime import datetime
-
-@dataclass(frozen=True)
-class UserProfile:
-    """用户档案数据结构
+# ✅ 推荐：依赖注入
+class ImageProcessor:
+    def __init__(self, config: Config):
+        self.config = config
     
-    用于存储和处理用户基本信息。
-    
-    Attributes:
-        user_id: 用户唯一标识
-        username: 用户名
-        email: 电子邮件
-        created_at: 创建时间
-    """
-    user_id: int
-    username: str
-    email: str
-    created_at: datetime
-    last_login: Optional[datetime] = None
+    def process_image(self, image: np.ndarray) -> np.ndarray:
+        return cv2.resize(image, self.config.target_size)
+
+# ❌ 避免：全局状态
+CONFIG = {"target_size": (224, 224)}  # 全局配置
+def process_image(image):
+    return cv2.resize(image, CONFIG["target_size"])
+```
+
+### 代码质量
+```python
+# ✅ 推荐：清晰的类型注解和文档
+def calculate_average(scores: List[float]) -> float:
+    """计算平均分数，无数据时返回0"""
+    return sum(scores) / len(scores) if scores else 0.0
+
+# ❌ 避免：含糊不清的实现
+def calc(s):
+    return s and sum(s)/len(s) or 0
 ```
 
 ### 错误处理
 ```python
-class ConfigError(Exception):
-    """配置相关错误的基类"""
-    pass
+# ✅ 推荐：明确的错误处理
+def process_data(data: Dict) -> Dict:
+    """处理数据，包含错误处理"""
+    if not isinstance(data, dict):
+        raise ValueError("输入必须是字典类型")
+    if not data:
+        raise ValueError("数据不能为空")
+    return {"result": transform(data)}
 
-def load_config(config_path: Path) -> Dict:
-    """加载配置文件
-    
-    Args:
-        config_path: 配置文件路径
-        
-    Raises:
-        ConfigError: 配置加载失败
-    """
+# ❌ 避免：隐藏错误
+def process(d):
     try:
-        with config_path.open() as f:
-            return json.load(f)
-    except Exception as e:
-        raise ConfigError(f"配置加载失败: {e}")
+        return transform(d)
+    except:
+        return {}
 ```
 
-### 性能优化
+## 代码组织
+> required: true
+
+### 模块结构
 ```python
+# 标准库导入
+from typing import Dict, List
+from pathlib import Path
+
+# 第三方库导入
+import numpy as np
+import pandas as pd
+
+# 本地模块导入
+from .core import process_data
+from .utils import validate_input
+
+# 模块接口定义
+__all__ = ['DataProcessor', 'process_batch']
+```
+
+### 类设计
+```python
+@dataclass
+class Config:
+    """配置数据类，使用dataclass简化配置管理"""
+    model_path: Path
+    batch_size: int
+    max_retries: int = 3
+
+class DataProcessor:
+    """数据处理器，职责单一"""
+    def __init__(self, config: Config):
+        self.config = config
+        self._validate_config()
+
+    def process(self, data: List[Dict]) -> List[Dict]:
+        """处理数据批次"""
+        return [self._process_item(item) for item in data]
+```
+
+## 性能优化
+> required: true
+
+### 关键优化
+```python
+# ✅ 推荐：合理使用缓存
 from functools import lru_cache
 
 @lru_cache(maxsize=100)
-def compute_expensive_result(x: int, y: int) -> int:
-    """计算耗时操作的结果（使用缓存）"""
-    time.sleep(1)  # 模拟耗时操作
-    return x * y
+def get_config(key: str) -> Any:
+    """缓存频繁访问的配置"""
+    return load_config()[key]
 
-def process_large_dataset(data_iterator):
-    """使用生成器处理大数据集"""
-    for chunk in data_iterator:
-        yield process_chunk(chunk)
+# ✅ 推荐：生成器处理大数据
+def process_large_file(file_path: Path):
+    """使用生成器避免内存溢出"""
+    with file_path.open() as f:
+        for line in f:
+            yield process_line(line)
 ```
 
-## 代码检查清单
+## 测试规范
 > required: true
 
-### 根本原则检查
-- [ ] 代码是否容易理解（可读性）
-- [ ] 意图是否明确（显式）
-- [ ] 实现是否简单（简单性）
-- [ ] 依赖是否局部化（作用域）
-- [ ] 是否避免过度继承（组合）
-- [ ] 职责是否单一（内聚性）
-- [ ] 错误是否明确（透明性）
-
-### 代码质量检查
-- [ ] 是否使用了类型注解
-- [ ] 是否包含完整的文档字符串
-- [ ] 是否有适当的错误处理
-- [ ] 是否遵循PEP 8规范
-- [ ] 是否避免使用全局变量
-- [ ] 是否有单元测试覆盖
-
-### 性能优化检查
-- [ ] 是否使用了适当的缓存
-- [ ] 是否优化了循环和算法
-- [ ] 是否处理了内存使用
-- [ ] 是否使用了生成器处理大数据
-- [ ] 是否避免了重复计算 
+### 单元测试
+```python
+def test_data_processor():
+    """测试数据处理器的核心功能"""
+    config = Config(
+        model_path=Path("./models"),
+        batch_size=32
+    )
+    processor = DataProcessor(config)
+    
+    # 准备测试数据
+    test_data = [{"id": 1, "value": "test"}]
+    
+    # 验证核心功能
+    result = processor.process(test_data)
+    assert result[0]["status"] == "success"
+    
+    # 验证错误处理
+    with pytest.raises(ValueError):
+        processor.process([])
+``` 
