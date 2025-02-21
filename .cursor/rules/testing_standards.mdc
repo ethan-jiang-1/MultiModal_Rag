@@ -10,8 +10,9 @@ globs: ["*_test.py", "test_*.py", "*_tests/*.py"]
 ## Test Organization
 Standards for organizing test files
 
-- Test directories should be named ./xxx_tests
-- Organize test files by module name
+- Test directories should follow the pattern: `{module_name}_tests/`
+- Test files should be named `test_{module}.py`
+- Organize tests to mirror the structure of the source code
 - Create necessary __init__.py files
 - Group related tests in test classes
 - Separate unit tests from integration tests
@@ -26,6 +27,7 @@ Use pytest and its plugins exclusively:
 - Use pytest fixtures for setup/teardown
 - Use pytest.raises for exception testing
 - Use pytest-cov for coverage reporting
+- Use Coverage Gutters for VSCode integration
 
 ### Documentation
 > required: true
@@ -35,6 +37,15 @@ All tests must have type annotations and documentation:
 - Include type hints for test functions
 - Document fixture usage and requirements
 - Explain complex test scenarios
+- Follow this format for test function documentation:
+```python
+def test_function_name():
+    """
+    Test purpose: What is being tested
+    Expectations: What should happen
+    Prerequisites: Any required setup or conditions
+    """
+```
 
 ### Test Utilities
 Best practices for test utilities:
@@ -43,35 +54,114 @@ Best practices for test utilities:
 - Use mock for external dependency simulation
 - Create helper functions for common operations
 
-## Test Entry Points
-Guidelines for test entry points:
-- Simple tests in __main__
-- Complex tests in pytest
-- Provide quick validation through __main__
-- Include example usage in __main__
+### Mock Usage
+> required: true
 
-## Test Cases
+Proper mock implementation:
+```python
+from unittest.mock import patch, MagicMock
+
+def test_with_mock():
+    """Mock example with proper path and verification"""
+    with patch('module.external_function') as mock_func:
+        mock_func.return_value = 'mocked_result'
+        result = function_using_external()
+        assert result == 'expected_result'
+        mock_func.assert_called_once()
+```
+
+## Test Coverage
 
 ### Coverage Requirements
+> required: true
+
+- Core business logic: minimum 80% coverage
+- Utility functions: minimum 70% coverage
+- UI-related code: flexible coverage requirements
 - Test all public interfaces
 - Test edge cases and error conditions
 - Test both success and failure paths
-- Maintain minimum 80% code coverage
 
-### Test Quality
-- Tests should be independent
-- Tests should be deterministic
-- Tests should be fast
-- Tests should be readable
+### Coverage Reporting
+Generate and maintain coverage reports:
+```bash
+# Generate coverage report
+pytest --cov=module_name --cov-report=html tests/
+# Show missing lines
+pytest --cov-report=term-missing
+```
 
-### Test Data
-- Use meaningful test data
-- Avoid hardcoded test values
-- Use factories for complex objects
-- Clean up test data after use
+## Test Execution
 
-## Validation Requirements
-- All code must have corresponding tests
-- Tests must be independent and repeatable
-- Test coverage should be maintained
-- Tests must be well-documented and maintainable 
+### Local Testing
+Run tests using either:
+- VSCode Test Explorer
+- Command line: 
+```bash
+pytest                                    # All tests
+pytest specific_test_dir/                # Directory
+pytest test_file.py::test_function       # Single test
+pytest -v                                # Verbose output
+```
+
+### Continuous Integration
+- Tests must pass in CI pipeline
+- Coverage reports must be generated
+- Failed tests block merges
+- Coverage trends should be monitored
+
+## Test Quality Standards
+> required: true
+
+- Tests must be independent and isolated
+- Tests must be deterministic
+- Tests should complete quickly
+- Test code should be as clean as production code
+- No hardcoded test data
+- Clean up test resources after use
+- Use appropriate assertions
+- Follow arrange-act-assert pattern
+
+## Common Patterns
+
+### Test Structure
+```python
+def test_feature():
+    # Arrange
+    test_data = prepare_test_data()
+    
+    # Act
+    result = function_under_test(test_data)
+    
+    # Assert
+    assert result == expected_result
+```
+
+### Error Testing
+```python
+def test_error_condition():
+    with pytest.raises(ExpectedError) as exc_info:
+        function_that_should_raise()
+    assert str(exc_info.value) == "Expected error message"
+```
+
+## VSCode Integration
+> required: true
+
+Required settings in .vscode/settings.json:
+```json
+{
+    "python.testing.pytestArgs": [
+        "module_tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
+}
+```
+
+## Troubleshooting
+Common issues and solutions:
+- Test discovery issues: Check file naming and pytest configuration
+- Mock issues: Verify import paths and mock setup
+- Coverage issues: Check path configuration and exclusions
+- Environment issues: Verify PYTHONPATH and dependencies 
