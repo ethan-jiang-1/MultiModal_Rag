@@ -1,167 +1,126 @@
 ---
-description: Guidelines for test organization and implementation.
+description: Python测试规范指南
 globs: ["*_test.py", "test_*.py", "*_tests/*.py"]
 ---
-# Testing Standards
+# Python测试规范
 
 > file_patterns: ["*_test.py", "test_*.py", "*_tests/*.py"]
-> description: Guidelines for test organization and implementation
+> description: Python项目测试规范和实现指南
 
-## Test Organization
-Standards for organizing test files
-
-- Test directories should follow the pattern: `{module_name}_tests/`
-- Test files should be named `test_{module}.py`
-- Organize tests to mirror the structure of the source code
-- Create necessary __init__.py files
-- Group related tests in test classes
-- Separate unit tests from integration tests
-
-## Test Implementation
-
-### Framework
+## 测试目录规范
 > required: true
 
-Use pytest and its plugins exclusively:
-- Use pytest.mark for test categorization
-- Use pytest fixtures for setup/teardown
-- Use pytest.raises for exception testing
-- Use pytest-cov for coverage reporting
-- Use Coverage Gutters for VSCode integration
-
-### Documentation
-> required: true
-
-All tests must have type annotations and documentation:
-- Document test purpose and expectations
-- Include type hints for test functions
-- Document fixture usage and requirements
-- Explain complex test scenarios
-- Follow this format for test function documentation:
-```python
-def test_function_name():
-    """
-    Test purpose: What is being tested
-    Expectations: What should happen
-    Prerequisites: Any required setup or conditions
-    """
-```
-
-### Test Utilities
-Best practices for test utilities:
-- Use fixtures for resource reuse
-- Use parametrize for test parameterization
-- Use mock for external dependency simulation
-- Create helper functions for common operations
-
-### Mock Usage
-> required: true
-
-Proper mock implementation:
-```python
-from unittest.mock import patch, MagicMock
-
-def test_with_mock():
-    """Mock example with proper path and verification"""
-    with patch('module.external_function') as mock_func:
-        mock_func.return_value = 'mocked_result'
-        result = function_using_external()
-        assert result == 'expected_result'
-        mock_func.assert_called_once()
-```
-
-## Test Coverage
-
-### Coverage Requirements
-> required: true
-
-- Core business logic: minimum 80% coverage
-- Utility functions: minimum 70% coverage
-- UI-related code: flexible coverage requirements
-- Test all public interfaces
-- Test edge cases and error conditions
-- Test both success and failure paths
-
-### Coverage Reporting
-Generate and maintain coverage reports:
+### 标准结构
 ```bash
-# Generate coverage report
-pytest --cov=module_name --cov-report=html tests/
-# Show missing lines
-pytest --cov-report=term-missing
+项目根目录/
+├── module_name/          # 模块目录
+│   ├── core/            # 模块核心代码
+│   └── utils/           # 模块工具代码
+├── module_name_tests/   # 对应模块的测试目录
+│   ├── core/           # 对应模块核心代码的测试
+│   └── utils/          # 对应模块工具代码的测试
+├── another_module/      # 另一个模块
+└── another_module_tests/# 另一个模块的测试
+    └── __init__.py     # 测试包初始化文件
+
+# 示例：
+mmbase/                  # 基础模块
+├── utils_llm/          # LLM工具代码
+└── utils_llm_debug/    # LLM调试工具
+mmbase_tests/           # 基础模块测试
+├── test_utils/         # 工具测试
+└── tests_utils_llm/    # LLM工具测试
 ```
 
-## Test Execution
+### 命名规范
+```python
+# 测试目录命名
+module_name_tests/         # 模块测试目录用_tests后缀
+tests_feature_name/        # 或用tests_前缀
 
-### Local Testing
-Run tests using either:
-- VSCode Test Explorer
-- Command line: 
-```bash
-pytest                                    # All tests
-pytest specific_test_dir/                # Directory
-pytest test_file.py::test_function       # Single test
-pytest -v                                # Verbose output
+# 测试文件命名
+test_module.py            # 模块测试文件
+test_feature_name.py      # 功能测试文件
+
+# 测试类和函数命名
+class TestUserService:    # 测试类用Test前缀
+    def test_create_user(self):  # 测试方法用test_前缀
 ```
 
-### Continuous Integration
-- Tests must pass in CI pipeline
-- Coverage reports must be generated
-- Failed tests block merges
-- Coverage trends should be monitored
-
-## Test Quality Standards
+## 测试实现规范
 > required: true
 
-- Tests must be independent and isolated
-- Tests must be deterministic
-- Tests should complete quickly
-- Test code should be as clean as production code
-- No hardcoded test data
-- Clean up test resources after use
-- Use appropriate assertions
-- Follow arrange-act-assert pattern
-
-## Common Patterns
-
-### Test Structure
+### 基本测试模板
 ```python
+import pytest
+from unittest.mock import patch
+
 def test_feature():
-    # Arrange
-    test_data = prepare_test_data()
+    """测试模板
+    目的：验证特定功能
+    前置：准备所需数据
+    预期：明确的结果验证
+    """
+    # 准备测试数据
+    test_data = {"id": 1, "name": "test"}
     
-    # Act
-    result = function_under_test(test_data)
+    # 执行被测功能
+    result = feature_under_test(test_data)
     
-    # Assert
+    # 验证测试结果
     assert result == expected_result
+
+@pytest.mark.integration
+def test_with_mock():
+    """模拟外部依赖的测试示例"""
+    with patch('module.external_api') as mock_api:
+        mock_api.return_value = {'status': 'success'}
+        result = service.process()
+        assert result.status == 'success'
+        mock_api.assert_called_once()
 ```
 
-### Error Testing
-```python
-def test_error_condition():
-    with pytest.raises(ExpectedError) as exc_info:
-        function_that_should_raise()
-    assert str(exc_info.value) == "Expected error message"
-```
+### 关键原则
+1. 测试必须独立且可重复
+2. 每个测试只验证一个功能点
+3. 使用合适的夹具(fixture)共享资源
+4. 正确模拟外部依赖
+5. 验证成功和失败场景
 
-## VSCode Integration
+## 测试覆盖率要求
 > required: true
 
-Required settings in .vscode/settings.json:
-```json
-{
-    "python.testing.pytestArgs": [
-        "module_tests"
-    ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
-}
+- 核心业务逻辑：最低80%覆盖
+- 工具函数：最低70%覆盖
+- 必须测试所有公共接口
+- 必须测试错误处理路径
+- 必须测试边界条件
+
+## 测试执行
+```bash
+# 执行所有测试
+pytest
+
+# 执行特定测试
+pytest test_file.py::test_function
+
+# 生成覆盖率报告
+pytest --cov=src --cov-report=html
 ```
 
-## Troubleshooting
-Common issues and solutions:
-- Test discovery issues: Check file naming and pytest configuration
-- Mock issues: Verify import paths and mock setup
-- Coverage issues: Check path configuration and exclusions
-- Environment issues: Verify PYTHONPATH and dependencies 
+## 测试检查清单
+> required: true
+
+### 基础检查
+- [ ] 测试目录结构是否符合规范
+- [ ] 测试文件命名是否正确
+- [ ] 是否包含必要的文档注释
+- [ ] 是否使用了合适的夹具
+- [ ] 是否正确处理了测试资源清理
+
+### 测试质量检查
+- [ ] 测试是否具有独立性
+- [ ] 是否避免了测试间的依赖
+- [ ] 是否包含了边界条件测试
+- [ ] 是否验证了错误处理
+- [ ] 是否使用了合适的断言

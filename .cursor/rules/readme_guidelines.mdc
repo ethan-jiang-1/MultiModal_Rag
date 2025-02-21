@@ -1,102 +1,73 @@
 ---
-description: Standards for writing and maintaining README documentation.
+description: README文档编写规范
 globs: ["README.md", "**/README.md"]
 ---
-# README Documentation Guidelines
+# README文档规范
 
 > file_patterns: ["README.md", "**/README.md"]
-> description: Standards for writing and maintaining README documentation
+> description: README文档的编写和维护规范
 
-## Core Principles
-
-### Deep Code Analysis
-- Must understand core code implementation first
-- Extract key technical features and innovations
-- Avoid generic content
-
-### Practical Orientation
-- Design navigation from problem perspective
-- Point to key functions and features
-- Provide complete code examples
-
-### Emphasis
-- Core functionality first
-- Configuration information centralized
-- Performance metrics clearly listed
-
-## Quick Navigation
-
-### Key File Index
-- File name with one-line core functionality description
-- Function-based search (specific problems to specific solutions)
-- Clear directory structure
-- Reference to directory-specific READMEs (README_*.md)
-
-### System Design
-- Core features (with code examples)
-- Key configurations (environment variables, recommended parameters)
-- Architecture explanation (component relationships, data flow)
-- Directory organization and relationships
-
-## Directory Documentation
+## 核心原则
 > required: true
 
-### Directory-Specific READMEs
-- Each major directory must have a README_<DIR>.md
-- Follow directory-specific README guidelines
-- Link to relevant subdirectory documentation
-- Maintain consistency across documentation
+### 内容要求
+```markdown
+# 项目名称
 
-### Directory Structure
-- Document overall project structure
-- Explain directory organization
-- Reference directory-specific guidelines
-- Maintain directory relationship diagram
+## 🎯 功能概述
+- 核心功能说明
+- 关键特性列表
+- 技术创新点
 
-## Core Functionality
+## ⚙️ 快速开始
+```python
+# 最常用的使用场景
+from module import core
 
-### Usage Examples
-- Must be directly runnable code
-- Include key parameter explanations
-- Show typical usage scenarios
-- Link to directory-specific examples
+result = core.process(data)
+```
 
-### Configuration Details
-- Complete environment variable listing
-- Parameter recommendation explanations
-- Performance benchmark baselines
-- Directory-specific configurations
+## 🔧 环境配置
+- Python >= 3.8
+- 依赖：requirements.txt
+- 环境变量：.env.example
+```
 
-### Important Notes
-- Error handling recommendations
-- Performance optimization guide
-- Development suggestions
-- Directory-specific considerations
+### 结构组织
+```markdown
+## 📁 目录结构
+```bash
+项目根目录/
+├── core/          # 核心实现
+└── utils/         # 工具函数
+```
 
-## Format Standards
+## 📚 详细文档
+- [核心模块](mdc:core/README_CORE.md)
+- [工具模块](mdc:utils/README_UTILS.md)
+```
 
-### Markdown Usage
-- Use standard Markdown syntax
-- Specify language for code blocks
-- Clear hierarchical structure
-- Consistent formatting across all READMEs
+## 文档维护
+> required: true
 
-### Content Organization
-- Group related information
-- Use consistent formatting
-- Keep sections focused
-- Follow directory-specific patterns
+### 更新规范
+```markdown
+## 📝 更新记录
+- [2024-03-01] 添加新功能xxx
+- [2024-02-28] 优化性能xxx
+- [2024-02-27] 修复问题xxx
 
-### Maintenance
-- Regular updates with changes
-- Version compatibility notes
-- Migration guides when needed
-- Synchronize with directory READMEs
+## 🚀 后续计划
+- [ ] 计划中的功能
+- [ ] 待优化的部分
+```
 
-## Validation Requirements
-- README must be clear and comprehensive
-- Code examples must be tested and working
-- Structure must be logical and navigable
-- Content must be up to date
-- All required directory READMEs must exist
-- Directory documentation must be consistent 
+## 检查清单
+> required: true
+
+### 基础检查
+- [ ] 是否包含功能概述
+- [ ] 是否有快速开始示例
+- [ ] 是否列出环境要求
+- [ ] 是否说明目录结构
+- [ ] 是否提供详细文档链接

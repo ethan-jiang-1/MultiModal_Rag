@@ -5,180 +5,95 @@ globs: ["*.py", "**/*.py"]
 # Python项目结构规范
 
 > file_patterns: ["*.py", "**/*.py"]
-> description: Python项目结构和组织的具体实施方法
+> description: Python项目结构和组织的核心规范
 
-## 项目结构示例
+## 多模块结构
 > required: true
 
-### 标准项目结构
+### 标准布局
 ```bash
-my_project/                    # 项目根目录
-├── src/                      # 源代码目录
-│   ├── core/                # 核心功能
-│   │   ├── __init__.py
-│   │   ├── data_processor.py    # 数据处理器
-│   │   └── model_manager.py     # 模型管理器
-│   ├── features/            # 功能模块
-│   │   ├── __init__.py
-│   │   ├── text_analysis/       # 文本分析功能
-│   │   │   ├── __init__.py
-│   │   │   ├── tokenizer.py     # 分词器
-│   │   │   └── classifier.py    # 分类器
-│   │   └── image_processing/    # 图像处理功能
-│   │       ├── __init__.py
-│   │       ├── resizer.py       # 图像缩放
-│   │       └── enhancer.py      # 图像增强
-│   └── utils/               # 工具函数
-│       ├── __init__.py
-│       ├── file_handlers.py     # 文件处理
-│       └── validators.py        # 数据验证
-├── tests/                   # 测试目录
-│   ├── __init__.py
-│   ├── test_core/              # 核心功能测试
-│   ├── test_features/          # 功能模块测试
-│   └── test_utils/             # 工具函数测试
-├── docs/                    # 文档目录
-│   ├── api/                    # API文档
-│   └── guides/                 # 使用指南
-├── config/                  # 配置文件目录
-│   ├── __init__.py
-│   ├── settings.py             # 基础配置
-│   └── logging.py             # 日志配置
-├── scripts/                 # 脚本目录
-│   ├── setup.sh               # 环境设置脚本
-│   └── deploy.sh              # 部署脚本
-├── .env.example            # 环境变量示例
-├── requirements.txt        # 生产环境依赖
-├── requirements-dev.txt    # 开发环境依赖
-└── README.md              # 项目说明文档
+项目根目录/
+├── mmbase/              # 基础模块
+│   ├── core/           # 核心实现
+│   └── utils/          # 工具函数
+├── mmbase_tests/       # 基础模块测试
+│   └── test_core/      # 核心测试
+├── mrag_app/           # 应用模块
+│   ├── core/          # 应用核心
+│   └── services/      # 服务实现
+└── mrag_app_tests/    # 应用测试
+    └── test_services/ # 服务测试
 ```
 
-## 文件组织规范
+### 关键规则
+1. 每个模块独立维护，避免交叉引用
+2. 测试目录与模块目录一一对应
+3. 公共依赖放在基础模块
+4. 避免循环依赖
+
+## 模块组织
 > required: true
 
-### ✅ 推荐的文件组织方式
+### ✅ 推荐结构
 ```python
-# data_processor.py - 单一功能文件示例
-from typing import Dict, List
-from .validators import validate_input
-from .handlers import process_data
-
-def process_batch(data: List[Dict]) -> List[Dict]:
-    """处理数据批次
-    
-    Args:
-        data: 输入数据列表
-        
-    Returns:
-        处理后的数据列表
-    """
-    # 1. 数据验证
-    validated_data = [validate_input(item) for item in data]
-    
-    # 2. 数据处理
-    processed_data = [process_data(item) for item in validated_data]
-    
-    return processed_data
-
-# 独立运行测试
-if __name__ == "__main__":
-    test_data = [{"id": 1, "text": "test"}]
-    result = process_batch(test_data)
-    print(f"处理结果: {result}")
-```
-
-### ❌ 不推荐的文件组织方式
-```python
-# utils.py - 功能混杂的文件示例
+# mmbase/core/processor.py
 class DataProcessor:
-    def process_data(self): pass
-    def validate_input(self): pass
-    def handle_errors(self): pass
-    def generate_report(self): pass
-    def send_email(self): pass
-    # ... 更多不相关的方法
+    """数据处理器：专注于数据处理逻辑"""
+    def process(self, data: Dict) -> Dict:
+        return self._core_process(data)
 
-class FileHandler:
-    def read_file(self): pass
-    def write_file(self): pass
-    def delete_file(self): pass
-    # ... 文件处理方法混杂在同一个文件中
+# mrag_app/services/user.py
+class UserService:
+    """用户服务：只处理用户相关逻辑"""
+    def __init__(self, processor: DataProcessor):
+        self.processor = processor
 ```
 
-## 目录组织规范
-> required: true
-
-### 功能模块示例
-```bash
-features/
-├── text_analysis/           # 文本分析模块
-│   ├── __init__.py
-│   ├── tokenizer.py        # 只包含分词相关功能
-│   └── classifier.py       # 只包含分类相关功能
-└── image_processing/       # 图像处理模块
-    ├── __init__.py
-    ├── resizer.py         # 只包含缩放相关功能
-    └── enhancer.py        # 只包含增强相关功能
-```
-
-### 测试目录组织
-```bash
-tests/
-├── test_core/              # 核心功能测试
-│   ├── __init__.py
-│   ├── test_processor.py   # 对应 core/processor.py
-│   └── test_manager.py     # 对应 core/manager.py
-└── test_features/          # 功能模块测试
-    ├── __init__.py
-    ├── test_tokenizer.py   # 对应 features/text_analysis/tokenizer.py
-    └── test_resizer.py     # 对应 features/image_processing/resizer.py
-```
-
-## 配置文件组织
-> required: true
-
-### 配置文件示例
+### ❌ 避免结构
 ```python
-# config/settings.py
-from pathlib import Path
-from typing import Dict, Any
-
-class Settings:
-    """项目配置管理"""
-    
-    def __init__(self):
-        # 基础路径配置
-        self.BASE_DIR = Path(__file__).parent.parent
-        self.DATA_DIR = self.BASE_DIR / 'data'
-        self.LOGS_DIR = self.BASE_DIR / 'logs'
-        
-        # 功能配置
-        self.MAX_WORKERS = 4
-        self.BATCH_SIZE = 1000
-        self.TIMEOUT = 30
-        
-        # 确保目录存在
-        self.DATA_DIR.mkdir(exist_ok=True)
-        self.LOGS_DIR.mkdir(exist_ok=True)
+# 避免：功能混杂
+class MixedService:
+    """反面示例：单个服务包含多个不相关功能"""
+    def handle_user(self): pass   # 用户逻辑
+    def process_data(self): pass  # 数据处理
+    def send_email(self): pass    # 邮件功能
 ```
 
-## 项目检查清单
+## 依赖管理
 > required: true
 
-### 目录结构检查
-- [ ] 项目结构是否符合标准布局
-- [ ] 各功能模块是否正确分组
-- [ ] 测试目录结构是否与源码对应
-- [ ] 配置文件是否集中管理
+### 模块依赖
+```python
+# mrag_app/core/__init__.py
 
-### 文件组织检查
-- [ ] 文件是否职责单一（每个文件<200行）
-- [ ] 是否避免功能混杂
-- [ ] 是否使用了合适的文件命名
-- [ ] 是否包含必要的文档和注释
+# 基础模块依赖
+from mmbase.core import DataProcessor
+from mmbase.utils import helpers
 
-### 依赖管理检查
-- [ ] requirements.txt 是否完整
-- [ ] 开发依赖是否分离
-- [ ] 是否包含版本信息
-- [ ] 是否避免循环依赖 
+# 当前模块实现
+from .services import UserService
+```
+
+## 检查清单
+> required: true
+
+### 结构检查
+- [ ] 模块划分是否清晰合理
+- [ ] 是否避免模块间交叉引用
+- [ ] 是否遵循依赖单向原则
+- [ ] 测试目录是否对应模块结构
+- [ ] 是否避免代码重复
+
+### 模块检查
+- [ ] 每个模块是否职责单一
+- [ ] 公共功能是否放在基础模块
+- [ ] 是否避免循环依赖
+- [ ] 是否合理使用__init__.py
+- [ ] 模块接口是否清晰
+
+### 代码检查
+- [ ] 文件大小是否合理（建议<300行）
+- [ ] 是否遵循单一职责原则
+- [ ] 是否添加必要注释
+- [ ] 是否包含类型注解
+- [ ] 是否提供使用示例 

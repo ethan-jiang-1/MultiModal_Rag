@@ -45,6 +45,7 @@ from typing import Dict, List, Optional
 import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
+load_env()
 
 # 3. 项目内导入（使用绝对路径，避免相对导入带来的脆弱性）
 from core.models import BaseModel  # 从项目根目录开始的导入路径

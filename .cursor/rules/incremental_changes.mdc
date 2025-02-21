@@ -2,185 +2,104 @@
 description: 代码渐进式修改指南
 globs: ["*.py", "*.md", "*.json", "*.yaml"]
 ---
-# 代码渐进式修改指南
+# 代码渐进式修改规范
 
 > file_patterns: ["*.py", "*.md", "*.json", "*.yaml"]
-> description: 代码渐进式修改的具体实施方法
+> description: 代码渐进式修改的核心规范
 
 ## 修改基本原则
 > required: true
 
-### 步骤拆分示例
-❌ 错误做法：
+### 渐进式修改示例
 ```python
-# 一次性修改多个功能
+# ❌ 避免：一次性大规模修改
 def process_data(data):
-    # 同时修改数据处理逻辑
-    processed = new_process_logic(data)
-    # 同时修改验证逻辑
-    validated = new_validation_logic(processed)
-    # 同时修改输出格式
-    return new_output_format(validated)
+    result = new_process(new_validate(data))
+    return new_format(result)
+
+# ✅ 推荐：分步骤渐进修改
+# 步骤1：只改处理逻辑
+def process_data(data):
+    result = new_process(data)          # 新处理逻辑
+    return old_format(old_validate(result))  # 保持旧逻辑
+
+# 步骤2：改验证逻辑
+def process_data(data):
+    result = new_process(data)
+    validated = new_validate(result)    # 新验证逻辑
+    return old_format(validated)        # 保持旧格式
+
+# 步骤3：改返回格式
+def process_data(data):
+    result = new_process(new_validate(data))
+    return new_format(result)           # 新格式
 ```
 
-✅ 正确做法：
-```python
-# 第一步：只修改数据处理逻辑
-def process_data(data):
-    # 新的处理逻辑
-    processed = new_process_logic(data)
-    # 保持原有的验证和输出逻辑
-    validated = old_validation_logic(processed)
-    return old_output_format(validated)
-
-# 第二步：修改验证逻辑
-def process_data(data):
-    processed = new_process_logic(data)
-    # 新的验证逻辑
-    validated = new_validation_logic(processed)
-    return old_output_format(validated)
-
-# 第三步：修改输出格式
-def process_data(data):
-    processed = new_process_logic(data)
-    validated = new_validation_logic(processed)
-    # 新的输出格式
-    return new_output_format(validated)
-```
-
-## 配置文件修改
+## 配置修改规范
 > required: true
 
-### JSON配置修改示例
-❌ 错误做法：
-```json
-// 直接替换整个配置块
-{
-    "api_settings": {
-        "new_endpoint": "https://api.new.com",
-        "new_timeout": 30,
-        "new_retry": 3
-    }
-}
-```
-
-✅ 正确做法：
-```json
-// 逐步添加新配置，保持向后兼容
-{
-    "api_settings": {
-        "endpoint": "https://api.old.com",  // 保留旧配置
-        "new_endpoint": "https://api.new.com",  // 添加新配置
-        "timeout": 10,  // 保留旧配置
-        "new_timeout": 30,  // 添加新配置
-        "retry": 2,  // 保留旧配置
-        "new_retry": 3  // 添加新配置
-    }
-}
-```
-
-### YAML配置修改示例
+### 配置渐进示例
 ```yaml
-# 第一步：添加新字段，保留旧字段
-database:
-  # 原有配置
-  host: localhost
-  port: 5432
-  # 新增配置，使用 new_ 前缀
-  new_host: db.example.com
-  new_port: 6432
+# ❌ 避免：直接替换配置
+api:
+  endpoint: "https://new-api.com"
+  timeout: 30
+
+# ✅ 推荐：渐进式更新配置
+api:
+  # 旧配置保持不变
+  endpoint: "https://old-api.com"
+  timeout: 10
   
-  # 添加迁移说明
-  _migration_note: |
-    2024-03: 添加新的数据库配置
-    - new_host 将在 v2.0 成为默认配置
-    - new_port 将在 v2.0 成为默认配置
+  # 新配置使用新前缀
+  new_endpoint: "https://new-api.com"
+  new_timeout: 30
+  
+  # 迁移说明
+  _migration: "2024-03: 将在v2.0启用new_前缀配置"
 ```
 
-## 测试策略
+## 测试规范
 > required: true
 
-### 单元测试修改示例
+### 测试示例
 ```python
-# 原有测试
-def test_process_data():
-    data = {"id": 1, "value": "test"}
-    result = process_data(data)
+# 1. 保留旧测试
+def test_old_feature():
+    """验证原有功能保持不变"""
+    result = process_data({"id": 1})
     assert result["status"] == "success"
 
-# 新增测试，不修改原有测试
-def test_process_data_new_format():
-    data = {"id": 1, "value": "test"}
-    result = process_data(data)
-    # 验证新格式
-    assert "new_status" in result
+# 2. 添加新测试
+def test_new_feature():
+    """验证新功能同时保持向后兼容"""
+    result = process_data({"id": 1})
+    # 新功能测试
     assert result["new_status"] == "success"
-    # 同时验证向后兼容
-    assert result["status"] == "success"  # 确保旧格式仍然可用
+    # 向后兼容测试
+    assert result["status"] == "success"
 ```
 
-## 代码审查清单
+## 检查清单
 > required: true
 
-### 提交前检查
-- [ ] 每个提交只包含一个逻辑变更
-- [ ] 提交信息清晰说明变更内容
-- [ ] 新旧功能并存，确保向后兼容
-- [ ] 添加/更新相关测试
-- [ ] 更新相关文档
+### 代码检查
+- [ ] 是否遵循渐进式修改原则
+- [ ] 是否保持向后兼容
+- [ ] 是否添加必要的新旧测试
+- [ ] 是否更新相关文档
+- [ ] 提交是否足够小且聚焦
 
-### 提交信息模板
-```
-feat(模块): 添加新特性
+### 配置检查
+- [ ] 是否保留旧配置项
+- [ ] 新配置是否使用新前缀
+- [ ] 是否添加配置迁移说明
+- [ ] 是否更新配置文档
+- [ ] 是否验证配置生效
 
-- 具体改动：添加新的数据处理逻辑
-- 影响范围：仅影响 X 模块的数据处理
-- 向后兼容：保留旧处理逻辑
-- 测试覆盖：添加新的测试用例
-
-相关问题: #123
-```
-
-## 紧急修复指南
-> required: true
-
-### 修复步骤
-1. **临时修复**
-```python
-# 添加临时日志，不修改核心逻辑
-def process_data(data):
-    try:
-        return original_process(data)
-    except Exception as e:
-        log.error(f"数据处理错误: {e}")
-        # 临时返回安全值
-        return {"status": "error", "fallback": True}
-```
-
-2. **正式修复**
-```python
-# 添加完整的错误处理
-def process_data(data):
-    try:
-        return original_process(data)
-    except ValidationError as e:
-        log.error(f"数据验证错误: {e}")
-        return handle_validation_error(e)
-    except ProcessError as e:
-        log.error(f"处理错误: {e}")
-        return handle_process_error(e)
-```
-
-### 回滚准备
-```bash
-# 1. 标记当前版本
-git tag pre_fix_v1.0.1
-
-# 2. 应用修复
-git commit -am "fix: 数据处理错误修复"
-
-# 3. 如需回滚
-git revert HEAD
-# 或
-git reset --hard pre_fix_v1.0.1
-``` 
+### 发布检查
+- [ ] 是否准备回滚方案
+- [ ] 是否分批次发布
+- [ ] 是否添加监控告警
+- [ ] 是否有降级方案
+- [ ] 是否通知相关方
