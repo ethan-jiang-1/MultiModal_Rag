@@ -10,166 +10,101 @@ globs: ["*.py"]
 ## 环境初始化规范
 > required: true
 
-### 标准初始化模板
-```python
-# 文件顶部：环境初始化
-import os
-from pathlib import Path
+### 项目根目录设置
+```bash
+# .env 文件（必须位于项目根目录）
+PYTHONPATH=.  # 确保可以从项目根目录进行模块导入
 
-def load_env() -> Path:
-    """初始化环境并返回项目根目录"""
-    # 查找项目根目录（包含 .env 文件的目录）
-    current_dir = Path(__file__).resolve().parent
-    root_dir = current_dir
-    while root_dir != root_dir.parent:
-        if (root_dir / '.env').exists():
-            break
-        root_dir = root_dir.parent
-    
-    # 加载环境变量
-    from dotenv import load_dotenv
-    load_dotenv(root_dir / '.env')
-    
-    # 将项目根目录添加到 PYTHONPATH
-    import sys
-    sys.path.insert(0, str(root_dir))
-    
-    return root_dir
-
-# 获取项目根目录
-ROOT_DIR = load_env()
+# 说明：这样设置可以让Python从项目根目录开始查找模块
+# 例如：项目结构为 my_project/src/core/models.py
+# 可以直接使用：from src.core.models import MyModel
 ```
 
-### 使用示例
+### 环境变量加载
 ```python
-# core/processor.py
+# 在程序入口处或配置文件中加载（只需要加载一次）
 from pathlib import Path
-from typing import Optional
+from dotenv import load_dotenv
 
-# 1. 环境初始化
-from utils.env import load_env
-ROOT_DIR = load_env()
-
-# 2. 基于根目录的绝对导入
-from core.models import BaseModel
-from utils.helpers import setup_logger
-from config.settings import Settings
-
-class DataProcessor:
-    def __init__(self):
-        self.model_path = ROOT_DIR / 'models'
-        self.config = Settings()
-        self.logger = setup_logger(__name__)
+# 加载环境变量（会自动在当前目录及其父目录中查找.env文件）
+load_dotenv()
 ```
 
-## 模块独立性示例
-> required: true
-
-### 可独立运行的模块示例
-```python
-# core/processor.py
-from pathlib import Path
-from typing import Dict, Any
-
-def process_data(data: Dict[str, Any]) -> Dict[str, Any]:
-    """处理数据的主要函数"""
-    # 处理逻辑
-    return {"result": "processed"}
-
-if __name__ == "__main__":
-    # 模块测试入口
-    test_data = {"test": "data"}
-    result = process_data(test_data)
-    print(f"测试结果: {result}")
-    
-    # 基本功能测试
-    assert result["result"] == "processed", "处理功能测试失败"
-    print("所有测试通过")
-```
-
-## 导入规范示例
+## 模块导入规范
 > required: true
 
 ### ✅ 推荐的导入方式
 ```python
-# 1. 标准库导入
+# 1. 标准库导入（始终放在最前面）
 import os
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional
 
-# 2. 第三方库导入
+# 2. 第三方库导入（按字母顺序排列）
 import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 
-# 3. 本地模块导入（使用绝对路径）
-from core.models import BaseModel
+# 3. 项目内导入（使用绝对路径，避免相对导入带来的脆弱性）
+from core.models import BaseModel  # 从项目根目录开始的导入路径
 from utils.helpers import setup_logger
 from config.settings import Settings
 
-# 4. 定义公共接口
-__all__ = ['DataProcessor', 'process_data']
+# 4. 模块接口定义（明确声明可导出的内容）
+__all__ = [
+    'DataProcessor',  # 主要类
+    'process_data',   # 公共函数
+]
 ```
 
-### ❌ 不推荐的导入方式
+### ❌ 避免的导入方式
 ```python
-# 错误示例1：使用相对导入
+# 错误示例1：使用相对导入（难以维护且容易出错）
 from ..utils import helpers  # ❌ 避免使用相对导入
 from .models import BaseModel  # ❌ 避免使用相对导入
 
-# 错误示例2：导入顺序混乱
+# 错误示例2：导入顺序混乱（影响代码可读性）
 from config.settings import Settings
 import os  # ❌ 标准库应该在最前面
-from core.models import BaseModel
 import numpy as np  # ❌ 第三方库应该在标准库之后
 
-# 错误示例3：使用通配符导入
+# 错误示例3：使用通配符导入（可能导致命名冲突）
 from utils.helpers import *  # ❌ 避免使用通配符导入
 ```
 
-## 模块初始化示例
-> required: true
-
-### 包初始化文件示例
+### 模块独立运行
 ```python
-# core/__init__.py
+# processor.py
+def process_data(data: Dict) -> Dict:
+    """数据处理函数"""
+    return {"result": "processed"}
 
-# 1. 版本信息
-__version__ = '1.0.0'
-
-# 2. 公共接口定义
-from .processor import DataProcessor
-from .models import BaseModel
-
-__all__ = [
-    'DataProcessor',
-    'BaseModel',
-]
-
-# 3. 包级别的初始化
-def initialize_package():
-    """包初始化函数"""
-    # 执行必要的初始化
-    from utils.env import load_env
-    ROOT_DIR = load_env()
+if __name__ == "__main__":
+    """模块独立运行入口
     
-    # 设置包级别的配置
-    from config.settings import Settings
-    settings = Settings()
+    作用：
+    1. 提供快速测试能力
+    2. 确保模块可以独立运行
+    3. 避免在被导入时执行测试代码
+    """
+    # 模块测试代码
+    test_data = {"test": "data"}
+    result = process_data(test_data)
+    print(f"测试结果: {result}")
     
-    return settings
-
-# 4. 自动执行包初始化
-settings = initialize_package()
+    # 基本功能测试
+    assert result["result"] == "processed"
+    print("所有测试通过")
 ```
 
 ## 导入检查清单
 > required: true
 
-- [ ] 环境初始化是否在文件顶部完成
-- [ ] 导入是否按类型分组（标准库/第三方库/本地模块）
-- [ ] 是否使用绝对导入路径
-- [ ] 是否定义了 __all__ 声明公共接口
-- [ ] 模块是否可以独立运行和测试
-- [ ] 包初始化文件是否正确配置 
+- [ ] PYTHONPATH 是否在.env中正确设置（必须在项目根目录）
+- [ ] 是否使用绝对导入路径（从项目根目录开始）
+- [ ] 导入是否按类型和字母顺序正确分组
+- [ ] 是否完全避免使用相对导入
+- [ ] 是否通过__all__明确定义了模块接口
+- [ ] 是否包含可独立运行的测试代码
+- [ ] 是否只在必要的地方加载了一次环境变量 
