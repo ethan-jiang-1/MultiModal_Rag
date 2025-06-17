@@ -194,3 +194,6 @@ python mrag_app/app_gradio.py
 - [环境配置说明](README_MRAG_ENV.md)
 - [测试说明](README_MRAG_PYTEST.md)
 
+## CURSOR project 
+Codelf is a powerful AI-assisted coding tool that provides better code understanding and modification capabilities for AI agents through the Model Context Protocol (MCP).
+ - https://github.com/Disdjj/codelf
