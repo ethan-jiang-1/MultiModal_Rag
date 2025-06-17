@@ -1,746 +1,115 @@
-## {Project Name} (init from readme/docs)
+## MultiModal_Rag
 
-> {Project Description}
+> A complete multimodal RAG (Retrieval-Augmented Generation) system, including document conversion, vector database storage, and a Gradio interactive interface.
 
-> {Project Purpose}
+> The purpose of this project is to provide an end-to-end solution for building intelligent question-answering systems over complex, multimodal documents. It supports various document formats, leverages advanced AI models for content understanding and generation, and offers a user-friendly web interface for interaction.
 
-> {Project Status}
+> The project is in an active development state.
 
-> {Project Team}
+> Team information is not specified.
 
-> {Framework/language/other(you think it is important to know)}
+> The project is primarily built using Python 3.12+. Key frameworks and libraries include Gradio for the web interface, and various LLM/VLM integrations (OpenAI, Qwen, Ark). It uses vector databases for retrieval augmentation.
 
 
 
 ## Dependencies (init from programming language specification like package.json, requirements.txt, etc.)
 
-* package1 (version): simple description
-* package2 (version): simple description
+* acres==0.2.0: A library for asynchronous cross-origin resource sharing.
+* aiofiles==23.2.1: Asynchronous file operations.
+* aiohttp==3.11.10: Asynchronous HTTP client/server for asyncio.
+* aliyun-python-sdk-core==2.16.0: Alibaba Cloud SDK for Python - Core.
+* aliyun-python-sdk-kms==2.16.5: Alibaba Cloud SDK for Python - KMS.
+* anyio==4.7.0: High-level asynchronous compatibility layer.
+* beautifulsoup4==4.12.3: For parsing HTML and XML documents.
+* gradio==5.9.1: A fast way to build and share ML apps.
+* llama-index==0.12.8: A data framework for LLM applications.
+* llama-parse==0.5.17: A library for parsing complex documents for LLMs.
+* mammoth==1.9.0: Converts .docx documents to simple HTML.
+* matplotlib==3.10.0: Plotting with Python.
+* mmbase: Local multimodal base utilities for this project.
+* numpy==2.2.1: Fundamental package for scientific computing with Python.
+* openai==1.58.1: Official Python library for the OpenAI API.
+* opencv-python==4.10.0.84: Computer vision library.
+* openpyxl==3.1.5: A Python library to read/write Excel 2010 xlsx/xlsm files.
+* pandas==2.2.3: Data analysis and manipulation tool.
+* pdfminer.six==20240706: A tool for extracting information from PDF documents.
+* pillow==10.4.0: Python Imaging Library (Fork).
+* pptx2md==2.0.6: A library to convert PowerPoint files to Markdown.
+* PyMuPDF==1.25.1: A high-performance Python library for data extraction and manipulation of PDF documents.
+* pytest==8.3.4: A framework for writing tests in Python.
+* python-pptx==1.0.2: A library for creating and updating PowerPoint (.pptx) files.
+* qdrant-client==1.12.1: The client for Qdrant, a vector similarity search engine.
+* rank-bm25==0.2.2: A library for BM25 ranking.
+* requests==2.32.3: HTTP for Humans.
+* tiktoken==0.8.0: A fast BPE tokenizer for use with OpenAI's models.
+* ... (and other dependencies listed in requirements.txt)
 
 
 ## Development Environment
 
-> include all the tools and environments needed to run the project
-> makefile introduction (if exists)
+To run this project, you need:
+1.  **Python 3.12+**.
+2.  An environment where you can install packages from `requirements.txt` and `requirements-dev.txt`.
+3.  A `.env` file configured with necessary API keys (OpenAI, Qwen, Ark, etc.) and `PYTHONPATH=.`.
+4.  Docker and Docker Compose for running services like Milvus or Qdrant if used.
+5.  To install the local `mmbase` package by running `pip install -e ./mmbase` in the root directory.
 
 
-## Structrue (init from project tree)
+## Structure (init from project tree)
 
-> It is essential to consistently refine the analysis down to the file level — this level of granularity is of utmost importance.
-
-> If the number of files is too large, you should at least list all the directories, and provide comments for the parts you consider particularly important.
-
-> In the code block below, add comments to the directories/files to explain their functionality and usage scenarios.
-
-> if you think the directory/file is not important, you can not skip it, just add a simple comment to it.
-
-> but if you think the directory/file is important, you should read the files and add more detail comments on it (e.g. add comments on the functions, classes, and variables. explain the functionality and usage scenarios. write the importance of the directory/file).
 ```
 root
-- .DS_Store
-- .cursor
-    - .DS_Store
-    - rules
-        - directory_readme.mdc
-        - incremental_changes.mdc
-        - initial_setup.mdc
-        - module_imports.mdc
-        - project_structure.mdc
-        - python_development.mdc
-        - readme_guidelines.mdc
-        - testing_standards.mdc
-- .env
-- .flake8
-- .gitignore
-- .gradio
-    - certificate.pem
-- .pytest_cache
-- README_MRAG.md
-- README_MRAG_ENV.md
-- README_MRAG_PYTEST.md
-- TODO.md
-- _ds_ref
-- _ds_vdb
-- _test
-- clearn_prj.sh
-- ctn2md
-    - .DS_Store
-    - __init__.py
-    - __pycache__
-        - __init__.cpython-312.pyc
-    - batch_cvt_mrag.py
-    - batch_cvt_papers.py
-    - converters
-        - converter_all_llamaparse.py
-        - converter_all_markitdown.py
-        - converter_md_plain.py
-        - converter_pdf_lvlm.py
-        - converter_pdf_textin.py
-        - converter_ppt_pptx2md.py
-        - readme_converters.md
-    - cvt_selector.py
-    - gen_base
-        - .DS_Store
-        - img_ref
-            - __init__.py
-            - ir_description_generator.py
-            - ir_img_ref_updater.py
-            - ir_models.py
-            - ir_scanner.py
-            - readme_img_ref.md
-            - scan_img_ref_and_update.py
-        - page_md_fusion
-            - __init__.py
-            - __pycache__
-                - __init__.cpython-312.pyc
-            - llm_heading
-                - __init__.py
-                - __pycache__
-                    - __init__.cpython-312.pyc
-                    - da_schemas_heading.cpython-312.pyc
-                - da_client_heading.py
-                - da_prompts_heading.py
-                - da_schemas_heading.py
-                - document_heading_analyzer.py
-                - full_marked_content_maker.py
-                - heading_action_explainer.py
-                - readme_llm_heading.md
-                - readme_llm_heading_data.md
-                - readme_llm_heading_toc_recover.md
-            - md_processor
-                - base.py
-                - doc_structure_processor.py
-                - header_footer.py
-                - heading_processor.py
-                - md_processor_explainer.py
-                - readme_md_processor.md
-            - page_md_fusion.py
-            - readme_page_md_fusion.md
-        - utils
-            - __pycache__
-                - gen_utils.cpython-312.pyc
-            - gen_utils.py
-    - gen_llamaparse
-        - _download_image_status.py
-        - _download_images.py
-        - _download_table.py
-        - gen_markdown_llamaparse.py
-        - lp_base.py
-        - lp_gen_normal_pages.py
-        - lp_gen_premium_pages.py
-        - lp_page2markdown.py
-        - n2u_unique_job.py
-        - readme_llamaparse.md
-    - gen_lvlm
-        - .DS_Store
-        - __pycache__
-            - gen_markdown_lvml.cpython-312.pyc
-            - lvlm_base.cpython-312.pyc
-            - lvlm_gen_pages.cpython-312.pyc
-            - lvlm_pdf_pages_to_images.cpython-312.pyc
-        - gen_markdown_lvml.py
-        - image2mds
-            - __pycache__
-                - lvlm_image_to_md.cpython-312.pyc
-                - lvlm_images_to_mds.cpython-312.pyc
-                - vllm_img2md_ark.cpython-312.pyc
-                - vllm_img2md_ark_prompt.cpython-312.pyc
-                - vllm_img2md_gpt.cpython-312.pyc
-                - vllm_img2md_gpt_prompt.cpython-312.pyc
-                - vllm_img2md_qwen.cpython-312.pyc
-                - vllm_img2md_qwen_prompt.cpython-312.pyc
-            - lvlm_image_to_md.py
-            - lvlm_images_to_mds.py
-            - vllm_img2md_ark.py
-            - vllm_img2md_ark_prompt.py
-            - vllm_img2md_gpt.py
-            - vllm_img2md_gpt_prompt.py
-            - vllm_img2md_qwen.py
-            - vllm_img2md_qwen_prompt.py
-        - lvlm_base.py
-        - lvlm_gen_pages.py
-        - lvlm_pdf_pages_to_images.py
-        - non_text_detector_gs0
-            - __pycache__
-                - gs0_pdf_page_to_region.cpython-312.pyc
-            - gs0_pdf_page_to_region.py
-        - non_text_detector_gs1
-            - __pycache__
-                - _gs1_pdf_page_paint.cpython-312.pyc
-                - _gs1_pdf_page_table.cpython-312.pyc
-                - gs1_pdf_page_to_region.cpython-312.pyc
-            - _gs1_pdf_page_paint.py
-            - _gs1_pdf_page_table.py
-            - gs1_pdf_page_to_region.py
-        - non_text_detector_gs2
-            - __pycache__
-                - _gs2_extract_picture_regions.cpython-312.pyc
-                - gs2_pdf_page_to_region.cpython-312.pyc
-            - _gs2_extract_picture_regions.py
-            - gs2_pdf_page_to_region.py
-        - readme_lvlm.md
-    - gen_markitdown
-        - doc2md
-            - _gen_md_from_doc.py
-            - mammoth_image_exporter.py
-            - mammoth_style_map.py
-            - mammoth_transform.py
-        - gen_markdown_markitdown.py
-        - readme_markitdown.md
-        - xls2md
-            - _gen_md_from_xls.py
-    - gen_plain
-        - gen_markdown_plain.py
-        - readme_plain.md
-    - gen_pptx2md
-        - gen_markdown_pptx2md.py
-        - readme_pptx2md.md
-    - gen_textin
-        - __pycache__
-            - _ti_gen_md.cpython-312.pyc
-            - _ti_get_image.cpython-312.pyc
-            - _ti_img_description.cpython-312.pyc
-            - _ti_update_img_ref.cpython-312.pyc
-            - gen_markdown_textin.cpython-312.pyc
-            - ti_gen_pages.cpython-312.pyc
-            - ti_pdf_images_to_mds.cpython-312.pyc
-            - ti_pdf_pages_to_images.cpython-312.pyc
-        - _ti_gen_md.py
-        - _ti_get_image.py
-        - _ti_img_description.py
-        - _ti_update_img_ref.py
-        - gen_markdown_textin.py
-        - readme_textin.md
-        - ti_gen_pages.py
-        - ti_pdf_images_to_mds.py
-        - ti_pdf_pages_to_images.py
-    - img_description
-        - __pycache__
-            - llm_gen_vllm_instruction.cpython-312.pyc
-            - vllm_img_description_ark.cpython-312.pyc
-            - vllm_img_description_ark_prompt.cpython-312.pyc
-            - vllm_img_description_gpt.cpython-312.pyc
-            - vllm_img_description_gpt_prompt.cpython-312.pyc
-            - vllm_img_description_qwen.cpython-312.pyc
-            - vllm_img_description_qwen_prompt.cpython-312.pyc
-        - llm_gen_vllm_instruction.py
-        - llm_gen_vllm_instruction_ark_prompt.py
-        - llm_gen_vllm_instruction_gpt_prompt.py
-        - llm_gen_vllm_instruction_qwen_prompt.py
-        - readme_img_description.md
-        - vllm_img_description_ark.py
-        - vllm_img_description_ark_prompt.py
-        - vllm_img_description_gpt.py
-        - vllm_img_description_gpt_prompt.py
-        - vllm_img_description_qwen.py
-        - vllm_img_description_qwen_prompt.py
-    - md_info
-        - __pycache__
-            - md_info_base.cpython-312.pyc
-            - md_info_ctrl.cpython-312.pyc
-        - md_info_base.py
-        - md_info_ctrl.py
-        - readme_md_info.md
-    - requirements.txt
-    - src
-        - .DS_Store
-        - __pycache__
-            - ctn2md_fix_heading_plc.cpython-312.pyc
-            - ctn2md_inject_section_hierarchy.cpython-312.pyc
-            - ctn2md_summarize_content.cpython-312.pyc
-            - heading_plc_md.cpython-312.pyc
-            - make_final_result.cpython-312.pyc
-            - page_spe_md.cpython-312.pyc
-        - ctn2md_fix_heading_plc.py
-        - ctn2md_inject_section_hierarchy.py
-        - ctn2md_summarize_content.py
-        - final_result
-            - __init__.py
-            - __pycache__
-                - __init__.cpython-312.pyc
-                - aux_file_manager.cpython-312.pyc
-                - final_info_generator.cpython-312.pyc
-                - md_file_handler.cpython-312.pyc
-            - aux_file_manager.py
-            - final_info_generator.py
-            - md_file_handler.py
-        - fix_heading_plc
-            - __init__.py
-            - __pycache__
-                - __init__.cpython-312.pyc
-                - heading_collector.cpython-312.pyc
-                - heading_mapper.cpython-312.pyc
-                - heading_updater.cpython-312.pyc
-                - llm_fix_heading_lvl_ark.cpython-312.pyc
-                - llm_fix_heading_lvl_gpt.cpython-312.pyc
-                - llm_fix_heading_lvl_gpt_prompt.cpython-312.pyc
-                - llm_fix_heading_lvl_qwen.cpython-312.pyc
-                - llm_fix_heading_lvl_qwen_prompt.cpython-312.pyc
-            - heading_collector.py
-            - heading_mapper.py
-            - heading_updater.py
-            - llm_fix_heading_lvl_ark.py
-            - llm_fix_heading_lvl_ark_prompt.py
-            - llm_fix_heading_lvl_gpt.py
-            - llm_fix_heading_lvl_gpt_prompt.py
-            - llm_fix_heading_lvl_qwen.py
-            - llm_fix_heading_lvl_qwen_prompt.py
-        - heading_plc_md.py
-        - inject_section_hierarchy
-            - __init__.py
-            - __pycache__
-                - __init__.cpython-312.pyc
-                - file_splitter.cpython-312.pyc
-                - heading_stack.cpython-312.pyc
-                - hierarchy_processor.cpython-312.pyc
-            - file_splitter.py
-            - heading_stack.py
-            - hierarchy_processor.py
-        - make_final_result.py
-        - page_spe_md.py
-        - readme_src.md
-        - summarize_content
-            - __init__.py
-            - __pycache__
-                - __init__.cpython-312.pyc
-                - doc_keywords.cpython-312.pyc
-                - llm_summarize_content.cpython-312.pyc
-                - make_doc_keywords.cpython-312.pyc
-            - doc_keywords.py
-            - llm_summarize_content.py
-            - llm_summarize_content_ark_prompt.py
-            - llm_summarize_content_gpt_prompt.py
-            - llm_summarize_content_qwen_prompt.py
-            - make_doc_keywords.py
-    - src_gen
-        - __pycache__
-            - _ctn2md_gen_md_base.cpython-312.pyc
-            - ctn2md_gen_md_lvlm.cpython-312.pyc
-            - ctn2md_gen_md_textin.cpython-312.pyc
-        - _ctn2md_gen_md_base.py
-        - ctn2md_gen_md_llamaparse.py
-        - ctn2md_gen_md_lvlm.py
-        - ctn2md_gen_md_markitdown.py
-        - ctn2md_gen_md_plain.py
-        - ctn2md_gen_md_pptx2md.py
-        - ctn2md_gen_md_textin.py
-        - readme_src_gen.md
-    - utils
-        - .DS_Store
-        - __pycache__
-            - util_ctn_type.cpython-312.pyc
-            - util_file.cpython-312.pyc
-            - util_markdown.cpython-312.pyc
-        - readme_utils.md
-        - util_ctn_type.py
-        - util_file.py
-        - util_markdown.py
-- ctn2md_tests
-    - .DS_Store
-    - __init__.py
-    - __pycache__
-        - __init__.cpython-312.pyc
-    - test_converters
-    - test_gen_base
-        - page_md_fusion
-            - llm_heading
-                - __pycache__
-                    - test_da_schemas_heading.cpython-312-pytest-8.3.4.pyc
-                    - test_da_schemas_heading_cross_page.cpython-312-pytest-8.3.4.pyc
-                    - test_da_schemas_heading_structure.cpython-312-pytest-8.3.4.pyc
-                - test_da_schemas_heading.py
-                - test_da_schemas_heading_cross_page.py
-                - test_da_schemas_heading_structure.py
-    - test_src
-        - test_inject_section_hierarchy
-            - __pycache__
-                - test_heading_stack.cpython-312-pytest-8.3.4.pyc
-                - test_heading_stack_complex_toc.cpython-312-pytest-8.3.4.pyc
-                - test_heading_stack_deep_nesting.cpython-312-pytest-8.3.4.pyc
-                - test_heading_stack_irregular_jumps.cpython-312-pytest-8.3.4.pyc
-                - test_heading_stack_mixed_patterns.cpython-312-pytest-8.3.4.pyc
-            - test_heading_stack.py
-            - test_heading_stack_complex_toc.py
-            - test_heading_stack_deep_nesting.py
-            - test_heading_stack_irregular_jumps.py
-            - test_heading_stack_mixed_patterns.py
-    - test_utils
-        - __pycache__
-            - conftest.cpython-312-pytest-8.3.4.pyc
-            - test_file_type_validation.cpython-312-pytest-8.3.4.pyc
-            - test_util_ctn_type.cpython-312-pytest-8.3.4.pyc
-            - test_util_file.cpython-312-pytest-8.3.4.pyc
-        - conftest.py
-        - test_file_type_validation.py
-        - test_markdown
-            - __pycache__
-                - test_extract.cpython-312-pytest-8.3.4.pyc
-            - test_extract.py
-        - test_util_ctn_type.py
-        - test_util_file.py
-- datasrc
-    - .DS_Store
-    - readme.md
-    - test
-        - .DS_Store
-        - raw_docs
-            - 1. 座椅STO间隙 P1.pptx
-            - 2. 座垫与钢丝间隙 P1.pptx
-            - 3. 头枕杆圆角定义 P1.pptx
-            - 4. 前后排座椅间距定义 P1.pptx
-            - 5. back panel 与环境匹配工程校核_P2.pptx
-            - 6. 前后排座椅H点距离要求 P1.pptx
-            - AIGC时代的人力资源管理进化(徐刚).pdf
-            - 业绩案例、上汽内外饰DRE外包框架服务合同.pdf
-            - 业绩案例、上汽内外饰部CAD外包框架服务合同.pdf
-            - 业绩案例、比亚迪SJ项目低压线束设计技术服务合同（电子电器）.pdf
-            - 业绩案例、比亚迪ST2H项目低压线束设计技术服务合同（电子电器）.pdf
-            - 业绩案例、比亚迪车架总成技术服务合同.pdf
-            - 业绩案例、比亚迪铝大梁式车架及副车架设计外包中标通知书.pdf
-            - 业绩案例、比亚迪驻场线束设计技术服务合同（电子电器）.pdf
-            - 主管培训课程清单.xlsx
-            - 管理者角色定位与认知课程大纲.docx
-            - 考勤修改统一规则.xlsx
-            - 高效沟通之黄金三角模型课程大纲.docx
-        - raw_questions
-            - question_lst.md
-            - questions_tbl.md
-            - 问题列表.xlsx
-- docs
-    - .DS_Store
-    - README.md
-    - diagrams
-        - README_mermaid.md
-        - arch_mrag_dataflow.mmd
-        - arch_mrag_modules.mmd
-        - arch_mrag_overview.mmd
-    - images
-        - architecture
-            - arch_mrag_dataflow.png
-            - arch_mrag_modules.png
-            - arch_mrag_overview.png
-        - examples
-        - guides
-- exams
-    - ark
-        - exam_ark_embeding.py
-        - exam_ark_embeding_large.py
-        - exam_ark_mm.py
-        - exam_ark_mm_upload.py
-        - exam_ark_text1.py
-        - exam_ark_text2.py
-    - ctn2md
-        - debug_llm_diag.py
-        - exam_openai_call_json_valid.py
-        - exam_pymupdf.py
-    - deepseek
-        - hello_deepseek.py
-    - milvus
-        - docker_compose_new.yaml
-        - docker_compose_old.yaml
-        - readme_milvus.md
-    - mrag_vdb
-        - exam_bm25_rerank.py
-        - exam_collection.py
-        - exam_dashscope_rerank.py
-        - exam_jina_rerank.py
-        - exam_md_to_xml.py
-        - exam_tokenizers.py
-    - old_idea
-        - utils_gpt
-            - llm_fix_ocr_md_gpt.py
-            - llm_fix_ocr_md_gpt_prompt.py
-            - llm_question_on_pic_gpt.py
-            - llm_question_on_pic_gpt_prompt.py
-    - open_router
-        - open_router.py
-    - qdrant
-        - exam_local_db.py
-        - readme_qdrant.md
-    - qwen
-        - llama_index_dashscope_rerank.py
-    - textin
-        - hello_textin.py
-    - utils_vllm_exp
-        - vllm_img2region_gpt.py
-        - vllm_img2region_gpt_prompt.py
-        - vllm_img2region_qwen.py
-        - vllm_img2region_qwen_prompt.py
-    - vllm
-        - vllm_ocr_restore_qwen.py
-        - vllm_ocr_restore_qwen_prompt.py
-        - vllm_qwen_mm.py
-    - yolo_layout
-        - test_doclayout.py
-- logs
-- mmbase
-    - .gitignore
-    - README_MMBASE.md
-    - __init__.py
-    - __pycache__
-        - __init__.cpython-312.pyc
-    - setup.py
-    - utils
-        - __init__.py
-        - __pycache__
-            - __init__.cpython-312.pyc
-            - util_logging.cpython-312.pyc
-        - util_logging.py
-    - utils_llm
-        - __init__.py
-        - __pycache__
-            - __init__.cpython-312.pyc
-            - llm_base.cpython-312.pyc
-            - llm_base_monitor.cpython-312.pyc
-            - llm_base_oss.cpython-312.pyc
-            - llm_base_tos.cpython-312.pyc
-            - llm_markdown.cpython-312.pyc
-        - llm_base.py
-        - llm_base_monitor.py
-        - llm_base_oss.py
-        - llm_base_tos.py
-        - llm_markdown.py
-    - utils_llm_debug
-        - __pycache__
-            - llm_diag.cpython-312.pyc
-        - llm_debug.py
-        - llm_diag.py
-- mmbase_tests
-    - __init__.py
-    - __pycache__
-        - __init__.cpython-312.pyc
-    - test_utils
-        - __init__.py
-        - __pycache__
-            - __init__.cpython-312.pyc
-            - test_util_logging_advanced.cpython-312-pytest-8.3.4.pyc
-            - test_util_logging_advanced.cpython-312.pyc
-            - test_util_logging_basic.cpython-312-pytest-8.3.4.pyc
-            - test_util_logging_normal.cpython-312-pytest-8.3.4.pyc
-        - test_util_logging_advanced.py
-        - test_util_logging_basic.py
-        - test_util_logging_normal.py
-    - tests_utils_llm
-        - __pycache__
-            - test_llm_base_chat.cpython-312-pytest-8.3.4.pyc
-            - test_llm_base_chat_basic.cpython-312-pytest-8.3.4.pyc
-            - test_llm_base_chat_json.cpython-312-pytest-8.3.4.pyc
-            - test_llm_base_chat_retry.cpython-312-pytest-8.3.4.pyc
-            - test_llm_base_clients.cpython-312-pytest-8.3.4.pyc
-            - test_llm_base_gpt.cpython-312-pytest-8.3.4.pyc
-            - test_llm_base_llm_format_markers.cpython-312-pytest-8.3.4.pyc
-            - test_llm_base_messages.cpython-312-pytest-8.3.4.pyc
-            - test_llm_base_monitor.cpython-312-pytest-8.3.4.pyc
-            - test_llm_base_oss.cpython-312-pytest-8.3.4.pyc
-            - test_llm_base_oss_slow_existence.cpython-312-pytest-8.3.4.pyc
-            - test_llm_base_oss_slow_file_type.cpython-312-pytest-8.3.4.pyc
-            - test_llm_base_oss_slow_upload.cpython-312-pytest-8.3.4.pyc
-            - test_llm_base_retry.cpython-312-pytest-8.3.4.pyc
-            - test_llm_base_tos.cpython-312-pytest-8.3.4.pyc
-            - test_llm_base_tos_slow_existence.cpython-312-pytest-8.3.4.pyc
-            - test_llm_base_tos_slow_file_type.cpython-312-pytest-8.3.4.pyc
-            - test_llm_base_tos_slow_upload.cpython-312-pytest-8.3.4.pyc
-            - test_llm_base_utils.cpython-312-pytest-8.3.4.pyc
-            - test_llm_diag.cpython-312-pytest-8.3.4.pyc
-        - test_llm_base_clients.py
-        - test_llm_base_gpt.py
-        - test_llm_base_llm_format_markers.py
-        - test_llm_base_messages.py
-        - test_llm_base_monitor.py
-        - test_llm_base_oss.py
-        - test_llm_base_oss_slow_existence.py
-        - test_llm_base_oss_slow_file_type.py
-        - test_llm_base_oss_slow_upload.py
-        - test_llm_base_tos.py
-        - test_llm_base_tos_slow_existence.py
-        - test_llm_base_tos_slow_file_type.py
-        - test_llm_base_tos_slow_upload.py
-        - test_llm_base_utils.py
-        - test_llm_diag.py
-- mrag_app
-    - README_MRAG_APP.md
-    - __pycache__
-        - _app_gradio_base.cpython-312.pyc
-        - _app_gradio_css.cpython-312.pyc
-        - _app_log_monitor.cpython-312.pyc
-        - _app_qa_core.cpython-312.pyc
-        - _app_qa_examples.cpython-312.pyc
-        - _app_qa_progress_step.cpython-312.pyc
-        - _rag_core_query.cpython-312.pyc
-        - _rag_response.cpython-312.pyc
-    - app_gradio.py
-    - app_gradio_local_ark.py
-    - app_gradio_local_gpt.py
-    - app_gradio_local_qwen.py
-    - core
-        - __pycache__
-            - _app_qa_core.cpython-312.pyc
-            - _rag_core_query.cpython-312.pyc
-        - _app_qa_core.py
-        - _qa_core.py
-        - _rag_core_query.py
-    - detailed_refactoring_plan.md
-    - refactory_mrag_app.md
-    - resources
-        - __pycache__
-            - _app_gradio_css.cpython-312.pyc
-            - _app_qa_examples.cpython-312.pyc
-        - _app_gradio_css.py
-        - _app_qa_examples.py
-    - responses
-        - __pycache__
-            - _rag_response.cpython-312.pyc
-        - _rag_response.py
-    - ui
-        - __pycache__
-            - _app_gradio_base.cpython-312.pyc
-        - _app_gradio_base.py
-    - utils
-        - __pycache__
-            - _app_log_monitor.cpython-312.pyc
-            - _app_qa_progress_step.cpython-312.pyc
-        - _app_log_monitor.py
-        - _app_qa_progress_step.py
-- mrag_app_tests
-    - __init__.py
-    - __pycache__
-        - __init__.cpython-312.pyc
-        - conftest.cpython-312-pytest-8.3.4.pyc
-        - test_app_log_monitor.cpython-312-pytest-8.3.4.pyc
-        - test_app_log_monitor_parsing.cpython-312-pytest-8.3.4.pyc
-        - test_app_qa_core.cpython-312-pytest-8.3.4.pyc
-        - test_rag_core_query.cpython-312-pytest-8.3.4.pyc
-        - test_rag_models.cpython-312-pytest-8.3.4.pyc
-    - conftest.py
-    - test_app_log_monitor.py
-    - test_app_log_monitor_parsing.py
-    - test_app_qa_core.py
-    - test_rag_core_query.py
-    - test_rag_models.py
-- mrag_vdb
-    - .DS_Store
-    - README_MRAG_VDB.md
-    - __init__.py
-    - __pycache__
-        - __init__.cpython-312.pyc
-    - add_doc_to_vdb.py
-    - batch_docs_to_vdb_mrag.py
-    - batch_docs_to_vdb_papers.py
-    - build
-        - .DS_Store
-        - _convert_doc_to_chunks.py
-        - _inject_chunks_to_vdb.py
-        - _inspect_doc_vdb.py
-        - _split_section_to_chunks.py
-        - _vdb_creation.py
-        - _vdb_with_extra_info.py
-        - build_doc_meta_info.py
-        - doc2vdb.py
-    - common
-        - .DS_Store
-        - __pycache__
-            - chunked_meta_info.cpython-312.pyc
-            - doc_meta_info.cpython-312.pyc
-            - scored_recovered_section.cpython-312.pyc
-            - text_embedding.cpython-312.pyc
-            - vdb_base.cpython-312.pyc
-        - chunked_meta_info.py
-        - doc_meta_info.py
-        - map_doc_to_collection.py
-        - scored_recovered_section.py
-        - text_embedding.py
-        - vdb_base.py
-    - dto
-        - __pycache__
-            - rag_answer.cpython-312.pyc
-            - rag_context.cpython-312.pyc
-            - rag_input.cpython-312.pyc
-            - rag_runtime_settings.cpython-312.pyc
-        - rag_answer.py
-        - rag_context.py
-        - rag_input.py
-        - rag_runtime_settings.py
-    - knowledge
-        - .DS_Store
-        - __pycache__
-            - _knowledge_base.cpython-312.pyc
-            - query2knowledge.cpython-312.pyc
-            - query_rewrite.cpython-312.pyc
-            - search_file_refs.cpython-312.pyc
-        - _knowledge_base.py
-        - query2knowledge.py
-        - query_rewrite.py
-        - search_file_refs.py
-    - query
-        - .DS_Store
-        - __pycache__
-            - _recover_section_from_chunks.cpython-312.pyc
-            - query2section_raw.cpython-312.pyc
-        - _recover_section_from_chunks.py
-        - query2section_raw.py
-    - requirements.txt
-    - rerank
-        - __pycache__
-            - _base_rerank.cpython-312.pyc
-            - _bm25_cache.cpython-312.pyc
-            - _bm25_cache_section.cpython-312.pyc
-            - _bm25_jieba_cutter.cpython-312.pyc
-            - _bm25_reorder.cpython-312.pyc
-            - _embeding_rerankers.cpython-312.pyc
-            - _hybrid_rerank_section.cpython-312.pyc
-            - query2section_reranked.cpython-312.pyc
-        - _base_rerank.py
-        - _bm25_cache.py
-        - _bm25_cache_document.py
-        - _bm25_cache_section.py
-        - _bm25_jieba_cutter.py
-        - _bm25_reorder.py
-        - _embeding_rerankers.py
-        - _hybrid_rerank_section.py
-        - query2section_reranked.py
-    - utils
-        - .DS_Store
-        - __pycache__
-            - util_file.cpython-312.pyc
-            - util_git.cpython-312.pyc
-        - util_file.py
-        - util_git.py
-        - util_tokenizer_chinese.py
-        - util_tokenizer_split.py
-    - utils_llm
-        - .DS_Store
-        - __pycache__
-            - llm_gen_knowledge.cpython-312.pyc
-            - llm_gen_knowledge_ark_prompt.cpython-312.pyc
-            - llm_gen_knowledge_gpt_prompt.cpython-312.pyc
-            - llm_gen_knowledge_qwen_prompt.cpython-312.pyc
-            - llm_image_relevance.cpython-312.pyc
-            - llm_image_relevance_ark_prompt.cpython-312.pyc
-            - llm_image_relevance_gpt_prompt.cpython-312.pyc
-            - llm_image_relevance_qwen_prompt.cpython-312.pyc
-        - llm_gen_knowledge.py
-        - llm_gen_knowledge_ark_prompt.py
-        - llm_gen_knowledge_gpt_prompt.py
-        - llm_gen_knowledge_qwen_prompt.py
-        - llm_image_relevance.py
-        - llm_image_relevance_ark_prompt.py
-        - llm_image_relevance_gpt_prompt.py
-        - llm_image_relevance_qwen_prompt.py
-- mrag_vdb_tests
-    - __init__.py
-    - __pycache__
-        - __init__.cpython-312.pyc
-        - conftest.cpython-312-pytest-8.3.4.pyc
-    - conftest.py
-    - test_rerank
-        - __pycache__
-            - test_bm25_cache.cpython-312-pytest-8.3.4.pyc
-        - test_bm25_cache.py
-- package.json
-- pytest.ini
-- requirements-dev.txt
-- requirements.txt
-- requirements_inc.txt
-- start_gradio.sh
-- stop_gradio.sh
+- .cursor/ # Cursor IDE specific files
+- .env # Environment variables
+- .gitignore # Git ignore file
+- README_MRAG.md # Main project README
+- _ds_ref/ # Directory for data source references
+- _ds_vdb/ # Directory for vector database storage
+- _test/ # General testing directory
+- clearn_prj.sh # Script to clean the project
+- ctn2md/ # Content to Markdown: Core module for converting various document formats to Markdown.
+    - converters/ # Specific converter implementations
+    - gen_base/ # Base utilities for generation
+    - gen_llamaparse/ # Generation using LlamaParse engine
+    - gen_lvlm/ # Generation using Large Vision Language Models
+    - gen_markitdown/ # Generation using Markitdown
+    - gen_plain/ # Plain text to Markdown conversion
+    - gen_pptx2md/ # PPTX to Markdown conversion
+    - gen_textin/ # Generation using TextIn OCR
+    - src/ # Source for post-processing and structuring Markdown
+    - requirements.txt # Python dependencies for this module
+- ctn2md_tests/ # Tests for the ctn2md module
+- datasrc/ # Source data for the project, like raw documents and questions
+    - test/
+        - raw_docs/ # Raw documents for testing
+        - raw_questions/ # Questions for testing
+- docs/ # Project documentation
+    - diagrams/ # Mermaid diagrams for architecture
+    - images/ # Images used in documentation
+- exams/ # Experimental scripts and explorations for various libraries and services
+- logs/ # Log files
+- mmbase/ # MultiModal Base: Shared core functionalities like logging, LLM interaction, etc.
+    - utils/ # Utility functions
+    - utils_llm/ # LLM related utilities
+- mmbase_tests/ # Tests for the mmbase module
+- mrag_app/ # MultiModal RAG Application: The Gradio web interface and application logic.
+    - core/ # Core logic for QA and RAG
+    - resources/ # CSS and other resources for the app
+    - responses/ # Response generation logic
+    - ui/ # UI components
+- mrag_app_tests/ # Tests for the mrag_app module
+- mrag_vdb/ # MultiModal RAG Vector Database: Handles document chunking, embedding, and storing in a vector DB.
+    - common/ # Common data structures and utilities
+    - dto/ # Data Transfer Objects
+    - knowledge/ # Knowledge extraction and representation
+    - query/ # Query processing and retrieval logic
+    - rerank/ # Reranking logic for search results
+    - utils/ # Utility functions
+    - utils_llm/ # LLM utilities for VDB operations
+- mrag_vdb_tests/ # Tests for the mrag_vdb module
+- requirements.txt # Main project dependencies
+- requirements-dev.txt # Development dependencies
+- start_gradio.sh # Script to start the Gradio app
+- stop_gradio.sh # Script to stop the Gradio app
+- TODO.md # To-do list for the project
 ```
